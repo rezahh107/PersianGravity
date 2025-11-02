@@ -1,0 +1,1 @@
+(function($){$(function(){ if ($.fn.datepicker && $.datepicker && $.datepicker.regional){ try { $.datepicker.setDefaults($.datepicker.regional['fa']||{}); } catch(e){} } });})(jQuery);

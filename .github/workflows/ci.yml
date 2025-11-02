@@ -6,14 +6,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          tools: composer
+
+      - name: Check PHP version
+        run: php -v
+
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --verbose
+
+      - name: Debug src files
+        run: ls -la src/
+
       - name: Lint (PHPCS + WPCS)
         run: vendor/bin/phpcs --standard=WordPress src/
+
+      - name: Debug test files
+        run: ls -la tests/
+
       - name: Run tests
-        run: vendor/bin/phpunit 
+        run: vendor/bin/phpunit
