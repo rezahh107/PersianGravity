@@ -1,0 +1,21 @@
+name: PHPCS
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP 8.2 + Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+      - name: Install dependencies (with dev)
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Normalize vendor/bin (avoid CRLF issues)
+        run: sudo apt-get update && sudo apt-get install -y dos2unix && find vendor/bin -type f -print0 | xargs -0 dos2unix
+      - name: Run PHPCS (ruleset)
+        run: php vendor/bin/phpcs
