@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="PGR WordPress Rules">
+  <description>WordPress Core standard for this plugin</description>
+  <file>src</file>
+  <file>includes</file>
+  <file>admin</file>
+  <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>node_modules/*</exclude-pattern>
+  <rule ref="WordPress"/>
+  <rule ref="WordPress.PHP.YodaConditions"/>
+  <rule ref="Squiz.Commenting.FunctionComment"/>
+  <config name="testVersion" value="7.4-"/>
+  <arg value="ps"/>
+</ruleset>

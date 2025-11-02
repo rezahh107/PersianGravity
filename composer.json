@@ -14,10 +14,13 @@
     "phpunit/phpunit": "^10.0",
     "brain/monkey": "2.0.0",
     "squizlabs/php_codesniffer": "^3.9",
-    "wp-coding-standards/wpcs": "^3.1"
+    "wp-coding-standards/wpcs": "^3.1",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
   },
   "scripts": {
-    "lint": "phpcs --standard=WordPress src/",
+    "lint": "phpcs",
+    "fix": "phpcbf",
+    "lint:wp": "phpcs --standard=WordPress",
     "test": "phpunit"
   },
   "minimum-stability": "dev",
@@ -29,6 +32,9 @@
     }
   },
   "config": {
+    "platform": {
+      "php": "8.2.0"
+    },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }

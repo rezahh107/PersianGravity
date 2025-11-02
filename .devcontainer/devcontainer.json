@@ -1,0 +1,25 @@
+{
+  "name": "PGR Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/php:1": {
+      "version": "8.2",
+      "installComposer": true
+    }
+  },
+  "postCreateCommand": "composer install || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "wongjn.php-sniffer",
+        "bmewburn.vscode-intelephense-client"
+      ],
+      "settings": {
+        "phpcs.enable": true,
+        "phpcs.standard": "WordPress",
+        "phpcs.ignorePatterns": ["vendor/*","node_modules/*"]
+      }
+    }
+  },
+  "remoteUser": "vscode"
+}

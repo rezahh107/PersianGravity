@@ -1,0 +1,14 @@
+vendor/
+node_modules/
+composer.lock
+.DS_Store
+.vscode/
+*.min.js
+*.min.css
+*.map
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
