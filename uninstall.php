@@ -1,11 +1,8 @@
-<?php
-/**
- * Uninstall handler.
- *
- * @package PersianGravityFormsRefactor
- * @since   1.0.0
- */
 
+<?php
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-delete_option( 'pgr_version' );
+require_once __DIR__ . '/includes/autoload.php';
+require_once __DIR__ . '/includes/class-pgr-installer.php';
+
+PGR_Installer::uninstall();

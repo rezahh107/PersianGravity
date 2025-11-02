@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Installer/Activator for Persian Gravity Forms Refactor.
@@ -8,41 +9,29 @@
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Handles install/uninstall routines.
- */
 class PGR_Installer {
 
-	/**
-	 * On plugin activation.
-	 *
-	 * @since 1.0.0
-	 */
-	public static function activate() : void {
-		// DB upgrades or option initialization go here.
-		// Example baseline option.
-		add_option( 'pgr_version', '1.0.0' );
-	}
+    public static function activate() : void {
+        if ( version_compare( PHP_VERSION, '7.4', '<' ) ) {
+            deactivate_plugins( plugin_basename( PGR_FILE ) );
+            wp_die( esc_html__( 'Persian Gravity Forms Refactor requires PHP 7.4 or newer.', 'persian-gravityforms-refactor' ) );
+        }
 
-	/**
-	 * On plugin deactivation.
-	 *
-	 * @since 1.0.0
-	 */
-	public static function deactivate() : void {
-		// No-op for now.
-	}
+        global $wp_version;
+        if ( version_compare( $wp_version, '5.8', '<' ) ) {
+            deactivate_plugins( plugin_basename( PGR_FILE ) );
+            wp_die( esc_html__( 'Persian Gravity Forms Refactor requires WordPress 5.8 or newer.', 'persian-gravityforms-refactor' ) );
+        }
 
-	/**
-	 * On plugin uninstall.
-	 *
-	 * @since 1.0.0
-	 */
-	public static function uninstall() : void {
-		// Run only when WordPress calls uninstall.
-		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			return;
-		}
-		delete_option( 'pgr_version' );
-	}
+        add_option( 'pgr_version', '1.0.0' );
+    }
+
+    public static function uninstall() : void {
+        if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+            return;
+        }
+
+        delete_option( 'pgr_version' );
+        delete_option( 'pgr_installed' );
+    }
 }

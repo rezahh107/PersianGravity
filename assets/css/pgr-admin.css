@@ -1,1 +1,17 @@
-/* Admin styles for Persian Gravity Forms */
+
+/* Admin Styles for Persian Gravity Forms Refactor */
+#pgr-settings .form-table th {
+    font-weight: bold;
+    text-align: right;
+}
+#pgr-settings .form-table td input[type="checkbox"] {
+    margin-left: 10px;
+}
+#pgr-settings .button-primary {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+#pgr-settings .button-primary:hover {
+    background-color: #45a049;
+}
