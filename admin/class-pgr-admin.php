@@ -1,140 +1,137 @@
 <?php
-/**
- * Admin controller for plugin settings.
- *
- * @package PersianGravityFormsRefactor
- * @since   1.0.0
- */
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-defined( 'ABSPATH' ) || exit;
-
-/**
- * Admin UI and Settings API.
- */
 class PGR_Admin {
 
-	/**
-	 * Option name.
-	 *
-	 * @var string
-	 */
-	private $option_name = 'pgr_settings';
+    const OPTION = 'pgr_settings';
 
-	/**
-	 * Register admin hooks.
-	 *
-	 * @since 1.0.0
-	 */
-	public function hooks() : void {
-		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'wp_ajax_pgr_validate_nid', array( $this, 'ajax_validate_nid' ) );
-	}
+    public function hooks() {
+        add_action( 'admin_menu', array( $this, 'menu' ) );
+        add_action( 'admin_init', array( $this, 'register' ) );
+        add_action( 'wp_ajax_pgr_check_nid', array( $this, 'ajax_check_nid' ) );
+    }
 
-	/**
-	 * Register settings page.
-	 *
-	 * @since 1.0.0
-	 */
-	public function register_menu() : void {
-		add_options_page(
-			esc_html__( 'Persian GF', 'persian-gravityforms-refactor' ),
-			esc_html__( 'Persian GF', 'persian-gravityforms-refactor' ),
-			'manage_options',
-			'pgr-settings',
-			array( $this, 'render_page' )
-		);
-	}
+    public function menu() {
+        add_options_page(
+            __( 'Persian Gravity Forms', 'persian-gravityforms-refactor' ),
+            __( 'Persian GF', 'persian-gravityforms-refactor' ),
+            'manage_options',
+            'pgr-settings',
+            array( $this, 'render' )
+        );
+    }
 
-	/**
-	 * Settings API registration.
-	 *
-	 * @since 1.0.0
-	 */
-	public function register_settings() : void {
-		register_setting(
-			'pgr_settings',
-			$this->option_name,
-			array( $this, 'sanitize_settings' )
-		);
+    public function register() {
+        register_setting( 'pgr_settings_group', self::OPTION );
 
-		add_settings_section(
-			'pgr_general',
-			esc_html__( 'General', 'persian-gravityforms-refactor' ),
-			'__return_false',
-			'pgr_settings'
-		);
+        add_settings_section(
+            'pgr_defaults',
+            __( 'Defaults for new fields', 'persian-gravityforms-refactor' ),
+            function(){
+                echo '<p>'. esc_html__( 'These defaults apply when you add a new National ID field in Gravity Forms.', 'persian-gravityforms-refactor' ) .'</p>';
+            },
+            'pgr_settings'
+        );
 
-		add_settings_field(
-			'enable_nid_validation',
-			esc_html__( 'Validate National ID', 'persian-gravityforms-refactor' ),
-			array( $this, 'field_checkbox' ),
-			'pgr_settings',
-			'pgr_general',
-			array( 'key' => 'enable_nid_validation' )
-		);
-	}
+        add_settings_field(
+            'default_force_english',
+            __( 'Force English digits by default', 'persian-gravityforms-refactor' ),
+            array( $this, 'checkbox_cb' ),
+            'pgr_settings',
+            'pgr_defaults',
+            array( 'key' => 'default_force_english' )
+        );
 
-	/**
-	 * Sanitize options.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array $input Raw input.
-	 * @return array
-	 */
-	public function sanitize_settings( $input ) : array {
-		$input = is_array( $input ) ? $input : array();
-		return array(
-			'enable_nid_validation' => PGR_Utils::sanitize_bool( $input['enable_nid_validation'] ?? false ),
-		);
-	}
+        add_settings_field(
+            'enable_nid_validation',
+            __( 'Enable live validation by default', 'persian-gravityforms-refactor' ),
+            array( $this, 'checkbox_cb' ),
+            'pgr_settings',
+            'pgr_defaults',
+            array( 'key' => 'enable_nid_validation' )
+        );
 
-	/**
-	 * Checkbox renderer.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array $args Args.
-	 */
-	public function field_checkbox( $args ) : void {
-		$key = sanitize_key( $args['key'] ?? '' );
-		$opt = get_option( $this->option_name, array() );
-		$val = ! empty( $opt[ $key ] );
-		echo '<label><input type="checkbox" name="' . esc_attr( $this->option_name ) . '[' . esc_attr( $key ) . ']" value="1" ' . checked( $val, true, false ) . ' /> ' . esc_html__( 'Enable', 'persian-gravityforms-refactor' ) . '</label>';
-	}
+        add_settings_section(
+            'pgr_tools',
+            __( 'Tools', 'persian-gravityforms-refactor' ),
+            function(){
+                echo '<p>'. esc_html__( 'Quick tools for testing and compatibility.', 'persian-gravityforms-refactor' ) .'</p>';
+            },
+            'pgr_settings'
+        );
 
-	/**
-	 * Render settings page.
-	 *
-	 * @since 1.0.0
-	 */
-	public function render_page() : void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'Persian Gravity Forms', 'persian-gravityforms-refactor' ) . '</h1>';
-		echo '<form action="' . esc_url( admin_url( 'options.php' ) ) . '" method="post">';
-		settings_fields( 'pgr_settings' );
-		do_settings_sections( 'pgr_settings' );
-		submit_button();
-		echo '</form>';
-		echo '</div>';
-	}
+        add_settings_field(
+            'tool_nid_tester',
+            __( 'National ID Tester', 'persian-gravityforms-refactor' ),
+            array( $this, 'nid_tester_cb' ),
+            'pgr_settings',
+            'pgr_tools'
+        );
+    }
 
-	/**
-	 * AJAX: validate National ID.
-	 *
-	 * @since 1.0.0
-	 */
-	public function ajax_validate_nid() : void {
-		check_ajax_referer( 'pgr_admin', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Permission denied.', 'persian-gravityforms-refactor' ) ), 403 );
-		}
-		$nid    = isset( $_POST['nid'] ) ? sanitize_text_field( wp_unslash( $_POST['nid'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$valid  = PGR_Utils::is_valid_iran_national_id( $nid );
-		wp_send_json_success( array( 'valid' => $valid ) );
-	}
+    public function checkbox_cb( $args ) {
+        $opts = get_option( self::OPTION, array() );
+        $key  = $args['key'];
+        $val  = ! empty( $opts[ $key ] ) ? 1 : 0;
+        echo '<label><input type="checkbox" name="'. esc_attr( self::OPTION ) .'['. esc_attr( $key ) .']" value="1" '. checked( 1, $val, false ) .' /> ';
+        echo esc_html__( 'Enabled', 'persian-gravityforms-refactor' ) .'</label>';
+    }
+
+    public function nid_tester_cb() {
+        $nonce = wp_create_nonce( 'pgr_check_nid' );
+        ?>
+        <div id="pgr-nid-tester">
+            <input type="text" id="pgr-nid" value="" class="regular-text" placeholder="<?php esc_attr_e('Enter 10-digit National ID', 'persian-gravityforms-refactor'); ?>" />
+            <button type="button" class="button" id="pgr-nid-check"><?php esc_html_e('Check', 'persian-gravityforms-refactor'); ?></button>
+            <span id="pgr-nid-result" style="margin-left:8px;"></span>
+        </div>
+        <script>
+        (function(){
+            var btn = document.getElementById('pgr-nid-check');
+            if(!btn){return;}
+            btn.addEventListener('click', function(){
+                var nid = document.getElementById('pgr-nid').value || '';
+                var res = document.getElementById('pgr-nid-result');
+                res.textContent = '<?php echo esc_js( __( 'Checking...', 'persian-gravityforms-refactor' ) ); ?>';
+                var fd = new FormData();
+                fd.append('action', 'pgr_check_nid');
+                fd.append('nid', nid);
+                fd.append('_wpnonce', '<?php echo esc_js( $nonce ); ?>');
+                fetch(ajaxurl, {method:'POST', body: fd}).then(r=>r.json()).then(function(j){
+                    res.textContent = j && j.valid ? '<?php echo esc_js( __( 'Valid', 'persian-gravityforms-refactor' ) ); ?>' : '<?php echo esc_js( __( 'Invalid', 'persian-gravityforms-refactor' ) ); ?>';
+                }).catch(function(){
+                    res.textContent = '<?php echo esc_js( __( 'Error', 'persian-gravityforms-refactor' ) ); ?>';
+                });
+            });
+        })();
+        </script>
+        <?php
+    }
+
+    public function render() {
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'Persian Gravity Forms', 'persian-gravityforms-refactor' ); ?></h1>
+            <form method="post" action="options.php">
+                <?php
+                settings_fields( 'pgr_settings_group' );
+                do_settings_sections( 'pgr_settings' );
+                submit_button();
+                ?>
+            </form>
+            <hr />
+            <p><small><?php echo esc_html( sprintf( __( 'Version %s', 'persian-gravityforms-refactor' ), PGR_VERSION ) ); ?></small></p>
+        </div>
+        <?php
+    }
+
+    public function ajax_check_nid() {
+        check_ajax_referer( 'pgr_check_nid' );
+        $nid = isset( $_POST['nid'] ) ? sanitize_text_field( wp_unslash( $_POST['nid'] ) ) : '';
+        $valid = false;
+        if ( class_exists( 'PGR_Utils' ) ) {
+            $valid = PGR_Utils::is_valid_iran_national_id( $nid );
+        }
+        wp_send_json( array( 'valid' => (bool) $valid ) );
+    }
 }

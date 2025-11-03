@@ -1,212 +1,28 @@
-﻿=== Persian Gravity Forms Refactor ===
-
-== Important for Developers ==
-
-After extracting this plugin, if you want to run tests or use QA tools, you must run the following commands in the plugin root directory on a machine with internet access:
-
-    composer install
-    composer test
-
-This will install all dev dependencies (phpunit, brain/monkey, phpcs, wpcs) required for testing and code linting.
-
-If you do not need to run tests or QA, you can use the plugin as usual in WordPress.
-
-=== Persian Gravity Forms Refactor ===
-Contributors: persianscript,persiangravityforms
-Tags: گرویتی فرم,گراویتی فرم,gravityforms,فارسی,iran
-author URI: https://profiles.wordpress.org/persianscript/
-plugin URI: https://wordpress.org/plugins/persian-gravity-forms/
-Requires at least: 4.5
-Tested up to: 6.6.1
+=== Persian Gravity Forms (Refactor) ===
+Contributors: pgr
+Requires at least: 6.0
+Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 2.8.0
-License: GPL 2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-بسته کامل فارسی ساز گرویتی فرم
+Stable tag: 2.0.0
+Tags: gravity forms, persian, iran, national id
+
+Adds an Iranian National ID field to Gravity Forms, with per-form Persian digit normalization and global defaults. The "separator" option is removed.
 
 == Description ==
-**گرویتی فرم فارسی**
-بسته کامل فارسی ساز گرویتی فرم
-با کمک افزونه گرویتی فرم فارسی می توانید تمامی بخش های گرویتی فرم را فارسی کنید ، فیلد کد ملی را اضافه کنید و همچنین لیست شهر ها و استان های ایران را به گرویتی فر م اضافه نمایید.
-همچنین این بسته حاوی بومی ساز کامل گرویتی فرم می باشد
+- Custom field: National ID (Iran), with checksum validation.
+- Global defaults (Settings → Persian GF).
+- Per-form toggle to normalize Persian/Arabic digits to English on submission.
+- Live client-side validation and accessibility hints.
+- Lightweight (no external frameworks).
 
-= Features =
-* بسته کامل ایرانی ساز گرویتی فرم
-* ترجمه گرویتی فرم و افزونه های جانبی
-* راستچین سازی مدیریت و فرم ها
-* استان های ایران
-* شهرهای ایران
-* فیلد کد ملی هوشمند
-* دیت پیکر و تاریخ شمسی
-* پیش نیاز و هسته مرکزی درگاه های پرداخت
-* واحد پولی ریال و تومان
-* اسنیپت های بکار رفته کاربردی
-* امکانات فراوان دیگر
-
-
-= Compatibility =
-* آخرین نسخه وردپرس
-* هسته گرویتی فرم
-
-
-== Frequently asked questions ==
-
-= راهنمای نصب =
-1. ابتدا هسته گرویتی فرم را نصب نمایید
-2. سپس بسته فارسی ساز را یا از مخزن یا به صورت دستی همانند سایر پلاگین ها نصب نمایید
-3. پلاگین را فعال نموده و لذت ببرید
-
-= آیا گرویتی فرم در ایران سایت پشتیبانی دارد =
-بله میتوانید به سایت گرویتی فرم پارسی مراجعه نمایید [PersianGF.ir](https://persiangf.ir)
-
-= آیا سایت گرویتی فرم پارسی ،هسته گرویتی فرم را نیز به فروش می رسانید =
-خیر به هیچ وجه! برای خرید گرویتی فرم تنها از طریق سایت رسمی آن خرید نمایید GravityForms.com
-
-== Screenshots ==
-به زودی با تصاویر جدید !
-
+== Installation ==
+1. Upload the ZIP via Plugins → Add New → Upload Plugin.
+2. Activate the plugin.
+3. See Settings → Persian GF to set defaults.
 
 == Changelog ==
-
-= 2.9.0-beta =
-* Refactor: PSR-4 structure, DI bootstrap, modular services (Address, NationalId, Currency)
-* CurrencyService: IRR/IRT support, RTL formatting, thousand separator
-* PHPUnit/BrainMonkey/PHPCS/CI ready (run composer install && composer test)
-* Legacy currency logic removed from includes/class-currencies.php
-* Version bump, improved developer docs
-
-
-= 2.8.0 =
-* بروزرسانی ترجمه گرویتی فرم
-* رفع مشکل نمایش ماه های میلادی به جای شمسی
-= 2.7.7.1 =
-* سازگاری با گرویتی فرم سری 2.7
-* رفع مشکل واحد پولی
-= 2.5.15 =
-* سازگاری با گرویتی فرم 2.5.15
-* رفع نقص در سازگاری با المنتور
-* رفع مشکل کدملی
-* رفع مشکل تاریخ شمسی
-* بررسی مجدد کدها
-= 2.5.0 =
-* آغاز هماهنگی با گرویتی فرم 2.5
-= 2.3.1.4 =
-* رفع باگ
-= 2.3.1.3 =
-* رفع باگ
-= 2.3.1.2 =
-* رفع مشکل ریز نسخه 2.3.1
-= 2.3.1.1 =
-* رفع مشکل ریز نسخه 2.3.1
-= 2.3.1 =
-* رفع مشکل ظاهر نشدن فرم
-* توابع متناسب با درگاه های پرداخت
-= 2.3.0.2 =
-* رفع مشکل ریز نسخه 2.3.0
-= 2.3.0.1 =
-* رفع مشکل ریز نسخه 2.3.0
-= 2.3.0 =
-* بازنویسی مجدد کامل
-* اضافه شدن پنل تنظیمات
-* بروز رسانی ترجمه
-= 2.1.6 =
-* بهینه سازی شهرها و رفع تداخل با ووکامرس
-= 2.1.5 =
-* اطلاعیه آپدیت پیامک گرویتی فرم
-= 2.1.4 =
-* رفع باگ
-= 2.1.3 =
-* رفع باگ
-= 2.1.2 =
-* تغییر کلاس شهرهای ایران
-= 2.1.1 =
-* بروز رسانی ترجمه
-* سازگاری با نسخه جدید گرویتی فرم
-* رفع مشکل کد ملی، شهرهای ایران و تاریخ شمسی
-* بهبود راستچین سازی
-= 2.1.0 =
-* بروز رسانی ترجمه
-* سازگاری با نسخه جدید گرویتی فرم
-* رفع مشکل کد ملی، شهرهای ایران و تاریخ شمسی
-* بهبود راستچین سازی
-= 2.0.5 =
-* رفع باگ و بروز رسانی ترجمه و غیرفعالسازی درگاه های قدیمی و کپی برداری شده
-= 2.0.4 =
-* سازگاری با نسخه آخر گرویتی فرم و رفع باگ
-= 2.0.3 =
-* مرتب سازی لیست شهر های ایران بر اساس حروف الفبا
-= 2.0.2 =
-* رفع باگ
-= 2.0.1 =
-* رفع باگ
 = 2.0.0 =
-* بازنویسی مجدد
-* اضافه شدن شهر های ایران
-* رفع مشکلات
-= 1.8.0 =
-* اضافه کردن ویژگی های جدید
-* بروز رسانی ترجمه
-= 1.7.5 =
-* رفع باگ
-= 1.7.4 =
-* رفع باگ
-= 1.7.3 =
-* اضافه کردن ویژگی های جدید
-* بروز رسانی ترجمه
-= 1.7.2 =
-* بروز رسانی ترجمه
-= 1.7.1 =
-* بهبود راستچین سازی
-= 1.7.0 =
-* ویژگی های جدید
-= 1.6.0 =
-* ویژگی های جدید
-= 1.5.0 =
-* بروز رسانی ترجمه
-* دکمه پیشنمایش زنده
-= 1.4.7 =
-* رفع باگ
-= 1.4.6 =
-* رفع مشکل ترجمه
-= 1.4.5 =
-* بهبود استایل دکمه رادیویی و چک باکس در راستچین سازی
-= 1.4.4 =
-* بروز رسانی ترجمه
-= 1.4.3 =
-* رفع باگ
-= 1.4.2 =
-* بهبود راستچین سازی
-= 1.4.1 =
-* رفع باگ
-= 1.4.0 =
-* سازگاری با نسخه 1.9 گرویتی فرم
-= 1.3.2 =
-* رفع باگ
-= 1.3.1 =
-* بهبود ترجمه
-* رفع باگ
-= 1.3.0 =
-* رفع باگ
-= 1.2.0 =
-* ایجاد اعتبار سنجی تاریخ شمسی
-= 1.1.5 =
-* رفع باگ
-= 1.1.4 =
-* رفع باگ
-= 1.1.3 =
-* رفع باگ
-= 1.1.2 =
-* نمودار شمسی تراکنش ها
-* کد پیگیری فرم ها
-= 1.1.1 =
-* اضافه شدن کد ملی
-= 1.0.2 =
-* رفع باگ
-= 1.0.1 =
-* رفع باگ
-= 1.0.0 =
-* انتشار نسخه اولیه
-
-== Upgrade Notice ==
-= 2.8.0 =
-* رفع مشکل ماه های شمسی  - بروزرسانی ترجمه
+* New: Settings page with global defaults and tools.
+* New: Per-form Persian digit normalization.
+* Change: Removed separator display option in National ID field.
+* Fix: PHP 8+ compatible (no deprecated vendor packages).
