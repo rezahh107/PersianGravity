@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * Class PGR_GF_Field_National_ID
  * 
  * A complete Gravity Forms custom field for Iranian National ID with validation,
- * formatting, and optional city display.
+ * formatting, optional city display, and front-end live validation.
  */
 class PGR_GF_Field_National_ID extends GF_Field {
 
@@ -24,21 +24,21 @@ class PGR_GF_Field_National_ID extends GF_Field {
 	public $type = 'pgr_national_id';
 
 	/**
-	 * Show city based on national ID.
+	 * Show city based on national ID (requires cities database).
 	 *
 	 * @var bool
 	 */
 	public $showLocation = false;
 
 	/**
-	 * Auto-separate digits with dash.
+	 * Auto-separate digits with dash (XXX-XXXXXX-X).
 	 *
 	 * @var bool
 	 */
 	public $showSeperator = false;
 
 	/**
-	 * Convert Persian/Arabic digits to English.
+	 * Convert Persian/Arabic digits to English automatically.
 	 *
 	 * @var bool
 	 */
@@ -49,10 +49,10 @@ class PGR_GF_Field_National_ID extends GF_Field {
 	 *
 	 * @var string
 	 */
-	public $notDigitError = '';
-	public $qtyDigitError = '';
-	public $isInvalidError = '';
-	public $duplicateError = '';
+	public $notDigitError   = '';
+	public $qtyDigitError   = '';
+	public $isInvalidError  = '';
+	public $duplicateError  = '';
 
 	/**
 	 * Return the field title in form editor.
@@ -96,7 +96,7 @@ class PGR_GF_Field_National_ID extends GF_Field {
 			'label_placement_setting',
 			'admin_label_setting',
 			'visibility_setting',
-			'pgr_national_id_settings',
+			'pgr_national_id_settings', // custom group
 		);
 	}
 
@@ -217,9 +217,19 @@ class PGR_GF_Field_National_ID extends GF_Field {
 
 		$html_attrs = " {$placeholder} {$required} {$invalid} maxlength='{$max_length}'";
 
+		// Data attributes for frontend script (pgr-frontend.js)
+		$data_attrs = '';
+		if ( $this->forceEnglish ) {
+			$data_attrs .= ' data-pgr-force-english="true"';
+		}
+		// Enable live validation if either location or auto-formatting is active
+		if ( $this->showLocation || $this->showSeperator ) {
+			$data_attrs .= ' data-pgr-live-validation="true"';
+		}
+
 		$input = sprintf(
 			'<div class="ginput_container ginput_container_pgr_national_id">
-				<input name="input_%d" id="%s" type="text" value="%s" class="pgr_national_id %s" %s %s %s %s />
+				<input name="input_%d" id="%s" type="text" value="%s" class="pgr_national_id %s" %s %s %s %s %s />
 			</div>',
 			$id,
 			$field_id,
@@ -228,7 +238,8 @@ class PGR_GF_Field_National_ID extends GF_Field {
 			$tabindex,
 			$logic_event,
 			$html_attrs,
-			$disabled
+			$disabled,
+			$data_attrs
 		);
 
 		if ( ! $is_form_editor && ! $is_entry_detail && $this->showLocation ) {
