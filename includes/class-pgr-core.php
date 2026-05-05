@@ -73,9 +73,8 @@ class PGR_Core {
 			return;
 		}
 
-		// Load modules (admin, national_id, persian_date)
+		// Load modules
 		$this->load_module( 'admin', 'PGR_Admin' );
-		$this->load_module( 'national_id', 'PGR_National_ID' );
 		$this->load_module( 'persian_date', 'PGR_Persian_Date' );
 
 		// Register core hooks
@@ -88,14 +87,13 @@ class PGR_Core {
 	 * @since 3.0.0
 	 */
 	private function register_core_hooks(): void {
-		// Admin assets
+		// Admin assets (only on GF pages)
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
-		// Frontend assets (only when needed)
+		// Frontend assets (only when needed – handled by PGR_Persian_Date and field itself)
+		// The National ID field already registers its own assets via gform_enqueue_scripts.
+		// We keep the frontend script enqueuing for Persian digit normalization in text fields (via form setting).
 		add_action( 'gform_enqueue_scripts', array( $this, 'frontend_enqueue_scripts' ), 10, 2 );
-
-		// Register custom field (National ID)
-		add_action( 'gform_loaded', array( $this, 'register_custom_field' ) );
 
 		// Per-form Persian formatting toggle
 		add_filter( 'gform_form_settings', array( $this, 'add_persian_formatting_setting' ), 10, 2 );
@@ -121,23 +119,23 @@ class PGR_Core {
 			return;
 		}
 
-		$script_asset = PGR_URL . 'assets/js/pgr-admin.js';
 		wp_enqueue_script(
 			'pgr-admin',
-			$script_asset,
+			PGR_URL . 'assets/js/pgr-admin.js',
 			array( 'jquery' ),
 			$this->get_asset_version( PGR_PATH . 'assets/js/pgr-admin.js' ),
 			true
 		);
 
+		$settings = get_option( 'pgr_settings', array() );
 		wp_localize_script( 'pgr-admin', 'PGRDefaults', array(
-			'forceEnglish'   => (bool) get_option( 'pgr_default_force_english', false ),
-			'liveValidation' => (bool) get_option( 'pgr_enable_nid_validation', false ),
+			'forceEnglish'   => ! empty( $settings['default_force_english'] ),
+			'liveValidation' => ! empty( $settings['enable_nid_validation'] ),
 		) );
 	}
 
 	/**
-	 * Enqueue frontend script only if form has National ID field or Persian formatting enabled.
+	 * Enqueue frontend script for Persian digit normalization (when form has pgr_enable=true).
 	 *
 	 * @since 3.0.0
 	 *
@@ -145,13 +143,9 @@ class PGR_Core {
 	 * @param bool  $is_ajax  Whether form is submitted via AJAX.
 	 */
 	public function frontend_enqueue_scripts( array $form, bool $is_ajax ): void {
-		$has_national_id = ! empty( GFCommon::get_fields_by_type( $form, array( 'ir_national_id', 'pgr_national_id' ) ) );
-		$has_persian_formatting = ! empty( $form['pgr_enable'] );
-
-		if ( ! $has_national_id && ! $has_persian_formatting ) {
+		if ( empty( $form['pgr_enable'] ) ) {
 			return;
 		}
-
 		wp_enqueue_script(
 			'pgr-frontend',
 			PGR_URL . 'assets/js/pgr-frontend.js',
@@ -159,17 +153,6 @@ class PGR_Core {
 			$this->get_asset_version( PGR_PATH . 'assets/js/pgr-frontend.js' ),
 			true
 		);
-	}
-
-	/**
-	 * Register the custom Gravity Forms field (National ID).
-	 *
-	 * @since 3.0.0
-	 */
-	public function register_custom_field(): void {
-		if ( class_exists( 'GF_Fields' ) && class_exists( 'PGR_GF_Field_National_ID' ) ) {
-			GF_Fields::register( new PGR_GF_Field_National_ID() );
-		}
 	}
 
 	/**
@@ -192,7 +175,7 @@ class PGR_Core {
 				</label>
 				<p class="description">' . esc_html__( 'If enabled, all text inputs will be normalized to English digits on submission.', 'persian-gravityforms-refactor' ) . '</p>
 			</td>
-		</tr>';
+			y e ';
 
 		if ( isset( $settings['Form Basics'] ) ) {
 			$settings['Form Basics'] .= $row;
