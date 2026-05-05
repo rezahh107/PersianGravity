@@ -11,8 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * PSR-4 inspired autoloader with explicit mapping for backwards compatibility.
+ * PSR-4 inspired autoloader with explicit mapping for special cases.
  * 
+ * Converts class name to file path: PGR_Example_Class -> class-pgr-example-class.php
+ * Searches in predefined directories.
+ *
  * @param string $class Class name to load.
  */
 spl_autoload_register( function( $class ) {
@@ -21,17 +24,17 @@ spl_autoload_register( function( $class ) {
         return;
     }
 
-    // 1. Try explicit map first (for special cases or legacy)
+    // Explicit mapping for classes that don't follow naming convention
     $map = array(
         'PGR_Admin'                => 'admin/class-pgr-admin.php',
         'PGR_Utils'                => 'includes/class-pgr-utils.php',
         'PGR_GF_Field_National_ID' => 'includes/fields/class-gf-field-national-id.php',
         'PGR_Core'                 => 'includes/class-pgr-core.php',
-        'PGR_National_ID'          => 'includes/class-pgr-national-id.php',
         'PGR_Persian_Date'         => 'includes/class-pgr-persian-date.php',
         'PGR_Installer'            => 'includes/class-pgr-installer.php',
     );
 
+    // Check explicit map first
     if ( isset( $map[ $class ] ) ) {
         $file = PGR_PATH . $map[ $class ];
         if ( file_exists( $file ) ) {
@@ -40,12 +43,12 @@ spl_autoload_register( function( $class ) {
         return;
     }
 
-    // 2. Dynamic conversion: PGR_Example_Class -> includes/class-pgr-example-class.php
+    // Dynamic conversion: PGR_Example_Class -> class-pgr-example-class.php
     // Remove prefix and convert underscores to hyphens
-    $relative_class = substr( $class, 4 ); // remove 'PGR_'
+    $relative_class = substr( $class, 4 ); // Remove 'PGR_'
     $relative_class = str_replace( '_', '-', strtolower( $relative_class ) );
     
-    // Possible directories to search (in order)
+    // Directories to search (ordered by priority)
     $directories = array(
         PGR_PATH . 'includes/',
         PGR_PATH . 'includes/fields/',
