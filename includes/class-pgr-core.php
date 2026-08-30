@@ -25,11 +25,11 @@ final class PGR_Core {
 		GF_Fields::register( new PGR_GF_Field_National_ID() );
 		PGR_GF_Field_National_ID::register_editor_hooks();
 
+		GF_Fields::register( new PGR_GF_Field_Jalali_Date() );
+		PGR_GF_Field_Jalali_Date::register_editor_hooks();
+
 		$admin = new PGR_Admin();
 		$admin->hooks();
-
-		$persian_date = new PGR_Persian_Date();
-		$persian_date->hooks();
 
 		$address = new PGR_Address();
 		$address->hooks();

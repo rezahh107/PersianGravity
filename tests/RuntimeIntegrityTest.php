@@ -20,44 +20,50 @@ final class RuntimeIntegrityTest extends TestCase {
 			'Officer',
 		);
 
-		$paths = array(
-			$root . '/persian-gravityforms.php',
-			$root . '/includes',
-			$root . '/admin',
-		);
-
-		foreach ( $paths as $path ) {
-			$files = is_dir( $path )
-				? new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS ) )
-				: array( new SplFileInfo( $path ) );
-
-			foreach ( $files as $file ) {
-				if ( ! $file->isFile() || 'php' !== $file->getExtension() ) {
-					continue;
-				}
-				$content = file_get_contents( $file->getPathname() );
-				foreach ( $forbidden as $needle ) {
-					$this->assertStringNotContainsString( $needle, $content, $file->getPathname() . ' contains forbidden legacy/project-specific code.' );
-				}
+		foreach ( $this->production_php_files( $root ) as $file ) {
+			$content = file_get_contents( $file );
+			foreach ( $forbidden as $needle ) {
+				$this->assertStringNotContainsString( $needle, $content, $file . ' contains forbidden legacy/project-specific code.' );
 			}
 		}
 	}
 
-	public function test_only_own_text_domain_is_used_by_production_php() {
-		$root      = dirname( __DIR__ );
-		$iterator  = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/includes', FilesystemIterator::SKIP_DOTS ) );
-		$php_files = array( $root . '/persian-gravityforms.php', $root . '/admin/class-pgr-admin.php' );
+	public function test_legacy_jalali_boundary_cannot_reappear() {
+		$root = dirname( __DIR__ );
+		$this->assertFileDoesNotExist( $root . '/assets/js/jalali-datepicker.js' );
+		$this->assertFileDoesNotExist( $root . '/assets/js/jalali-datepicker.min.js' );
+		$this->assertFileExists( $root . '/includes/fields/class-gf-field-jalali-date.php' );
 
+		foreach ( $this->production_php_files( $root ) as $file ) {
+			$content = file_get_contents( $file );
+			$this->assertStringNotContainsString( 'pgrJalali', $content, $file . ' reintroduces native Date Jalali mode.' );
+			$this->assertStringNotContainsString( 'jquery-ui-datepicker', $content, $file . ' reintroduces shared datepicker authority.' );
+			$this->assertStringNotContainsString( 'wp_deregister_script', $content, $file . ' deregisters a shared WordPress script handle.' );
+		}
+	}
+
+	public function test_only_own_text_domain_is_used_by_production_php() {
+		$root = dirname( __DIR__ );
+		foreach ( $this->production_php_files( $root ) as $file ) {
+			$content = file_get_contents( $file );
+			$this->assertStringNotContainsString( "'gravityforms'", $content );
+			$this->assertStringNotContainsString( 'load_textdomain_mofile', $content );
+		}
+	}
+
+	private function production_php_files( $root ) {
+		$php_files = array(
+			$root . '/persian-gravityforms.php',
+			$root . '/admin/class-pgr-admin.php',
+		);
+
+		$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/includes', FilesystemIterator::SKIP_DOTS ) );
 		foreach ( $iterator as $file ) {
 			if ( $file->isFile() && 'php' === $file->getExtension() ) {
 				$php_files[] = $file->getPathname();
 			}
 		}
 
-		foreach ( $php_files as $file ) {
-			$content = file_get_contents( $file );
-			$this->assertStringNotContainsString( "'gravityforms'", $content );
-			$this->assertStringNotContainsString( 'load_textdomain_mofile', $content );
-		}
+		return $php_files;
 	}
 }

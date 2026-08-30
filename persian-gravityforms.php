@@ -53,6 +53,7 @@ function pgr_initialize() {
 	require_once PGR_PATH . 'includes/class-pgr-currency.php';
 	require_once PGR_PATH . 'includes/class-pgr-persian-date.php';
 	require_once PGR_PATH . 'includes/fields/class-gf-field-national-id.php';
+	require_once PGR_PATH . 'includes/fields/class-gf-field-jalali-date.php';
 	require_once PGR_PATH . 'admin/class-pgr-admin.php';
 	require_once PGR_PATH . 'includes/class-pgr-core.php';
 

@@ -33,6 +33,7 @@ function esc_attr__( $text ) { return $text; }
 function __( $text ) { return $text; }
 function esc_html( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
 function esc_attr( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
+function esc_js( $text ) { return addslashes( (string) $text ); }
 function wp_json_encode( $value ) { return json_encode( $value ); }
 function rgar( $array, $key, $default = null ) { return is_array( $array ) && array_key_exists( $key, $array ) ? $array[ $key ] : $default; }
 function get_option( $key, $default = false ) { return $GLOBALS['pgr_test_options'][ $key ] ?? $default; }
@@ -49,6 +50,4 @@ function settings_fields() {}
 function do_settings_sections() {}
 function submit_button() {}
 function wp_enqueue_script( $handle ) { $GLOBALS['pgr_test_enqueued'][] = $handle; }
-function wp_deregister_script() {}
-function wp_register_script() {}
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ] ); }

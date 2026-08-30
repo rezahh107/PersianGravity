@@ -11,7 +11,7 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up PHP 8.3
         uses: shivammathur/setup-php@v2
@@ -38,9 +38,11 @@ jobs:
           test ! -d src
           test ! -d assets/fonts
           test ! -f persian-gravityforms-refactor.php
-          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter' persian-gravityforms.php includes admin
+          test ! -f assets/js/jalali-datepicker.js
+          test ! -f assets/js/jalali-datepicker.min.js
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
           test -f includes/fields/class-gf-field-national-id.php
-          test -f assets/js/jalali-datepicker.min.js
+          test -f includes/fields/class-gf-field-jalali-date.php
 
   unit:
     runs-on: ubuntu-latest
@@ -49,7 +51,7 @@ jobs:
       matrix:
         php: ['8.2', '8.3', '8.4', '8.5']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2

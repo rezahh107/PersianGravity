@@ -1,10 +1,6 @@
 <?php
 /**
- * Bounded Jalali date support for Gravity Forms date fields.
- *
- * Storage semantics: the submitted Jalali date remains in the field's configured
- * Gravity Forms date order and is normalized to ASCII digits before persistence.
- * No implicit Gregorian conversion is performed.
+ * Pure Jalali parsing, validation, persistence, and display helpers.
  *
  * @package PersianGravityForms
  */
@@ -13,164 +9,59 @@ defined( 'ABSPATH' ) || exit;
 
 final class PGR_Persian_Date {
 
-	/**
-	 * Register current Gravity Forms hooks.
-	 *
-	 * @return void
-	 */
-	public function hooks() {
-		add_action( 'gform_enqueue_scripts', array( $this, 'enqueue_datepicker' ), 10, 2 );
-		add_action( 'gform_field_standard_settings', array( $this, 'render_field_setting' ), 10, 2 );
-		add_action( 'gform_editor_js', array( $this, 'render_editor_script' ) );
-		add_filter( 'gform_field_validation', array( $this, 'validate_field' ), 10, 4 );
-		add_filter( 'gform_save_field_value', array( $this, 'normalize_saved_value' ), 10, 5 );
-	}
+	const DEFAULT_FORMAT = 'ymd_slash';
 
 	/**
-	 * Replace the jQuery UI datepicker implementation only for a form containing
-	 * a date field explicitly configured for Jalali input.
+	 * Return supported Jalali presentation/input format identifiers.
 	 *
-	 * @param array $form    Current form.
-	 * @param bool  $is_ajax Whether the form uses AJAX.
-	 * @return void
-	 */
-	public function enqueue_datepicker( $form, $is_ajax ) {
-		unset( $is_ajax );
-
-		if ( ! $this->form_uses_jalali( $form ) ) {
-			return;
-		}
-
-		wp_deregister_script( 'jquery-ui-datepicker' );
-		wp_register_script(
-			'jquery-ui-datepicker',
-			PGR_URL . 'assets/js/jalali-datepicker.min.js',
-			array( 'jquery', 'jquery-ui-core' ),
-			PGR_VERSION,
-			true
-		);
-		wp_enqueue_script( 'jquery-ui-datepicker' );
-	}
-
-	/**
-	 * Add a Jalali opt-in property to Gravity Forms date fields.
-	 *
-	 * @param int $position Settings position.
-	 * @param int $form_id  Current form ID.
-	 * @return void
-	 */
-	public function render_field_setting( $position, $form_id ) {
-		unset( $form_id );
-
-		if ( 25 !== $position ) {
-			return;
-		}
-		?>
-		<li class="pgr_jalali_setting field_setting">
-			<input type="checkbox" id="pgr_jalali" onclick="SetFieldProperty('pgrJalali', this.checked);" />
-			<label for="pgr_jalali" class="inline">
-				<?php esc_html_e( 'Use Jalali (Persian) calendar', 'persian-gravityforms' ); ?>
-			</label>
-		</li>
-		<?php
-	}
-
-	/**
-	 * Attach the custom field setting to Gravity Forms date fields.
-	 *
-	 * @return void
-	 */
-	public function render_editor_script() {
-		?>
-		<script type="text/javascript">
-			jQuery(function($) {
-				if (typeof fieldSettings !== 'undefined' && typeof fieldSettings.date === 'string' && fieldSettings.date.indexOf('.pgr_jalali_setting') === -1) {
-					fieldSettings.date += ', .pgr_jalali_setting';
-				}
-				$(document).on('gform_load_field_settings', function(event, field) {
-					$('#pgr_jalali').prop('checked', field.pgrJalali === true);
-				});
-			});
-		</script>
-		<?php
-	}
-
-	/**
-	 * Validate a Jalali date field without changing unrelated Gravity Forms dates.
-	 *
-	 * @param array    $result Current validation result.
-	 * @param mixed    $value  Submitted value.
-	 * @param array    $form   Current form.
-	 * @param GF_Field $field  Current field.
 	 * @return array
 	 */
-	public function validate_field( $result, $value, $form, $field ) {
-		unset( $form );
-
-		if ( ! is_object( $field ) || 'date' !== $field->type || empty( $field->pgrJalali ) ) {
-			return $result;
-		}
-
-		if ( empty( $result['is_valid'] ) || '' === trim( (string) $value ) ) {
-			return $result;
-		}
-
-		$parts = self::parse_date( (string) $value, (string) $field->dateFormat );
-		if ( false === $parts || ! self::is_valid_date( $parts['year'], $parts['month'], $parts['day'] ) ) {
-			$result['is_valid'] = false;
-			$result['message']  = esc_html__( 'Enter a valid Jalali (Persian) date.', 'persian-gravityforms' );
-		}
-
-		return $result;
+	public static function supported_formats() {
+		return array(
+			'mdy',
+			'dmy',
+			'dmy_dash',
+			'dmy_dot',
+			'ymd_slash',
+			'ymd_dash',
+			'ymd_dot',
+		);
 	}
 
 	/**
-	 * Normalize digits before a Jalali field is persisted.
+	 * Normalize an unknown format identifier to a supported value.
 	 *
-	 * @param mixed    $value    Value about to be saved.
-	 * @param array    $entry    Current entry.
-	 * @param GF_Field $field    Current field.
-	 * @param array    $form     Current form.
-	 * @param mixed    $input_id Current input ID.
-	 * @return mixed
+	 * @param mixed $format Format identifier.
+	 * @return string
 	 */
-	public function normalize_saved_value( $value, $entry, $field, $form, $input_id ) {
-		unset( $entry, $form, $input_id );
-
-		if ( ! is_object( $field ) || 'date' !== $field->type || empty( $field->pgrJalali ) || ! is_string( $value ) ) {
-			return $value;
-		}
-
-		return PGR_Utils::normalize_digits( $value );
+	public static function normalize_format( $format ) {
+		$format = is_string( $format ) ? $format : '';
+		return in_array( $format, self::supported_formats(), true ) ? $format : self::DEFAULT_FORMAT;
 	}
 
 	/**
-	 * Determine whether a form contains at least one Jalali date field.
+	 * Parse a Jalali date according to the dedicated field format.
 	 *
-	 * @param array $form Current form.
-	 * @return bool
-	 */
-	public function form_uses_jalali( $form ) {
-		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
-			if ( is_object( $field ) && 'date' === $field->type && ! empty( $field->pgrJalali ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Parse the three date components using Gravity Forms' configured date order.
-	 *
-	 * @param string $value  Date value.
-	 * @param string $format Gravity Forms date format.
+	 * @param mixed  $value  User-facing Jalali date.
+	 * @param string $format Format identifier.
 	 * @return array|false
 	 */
-	public static function parse_date( $value, $format ) {
-		$value = trim( PGR_Utils::normalize_digits( $value ) );
+	public static function parse_input( $value, $format ) {
+		if ( ! is_string( $value ) ) {
+			return false;
+		}
 
-		if ( ! preg_match( '/^(\d{1,4})[^\d]+(\d{1,2})[^\d]+(\d{1,4})$/', $value, $matches ) ) {
+		$value  = trim( PGR_Utils::normalize_digits( $value ) );
+		$format = self::normalize_format( $format );
+
+		if ( '' === $value ) {
+			return false;
+		}
+
+		$separator = self::separator_for_format( $format );
+		$pattern   = '/^(\d{1,4})' . preg_quote( $separator, '/' ) . '(\d{1,2})' . preg_quote( $separator, '/' ) . '(\d{1,4})$/';
+
+		if ( ! preg_match( $pattern, $value, $matches ) ) {
 			return false;
 		}
 
@@ -179,21 +70,88 @@ final class PGR_Persian_Date {
 		$third  = (int) $matches[3];
 
 		if ( 'mdy' === $format ) {
-			return array( 'year' => $third, 'month' => $first, 'day' => $second );
+			$parts = array( 'year' => $third, 'month' => $first, 'day' => $second );
+		} elseif ( 0 === strpos( $format, 'dmy' ) ) {
+			$parts = array( 'year' => $third, 'month' => $second, 'day' => $first );
+		} else {
+			$parts = array( 'year' => $first, 'month' => $second, 'day' => $third );
 		}
 
-		if ( 'dmy' === $format ) {
-			return array( 'year' => $third, 'month' => $second, 'day' => $first );
+		return self::is_valid_date( $parts['year'], $parts['month'], $parts['day'] ) ? $parts : false;
+	}
+
+	/**
+	 * Convert accepted Jalali input to the sole persisted representation.
+	 *
+	 * @param mixed  $value  User-facing Jalali date.
+	 * @param string $format Format identifier.
+	 * @return string|null
+	 */
+	public static function canonicalize( $value, $format ) {
+		if ( null === $value || ( is_string( $value ) && '' === trim( $value ) ) ) {
+			return '';
 		}
 
-		return array( 'year' => $first, 'month' => $second, 'day' => $third );
+		$parts = self::parse_input( $value, $format );
+		if ( false === $parts ) {
+			return null;
+		}
+
+		return sprintf( '%04d-%02d-%02d', $parts['year'], $parts['month'], $parts['day'] );
+	}
+
+	/**
+	 * Parse canonical ASCII YYYY-MM-DD Jalali storage without Gregorian interpretation.
+	 *
+	 * @param mixed $value Stored Jalali value.
+	 * @return array|false
+	 */
+	public static function parse_canonical( $value ) {
+		if ( ! is_string( $value ) || ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches ) ) {
+			return false;
+		}
+
+		$parts = array(
+			'year'  => (int) $matches[1],
+			'month' => (int) $matches[2],
+			'day'   => (int) $matches[3],
+		);
+
+		return self::is_valid_date( $parts['year'], $parts['month'], $parts['day'] ) ? $parts : false;
+	}
+
+	/**
+	 * Format canonical Jalali storage for human-readable output.
+	 *
+	 * @param mixed  $canonical Canonical Jalali value.
+	 * @param string $format    Presentation format identifier.
+	 * @return string|null
+	 */
+	public static function format_canonical( $canonical, $format ) {
+		$parts = self::parse_canonical( $canonical );
+		if ( false === $parts ) {
+			return null;
+		}
+
+		$format    = self::normalize_format( $format );
+		$separator = self::separator_for_format( $format );
+		$year      = sprintf( '%04d', $parts['year'] );
+		$month     = sprintf( '%02d', $parts['month'] );
+		$day       = sprintf( '%02d', $parts['day'] );
+
+		if ( 'mdy' === $format ) {
+			return $month . $separator . $day . $separator . $year;
+		}
+
+		if ( 0 === strpos( $format, 'dmy' ) ) {
+			return $day . $separator . $month . $separator . $year;
+		}
+
+		return $year . $separator . $month . $separator . $day;
 	}
 
 	/**
 	 * Validate a Jalali calendar date.
-	 *
-	 * The leap-year rule is the compact 33-year rule already used by the retained
-	 * Persian calendar implementation, isolated here and covered by tests.
 	 *
 	 * @param int $year  Jalali year.
 	 * @param int $month Jalali month.
@@ -221,7 +179,7 @@ final class PGR_Persian_Date {
 	}
 
 	/**
-	 * Return whether a Jalali year is leap under the retained JDF 33-year rule.
+	 * Return whether a Jalali year is leap under the retained bounded 33-year rule.
 	 *
 	 * @param int $year Jalali year.
 	 * @return bool
@@ -229,5 +187,23 @@ final class PGR_Persian_Date {
 	public static function is_leap_year( $year ) {
 		$remainder = (int) $year % 33;
 		return ( $remainder % 4 ) - 1 === (int) ( $remainder * 0.05 );
+	}
+
+	/**
+	 * Return the separator owned by a format identifier.
+	 *
+	 * @param string $format Normalized format identifier.
+	 * @return string
+	 */
+	private static function separator_for_format( $format ) {
+		if ( false !== strpos( $format, '_dash' ) ) {
+			return '-';
+		}
+
+		if ( false !== strpos( $format, '_dot' ) ) {
+			return '.';
+		}
+
+		return '/';
 	}
 }
