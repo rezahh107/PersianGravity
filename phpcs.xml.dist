@@ -8,6 +8,11 @@
 	<exclude-pattern>vendor/*</exclude-pattern>
 	<rule ref="WordPress-Core" />
 	<rule ref="WordPress-Extra" />
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<!-- These two filenames are explicit stable loader paths; filename-only renames add no runtime value. -->
+		<exclude-pattern>includes/fields/class-gf-field-national-id.php</exclude-pattern>
+		<exclude-pattern>includes/fields/class-gf-field-jalali-date.php</exclude-pattern>
+	</rule>
 	<arg name="extensions" value="php" />
 	<arg value="ps" />
 </ruleset>

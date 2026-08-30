@@ -131,6 +131,7 @@ final class PGR_Core {
 		unset( $is_ajax );
 
 		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
 			if ( is_object( $field ) && 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
 				wp_enqueue_script(
 					'pgr-frontend',

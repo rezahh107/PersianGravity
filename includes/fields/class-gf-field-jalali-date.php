@@ -145,9 +145,10 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 		$is_admin        = $is_entry_detail || $is_form_editor;
 		$field_id        = $is_admin || 0 === $form_id ? 'input_' . absint( $this->id ) : 'input_' . $form_id . '_' . absint( $this->id );
 		$disabled        = $is_form_editor ? ' disabled="disabled"' : '';
-		$required        = $this->isRequired ? ' aria-required="true"' : '';
-		$invalid         = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
-		$placeholder     = $this->get_field_placeholder_attribute();
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+		$required    = $this->isRequired ? ' aria-required="true"' : '';
+		$invalid     = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
+		$placeholder = $this->get_field_placeholder_attribute();
 
 		return sprintf(
 			'<div class="ginput_container ginput_container_pgr_jalali_date"><input name="input_%1$d" id="%2$s" type="text" value="%3$s" class="%4$s" inputmode="numeric" autocomplete="off"%5$s%6$s%7$s %8$s /></div>',
@@ -177,9 +178,12 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 		}
 
 		if ( null === PGR_Persian_Date::canonicalize( $value, $this->get_jalali_format() ) ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+			$error_message = $this->errorMessage;
+
 			$this->failed_validation  = true;
-			$this->validation_message = ! empty( $this->errorMessage )
-				? $this->errorMessage
+			$this->validation_message = ! empty( $error_message )
+				? $error_message
 				: esc_html__( 'Enter a valid Jalali (Persian) date.', 'persian-gravityforms' );
 		}
 	}

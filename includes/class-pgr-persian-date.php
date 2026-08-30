@@ -70,11 +70,23 @@ final class PGR_Persian_Date {
 		$third  = (int) $matches[3];
 
 		if ( 'mdy' === $format ) {
-			$parts = array( 'year' => $third, 'month' => $first, 'day' => $second );
+			$parts = array(
+				'year'  => $third,
+				'month' => $first,
+				'day'   => $second,
+			);
 		} elseif ( 0 === strpos( $format, 'dmy' ) ) {
-			$parts = array( 'year' => $third, 'month' => $second, 'day' => $first );
+			$parts = array(
+				'year'  => $third,
+				'month' => $second,
+				'day'   => $first,
+			);
 		} else {
-			$parts = array( 'year' => $first, 'month' => $second, 'day' => $third );
+			$parts = array(
+				'year'  => $first,
+				'month' => $second,
+				'day'   => $third,
+			);
 		}
 
 		return self::is_valid_date( $parts['year'], $parts['month'], $parts['day'] ) ? $parts : false;

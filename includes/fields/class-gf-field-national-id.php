@@ -13,6 +13,7 @@ final class PGR_GF_Field_National_ID extends GF_Field {
 	public $type = 'pgr_national_id';
 
 	/** @var bool */
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
 	public $forceEnglish = true;
 
 	/**
@@ -140,9 +141,11 @@ final class PGR_GF_Field_National_ID extends GF_Field {
 		$is_admin        = $is_entry_detail || $is_form_editor;
 		$field_id        = $is_admin || 0 === $form_id ? 'input_' . absint( $this->id ) : 'input_' . $form_id . '_' . absint( $this->id );
 		$disabled        = $is_form_editor ? ' disabled="disabled"' : '';
-		$required        = $this->isRequired ? ' aria-required="true"' : '';
-		$invalid         = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
-		$force_english   = $this->forceEnglish ? ' data-pgr-normalize-digits="1"' : '';
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+		$required = $this->isRequired ? ' aria-required="true"' : '';
+		$invalid  = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
+		$force_english = $this->forceEnglish ? ' data-pgr-normalize-digits="1"' : '';
 
 		return sprintf(
 			'<div class="ginput_container ginput_container_pgr_national_id"><input name="input_%1$d" id="%2$s" type="text" value="%3$s" class="%4$s" inputmode="numeric" maxlength="10" autocomplete="off"%5$s%6$s%7$s%8$s /></div>',
@@ -169,9 +172,12 @@ final class PGR_GF_Field_National_ID extends GF_Field {
 		unset( $form );
 
 		if ( ! PGR_Utils::is_valid_iran_national_id( $value ) ) {
-			$this->failed_validation = true;
-			$this->validation_message = ! empty( $this->errorMessage )
-				? $this->errorMessage
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+			$error_message = $this->errorMessage;
+
+			$this->failed_validation  = true;
+			$this->validation_message = ! empty( $error_message )
+				? $error_message
 				: esc_html__( 'Enter a valid 10-digit Iranian National ID.', 'persian-gravityforms' );
 		}
 	}
