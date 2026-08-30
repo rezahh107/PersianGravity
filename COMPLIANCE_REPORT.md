@@ -1,83 +1,124 @@
-# Persian Gravity Forms Refactor — AGENTS.md Compliance Report
+# Persian Gravity Forms v4 — Runtime Compliance & Validation Snapshot
 
-## 1. Repository Structure
-| Area | Status | Notes | Suggestion |
-| --- | --- | --- | --- |
-| Entry file & metadata | ❌ | Legacy bootstrap lives in `index.php:3-45`; required `persian-gravityforms-refactor.php`, `PGR_VERSION`, slug `persian-gravityforms-refactor`, and text-domain header are missing. | Create `persian-gravityforms-refactor.php` at the root with the canonical header (version 1.0.0, text domain, domain path) and define `PGR_VERSION`, then require legacy bootstrap for backward compatibility. |
-| Admin module directory | ❌ | Root listing has no `admin/` directory; admin UI logic is embedded in `includes/class-admin.php:5-131`, violating AGENTS §2 separation. | Move settings/dashboard controllers into `admin/` with loader classes and limit `includes/` to core runtime classes. |
-| assets/css separation | ❌ | `assets/css/` only contains legacy files (`rtl-admin.css`, `font-admin.css`); mandated `pgr-admin.css` and `pgr-frontend.css` do not exist. | Split admin/frontend styles into `assets/css/pgr-admin.css` and `assets/css/pgr-frontend.css`, migrate relevant rules, and update enqueue handles. |
-| assets/js modules | ❌ | `assets/js/` lacks the prescribed `pgr-admin.js` and frontend bundles; only legacy scripts like `national_id.js` are present. | Introduce `assets/js/pgr-admin.js`/`pgr-frontend.js` wrapped in AGENTS-compliant IIFEs and enqueue them conditionally. |
-| Translation assets | ❌ | `languages/` holds third-party `.mo` trees but no `languages/persian-gravityforms-refactor.pot`. | Generate `languages/persian-gravityforms-refactor.pot` via `wp i18n make-pot` and add project-specific `.po/.mo` files. |
-| Autoloader contract | ❌ | `composer.json:8-11` maps the PSR-4 namespace `PersianGravityForms\` instead of providing the required SPL autoloader for `PGR_` classes. | Replace the PSR-4 entry with an SPL autoloader (e.g., `includes/autoload.php`) that resolves all `PGR_` prefixed classes. |
-| tests/ coverage | ⚠️ | `tests/` exists but only exercises `src/` services (e.g., `tests/Core/PluginTest.php`); legacy `includes/` classes remain untested. | Expand PHPUnit coverage or add manual verification notes for the refactored entrypoint and admin flows per AGENTS §10. |
+Status date: `2026-08-31`
 
-## 2. Code Standards
-| Area | Status | Notes | Suggestion |
-| --- | --- | --- | --- |
-| PHP class prefix | ❌ | Classes such as `GFPersian_Admin` in `includes/class-admin.php:5` and `PersianGravityForms\Core\Plugin` in `src/Core/Plugin.php:14` ignore the mandated `PGR_` prefix. | Rename classes and files to the `PGR_` prefix (`class-pgr-admin.php`, `PGR_Admin`, etc.) and align references accordingly. |
-| Comparison style | ❌ | Multiple literal comparisons use non-Yoda order, e.g., `includes/class-admin.php:20` and `includes/class-core.php:83`. | Refactor conditionals to Yoda style (`'1' === $this->option(...)`) across PHP sources. |
-| Indentation standard | ⚠️ | Modern files (`src/Core/Plugin.php:15-33`) use four-space indentation contrary to the “tabs for indentation” rule. | Reformat PHP files to tab indentation while keeping spaces for alignment. |
-| Superglobal handling | ❌ | `includes/class-national-id.php:418-428` writes directly to `$_POST` without sanitizing or validating per AGENTS §4. | Introduce sanitized setters (e.g., `sanitize_text_field`) before mutating globals and document the behavior. |
-| Output escaping | ⚠️ | Admin markup in `includes/class-admin.php:93-109` echoes URLs and attributes without `esc_url`/`esc_attr`. | Escape all dynamic output in admin views to satisfy WordPress coding standards. |
-| JS module encapsulation | ❌ | `assets/js/national_id.js:1-34` defines globals instead of using an IIFE tied to `window.PGR`. | Wrap scripts in `(function ( $ ) { 'use strict'; ... })( jQuery );` and expose only the approved namespace. |
-| CSS scoping | ❌ | Styles like `assets/css/rtl-admin.css:1-37` target broad selectors without the `.pgr-` prefix, risking conflicts. | Rework selectors to prepend `.pgr-` or scoped containers and ensure RTL support via logical properties. |
+This file replaces the obsolete pre-v4 compliance report. It describes the current `4.0.0` architecture and validation state only.
 
-## 3. Security Checks
-| Area | Status | Notes | Suggestion |
-| --- | --- | --- | --- |
-| Nonce enforcement | ❌ | No project PHP file calls `wp_verify_nonce`; settings handlers in `includes/class-settings.php:30-110` rely solely on GFAddOn defaults. | Add nonce fields to admin forms and verify them before processing state changes or AJAX actions. |
-| Direct access guards | ❌ | Refactored classes under `src/` (e.g., `src/Core/Plugin.php:1-35`) lack the required `defined( 'ABSPATH' )` guard. | Prepend guard clauses or ensure autoloaded files exit early when accessed directly. |
-| User input sanitization | ❌ | `includes/class-national-id.php:418-428` mutates `$_POST` values without sanitization, and `src/Services/CurrencyService.php:52-57` outputs formatted values without escaping. | Sanitize inputs via `sanitize_text_field`/`absint` and escape outputs with `esc_html` before rendering. |
-| Database query hygiene | ⚠️ | `includes/class-core.php:73-84` executes `$wpdb->query()` with interpolated table names and fragments. | Wrap dynamic SQL in `$wpdb->prepare()` and centralize migration routines to prevent accidental injections. |
+## Executive status
 
-### Additional Domain Observations
-- **Performance — ⚠️**: `includes/class-core.php:122-156` instantiates every feature class on each load regardless of settings, and no transients/cache are used for repeated GF lookups. Introduce lazy-loading and transient caching per AGENTS §6.
-- **Internationalization — ❌**: Plugin header lacks `Text Domain`; numerous strings (`includes/class-core.php:32-110`, `includes/class-national-id.php:30-200`, `src/Services/NationalIdService.php:26-33`) are not wrapped in translation functions or use the legacy `persian-gravity-forms` domain. Standardize on `persian-gravityforms-refactor` and wrap all user-facing strings.
-- **Accessibility — ❌**: Admin widgets (`includes/class-admin.php:91-109`) render images without `alt` text and inject markup via JS without focus management; additional form elements lack explicit labels beyond Gravity Forms defaults. Add `alt`/`aria` attributes and keyboard support per AGENTS §8.
-- **Licensing — ⚠️**: `index.php` omits license headers, and `readme.txt:22-24` cites “GPL 2” instead of “GPLv2 or later” required by AGENTS §9. Update headers and ensure bundled font licenses are documented alongside GPL compatibility.
-- **Release & versioning — ❌**: Version constants mismatch (`index.php:6` is `2.9.0-beta`, `readme.txt:22` is `2.8.0`); `GF_PERSIAN_VERSION` supersedes the required `PGR_VERSION`, and no release checklist artifacts are documented. Align versions, introduce `PGR_VERSION`, and document release steps.
+The repository has been consolidated to one canonical `PGR_*` runtime. The previous parallel `src/PersianGravityForms/*` architecture, `GFPersian_*` legacy runtime, historical National ID compatibility layers, bundled font systems, payment/RSS baggage, and external-plugin translation interception are no longer part of the active product.
 
-## 4. Missing Components
-- [ ] `persian-gravityforms-refactor.php` — canonical entry file with updated plugin header, `PGR_VERSION`, and autoloader bootstrap (root).
-- [ ] `includes/autoload.php` — SPL autoloader mapping for `PGR_` classes to satisfy AGENTS §1.
-- [ ] `admin/` module — dedicated controllers/views for settings with nonce checks and capability gating.
-- [ ] `assets/css/pgr-admin.css` & `assets/css/pgr-frontend.css` — scoped styles using `.pgr-` prefixes and RTL-aware logical properties.
-- [ ] `assets/js/pgr-admin.js` & `assets/js/pgr-frontend.js` — ES5 IIFEs under `window.PGR` handling admin/front interactions.
-- [ ] `languages/persian-gravityforms-refactor.pot` — generated POT plus localized `.po/.mo` files.
-- [ ] Nonce and sanitization layer — add nonce fields plus `wp_verify_nonce` handling in admin save routines (e.g., new `admin/class-pgr-admin.php`).
-- [ ] Escaping & sanitization audit — refactor legacy output (e.g., `includes/class-admin.php`, `src/Services/CurrencyService.php`) to use `esc_*` helpers.
+Repository CI on the v4 refactor has passed its configured quality and PHPUnit jobs. This does **not** mean every browser/UI path has been integration-tested against a licensed real Gravity Forms installation.
 
-## 5. Overall Compliance Score: 22% ❌
-| Domain | Status | Evidence | Required Action |
-| --- | --- | --- | --- |
-| Repository structure | ❌ | Missing canonical entry file, admin directory, and mandated asset layout (`index.php:3-45`, `assets/`, `languages/`). | Restructure directories and add required files per AGENTS §1-2. |
-| Coding standards | ❌ | Legacy prefixes (`includes/class-admin.php:5`), non-Yoda comparisons, unsanitized globals, and unscoped CSS/JS. | Rename classes, enforce Yoda comparisons, sanitize/escape data, and scope assets under `.pgr-`/`window.PGR`. |
-| Security | ❌ | No nonce verification, missing `ABSPATH` guards in `src/`, direct `$_POST` mutations. | Implement nonces, guards, sanitization, and prepared statements across admin flows. |
-| Performance | ⚠️ | All services load eagerly (`includes/class-core.php:122-156`); no caching of repeated Gravity Forms data. | Introduce lazy-loading and transient caching around expensive hooks/queries. |
-| Internationalization | ❌ | Absent text domain in header, untranslated strings, inconsistent domains (`src/Services/NationalIdService.php:26-33`). | Standardize on `persian-gravityforms-refactor` and wrap every string with translation helpers. |
-| Accessibility | ❌ | Admin markup lacks `alt`/`aria` attributes (`includes/class-admin.php:103-107`) and JS inserts controls without focus cues. | Add accessible labels, `aria` attributes, and keyboard handling for injected UI. |
-| Licensing | ⚠️ | License header missing; `readme.txt:22-24` cites GPL 2 without “or later”; bundled fonts require compatibility notice. | Update headers/readme to GPLv2+, document third-party licenses alongside assets. |
-| Release & versioning | ❌ | Version mismatch (`index.php:6`, `readme.txt:22`), missing `PGR_VERSION`, no release checklist artifacts. | Sync version constants, add `PGR_VERSION`, document release steps, and regenerate translation files. |
+## Current repository contract
 
-## Summary Classification
-### ✅ Full Compliance
-- None — every audited domain requires remediation.
+| Area | Current status | Evidence/contract |
+| --- | --- | --- |
+| Entrypoint | PASS | `persian-gravityforms.php` |
+| Plugin version | PASS | `4.0.0` |
+| Text domain | PASS | `persian-gravityforms` |
+| WordPress minimum | PASS | `6.7` |
+| PHP minimum | PASS | `8.2` |
+| Gravity Forms minimum | PASS | `3.0` |
+| Canonical runtime | PASS | one `PGR_*` runtime |
+| Parallel `src/` runtime | PASS | absent |
+| Historical `GFPersian_*` runtime | PASS | absent |
+| National ID implementation | PASS | one `GF_Field`: `pgr_national_id` |
+| Jalali implementation | PASS at code/unit level | one `GF_Field`: `pgr_jalali_date` |
+| Typography ownership | PASS | general font assets removed |
+| External translation interception | PASS | not part of current runtime |
+| SRWF business logic | PASS | out of scope / absent |
 
-### ⚠️ Partial Compliance
-- Direct-access guards exist in legacy `includes/*.php`, but new `src/` classes must adopt the same pattern.
-- Some accessibility attributes are present in `includes/class-national-id.php:300-337`, yet coverage is incomplete.
+## Current Gravity Forms integration
 
-### ❌ Missing
-- Canonical entry file with `PGR_` bootstrap and version constant.
-- Project-specific admin/frontend assets (`pgr-admin.css/js`, `pgr-frontend.css/js`).
-- Nonce validation and sanitization for admin actions.
-- Translation infrastructure (`persian-gravityforms-refactor.pot` and corrected text domains).
-- Release/version governance aligning code, constants, and documentation.
+The v4 runtime uses supported public integration surfaces including:
 
----
-**Recommended Next Steps:**
-1. Stand up the new `persian-gravityforms-refactor.php` entry file, introduce `PGR_VERSION`, and align the autoloader with `PGR_`-prefixed classes.
-2. Restructure admin assets and controllers into dedicated `admin/` modules, adding nonce verification and sanitized handlers.
-3. Refactor JS/CSS assets into scoped `pgr-*` bundles and wrap scripts in `window.PGR` IIFEs.
-4. Perform an i18n/accessibility sweep: wrap all strings with translation calls, fix text domains, add `alt`/`aria`, and regenerate `languages/persian-gravityforms-refactor.pot`.
-5. Harmonize release metadata (version numbers, README, changelog) and document a repeatable release checklist per AGENTS §11.
+- `gform_loaded`
+- `GF_Field`
+- `GF_Fields::register()`
+- `gform_form_settings_fields`
+- `gform_save_field_value`
+- `gform_value_pre_duplicate_check`
+- `gform_enqueue_scripts`
+
+Removed pre-v4 architecture must not be reintroduced merely for historical compatibility.
+
+## Field status
+
+### Iranian National ID
+
+Current contract:
+
+- custom field type `pgr_national_id`;
+- server-side Persian/Arabic digit normalization;
+- server-side Iranian National ID checksum validation;
+- canonical ten-digit ASCII persistence;
+- Gravity Forms native duplicate-check integration;
+- optional typing-time normalization as UX only.
+
+### Jalali Date
+
+Current contract:
+
+- custom field type `pgr_jalali_date`;
+- server-side Jalali parsing/validation;
+- canonical ASCII `YYYY-MM-DD` persistence with Jalali semantics;
+- multiple field-owned presentation formats;
+- no implicit Gregorian conversion;
+- no override of the ordinary Gravity Forms Date field.
+
+## CI status
+
+The current workflow is designed to run:
+
+### Quality job
+
+- Composer dependency installation
+- syntax check against shipped PHP
+- WordPress Coding Standards
+- PHPCompatibility baseline
+- runtime-integrity guard
+
+### Unit jobs
+
+PHP matrix:
+
+- `8.2`
+- `8.3`
+- `8.4`
+- `8.5`
+
+The refactor branch and post-merge `main` workflow were observed completing successfully on `2026-08-30`.
+
+## Evidence boundary
+
+The following distinctions are mandatory:
+
+- CI/unit success proves the configured automated checks passed.
+- Stubbed Gravity Forms tests do not prove full licensed Gravity Forms integration.
+- Seeing a field in the Gravity Forms editor proves field registration, not all frontend behavior.
+- Browser rendering, entry save/load, AJAX behavior, and real editor interactions require real integration evidence when changed.
+
+## Remaining validation focus
+
+At the current v4 baseline, the main non-CI validation concern is real WordPress + Gravity Forms integration, especially when modifying:
+
+- Jalali field frontend behavior;
+- entry display/edit behavior;
+- format persistence and round-trips;
+- National ID duplicate behavior;
+- AJAX/multi-page forms;
+- Gravity Forms editor-specific behavior.
+
+These are not evidence of defects. They are validation surfaces that CI alone cannot close.
+
+## Governance
+
+The active architecture and contribution rules are defined by:
+
+- `README.md`
+- `AGENTS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/VALIDATION.md`
+
+Historical plans and pre-v4 compliance percentages must not be treated as current repository truth.
