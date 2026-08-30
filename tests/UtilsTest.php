@@ -9,7 +9,7 @@ final class UtilsTest extends TestCase {
 	public function test_normalizes_persian_arabic_and_mixed_digits() {
 		$this->assertSame( '0123456789', PGR_Utils::normalize_digits( '۰۱۲۳۴۵۶۷۸۹' ) );
 		$this->assertSame( '0123456789', PGR_Utils::normalize_digits( '٠١٢٣٤٥٦٧٨٩' ) );
-		$this->assertSame( 'A1۲٣4', PGR_Utils::normalize_digits( 'A1۲٣4' ) );
+		$this->assertSame( 'A1234', PGR_Utils::normalize_digits( 'A1۲٣4' ) );
 		$this->assertSame( '', PGR_Utils::normalize_digits( '' ) );
 		$this->assertSame( 123, PGR_Utils::normalize_digits( 123 ) );
 	}
