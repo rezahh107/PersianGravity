@@ -1,0 +1,13 @@
+/.git
+/.github
+/.devcontainer
+/tests
+/vendor
+/.phpunit.cache
+/composer.json
+/composer.lock
+/phpcs.xml.dist
+/phpunit.xml.dist
+/AGENTS.md
+/COMPLIANCE_REPORT.md
+/سند بازنویسی Persian Gravity Forms Refactor.md

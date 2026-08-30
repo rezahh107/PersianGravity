@@ -1,28 +1,44 @@
 <?php
 /**
- * Gravity Forms Custom Field: Iranian National ID
+ * Gravity Forms field for Iranian National ID values.
  *
- * @package PersianGravityFormsRefactor
- * @since   3.0.0
+ * @package PersianGravityForms
  */
 
 defined( 'ABSPATH' ) || exit;
 
-class PGR_GF_Field_National_ID extends GF_Field {
+final class PGR_GF_Field_National_ID extends GF_Field {
 
+	/** @var string */
 	public $type = 'pgr_national_id';
-	public $showLocation = false;
-	public $showSeperator = false;
-	public $forceEnglish = false;
-	public $notDigitError   = '';
-	public $qtyDigitError   = '';
-	public $isInvalidError  = '';
-	public $duplicateError  = '';
 
-	public function get_form_editor_field_title() {
-		return esc_html__( 'Iranian National ID', 'persian-gravityforms-refactor' );
+	/** @var bool */
+	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
+	public $forceEnglish = true;
+
+	/**
+	 * Register the custom field-editor setting.
+	 *
+	 * @return void
+	 */
+	public static function register_editor_hooks() {
+		add_action( 'gform_field_advanced_settings', array( __CLASS__, 'render_force_english_setting' ), 10, 2 );
 	}
 
+	/**
+	 * Field title in the form editor.
+	 *
+	 * @return string
+	 */
+	public function get_form_editor_field_title() {
+		return esc_attr__( 'Iranian National ID', 'persian-gravityforms' );
+	}
+
+	/**
+	 * Place the field in Gravity Forms advanced fields.
+	 *
+	 * @return array
+	 */
 	public function get_form_editor_button() {
 		return array(
 			'group' => 'advanced_fields',
@@ -30,203 +46,177 @@ class PGR_GF_Field_National_ID extends GF_Field {
 		);
 	}
 
+	/**
+	 * Supported field settings.
+	 *
+	 * @return array
+	 */
 	public function get_form_editor_field_settings() {
 		return array(
-			'label_setting', 'description_setting', 'css_class_setting', 'placeholder_setting',
-			'size_setting', 'rules_setting', 'duplicate_setting', 'default_value_setting',
-			'conditional_logic_field_setting', 'prepopulate_field_setting', 'error_message_setting',
-			'label_placement_setting', 'admin_label_setting', 'visibility_setting',
-			'pgr_national_id_settings',
+			'label_setting',
+			'description_setting',
+			'css_class_setting',
+			'placeholder_setting',
+			'size_setting',
+			'rules_setting',
+			'duplicate_setting',
+			'conditional_logic_field_setting',
+			'error_message_setting',
+			'label_placement_setting',
+			'admin_label_setting',
+			'visibility_setting',
+			'pgr_force_english_setting',
 		);
 	}
 
-	public static function register_settings() {
-		add_action( 'gform_field_standard_settings', array( __CLASS__, 'add_settings' ), 10, 2 );
-		add_action( 'gform_editor_js', array( __CLASS__, 'editor_js' ) );
-		add_filter( 'gform_tooltips', array( __CLASS__, 'tooltips' ) );
+	/**
+	 * National IDs can participate in conditional logic as scalar text values.
+	 *
+	 * @return bool
+	 */
+	public function is_conditional_logic_supported() {
+		return true;
 	}
 
-	public static function add_settings( $position, $form_id ) {
-		if ( 50 !== $position ) return;
+	/**
+	 * Render the client normalization field setting.
+	 *
+	 * @param int $position Settings position.
+	 * @param int $form_id  Current form ID.
+	 * @return void
+	 */
+	public static function render_force_english_setting( $position, $form_id ) {
+		unset( $form_id );
+
+		if ( 50 !== $position ) {
+			return;
+		}
 		?>
-		<li class="pgr_national_id_setting field_setting">
-			<input type="checkbox" id="pgr_show_location" onclick="SetFieldProperty('showLocation', this.checked);" />
-			<label for="pgr_show_location" class="inline"><?php esc_html_e( 'Show city based on national ID', 'persian-gravityforms-refactor' ); ?> <?php gform_tooltip( 'pgr_tooltip_show_location' ); ?></label>
-			<br />
-			<input type="checkbox" id="pgr_show_seperator" onclick="SetFieldProperty('showSeperator', this.checked);" />
-			<label for="pgr_show_seperator" class="inline"><?php esc_html_e( 'Auto-separate digits with dash', 'persian-gravityforms-refactor' ); ?> <?php gform_tooltip( 'pgr_tooltip_show_seperator' ); ?></label>
-			<br />
+		<li class="pgr_force_english_setting field_setting">
 			<input type="checkbox" id="pgr_force_english" onclick="SetFieldProperty('forceEnglish', this.checked);" />
-			<label for="pgr_force_english" class="inline"><?php esc_html_e( 'Convert Persian/Arabic digits to English', 'persian-gravityforms-refactor' ); ?> <?php gform_tooltip( 'pgr_tooltip_force_english' ); ?></label>
-			<br /><br />
-			<label for="pgr_not_digit_error"><?php esc_html_e( 'Error: Non-digit characters', 'persian-gravityforms-refactor' ); ?></label>
-			<input type="text" id="pgr_not_digit_error" onkeyup="SetFieldProperty('notDigitError', this.value);" class="fieldwidth-3" />
-			<br />
-			<label for="pgr_qty_digit_error"><?php esc_html_e( 'Error: Invalid length', 'persian-gravityforms-refactor' ); ?></label>
-			<input type="text" id="pgr_qty_digit_error" onkeyup="SetFieldProperty('qtyDigitError', this.value);" class="fieldwidth-3" />
-			<br />
-			<label for="pgr_is_invalid_error"><?php esc_html_e( 'Error: Invalid checksum', 'persian-gravityforms-refactor' ); ?></label>
-			<input type="text" id="pgr_is_invalid_error" onkeyup="SetFieldProperty('isInvalidError', this.value);" class="fieldwidth-3" />
-			<br />
-			<label for="pgr_duplicate_error"><?php esc_html_e( 'Error: Duplicate entry', 'persian-gravityforms-refactor' ); ?></label>
-			<input type="text" id="pgr_duplicate_error" onkeyup="SetFieldProperty('duplicateError', this.value);" class="fieldwidth-3" />
+			<label for="pgr_force_english" class="inline">
+				<?php esc_html_e( 'Normalize Persian/Arabic digits while typing', 'persian-gravityforms' ); ?>
+			</label>
 		</li>
 		<?php
 	}
 
-	public static function editor_js() {
-		?>
-		<script type="text/javascript">
-			jQuery(document).bind('gform_load_field_settings', function(event, field, form) {
-				jQuery('#pgr_show_location').prop('checked', field.showLocation == true);
-				jQuery('#pgr_show_seperator').prop('checked', field.showSeperator == true);
-				jQuery('#pgr_force_english').prop('checked', field.forceEnglish == true);
-				jQuery('#pgr_not_digit_error').val(field.notDigitError || '');
-				jQuery('#pgr_qty_digit_error').val(field.qtyDigitError || '');
-				jQuery('#pgr_is_invalid_error').val(field.isInvalidError || '');
-				jQuery('#pgr_duplicate_error').val(field.duplicateError || '');
+	/**
+	 * Add field-editor initialization for defaults and the custom setting.
+	 *
+	 * @return string
+	 */
+	public function get_form_editor_inline_script_on_page_render() {
+		$settings      = get_option( PGR_Admin::OPTION, array( 'default_force_english' => 1 ) );
+		$force_english = empty( $settings['default_force_english'] ) ? 'false' : 'true';
+		$label         = wp_json_encode( $this->get_form_editor_field_title() );
+
+		return "
+			function SetDefaultValues_pgr_national_id(field) {
+				field.label = {$label};
+				field.forceEnglish = {$force_english};
+			}
+			jQuery(document).on('gform_load_field_settings', function(event, field) {
+				if (field.type === 'pgr_national_id') {
+					jQuery('#pgr_force_english').prop('checked', field.forceEnglish !== false);
+				}
 			});
-		</script>
-		<?php
+		";
 	}
 
-	public static function tooltips( $tooltips ) {
-		$tooltips['pgr_tooltip_show_location']  = esc_html__( 'Show the city associated with the national ID (requires cities database).', 'persian-gravityforms-refactor' );
-		$tooltips['pgr_tooltip_show_seperator'] = esc_html__( 'Automatically format national ID as XXX-XXXXXX-X.', 'persian-gravityforms-refactor' );
-		$tooltips['pgr_tooltip_force_english']  = esc_html__( 'Convert Persian/Arabic digits to English silently.', 'persian-gravityforms-refactor' );
-		return $tooltips;
-	}
-
+	/**
+	 * Render an accessible scalar input.
+	 *
+	 * @param array      $form  Current form.
+	 * @param string     $value Current value.
+	 * @param array|null $entry Current entry.
+	 * @return string
+	 */
 	public function get_field_input( $form, $value = '', $entry = null ) {
-		$form_id         = absint( $form['id'] );
-		$is_entry_detail = GFCommon::is_entry_detail();
-		$is_form_editor  = GFCommon::is_form_editor();
+		unset( $entry );
 
-		$id          = absint( $this->id );
-		$field_id    = $is_entry_detail || $is_form_editor || 0 === $form_id ? "input_$id" : 'input_' . $form_id . "_$id";
-		$class       = $this->size . ( $is_entry_detail ? '_admin' : '' );
-		$disabled    = $is_form_editor ? "disabled='disabled'" : '';
-		$max_length  = $this->showSeperator ? 12 : 10;
-		$placeholder = $this->get_field_placeholder_attribute();
-		$required    = $this->isRequired ? 'aria-required="true"' : '';
-		$invalid     = $this->failed_validation ? 'aria-invalid="true"' : 'aria-invalid="false"';
-		$tabindex    = $this->get_tabindex();
-		$logic_event = ! $is_form_editor && ! $is_entry_detail ? $this->get_conditional_logic_event( 'keyup' ) : '';
+		$form_id         = absint( rgar( $form, 'id' ) );
+		$is_entry_detail = $this->is_entry_detail();
+		$is_form_editor  = $this->is_form_editor();
+		$is_admin        = $is_entry_detail || $is_form_editor;
+		$field_id        = $is_admin || 0 === $form_id ? 'input_' . absint( $this->id ) : 'input_' . $form_id . '_' . absint( $this->id );
+		$disabled        = $is_form_editor ? ' disabled="disabled"' : '';
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+		$required = $this->isRequired ? ' aria-required="true"' : '';
+		$invalid  = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
+		$force_english = $this->forceEnglish ? ' data-pgr-normalize-digits="1"' : '';
 
-		$html_attrs = " {$placeholder} {$required} {$invalid} maxlength='{$max_length}'";
-
-		$data_attrs = '';
-		if ( $this->forceEnglish ) {
-			$data_attrs .= ' data-pgr-force-english="true"';
-		}
-		if ( $this->showLocation || $this->showSeperator ) {
-			$data_attrs .= ' data-pgr-live-validation="true"';
-		}
-
-		$input = sprintf(
-			'<div class="ginput_container ginput_container_pgr_national_id">
-				<input name="input_%d" id="%s" type="text" value="%s" class="pgr_national_id %s" %s %s %s %s %s />
-			</div>',
-			$id, $field_id, esc_attr( $value ), esc_attr( $class ),
-			$tabindex, $logic_event, $html_attrs, $disabled, $data_attrs
+		return sprintf(
+			'<div class="ginput_container ginput_container_pgr_national_id"><input name="input_%1$d" id="%2$s" type="text" value="%3$s" class="%4$s" inputmode="numeric" maxlength="10" autocomplete="off"%5$s%6$s%7$s%8$s /></div>',
+			absint( $this->id ),
+			esc_attr( $field_id ),
+			esc_attr( $value ),
+			esc_attr( trim( 'pgr_national_id ' . $this->size ) ),
+			$required,
+			$invalid,
+			$disabled,
+			$force_english
 		);
-
-		if ( ! $is_form_editor && ! $is_entry_detail && $this->showLocation ) {
-			$input .= '<span class="pgr_national_id_location" id="pgr_location_' . $id . '"></span>';
-		}
-
-		return $input;
 	}
 
+	/**
+	 * Perform authoritative server-side National ID validation.
+	 * Gravity Forms runs required/no-duplicates checks before this method.
+	 *
+	 * @param mixed $value Submitted value.
+	 * @param array $form  Current form.
+	 * @return void
+	 */
 	public function validate( $value, $form ) {
-		if ( $this->isRequired && empty( $value ) ) {
+		unset( $form );
+
+		if ( ! PGR_Utils::is_valid_iran_national_id( $value ) ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
+			$error_message = $this->errorMessage;
+
 			$this->failed_validation  = true;
-			$this->validation_message = $this->errorMessage ?: esc_html__( 'This field is required.', 'gravityforms' );
-			return;
-		}
-		if ( empty( $value ) ) {
-			return;
-		}
-
-		$clean = preg_replace( '/\D/', '', PGR_Utils::normalize_digits( $value ) );
-
-		if ( ! $this->is_valid_national_id( $clean ) ) {
-			$this->failed_validation = true;
-			$this->validation_message = $this->get_validation_error_message( $clean );
-			return;
-		}
-
-		if ( $this->noDuplicates && $this->is_duplicate( $clean, $form['id'] ) ) {
-			$this->failed_validation = true;
-			$this->validation_message = ! empty( $this->duplicateError ) ? $this->duplicateError : esc_html__( 'This National ID has already been submitted.', 'persian-gravityforms-refactor' );
+			$this->validation_message = ! empty( $error_message )
+				? $error_message
+				: esc_html__( 'Enter a valid 10-digit Iranian National ID.', 'persian-gravityforms' );
 		}
 	}
 
-	private function is_valid_national_id( $code ) {
-		if ( 10 !== strlen( $code ) ) return false;
-		if ( preg_match( '/^(\d)\1{9}$/', $code ) ) return false;
-		$check = (int) $code[9];
-		$sum = 0;
-		for ( $i = 0; $i < 9; $i++ ) {
-			$sum += (int) $code[ $i ] * ( 10 - $i );
-		}
-		$rem = $sum % 11;
-		$calc = $rem < 2 ? $rem : 11 - $rem;
-		return $calc === $check;
-	}
-
-	private function get_validation_error_message( $raw ) {
-		if ( ! ctype_digit( $raw ) ) {
-			return ! empty( $this->notDigitError ) ? $this->notDigitError : esc_html__( 'Only numeric digits are allowed.', 'persian-gravityforms-refactor' );
-		}
-		if ( 10 !== strlen( $raw ) ) {
-			return ! empty( $this->qtyDigitError ) ? $this->qtyDigitError : esc_html__( 'National ID must be exactly 10 digits.', 'persian-gravityforms-refactor' );
-		}
-		return ! empty( $this->isInvalidError ) ? $this->isInvalidError : esc_html__( 'Invalid Iranian National ID.', 'persian-gravityforms-refactor' );
-	}
-
-	private function is_duplicate( $value, $form_id ) {
-		global $wpdb;
-		$meta_table = GFFormsModel::get_entry_meta_table_name();
-		$entry_table = GFFormsModel::get_entry_table_name();
-		$sql = $wpdb->prepare(
-			"SELECT COUNT(*) FROM {$meta_table} m 
-			INNER JOIN {$entry_table} e ON e.id = m.entry_id 
-			WHERE m.meta_key = %s AND m.meta_value = %s AND e.form_id = %d AND e.status = 'active'",
-			$this->id, $value, $form_id
-		);
-		return (int) $wpdb->get_var( $sql ) > 0;
-	}
-
-	// اصلاح شده با signature صحیح
+	/**
+	 * Save exactly ten normalized ASCII digits.
+	 *
+	 * @param mixed  $value      Submitted value.
+	 * @param array  $form       Current form.
+	 * @param string $input_name Input name.
+	 * @param int    $lead_id    Entry ID.
+	 * @param array  $lead       Entry object.
+	 * @return string
+	 */
 	public function get_value_save_entry( $value, $form, $input_name, $lead_id, $lead ) {
-		$clean = preg_replace( '/\D/', '', PGR_Utils::normalize_digits( $value ) );
-		$len = strlen( $clean );
-		if ( 8 === $len ) {
-			$clean = '00' . $clean;
-		} elseif ( 9 === $len ) {
-			$clean = '0' . $clean;
-		}
-		return $clean;
+		unset( $form, $input_name, $lead_id, $lead );
+
+		$normalized = PGR_Utils::normalize_national_id( $value );
+		return null === $normalized ? '' : $normalized;
 	}
 
-	public function get_value_entry_detail( $value, $entry = array(), $form = array(), $context = 'text' ) {
-		$clean = preg_replace( '/\D/', '', $value );
-		if ( 10 !== strlen( $clean ) ) {
-			return $value;
-		}
-		return substr( $clean, 0, 3 ) . '-' . substr( $clean, 3, 6 ) . '-' . substr( $clean, 9 );
-	}
+	/**
+	 * Format the stored value for human-readable entry detail output.
+	 *
+	 * @param mixed  $value    Stored value.
+	 * @param string $currency Currency code.
+	 * @param bool   $use_text Whether to use choice text.
+	 * @param string $format   Output format.
+	 * @param string $media    Output media.
+	 * @return string
+	 */
+	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
+		unset( $currency, $use_text, $format, $media );
 
-	public function get_value_merge_tag( $value, $entry, $form, $modifier ) {
-		return $this->get_value_entry_detail( $value, $entry, $form );
+		$normalized = PGR_Utils::normalize_national_id( (string) $value );
+		if ( null === $normalized ) {
+			return esc_html( (string) $value );
+		}
+
+		return esc_html( substr( $normalized, 0, 3 ) . '-' . substr( $normalized, 3, 6 ) . '-' . substr( $normalized, 9, 1 ) );
 	}
 }
-
-// Register field and settings
-add_action( 'gform_loaded', function() {
-	if ( class_exists( 'GF_Fields' ) ) {
-		GF_Fields::register( new PGR_GF_Field_National_ID() );
-		PGR_GF_Field_National_ID::register_settings();
-	}
-}, 5 );

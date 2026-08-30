@@ -1,34 +1,67 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v7
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+
+      - name: Install development dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Syntax check shipped PHP
+        run: find persian-gravityforms.php includes admin uninstall.php -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: WordPress Coding Standards
+        run: composer cs
+
+      - name: PHPCompatibility minimum baseline
+        run: composer compat
+
+      - name: Runtime integrity guard
+        shell: bash
+        run: |
+          test ! -d src
+          test ! -d assets/fonts
+          test ! -f persian-gravityforms-refactor.php
+          test ! -f assets/js/jalali-datepicker.js
+          test ! -f assets/js/jalali-datepicker.min.js
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
+          test -f includes/fields/class-gf-field-national-id.php
+          test -f includes/fields/class-gf-field-jalali-date.php
+
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ matrix.php }}
           tools: composer
+          coverage: none
 
-      - name: Check PHP version
-        run: php -v
+      - name: Install development dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --verbose
-
-      - name: Debug src files
-        run: ls -la src/
-
-      - name: Lint (PHPCS + WPCS)
-        run: vendor/bin/phpcs --standard=WordPress src/
-
-      - name: Debug test files
-        run: ls -la tests/
-
-      - name: Run tests
-        run: vendor/bin/phpunit
+      - name: Run PHPUnit
+        run: composer test

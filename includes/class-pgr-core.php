@@ -1,276 +1,147 @@
 <?php
 /**
- * Core orchestrator singleton.
+ * Canonical runtime coordinator for Persian Gravity Forms.
  *
- * @package PersianGravityFormsRefactor
- * @since   3.0.0
+ * @package PersianGravityForms
  */
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Core singleton to wire hooks and modules.
- */
-class PGR_Core {
+final class PGR_Core {
+
+	/** @var bool */
+	private static $initialized = false;
 
 	/**
-	 * Singleton instance.
+	 * Initialize all supported plugin capabilities exactly once.
 	 *
-	 * @var PGR_Core|null
+	 * @return void
 	 */
-	private static $instance = null;
-
-	/**
-	 * Loaded modules.
-	 *
-	 * @var array<string,object>
-	 */
-	private $modules = array();
-
-	/**
-	 * Get instance.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @return PGR_Core
-	 */
-	public static function instance(): PGR_Core {
-		if ( null === self::$instance ) {
-			self::$instance = new self();
+	public static function init() {
+		if ( self::$initialized ) {
+			return;
 		}
-		return self::$instance;
+
+		GF_Fields::register( new PGR_GF_Field_National_ID() );
+		PGR_GF_Field_National_ID::register_editor_hooks();
+
+		GF_Fields::register( new PGR_GF_Field_Jalali_Date() );
+		PGR_GF_Field_Jalali_Date::register_editor_hooks();
+
+		$admin = new PGR_Admin();
+		$admin->hooks();
+
+		$address = new PGR_Address();
+		$address->hooks();
+
+		$currency = new PGR_Currency();
+		$currency->hooks();
+
+		add_filter( 'gform_form_settings_fields', array( __CLASS__, 'form_settings_fields' ), 10, 2 );
+		add_filter( 'gform_save_field_value', array( __CLASS__, 'normalize_form_value' ), 10, 5 );
+		add_filter( 'gform_value_pre_duplicate_check', array( __CLASS__, 'normalize_duplicate_value' ), 10, 3 );
+		add_action( 'gform_enqueue_scripts', array( __CLASS__, 'enqueue_field_assets' ), 10, 2 );
+
+		self::$initialized = true;
 	}
 
 	/**
-	 * Constructor.
+	 * Add the Persian digit-normalization setting using the current Gravity Forms Settings API.
 	 *
-	 * @since 3.0.0
+	 * @param array $fields Form settings fields.
+	 * @param array $form   Current form.
+	 * @return array
 	 */
-	private function __construct() {
-		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), 10 );
-	}
+	public static function form_settings_fields( $fields, $form ) {
+		unset( $form );
 
-	/**
-	 * Initialize after plugins loaded – check dependencies, load modules, register hooks.
-	 *
-	 * @since 3.0.0
-	 */
-	public function on_plugins_loaded(): void {
-		// Load text domain
-		load_plugin_textdomain(
-			'persian-gravityforms-refactor',
-			false,
-			dirname( plugin_basename( PGR_FILE ) ) . '/languages'
+		if ( ! isset( $fields['form_options']['fields'] ) || ! is_array( $fields['form_options']['fields'] ) ) {
+			return $fields;
+		}
+
+		$fields['form_options']['fields'][] = array(
+			'type'    => 'radio',
+			'name'    => 'pgr_normalize_digits',
+			'label'   => esc_html__( 'Persian digit normalization', 'persian-gravityforms' ),
+			'tooltip' => esc_html__( 'Convert Persian and Arabic digits to ASCII digits before entry values are saved.', 'persian-gravityforms' ),
+			'choices' => array(
+				array(
+					'label' => esc_html__( 'Enabled', 'persian-gravityforms' ),
+					'value' => '1',
+				),
+				array(
+					'label' => esc_html__( 'Disabled', 'persian-gravityforms' ),
+					'value' => '0',
+				),
+			),
 		);
 
-		// Check Gravity Forms presence
-		if ( ! class_exists( 'GFCommon' ) ) {
-			add_action( 'admin_notices', function() {
-				echo '<div class="notice notice-error"><p>' .
-				     esc_html__( 'Persian Gravity Forms requires Gravity Forms to be installed and active.', 'persian-gravityforms-refactor' ) .
-				     '</p></div>';
-			} );
-			return;
-		}
-
-		// Load modules
-		$this->load_module( 'admin', 'PGR_Admin' );
-		$this->load_module( 'persian_date', 'PGR_Persian_Date' );
-
-		// Register core hooks
-		$this->register_core_hooks();
+		return $fields;
 	}
 
 	/**
-	 * Register all core WordPress and Gravity Forms hooks.
+	 * Normalize a saved Gravity Forms value when the form setting is enabled.
+	 * Server-side normalization is authoritative; JavaScript is never required.
 	 *
-	 * @since 3.0.0
+	 * @param mixed         $value    Value about to be saved.
+	 * @param array         $entry    Current entry.
+	 * @param GF_Field|null $field    Current field.
+	 * @param array         $form     Current form.
+	 * @param mixed         $input_id Current input ID.
+	 * @return mixed
 	 */
-	private function register_core_hooks(): void {
-		// Admin assets (only on GF pages)
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+	public static function normalize_form_value( $value, $entry, $field, $form, $input_id ) {
+		unset( $entry, $field, $input_id );
 
-		// Frontend assets (only when needed – handled by PGR_Persian_Date and field itself)
-		// The National ID field already registers its own assets via gform_enqueue_scripts.
-		// We keep the frontend script enqueuing for Persian digit normalization in text fields (via form setting).
-		add_action( 'gform_enqueue_scripts', array( $this, 'frontend_enqueue_scripts' ), 10, 2 );
-
-		// Per-form Persian formatting toggle
-		add_filter( 'gform_form_settings', array( $this, 'add_persian_formatting_setting' ), 10, 2 );
-		add_filter( 'gform_pre_form_settings_save', array( $this, 'save_persian_formatting_setting' ) );
-
-		// Normalize digits on submission (safe method)
-		add_filter( 'gform_save_field_value', array( $this, 'normalize_digits_on_save' ), 10, 4 );
-	}
-
-	/**
-	 * Enqueue admin scripts only on Gravity Forms edit screens.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param string $hook Current admin page hook.
-	 */
-	public function admin_enqueue_scripts( string $hook ): void {
-		if ( ! class_exists( 'RGForms' ) || ! RGForms::is_gravity_page() ) {
-			return;
-		}
-		$page = rgget( 'page' );
-		if ( ! in_array( $page, array( 'gf_edit_forms', 'gf_new_form' ), true ) ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'pgr-admin',
-			PGR_URL . 'assets/js/pgr-admin.js',
-			array( 'jquery' ),
-			$this->get_asset_version( PGR_PATH . 'assets/js/pgr-admin.js' ),
-			true
-		);
-
-		$settings = get_option( 'pgr_settings', array() );
-		wp_localize_script( 'pgr-admin', 'PGRDefaults', array(
-			'forceEnglish'   => ! empty( $settings['default_force_english'] ),
-			'liveValidation' => ! empty( $settings['enable_nid_validation'] ),
-		) );
-	}
-
-	/**
-	 * Enqueue frontend script for Persian digit normalization (when form has pgr_enable=true).
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param array $form     Gravity Forms form array.
-	 * @param bool  $is_ajax  Whether form is submitted via AJAX.
-	 */
-	public function frontend_enqueue_scripts( array $form, bool $is_ajax ): void {
-		if ( empty( $form['pgr_enable'] ) ) {
-			return;
-		}
-		wp_enqueue_script(
-			'pgr-frontend',
-			PGR_URL . 'assets/js/pgr-frontend.js',
-			array(),
-			$this->get_asset_version( PGR_PATH . 'assets/js/pgr-frontend.js' ),
-			true
-		);
-	}
-
-	/**
-	 * Add a checkbox to form settings for enabling Persian digit normalization.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param array $settings Form settings.
-	 * @param array $form     Form object.
-	 * @return array Modified settings.
-	 */
-	public function add_persian_formatting_setting( array $settings, array $form ): array {
-		$checked = ! empty( $form['pgr_enable'] ) ? 'checked="checked"' : '';
-		$row = '<tr>
-			<th><label for="pgr_enable">' . esc_html__( 'Persian formatting', 'persian-gravityforms-refactor' ) . '</label></th>
-			<td>
-				<label>
-					<input id="pgr_enable" type="checkbox" name="pgr_enable" value="1" ' . $checked . ' />
-					' . esc_html__( 'Normalize Persian/Arabic digits on submit for this form', 'persian-gravityforms-refactor' ) . '
-				</label>
-				<p class="description">' . esc_html__( 'If enabled, all text inputs will be normalized to English digits on submission.', 'persian-gravityforms-refactor' ) . '</p>
-			</td>
-			y e ';
-
-		if ( isset( $settings['Form Basics'] ) ) {
-			$settings['Form Basics'] .= $row;
-		}
-		return $settings;
-	}
-
-	/**
-	 * Save the Persian formatting setting when form settings are saved.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param array $form Form object being saved.
-	 * @return array Modified form object.
-	 */
-	public function save_persian_formatting_setting( array $form ): array {
-		$form['pgr_enable'] = isset( $_POST['pgr_enable'] ) ? 1 : 0;
-		return $form;
-	}
-
-	/**
-	 * Normalize Persian/Arabic digits to English digits before saving field value.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param mixed  $value      Field value.
-	 * @param array  $form       Form object.
-	 * @param string $field_id   Field ID.
-	 * @param array  $entry      Entry object.
-	 * @return mixed Normalized value.
-	 */
-	public function normalize_digits_on_save( $value, array $form, string $field_id, array $entry ) {
-		if ( empty( $form['pgr_enable'] ) ) {
+		if ( empty( $form['pgr_normalize_digits'] ) || ! is_string( $value ) ) {
 			return $value;
 		}
-		if ( ! class_exists( 'PGR_Utils' ) ) {
+
+		return PGR_Utils::normalize_digits( $value );
+	}
+
+	/**
+	 * Normalize National ID values before Gravity Forms performs its built-in no-duplicates check.
+	 *
+	 * @param mixed    $value   Submitted value.
+	 * @param GF_Field $field   Current field.
+	 * @param int      $form_id Current form ID.
+	 * @return mixed
+	 */
+	public static function normalize_duplicate_value( $value, $field, $form_id ) {
+		unset( $form_id );
+
+		if ( ! is_object( $field ) || 'pgr_national_id' !== $field->type || ! is_string( $value ) ) {
 			return $value;
 		}
-		if ( is_string( $value ) ) {
-			$value = PGR_Utils::normalize_digits( $value );
-		} elseif ( is_array( $value ) ) {
-			array_walk_recursive( $value, function( &$item ) {
-				if ( is_string( $item ) ) {
-					$item = PGR_Utils::normalize_digits( $item );
-				}
-			} );
-		}
-		return $value;
+
+		$normalized = PGR_Utils::normalize_national_id( $value );
+		return null === $normalized ? PGR_Utils::normalize_digits( $value ) : $normalized;
 	}
 
 	/**
-	 * Get asset version based on file modification time (cache busting).
+	 * Load the small client-side digit normalizer only when a National ID field
+	 * explicitly opts into typing-time normalization.
 	 *
-	 * @since 3.0.0
-	 *
-	 * @param string $file_path Absolute path to asset file.
-	 * @return string Version string.
+	 * @param array $form    Current form.
+	 * @param bool  $is_ajax Whether AJAX is enabled.
+	 * @return void
 	 */
-	private function get_asset_version( string $file_path ): string {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && file_exists( $file_path ) ) {
-			return (string) filemtime( $file_path );
-		}
-		return PGR_VERSION;
-	}
+	public static function enqueue_field_assets( $form, $is_ajax ) {
+		unset( $is_ajax );
 
-	/**
-	 * Lazy-load and register a module.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param string $key   Module key.
-	 * @param string $class Class name.
-	 */
-	private function load_module( string $key, string $class ): void {
-		if ( isset( $this->modules[ $key ] ) ) {
-			return;
-		}
-		if ( class_exists( $class ) ) {
-			$instance = new $class();
-			if ( method_exists( $instance, 'hooks' ) ) {
-				$instance->hooks();
+		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
+			if ( is_object( $field ) && 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
+				wp_enqueue_script(
+					'pgr-frontend',
+					PGR_URL . 'assets/js/pgr-frontend.js',
+					array(),
+					PGR_VERSION,
+					true
+				);
+				return;
 			}
-			$this->modules[ $key ] = $instance;
 		}
-	}
-
-	/**
-	 * Public accessor to a module by key.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param string $key Module key.
-	 * @return object|null
-	 */
-	public function get_module( string $key ) {
-		return $this->modules[ $key ] ?? null;
 	}
 }
