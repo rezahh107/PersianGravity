@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Persian Gravity Forms
  * Description: Generic Persian and Iranian enhancements for Gravity Forms.
- * Version: 4.0.0
+ * Version: 4.1.0
  * Requires at least: 6.7
  * Requires PHP: 8.2
  * Author: PGR Team
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PGR_VERSION', '4.0.0' );
+define( 'PGR_VERSION', '4.1.0' );
 define( 'PGR_FILE', __FILE__ );
 define( 'PGR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PGR_URL', plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,30 @@ function pgr_load_textdomain() {
 	load_plugin_textdomain( 'persian-gravityforms', false, dirname( plugin_basename( PGR_FILE ) ) . '/languages' );
 }
 add_action( 'init', 'pgr_load_textdomain' );
+
+/**
+ * Initialize the WordPress admin product surface independently of Gravity Forms.
+ *
+ * This keeps Settings/System Status available even when Gravity Forms is missing.
+ *
+ * @return void
+ */
+function pgr_initialize_admin() {
+	static $initialized = false;
+
+	if ( $initialized ) {
+		return;
+	}
+
+	require_once PGR_PATH . 'includes/class-pgr-scanner-profile-registry.php';
+	require_once PGR_PATH . 'admin/class-pgr-admin.php';
+
+	$admin = new PGR_Admin();
+	$admin->hooks();
+
+	$initialized = true;
+}
+add_action( 'plugins_loaded', 'pgr_initialize_admin', 5 );
 
 /**
  * Initialize the Gravity Forms-dependent runtime exactly once.
@@ -56,7 +80,6 @@ function pgr_initialize() {
 	require_once PGR_PATH . 'includes/fields/class-gf-field-national-id.php';
 	require_once PGR_PATH . 'includes/fields/class-gf-field-jalali-date.php';
 	require_once PGR_PATH . 'includes/fields/class-gf-field-structured-scanner.php';
-	require_once PGR_PATH . 'admin/class-pgr-admin.php';
 	require_once PGR_PATH . 'includes/class-pgr-core.php';
 
 	PGR_Core::init();
