@@ -51,7 +51,17 @@
 
 		state.idleTimer = window.setTimeout( function () {
 			state.idleTimer = null;
-			processCapture( state );
+
+			const rawPayload = state.capture.value;
+			const decision = core.decideCaptureAction(
+				rawPayload,
+				state.profileId,
+				'idle'
+			);
+
+			if ( decision.action === 'finalize' ) {
+				processCapture( state, rawPayload, decision.parsed );
+			}
 		}, SCAN_IDLE_MS );
 	}
 
@@ -134,14 +144,16 @@
 		return true;
 	}
 
-	function processCapture( state ) {
+	function processCapture( state, suppliedPayload, suppliedParsed ) {
 		clearIdleTimer( state );
 
-		let rawPayload = state.capture.value;
+		let rawPayload = typeof suppliedPayload === 'string'
+			? suppliedPayload
+			: state.capture.value;
 		state.capture.value = '';
 		setStatus( state, 'processing', state.messages.processing );
 
-		const parsed = core.parseScan( rawPayload, state.profileId );
+		const parsed = suppliedParsed || core.parseScan( rawPayload, state.profileId );
 		rawPayload = null;
 
 		if ( ! parsed.ok ) {
@@ -229,21 +241,59 @@
 		} );
 
 		capture.addEventListener( 'keydown', function ( event ) {
-			if ( event.key !== 'Enter' && event.key !== 'Tab' ) {
+			if ( event.key === 'Enter' ) {
+				const rawPayload = state.capture.value;
+				const decision = core.decideCaptureAction(
+					rawPayload,
+					state.profileId,
+					'enter'
+				);
+
+				if ( decision.action !== 'finalize' ) {
+					return;
+				}
+
+				event.preventDefault();
+				event.stopPropagation();
+				processCapture( state, rawPayload, decision.parsed );
+				return;
+			}
+
+			if ( event.key !== 'Tab' || state.capture.value === '' ) {
+				return;
+			}
+
+			const rawPayload = state.capture.value;
+			const decision = core.decideCaptureAction(
+				rawPayload,
+				state.profileId,
+				'tab'
+			);
+
+			event.preventDefault();
+			event.stopPropagation();
+			processCapture( state, rawPayload, decision.parsed );
+		} );
+
+		capture.addEventListener( 'paste', function ( event ) {
+			const clipboard = event.clipboardData;
+			if ( ! clipboard ) {
+				return;
+			}
+
+			const rawPayload = clipboard.getData( 'text' );
+			if ( rawPayload === '' ) {
 				return;
 			}
 
 			event.preventDefault();
-			event.stopPropagation();
-			processCapture( state );
-		} );
 
-		capture.addEventListener( 'paste', function ( event ) {
-			event.preventDefault();
-
-			const clipboard = event.clipboardData;
-			state.capture.value = clipboard ? clipboard.getData( 'text' ) : '';
-			processCapture( state );
+			const decision = core.decideCaptureAction(
+				rawPayload,
+				state.profileId,
+				'paste'
+			);
+			processCapture( state, rawPayload, decision.parsed );
 		} );
 
 		focusButton.addEventListener( 'click', function () {
