@@ -24,10 +24,13 @@ Current product scope:
 
 - Iranian National ID field (`pgr_national_id`)
 - Jalali Date field (`pgr_jalali_date`)
+- generic Structured Scanner controller field (`pgr_structured_scanner`) with structural profile `sayad_v01`
 - Persian/Arabic digit normalization
 - Iranian address/province support
 - IRR/IRT currency definitions
 - localization of PersianGravity's own strings
+
+Structured Scanner is a generic, transient field controller. Its current `sayad_v01` profile is limited to structural seven-segment parsing and mapped-field population. It does not establish bank/checksum authority or financial business validation.
 
 Out of scope:
 
@@ -37,6 +40,7 @@ Out of scope:
 - workflow/business rules
 - SRWF-specific behavior
 - custom databases
+- bank/checksum/cross-bank business validation for Scanner profiles
 - historical field IDs/migrations kept only for legacy compatibility
 
 Do not reintroduce removed capabilities without an explicit product decision and evidence that they belong to this plugin.
@@ -54,8 +58,10 @@ persian-gravityforms.php
                     ├── PGR_Address
                     ├── PGR_Currency
                     ├── PGR_Persian_Date
+                    ├── PGR_Scanner_Profile_Registry
                     ├── PGR_GF_Field_National_ID
-                    └── PGR_GF_Field_Jalali_Date
+                    ├── PGR_GF_Field_Jalali_Date
+                    └── PGR_GF_Field_Structured_Scanner
 ```
 
 Detailed contract: `docs/ARCHITECTURE.md`.
@@ -65,10 +71,13 @@ Detailed contract: `docs/ARCHITECTURE.md`.
 1. Gravity Forms-dependent code initializes through the supported Gravity Forms lifecycle.
 2. Plugin activation must not fatal when Gravity Forms is absent.
 3. Each custom field has one canonical implementation.
-4. Server-side validation/normalization is authoritative.
+4. Server-side validation/normalization is authoritative for National ID, Jalali Date, and persisted form-value normalization.
 5. Ordinary Gravity Forms Date fields are not converted into Jalali fields.
 6. External plugin text domains are never globally intercepted.
 7. Tests target the same runtime WordPress executes.
+8. Structured Scanner raw capture remains transient and is never a persisted Scanner field value.
+9. Structured Scanner parsing/mapping completion has one pure browser authority in `pgr-structured-scanner-core.js`; do not duplicate its seven-segment grammar in a second frontend validator.
+10. Structured Scanner mapped-field mutation remains atomic and fail-closed.
 
 ## 4. Gravity Forms API policy
 
@@ -79,10 +88,12 @@ Current important integration points include:
 - `gform_loaded`
 - `GF_Field`
 - `GF_Fields::register()`
+- `gform_field_advanced_settings`
 - `gform_form_settings_fields`
 - `gform_save_field_value`
 - `gform_value_pre_duplicate_check`
 - `gform_enqueue_scripts`
+- browser lifecycle event `gform/post_render`
 
 Do not reintroduce removed/deprecated hooks such as the old `gform_form_settings` path.
 
@@ -91,6 +102,8 @@ Before adding a new Gravity Forms hook, document:
 - why it is required;
 - the official API contract;
 - what test covers it.
+
+For browser rerender handling, keep Structured Scanner initialization compatible with the supported `gform/post_render` lifecycle. Do not substitute Gravity Flow, GravityView, Nested Forms internals, polling, or MutationObserver-based discovery unless a separately reviewed requirement establishes that need.
 
 ## 5. Field contracts
 
@@ -111,6 +124,23 @@ Before adding a new Gravity Forms hook, document:
 - Do not silently convert stored values to Gregorian.
 - Do not override or deregister Gravity Forms/WordPress native datepicker handles to implement this field.
 
+### Structured Scanner
+
+- Field type: `pgr_structured_scanner`.
+- Current structural profile: `sayad_v01`.
+- Ordered `sayad_v01` outputs are exactly: `qr_version`, `owner_type`, `owner_identifier`, `iban`, `bank_branch`, `cheque_serial`, `sayad_id`.
+- Render the raw capture as one transient multiline `textarea` without a Gravity Forms submission `name`.
+- Keep the Scanner field `displayOnly`; save-entry, entry-detail, entry-list, merge-tag, and export surfaces must not expose the raw Scanner value.
+- Persist only field configuration such as `scanner_profile` and `scanner_mappings`; do not persist a parallel raw scan buffer.
+- Supported mapped destination types are only Gravity Forms `text` and `hidden` fields.
+- Preserve LF/CRLF until the pure Scanner parser normalizes them.
+- Preserve string-based Persian/Arabic digit normalization and leading zeroes.
+- Enter/Tab/idle/paste completion decisions must remain parser-driven from the existing pure Scanner core. Do not add an independent hard-coded segment-count authority.
+- In-progress Enter separators must not prematurely route partial input through the invalid path; complete parser-valid Enter may finalize; non-empty Tab and paste are explicit finalization paths; idle may finalize only parser-valid input.
+- Validate the complete mapping/update plan before applying any target mutation. Missing, unsupported, duplicate, self-target, malformed mapping, or invalid scan conditions must fail closed without a partial update set.
+- Repeated successful scans may replace mapped values; a later failed scan must not partially alter prior successful mapped state.
+- Do not extend `sayad_v01` into checksum, bank validity, payment, workflow, or project-specific business authority without a new product decision.
+
 ## 6. Settings and persistence
 
 Current plugin option:
@@ -121,7 +151,14 @@ Current form-level setting:
 
 `pgr_normalize_digits`
 
+Structured Scanner field configuration properties:
+
+- `scanner_profile`
+- `scanner_mappings`
+
 Use WordPress Settings API for plugin settings. Do not add a custom database table.
+
+Scanner raw payload is not a persisted identifier or field value and must not be added to Entry storage merely for diagnostics or replay.
 
 Any new persisted identifier must be documented in `docs/ARCHITECTURE.md` before release.
 
@@ -137,7 +174,11 @@ Any new persisted identifier must be documented in `docs/ARCHITECTURE.md` before
 ## 8. Asset rules
 
 - Load frontend assets only when the relevant field/feature needs them.
-- Server-side behavior must not depend on JavaScript.
+- Preserve the existing conditional National ID asset behavior.
+- Load Structured Scanner JS/CSS only for forms containing `pgr_structured_scanner`.
+- Keep Scanner state per rendered instance; do not add document-wide keyboard interception, browser storage, persistent workers, network/AJAX transport for raw scans, or a hidden parallel raw-buffer authority.
+- Use `gform/post_render` to reinitialize newly rendered Scanner DOM and prevent duplicate initialization of an existing Scanner node.
+- Server-side behavior must not depend on JavaScript except that Structured Scanner is intentionally a transient browser controller whose own raw value is not submitted as a field value.
 - Do not bundle general typography assets.
 - Do not add large third-party libraries without a concrete, reviewed requirement.
 
@@ -164,6 +205,7 @@ composer install
 composer test
 composer cs
 composer compat
+node --test tests/js/structured-scanner.test.js
 ```
 
 CI must continue to cover:
@@ -171,12 +213,15 @@ CI must continue to cover:
 - shipped PHP syntax;
 - WPCS/PHPCS;
 - PHPCompatibility baseline;
+- Structured Scanner pure-JavaScript parser/mapping/completion tests;
 - runtime-integrity guards;
 - PHPUnit on PHP 8.2, 8.3, 8.4, and 8.5 unless the support policy changes.
 
 Unit/stub tests are not equivalent to a licensed WordPress + Gravity Forms integration test.
 
 When changing field rendering, editor behavior, or Gravity Forms lifecycle integration, add a real integration/manual verification step and record it in `docs/VALIDATION.md`.
+
+For Structured Scanner specifically, green parser/PHPUnit/CI evidence does not prove real browser capture, Form Editor persistence, Entry/export non-persistence, or AJAX/multi-page rerender behavior. Those claims remain `NOT_PROVEN` until executed in a compatible real WordPress + Gravity Forms environment.
 
 ## 11. Runtime-integrity guard
 
@@ -192,6 +237,8 @@ Do not reintroduce without explicit owner approval:
 - bundled Vazir/Shabnam/Yekan font systems
 - old payment/RSS/transaction-ID subsystems
 - SRWF identifiers or business logic
+
+Current CI must also continue to require the canonical Structured Scanner field/profile source files while that capability is in the active source tree.
 
 ## 12. Documentation rules
 
