@@ -135,9 +135,9 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 		}
 
 		$messages = array(
-			'notMapped' => esc_html__( 'Not mapped', 'persian-gravityforms' ),
+			'notMapped'         => esc_html__( 'Not mapped', 'persian-gravityforms' ),
 			/* translators: 1: target field ID, 2: target field label. */
-			'fieldOption' => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
+			'fieldOption'       => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
 			/* translators: %s: configured target field ID. */
 			'invalidTarget'     => esc_html__( 'Field %s — missing or unsupported', 'persian-gravityforms' ),
 			'invalidProfile'    => esc_html__( 'Select a valid Scanner profile.', 'persian-gravityforms' ),
@@ -356,7 +356,7 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 		}
 
 		return sprintf(
-			'<div class="ginput_container ginput_container_pgr_structured_scanner pgr-structured-scanner" data-pgr-structured-scanner="1" data-pgr-status="ready" data-pgr-scanner-id="%1$d" data-pgr-profile="%2$s" data-pgr-mappings="%3$s" data-pgr-targets="%4$s" data-pgr-message-processing="%5$s" data-pgr-message-success="%6$s" data-pgr-message-invalid="%7$s" data-pgr-message-segment-count="%8$s"><input type="text" class="pgr-structured-scanner__capture" data-pgr-scanner-capture="1" autocomplete="off" autocapitalize="off" spellcheck="false" dir="ltr" aria-label="%9$s"%10$s /><div class="pgr-structured-scanner__actions"><button type="button" class="pgr-structured-scanner__focus" data-pgr-scanner-focus="1"%10$s>%11$s</button><p class="pgr-structured-scanner__status" data-pgr-scanner-status="1" role="status" aria-live="polite" aria-atomic="true">%12$s</p></div></div>',
+			'<div class="ginput_container ginput_container_pgr_structured_scanner pgr-structured-scanner" data-pgr-structured-scanner="1" data-pgr-status="ready" data-pgr-scanner-id="%1$d" data-pgr-profile="%2$s" data-pgr-mappings="%3$s" data-pgr-targets="%4$s" data-pgr-message-processing="%5$s" data-pgr-message-success="%6$s" data-pgr-message-invalid="%7$s" data-pgr-message-segment-count="%8$s"><textarea class="pgr-structured-scanner__capture" data-pgr-scanner-capture="1" rows="2" autocomplete="off" autocapitalize="off" spellcheck="false" dir="ltr" aria-label="%9$s"%10$s></textarea><div class="pgr-structured-scanner__actions"><button type="button" class="pgr-structured-scanner__focus" data-pgr-scanner-focus="1"%10$s>%11$s</button><p class="pgr-structured-scanner__status" data-pgr-scanner-status="1" role="status" aria-live="polite" aria-atomic="true">%12$s</p></div></div>',
 			absint( $this->id ),
 			esc_attr( is_string( $this->scanner_profile ) ? $this->scanner_profile : '' ),
 			esc_attr( $mappings_json ),
