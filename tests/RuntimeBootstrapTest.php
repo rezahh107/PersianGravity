@@ -52,14 +52,18 @@ final class RuntimeBootstrapTest extends TestCase {
 		$this->assertSame( 'sayad_v01', $scanner->scanner_profile );
 		$this->assertSame( '', $scanner->get_value_save_entry( 'raw', array(), 'input_7', 1, array() ) );
 		$this->assertSame( '', $scanner->get_value_entry_detail( 'raw' ) );
+		$this->assertSame( '', $scanner->get_value_entry_list( 'raw', array(), '7', array(), array() ) );
 		$this->assertSame( '', $scanner->get_value_merge_tag( 'raw', '7', array(), array(), '', 'raw', false, false, 'text', false ) );
 		$this->assertSame( '', $scanner->get_value_export( array( '7' => 'raw' ) ) );
 
 		$form   = array( 'id' => 1, 'fields' => array( $scanner ) );
 		$markup = $scanner->get_field_input( $form );
 
+		$this->assertStringContainsString( '<textarea ', $markup );
 		$this->assertStringContainsString( 'data-pgr-scanner-capture="1"', $markup );
 		$this->assertStringContainsString( 'data-pgr-mappings="{}"', $markup );
+		$this->assertStringContainsString( '</textarea>', $markup );
+		$this->assertStringNotContainsString( '<input type="text" class="pgr-structured-scanner__capture"', $markup );
 		$this->assertStringNotContainsString( 'name="input_7"', $markup );
 		$this->assertStringNotContainsString( '>raw<', $markup );
 	}
