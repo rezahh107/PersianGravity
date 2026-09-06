@@ -100,6 +100,16 @@
 		return profile.parse( payload );
 	}
 
+	function decideCaptureAction( payload, profileId, trigger ) {
+		const parsed = parseScan( payload, profileId );
+		const explicitFinalization = trigger === 'tab' || trigger === 'paste';
+
+		return {
+			action: parsed.ok || explicitFinalization ? 'finalize' : 'continue',
+			parsed: parsed,
+		};
+	}
+
 	function normalizeTargetId( value ) {
 		if ( value === null || typeof value === 'undefined' || value === '' ) {
 			return '';
@@ -316,6 +326,7 @@
 		SUPPORTED_TARGET_TYPES: SUPPORTED_TARGET_TYPES,
 		normalizeDigits: normalizeDigits,
 		parseScan: parseScan,
+		decideCaptureAction: decideCaptureAction,
 		validateMappings: validateMappings,
 		buildUpdatePlan: buildUpdatePlan,
 	} );
