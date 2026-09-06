@@ -135,8 +135,10 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 		}
 
 		$messages = array(
-			'notMapped'         => esc_html__( 'Not mapped', 'persian-gravityforms' ),
-			'fieldOption'       => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
+			'notMapped' => esc_html__( 'Not mapped', 'persian-gravityforms' ),
+			/* translators: 1: target field ID, 2: target field label. */
+			'fieldOption' => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
+			/* translators: %s: configured target field ID. */
 			'invalidTarget'     => esc_html__( 'Field %s — missing or unsupported', 'persian-gravityforms' ),
 			'invalidProfile'    => esc_html__( 'Select a valid Scanner profile.', 'persian-gravityforms' ),
 			'invalidMapping'    => esc_html__( 'Scanner mapping metadata is invalid.', 'persian-gravityforms' ),
@@ -362,6 +364,7 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 			esc_attr__( 'Processing scan.', 'persian-gravityforms' ),
 			esc_attr__( 'Fields populated. You can scan again.', 'persian-gravityforms' ),
 			esc_attr__( 'Scan could not be applied. Check the scanner input or field mapping.', 'persian-gravityforms' ),
+			/* translators: 1: expected segment count, 2: received segment count. */
 			esc_attr__( 'Expected %1$d segments; received %2$d.', 'persian-gravityforms' ),
 			esc_attr__( 'Scanner input', 'persian-gravityforms' ),
 			$disabled,
