@@ -32,6 +32,9 @@ jobs:
       - name: PHPCompatibility minimum baseline
         run: composer compat
 
+      - name: Structured Scanner pure JavaScript tests
+        run: node --test tests/js/structured-scanner.test.js
+
       - name: Runtime integrity guard
         shell: bash
         run: |
@@ -43,6 +46,8 @@ jobs:
           ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
           test -f includes/fields/class-gf-field-national-id.php
           test -f includes/fields/class-gf-field-jalali-date.php
+          test -f includes/fields/class-gf-field-structured-scanner.php
+          test -f includes/class-pgr-scanner-profile-registry.php
 
   unit:
     runs-on: ubuntu-latest

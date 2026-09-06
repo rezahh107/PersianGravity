@@ -9,6 +9,7 @@ $GLOBALS['pgr_test_actions']  = array();
 $GLOBALS['pgr_test_filters']  = array();
 $GLOBALS['pgr_test_options']  = array();
 $GLOBALS['pgr_test_enqueued'] = array();
+$GLOBALS['pgr_test_styles']   = array();
 
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) {
 	$GLOBALS['pgr_test_actions'][ $hook ][ $priority ][] = array( $callback, $accepted_args );
@@ -51,4 +52,5 @@ function settings_fields() {}
 function do_settings_sections() {}
 function submit_button() {}
 function wp_enqueue_script( $handle ) { $GLOBALS['pgr_test_enqueued'][] = $handle; }
+function wp_enqueue_style( $handle ) { $GLOBALS['pgr_test_styles'][] = $handle; }
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ] ); }

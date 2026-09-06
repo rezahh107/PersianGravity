@@ -28,6 +28,9 @@ final class PGR_Core {
 		GF_Fields::register( new PGR_GF_Field_Jalali_Date() );
 		PGR_GF_Field_Jalali_Date::register_editor_hooks();
 
+		GF_Fields::register( new PGR_GF_Field_Structured_Scanner() );
+		PGR_GF_Field_Structured_Scanner::register_editor_hooks();
+
 		$admin = new PGR_Admin();
 		$admin->hooks();
 
@@ -120,8 +123,7 @@ final class PGR_Core {
 	}
 
 	/**
-	 * Load the small client-side digit normalizer only when a National ID field
-	 * explicitly opts into typing-time normalization.
+	 * Load field-owned frontend assets only when the current form needs them.
 	 *
 	 * @param array $form    Current form.
 	 * @param bool  $is_ajax Whether AJAX is enabled.
@@ -130,18 +132,63 @@ final class PGR_Core {
 	public static function enqueue_field_assets( $form, $is_ajax ) {
 		unset( $is_ajax );
 
+		$needs_digit_normalizer = false;
+		$needs_scanner          = false;
+
 		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property; renaming would change stored field configuration.
-			if ( is_object( $field ) && 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
-				wp_enqueue_script(
-					'pgr-frontend',
-					PGR_URL . 'assets/js/pgr-frontend.js',
-					array(),
-					PGR_VERSION,
-					true
-				);
-				return;
+			if ( ! is_object( $field ) ) {
+				continue;
+			}
+
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property.
+			if ( 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
+				$needs_digit_normalizer = true;
+			}
+
+			if ( 'pgr_structured_scanner' === $field->type ) {
+				$needs_scanner = true;
+			}
+
+			if ( $needs_digit_normalizer && $needs_scanner ) {
+				break;
 			}
 		}
+
+		if ( $needs_digit_normalizer ) {
+			wp_enqueue_script(
+				'pgr-frontend',
+				PGR_URL . 'assets/js/pgr-frontend.js',
+				array(),
+				PGR_VERSION,
+				true
+			);
+		}
+
+		if ( ! $needs_scanner ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'pgr-structured-scanner-core',
+			PGR_URL . 'assets/js/pgr-structured-scanner-core.js',
+			array(),
+			PGR_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
+			'pgr-structured-scanner',
+			PGR_URL . 'assets/js/pgr-structured-scanner.js',
+			array( 'pgr-structured-scanner-core' ),
+			PGR_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'pgr-structured-scanner-style',
+			PGR_URL . 'assets/css/pgr-structured-scanner.css',
+			array(),
+			PGR_VERSION
+		);
 	}
 }
