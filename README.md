@@ -12,7 +12,7 @@
 - Text domain: `persian-gravityforms`
 - Entrypoint: `persian-gravityforms.php`
 
-نسخه 4 معماری‌های موازی و legacy قبلی را حذف کرده و فقط یک runtime اصلی نگه می‌دارد.
+نسخه 4 معماری‌های موازی و legacy قبلی را حذف کرده و فقط یک runtime اصلی نگه می‌دارد. قابلیت Structured Scanner فعلاً در PR توسعه‌ای قرار دارد و به معنی انتشار نسخه جدید نیست؛ `4.0.0` و Stable tag بدون تغییر باقی مانده‌اند.
 
 ## قابلیت‌ها
 
@@ -48,6 +48,41 @@
 
 این افزونه Date field عادی Gravity Forms را override نمی‌کند.
 
+### Structured Scanner v0.1
+
+فیلد کنترل‌گر غیرذخیره‌ای Gravity Forms با type زیر:
+
+`pgr_structured_scanner`
+
+پروفایل ساختاری فعلی:
+
+`sayad_v01`
+
+خروجی‌های این پروفایل دقیقاً به این ترتیب هستند:
+
+1. `qr_version`
+2. `owner_type`
+3. `owner_identifier`
+4. `iban`
+5. `bank_branch`
+6. `cheque_serial`
+7. `sayad_id`
+
+رفتار فعلی:
+
+- Scanner یک `textarea` چندخطی transient و بدون `name="input_<id>"` رندر می‌کند؛ raw payload خودش Entry value نیست.
+- LF و CRLF در مرز capture حفظ می‌شوند و parser موجود آن‌ها را normalize می‌کند.
+- ارقام فارسی/عربی به ASCII به‌صورت string تبدیل می‌شوند و leading zero از بین نمی‌رود.
+- Enterهای جداکننده تا وقتی parser payload را کامل و معتبر ندانسته‌اند scan را زودهنگام finalize نمی‌کنند.
+- Enter روی payload کامل، Tab به‌عنوان finalization صریح، paste صریح، و idle روی payload کامل از همان parser موجود برای تصمیم completion استفاده می‌کنند.
+- mapping فقط به Gravity Forms Single Line Text (`text`) و Hidden (`hidden`) مجاز است.
+- `scanner_profile` و `scanner_mappings` configuration ذخیره می‌شوند؛ raw scan ذخیره نمی‌شود.
+- mapping نامعتبر، target حذف‌شده/نامعتبر، duplicate target و self-target به‌صورت fail-closed رد می‌شوند.
+- mapped-field update اتمیک است: ابتدا کل plan معتبر می‌شود و سپس همه مقصدها به‌روزرسانی می‌شوند؛ scan ناموفق نباید بخشی از state موفق قبلی را تغییر دهد.
+- assetهای Scanner فقط روی فرم‌هایی load می‌شوند که `pgr_structured_scanner` دارند و lifecycle بعد از render از `gform/post_render` پشتیبانی می‌کند.
+
+این پروفایل فقط **ساختار هفت‌بخشی** را تفسیر می‌کند. این قابلیت authority برای checksum صیادی، اعتبار بانکی، cross-bank compatibility یا business validation مالی ایجاد نمی‌کند.
+
 ### قابلیت‌های عمومی دیگر
 
 - form-level Persian/Arabic digit normalization قبل از ذخیره Entry
@@ -68,8 +103,10 @@ persian-gravityforms.php
                     ├── PGR_Address
                     ├── PGR_Currency
                     ├── PGR_Persian_Date
+                    ├── PGR_Scanner_Profile_Registry
                     ├── PGR_GF_Field_National_ID
-                    └── PGR_GF_Field_Jalali_Date
+                    ├── PGR_GF_Field_Jalali_Date
+                    └── PGR_GF_Field_Structured_Scanner
 ```
 
 جزئیات بیشتر: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
@@ -84,6 +121,7 @@ PersianGravity عمداً این کارها را انجام **نمی‌دهد**:
 - workflow/business logic
 - منطق SRWF یا سایر پروژه‌های خاص
 - custom database
+- bank/checksum authority برای Structured Scanner
 - compatibility با field IDها و migrationهای legacy حذف‌شده
 
 ## نصب
@@ -91,7 +129,7 @@ PersianGravity عمداً این کارها را انجام **نمی‌دهد**:
 1. پوشه افزونه را در `wp-content/plugins/` قرار دهید.
 2. Gravity Forms 3.0+ باید نصب و فعال باشد.
 3. افزونه **Persian Gravity Forms** را فعال کنید.
-4. در Gravity Forms Form Editor، فیلدهای `Jalali Date` و `Iranian National ID` در Advanced Fields در دسترس هستند.
+4. در Gravity Forms Form Editor، فیلدهای `Jalali Date`، `Iranian National ID` و در source فعلی PR، `Structured Scanner` در Advanced Fields در دسترس هستند.
 
 ## تنظیمات
 
@@ -103,6 +141,8 @@ PersianGravity عمداً این کارها را انجام **نمی‌دهد**:
 
 همچنین هر فرم یک تنظیم `Persian digit normalization` دارد که در صورت فعال بودن، مقادیر string را قبل از ذخیره به ارقام ASCII تبدیل می‌کند.
 
+Structured Scanner تنظیم global جدیدی اضافه نمی‌کند. configuration آن field-owned است و در `scanner_profile` و `scanner_mappings` نگه‌داری می‌شود.
+
 ## توسعه و تست
 
 ```bash
@@ -110,11 +150,12 @@ composer install
 composer test
 composer cs
 composer compat
+node --test tests/js/structured-scanner.test.js
 ```
 
-CI فعلی runtime واقعی shipped plugin را بررسی می‌کند و PHPUnit را روی PHP `8.2`, `8.3`, `8.4`, `8.5` اجرا می‌کند.
+CI فعلی runtime واقعی shipped plugin را بررسی می‌کند، Scanner pure-JavaScript tests را اجرا می‌کند و PHPUnit را روی PHP `8.2`, `8.3`, `8.4`, `8.5` اجرا می‌کند.
 
-توجه: unit/runtime CI جای integration test روی یک WordPress + Gravity Forms licensed environment واقعی را نمی‌گیرد. وضعیت validation و gapهای شناخته‌شده در [`docs/VALIDATION.md`](docs/VALIDATION.md) ثبت می‌شوند.
+توجه: unit/runtime CI جای integration test روی یک WordPress + Gravity Forms licensed environment واقعی را نمی‌گیرد. برای Structured Scanner، مرورگر/Gravity Forms واقعی تا وقتی طبق `docs/VALIDATION.md` اجرا نشده باشد `NOT_PROVEN` باقی می‌ماند.
 
 ## Translation
 
@@ -140,5 +181,7 @@ composer i18n:pot
 - CI matrix
 - changelog
 - production package contents
+
+Structured Scanner در این PR موجب version bump یا release نمی‌شود.
 
 مستندات contributor/agent: [`AGENTS.md`](AGENTS.md)
