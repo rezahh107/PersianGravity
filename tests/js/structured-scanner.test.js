@@ -243,3 +243,64 @@ test( 'failed second scan cannot modify state produced by the first scan', () =>
 	assert.equal( Object.prototype.hasOwnProperty.call( failedPlan, 'updates' ), false );
 	assert.deepEqual( afterFailedSecond, afterFirst );
 } );
+
+test( 'Enter keeps one through six segments in progress', () => {
+	for ( let count = 1; count <= 6; count++ ) {
+		const raw = payload( validValues().slice( 0, count ) );
+		const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'enter' );
+
+		assert.equal( decision.action, 'continue' );
+		assert.deepEqual( decision.parsed, scanner.parseScan( raw, 'sayad_v01' ) );
+	}
+} );
+
+test( 'Enter finalizes only when the existing parser accepts the complete payload', () => {
+	const raw = payload( validValues() );
+	const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'enter' );
+
+	assert.equal( decision.action, 'finalize' );
+	assert.equal( decision.parsed.ok, true );
+	assert.deepEqual( decision.parsed, scanner.parseScan( raw, 'sayad_v01' ) );
+} );
+
+test( 'Tab explicitly finalizes incomplete input so the invalid result can be surfaced', () => {
+	const raw = payload( validValues().slice( 0, 4 ) );
+	const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'tab' );
+
+	assert.equal( decision.action, 'finalize' );
+	assert.equal( decision.parsed.ok, false );
+	assert.equal( decision.parsed.code, 'INVALID_SEGMENT_COUNT' );
+} );
+
+test( 'idle leaves incomplete keyboard accumulation untouched', () => {
+	const raw = payload( validValues().slice( 0, 5 ) );
+	const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'idle' );
+
+	assert.equal( decision.action, 'continue' );
+	assert.equal( decision.parsed.ok, false );
+} );
+
+test( 'idle may finalize a complete parser-valid payload', () => {
+	const raw = payload( validValues() );
+	const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'idle' );
+
+	assert.equal( decision.action, 'finalize' );
+	assert.equal( decision.parsed.ok, true );
+} );
+
+test( 'paste is explicit finalization and preserves parser failure semantics', () => {
+	const raw = payload( validValues().slice( 0, 6 ), '\r\n' );
+	const decision = scanner.decideCaptureAction( raw, 'sayad_v01', 'paste' );
+
+	assert.equal( decision.action, 'finalize' );
+	assert.equal( decision.parsed.ok, false );
+	assert.deepEqual( decision.parsed, scanner.parseScan( raw, 'sayad_v01' ) );
+} );
+
+test( 'delimiter-less collapsed payload remains rejected by the parser', () => {
+	const raw = validValues().join( '' );
+	const result = scanner.parseScan( raw, 'sayad_v01' );
+
+	assert.equal( result.ok, false );
+	assert.equal( result.code, 'INVALID_SEGMENT_COUNT' );
+} );
