@@ -170,8 +170,8 @@ final class PGR_Product_Admin {
 					);
 				}
 
-				/* translators: %d: number of effective scanner profiles. */
 				$profile_count = sprintf(
+					/* translators: %d: number of effective scanner profiles. */
 					__( '%d effective profiles', 'persian-gravityforms' ),
 					count( PGR_Scanner_Profile_Registry::all() )
 				);
