@@ -31,19 +31,10 @@ jobs:
         run: |
           set -euo pipefail
           tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
+          trap 'rm -f "$tmp_mo"' EXIT
           msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
-
-      - name: Upload generated gettext diagnostic
-        uses: actions/upload-artifact@v4
-        with:
-          name: pgr-gnu-msgfmt-fa-ir
-          path: /tmp/persian-gravityforms-fa_IR.mo
-          if-no-files-found: error
-
-      - name: Compare shipped gettext catalog
-        shell: bash
-        run: cmp -s /tmp/persian-gravityforms-fa_IR.mo languages/persian-gravityforms-fa_IR.mo
+          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
 
       - name: Syntax check shipped PHP
         run: find persian-gravityforms.php includes admin uninstall.php -type f -name '*.php' -print0 | xargs -0 -n1 php -l
