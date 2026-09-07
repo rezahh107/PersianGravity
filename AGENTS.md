@@ -100,4 +100,4 @@ Unit/stub/source tests are not equivalent to a real WordPress + licensed Gravity
 
 Do not reintroduce `src/`, `GFPersian_*`, `mellicart`, `ir_national_id`, external `load_textdomain_mofile` interception, bundled fonts, old payment/RSS/transaction subsystems or SRWF identifiers.
 
-Work on focused branches. Do not force-push shared history, merge to `main`, publish tags/releases`, or claim browser validation without actual execution. Material runtime changes update README, readme.txt, ARCHITECTURE, VALIDATION and—when governance changes—AGENTS in the same PR.
+Work on focused branches. Do not force-push shared history, merge to `main`, publish tags/releases, or claim browser validation without actual execution. Material runtime changes update README, readme.txt, ARCHITECTURE, VALIDATION and—when governance changes—AGENTS in the same PR.

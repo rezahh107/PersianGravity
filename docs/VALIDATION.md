@@ -115,3 +115,7 @@ Therefore all of the following remain `NOT_EXECUTED` / `NOT_PROVEN` until perfor
 Until repository CI is green, `SOURCE_IMPLEMENTATION_PASS` is not established.
 
 Until real WordPress/GF checks are executed, browser/admin/GF behavior remains `NOT_PROVEN` even if source/unit tests pass.
+
+## Historical validation record
+
+The complete pre-4.2 validation record from baseline `b1a52c975988bf60f473d4b843de057ed5bd0c06` is preserved byte-for-byte as `docs/VALIDATION_HISTORY_4.1.md`. It remains historical evidence and is not promoted to proof of 4.2 behavior.
