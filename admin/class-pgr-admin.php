@@ -373,10 +373,10 @@ final class PGR_Admin {
 			$this->redirect_profiles( array( 'pgr_notice' => 'duplicate_error' ) );
 		}
 
-		$new_id            = $this->next_duplicate_id( $source['id'] );
-		$copy              = $source;
-		$copy['id']        = $new_id;
-		$copy['label']     = sprintf(
+		$new_id        = $this->next_duplicate_id( $source['id'] );
+		$copy          = $source;
+		$copy['id']    = $new_id;
+		$copy['label'] = sprintf(
 			/* translators: %s: source Scanner profile label. */
 			__( 'Copy of %s', 'persian-gravityforms' ),
 			$source['label']
