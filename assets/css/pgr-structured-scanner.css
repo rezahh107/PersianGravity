@@ -28,6 +28,7 @@
 	font-weight: 600;
 }
 
-.pgr-structured-scanner[data-pgr-status="invalid"] .pgr-structured-scanner__status {
+.pgr-structured-scanner[data-pgr-status="invalid"] .pgr-structured-scanner__status,
+.pgr-structured-scanner[data-pgr-status="configuration"] .pgr-structured-scanner__status {
 	font-weight: 700;
 }

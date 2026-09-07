@@ -1,0 +1,32 @@
+.pgr-scanner-editor-mappings {
+	margin-block: 16px 0;
+	padding: 0;
+	border: 0;
+}
+
+.pgr-scanner-editor-mapping-row {
+	display: grid;
+	grid-template-columns: minmax(150px, 1fr) minmax(180px, 1.2fr);
+	gap: 12px;
+	align-items: center;
+	margin-block: 8px;
+}
+
+.pgr-scanner-editor-mapping-label {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.pgr-scanner-editor-mapping-key {
+	direction: ltr;
+	unicode-bidi: isolate;
+	font-size: 11px;
+}
+
+@media (max-width: 782px) {
+	.pgr-scanner-editor-mapping-row {
+		grid-template-columns: 1fr;
+	}
+}
