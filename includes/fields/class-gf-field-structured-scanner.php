@@ -367,7 +367,7 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field public API property.
 			$display_only = ! empty( $field->displayOnly );
-			$targets[]     = array(
+			$targets[]    = array(
 				'id'          => (string) absint( $field->id ),
 				'type'        => (string) $field->type,
 				'displayOnly' => $display_only,
