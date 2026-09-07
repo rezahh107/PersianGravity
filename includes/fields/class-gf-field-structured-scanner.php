@@ -8,71 +8,178 @@
 defined( 'ABSPATH' ) || exit;
 
 final class PGR_GF_Field_Structured_Scanner extends GF_Field {
+
+	/** @var string */
 	public $type = 'pgr_structured_scanner';
+
+	/** @var bool */
 	// phpcs:ignore WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Gravity Forms GF_Field public API property.
 	public $displayOnly = true;
+
+	/** @var string */
 	public $scanner_profile = PGR_Scanner_Profile_Registry::SAYAD_V01;
+
+	/** @var array */
 	public $scanner_mappings = array();
 
+	/**
+	 * Register field-owned Form Editor hooks.
+	 *
+	 * @return void
+	 */
 	public static function register_editor_hooks() {
 		add_action( 'gform_field_advanced_settings', array( __CLASS__, 'render_scanner_setting' ), 10, 2 );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_editor_assets' ) );
 	}
 
+	/**
+	 * Load Scanner editor CSS only on the Gravity Forms Form Editor.
+	 *
+	 * @return void
+	 */
 	public static function enqueue_editor_assets() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only page routing used only to scope an asset enqueue.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		if ( 'gf_edit_forms' !== $page ) { return; }
-		wp_enqueue_style( 'pgr-scanner-editor', PGR_URL . 'assets/css/pgr-scanner-editor.css', array(), PGR_VERSION );
+		if ( 'gf_edit_forms' !== $page ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'pgr-scanner-editor',
+			PGR_URL . 'assets/css/pgr-scanner-editor.css',
+			array(),
+			PGR_VERSION
+		);
 	}
 
-	public function get_form_editor_field_title() { return esc_attr__( 'Structured Scanner', 'persian-gravityforms' ); }
-	public function get_form_editor_button() { return array( 'group' => 'advanced_fields', 'text' => $this->get_form_editor_field_title() ); }
-	public function is_conditional_logic_supported() { return false; }
-	public function get_form_editor_field_settings() { return array( 'label_setting', 'description_setting', 'css_class_setting', 'label_placement_setting', 'pgr_scanner_setting' ); }
+	/**
+	 * Return the Form Editor field title.
+	 *
+	 * @return string
+	 */
+	public function get_form_editor_field_title() {
+		return esc_attr__( 'Structured Scanner', 'persian-gravityforms' );
+	}
 
+	/**
+	 * Return Form Editor button metadata.
+	 *
+	 * @return array<string,string>
+	 */
+	public function get_form_editor_button() {
+		return array(
+			'group' => 'advanced_fields',
+			'text'  => $this->get_form_editor_field_title(),
+		);
+	}
+
+	/**
+	 * Structured Scanner does not support conditional logic.
+	 *
+	 * @return bool
+	 */
+	public function is_conditional_logic_supported() {
+		return false;
+	}
+
+	/**
+	 * Return the supported Form Editor settings.
+	 *
+	 * @return array<int,string>
+	 */
+	public function get_form_editor_field_settings() {
+		return array(
+			'label_setting',
+			'description_setting',
+			'css_class_setting',
+			'label_placement_setting',
+			'pgr_scanner_setting',
+		);
+	}
+
+	/**
+	 * Render profile and mapping controls.
+	 *
+	 * @param int $position Settings position.
+	 * @param int $form_id  Current form ID.
+	 * @return void
+	 */
 	public static function render_scanner_setting( $position, $form_id ) {
 		unset( $form_id );
-		if ( 50 !== $position ) { return; }
+		if ( 50 !== $position ) {
+			return;
+		}
+
 		$profiles = PGR_Scanner_Profile_Registry::active();
 		?>
 		<li class="pgr_scanner_setting field_setting">
 			<label for="pgr_scanner_profile" class="section_label"><?php esc_html_e( 'Scanner profile', 'persian-gravityforms' ); ?></label>
-			<select id="pgr_scanner_profile" onchange="PGRScannerEditor.setProfile(this.value);"><option value=""><?php esc_html_e( 'Select a profile', 'persian-gravityforms' ); ?></option><?php foreach ( $profiles as $profile_id => $profile ) : ?><option value="<?php echo esc_attr( $profile_id ); ?>"><?php echo esc_html( $profile['label'] ); ?></option><?php endforeach; ?></select>
-			<fieldset class="pgr-scanner-editor-mappings"><legend class="section_label"><?php esc_html_e( 'Output mapping', 'persian-gravityforms' ); ?></legend><div data-pgr-scanner-mapping-list="1"></div></fieldset>
+			<select id="pgr_scanner_profile" onchange="PGRScannerEditor.setProfile(this.value);">
+				<option value=""><?php esc_html_e( 'Select a profile', 'persian-gravityforms' ); ?></option>
+				<?php foreach ( $profiles as $profile_id => $profile ) : ?>
+					<option value="<?php echo esc_attr( $profile_id ); ?>"><?php echo esc_html( $profile['label'] ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<fieldset class="pgr-scanner-editor-mappings">
+				<legend class="section_label"><?php esc_html_e( 'Output mapping', 'persian-gravityforms' ); ?></legend>
+				<div data-pgr-scanner-mapping-list="1"></div>
+			</fieldset>
 			<div id="pgr_scanner_mapping_warning" class="notice notice-warning inline" role="status" hidden><p></p></div>
 			<p class="description"><?php esc_html_e( 'Map profile outputs to ordinary Single Line Text or Hidden fields. Outputs may remain unmapped.', 'persian-gravityforms' ); ?></p>
 		</li>
 		<?php
 	}
 
+	/**
+	 * Return the Form Editor integration script.
+	 *
+	 * New mappings are stored by output key. Legacy positional arrays are read
+	 * against the profile's immutable executable contract.
+	 *
+	 * @return string
+	 */
 	public function get_form_editor_inline_script_on_page_render() {
 		$profiles = array();
 		foreach ( PGR_Scanner_Profile_Registry::all() as $profile_id => $profile ) {
 			$profiles[ $profile_id ] = array(
-				'label' => $profile['label'], 'enabled' => ! empty( $profile['enabled'] ),
-				'outputs' => array_values( array_map( static function ( $output ) { return array( 'key' => $output['key'], 'label' => $output['label'] ); }, $profile['outputs'] ) ),
+				'label'   => $profile['label'],
+				'enabled' => ! empty( $profile['enabled'] ),
+				'outputs' => array_values(
+					array_map(
+						static function ( $output ) {
+							return array(
+								'key'   => $output['key'],
+								'label' => $output['label'],
+							);
+						},
+						$profile['outputs']
+					)
+				),
 			);
 		}
+
 		$messages = array(
-			'notMapped' => esc_html__( 'Not mapped', 'persian-gravityforms' ),
+			'notMapped'          => esc_html__( 'Not mapped', 'persian-gravityforms' ),
 			/* translators: 1: field ID, 2: field label. */
-			'fieldOption' => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
+			'fieldOption'        => esc_html__( 'Field %1$s — %2$s', 'persian-gravityforms' ),
 			/* translators: %s: field ID. */
-			'invalidTarget' => esc_html__( 'Field %s — missing or unsupported', 'persian-gravityforms' ),
+			'invalidTarget'      => esc_html__( 'Field %s — missing or unsupported', 'persian-gravityforms' ),
 			/* translators: %s: Scanner profile ID. */
 			'unavailableProfile' => esc_html__( 'The selected Scanner profile is no longer available: %s', 'persian-gravityforms' ),
-			'invalidMapping' => esc_html__( 'Scanner mapping metadata is invalid.', 'persian-gravityforms' ),
-			'missingTarget' => esc_html__( 'A configured Scanner target field no longer exists.', 'persian-gravityforms' ),
-			'unsupportedTarget' => esc_html__( 'A configured Scanner target is not a supported Single Line Text or Hidden field.', 'persian-gravityforms' ),
-			'duplicateTarget' => esc_html__( 'Two Scanner outputs cannot map to the same destination field.', 'persian-gravityforms' ),
-			'selfTarget' => esc_html__( 'Structured Scanner cannot target itself.', 'persian-gravityforms' ),
-			'destination' => esc_html__( 'Destination', 'persian-gravityforms' ),
-			'unavailableSuffix' => esc_html__( 'unavailable', 'persian-gravityforms' ),
+			'invalidMapping'     => esc_html__( 'Scanner mapping metadata is invalid.', 'persian-gravityforms' ),
+			'missingTarget'      => esc_html__( 'A configured Scanner target field no longer exists.', 'persian-gravityforms' ),
+			'unsupportedTarget'  => esc_html__( 'A configured Scanner target is not a supported Single Line Text or Hidden field.', 'persian-gravityforms' ),
+			'duplicateTarget'    => esc_html__( 'Two Scanner outputs cannot map to the same destination field.', 'persian-gravityforms' ),
+			'selfTarget'         => esc_html__( 'Structured Scanner cannot target itself.', 'persian-gravityforms' ),
+			'destination'        => esc_html__( 'Destination', 'persian-gravityforms' ),
+			'unavailableSuffix'  => esc_html__( 'unavailable', 'persian-gravityforms' ),
 		);
-		$title = wp_json_encode( $this->get_form_editor_field_title() );
-		$default = wp_json_encode( PGR_Scanner_Profile_Registry::SAYAD_V01 );
+
+		$title    = wp_json_encode( $this->get_form_editor_field_title() );
+		$default  = wp_json_encode( PGR_Scanner_Profile_Registry::SAYAD_V01 );
 		$profiles = wp_json_encode( $profiles );
 		$messages = wp_json_encode( $messages );
+
 		return "
 			function SetDefaultValues_pgr_structured_scanner(field) { field.label = {$title}; field.scanner_profile = {$default}; field.scanner_mappings = {}; }
 			(function($) {
@@ -102,58 +209,171 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 		";
 	}
 
+	/**
+	 * Render the transient Persian-first Scanner component.
+	 *
+	 * @param array      $form  Current form.
+	 * @param string     $value Current value.
+	 * @param array|null $entry Current entry.
+	 * @return string
+	 */
 	public function get_field_input( $form, $value = '', $entry = null ) {
 		unset( $value, $entry );
+
 		$runtime_mappings = $this->runtime_mappings();
-		$mappings_json = wp_json_encode( null === $runtime_mappings ? null : (object) $runtime_mappings );
-		$targets_json = wp_json_encode( $this->runtime_target_descriptors( $form ) );
-		$disabled = $this->is_form_editor() ? ' disabled="disabled"' : '';
-		$profile = PGR_Scanner_Profile_Registry::get( $this->scanner_profile );
-		$is_operational = null !== $profile && ! empty( $profile['enabled'] ) && null !== $runtime_mappings;
-		$initial_status = $is_operational ? 'ready' : 'configuration';
-		$initial_message = $is_operational ? __( 'آماده دریافت اطلاعات', 'persian-gravityforms' ) : __( 'اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید.', 'persian-gravityforms' );
-		$mappings_json = false === $mappings_json ? 'null' : $mappings_json;
-		$targets_json = false === $targets_json ? '[]' : $targets_json;
+		$mappings_json    = wp_json_encode( null === $runtime_mappings ? null : (object) $runtime_mappings );
+		$targets_json     = wp_json_encode( $this->runtime_target_descriptors( $form ) );
+		$disabled         = $this->is_form_editor() ? ' disabled="disabled"' : '';
+		$profile          = PGR_Scanner_Profile_Registry::get( $this->scanner_profile );
+		$is_operational   = null !== $profile && ! empty( $profile['enabled'] ) && null !== $runtime_mappings;
+		$initial_status   = $is_operational ? 'ready' : 'configuration';
+		$initial_message  = $is_operational ? __( 'آماده دریافت اطلاعات', 'persian-gravityforms' ) : __( 'اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید.', 'persian-gravityforms' );
+		$mappings_json    = false === $mappings_json ? 'null' : $mappings_json;
+		$targets_json     = false === $targets_json ? '[]' : $targets_json;
+
 		return sprintf(
 			'<div class="ginput_container ginput_container_pgr_structured_scanner pgr-structured-scanner" dir="rtl" data-pgr-structured-scanner="1" data-pgr-status="%1$s" data-pgr-scanner-id="%2$d" data-pgr-profile="%3$s" data-pgr-mappings="%4$s" data-pgr-targets="%5$s" data-pgr-message-ready="%6$s" data-pgr-message-processing="%7$s" data-pgr-message-success="%8$s" data-pgr-message-invalid="%9$s" data-pgr-message-configuration="%10$s"><div class="pgr-structured-scanner__header"><h3 class="pgr-structured-scanner__title">%11$s</h3><span class="pgr-structured-scanner__state-badge" aria-hidden="true">%12$s</span></div><p class="pgr-structured-scanner__lead" id="pgr-scanner-help-%2$d">%13$s</p><p class="pgr-structured-scanner__privacy">%14$s</p><textarea class="pgr-structured-scanner__capture" data-pgr-scanner-capture="1" rows="1" autocomplete="off" autocapitalize="off" spellcheck="false" dir="ltr" aria-label="%15$s" aria-describedby="pgr-scanner-help-%2$d" placeholder="%16$s"%17$s></textarea><div class="pgr-structured-scanner__actions"><button type="button" class="pgr-structured-scanner__focus" data-pgr-scanner-focus="1"%17$s>%18$s</button><p class="pgr-structured-scanner__status" data-pgr-scanner-status="1" role="status" aria-live="polite" aria-atomic="true">%19$s</p></div></div>',
-			esc_attr( $initial_status ), absint( $this->id ), esc_attr( is_string( $this->scanner_profile ) ? $this->scanner_profile : '' ), esc_attr( $mappings_json ), esc_attr( $targets_json ),
-			esc_attr__( 'آماده دریافت اطلاعات', 'persian-gravityforms' ), esc_attr__( 'در حال خواندن اطلاعات…', 'persian-gravityforms' ), esc_attr__( 'اطلاعات چک با موفقیت خوانده شد.', 'persian-gravityforms' ), esc_attr__( 'اطلاعات اسکن‌شده قابل خواندن نبود. دوباره تلاش کنید.', 'persian-gravityforms' ), esc_attr__( 'اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید.', 'persian-gravityforms' ),
-			esc_html__( 'اسکن اطلاعات چک', 'persian-gravityforms' ), esc_html__( 'وضعیت', 'persian-gravityforms' ), esc_html__( 'اسکنر را روی کد چک بگیرید.', 'persian-gravityforms' ), esc_html__( 'اطلاعات خوانده‌شده در فیلدهای چک قرار می‌گیرد؛ خود کد اسکن نگهداری نمی‌شود.', 'persian-gravityforms' ), esc_attr__( 'ورودی اسکنر', 'persian-gravityforms' ), esc_attr__( 'برای اسکن آماده است', 'persian-gravityforms' ), $disabled, esc_html__( 'آماده‌سازی برای اسکن', 'persian-gravityforms' ), esc_html( $initial_message )
+			esc_attr( $initial_status ),
+			absint( $this->id ),
+			esc_attr( is_string( $this->scanner_profile ) ? $this->scanner_profile : '' ),
+			esc_attr( $mappings_json ),
+			esc_attr( $targets_json ),
+			esc_attr__( 'آماده دریافت اطلاعات', 'persian-gravityforms' ),
+			esc_attr__( 'در حال خواندن اطلاعات…', 'persian-gravityforms' ),
+			esc_attr__( 'اطلاعات چک با موفقیت خوانده شد.', 'persian-gravityforms' ),
+			esc_attr__( 'اطلاعات اسکن‌شده قابل خواندن نبود. دوباره تلاش کنید.', 'persian-gravityforms' ),
+			esc_attr__( 'اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید.', 'persian-gravityforms' ),
+			esc_html__( 'اسکن اطلاعات چک', 'persian-gravityforms' ),
+			esc_html__( 'وضعیت', 'persian-gravityforms' ),
+			esc_html__( 'اسکنر را روی کد چک بگیرید.', 'persian-gravityforms' ),
+			esc_html__( 'اطلاعات خوانده‌شده در فیلدهای چک قرار می‌گیرد؛ خود کد اسکن نگهداری نمی‌شود.', 'persian-gravityforms' ),
+			esc_attr__( 'ورودی اسکنر', 'persian-gravityforms' ),
+			esc_attr__( 'برای اسکن آماده است', 'persian-gravityforms' ),
+			$disabled,
+			esc_html__( 'آماده‌سازی برای اسکن', 'persian-gravityforms' ),
+			esc_html( $initial_message )
 		);
 	}
 
-	public function get_value_save_entry( $value, $form, $input_name, $lead_id, $lead ) { unset( $value, $form, $input_name, $lead_id, $lead ); return ''; }
-	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) { unset( $value, $currency, $use_text, $format, $media ); return ''; }
-	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) { unset( $value, $entry, $field_id, $columns, $form ); return ''; }
-	public function get_value_merge_tag( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br ) { unset( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br ); return ''; }
-	public function get_value_export( $entry, $input_id = '', $use_text = false, $is_csv = false ) { unset( $entry, $input_id, $use_text, $is_csv ); return ''; }
+	/**
+	 * Structured Scanner never contributes data to Entry persistence.
+	 *
+	 * @param mixed $value      Submitted value.
+	 * @param array $form       Form.
+	 * @param mixed $input_name Input name.
+	 * @param mixed $lead_id    Lead ID.
+	 * @param mixed $lead       Lead.
+	 * @return string
+	 */
+	public function get_value_save_entry( $value, $form, $input_name, $lead_id, $lead ) {
+		unset( $value, $form, $input_name, $lead_id, $lead );
+		return '';
+	}
 
+	/** @return string */
+	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
+		unset( $value, $currency, $use_text, $format, $media );
+		return '';
+	}
+
+	/** @return string */
+	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) {
+		unset( $value, $entry, $field_id, $columns, $form );
+		return '';
+	}
+
+	/** @return string */
+	public function get_value_merge_tag( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br ) {
+		unset( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br );
+		return '';
+	}
+
+	/** @return string */
+	public function get_value_export( $entry, $input_id = '', $use_text = false, $is_csv = false ) {
+		unset( $entry, $input_id, $use_text, $is_csv );
+		return '';
+	}
+
+	/**
+	 * Normalize keyed mappings and legacy positional mappings for runtime use.
+	 *
+	 * @return array<string,string>|null
+	 */
 	private function runtime_mappings() {
 		$outputs = PGR_Scanner_Profile_Registry::output_keys( $this->scanner_profile );
-		if ( empty( $outputs ) ) { return null; }
+		if ( empty( $outputs ) ) {
+			return null;
+		}
+
 		$stored = $this->scanner_mappings;
-		if ( is_object( $stored ) ) { $stored = get_object_vars( $stored ); }
-		if ( ! is_array( $stored ) ) { return null; }
+		if ( is_object( $stored ) ) {
+			$stored = get_object_vars( $stored );
+		}
+		if ( ! is_array( $stored ) ) {
+			return null;
+		}
+
 		if ( array_is_list( $stored ) ) {
-			if ( count( $stored ) > count( $outputs ) ) { return null; }
+			if ( count( $stored ) > count( $outputs ) ) {
+				return null;
+			}
+
 			$mappings = array();
-			foreach ( $stored as $index => $target_id ) { if ( ! isset( $outputs[ $index ] ) ) { return null; } if ( null === $target_id || '' === $target_id ) { continue; } if ( ! is_scalar( $target_id ) ) { return null; } $mappings[ $outputs[ $index ] ] = (string) $target_id; }
+			foreach ( $stored as $index => $target_id ) {
+				if ( ! isset( $outputs[ $index ] ) ) {
+					return null;
+				}
+				if ( null === $target_id || '' === $target_id ) {
+					continue;
+				}
+				if ( ! is_scalar( $target_id ) ) {
+					return null;
+				}
+				$mappings[ $outputs[ $index ] ] = (string) $target_id;
+			}
 			return $mappings;
 		}
-		$allowed = array_fill_keys( $outputs, true );
+
+		$allowed  = array_fill_keys( $outputs, true );
 		$mappings = array();
-		foreach ( $stored as $output_key => $target_id ) { if ( ! is_string( $output_key ) || ! isset( $allowed[ $output_key ] ) ) { return null; } if ( null === $target_id || '' === $target_id ) { continue; } if ( ! is_scalar( $target_id ) ) { return null; } $mappings[ $output_key ] = (string) $target_id; }
+		foreach ( $stored as $output_key => $target_id ) {
+			if ( ! is_string( $output_key ) || ! isset( $allowed[ $output_key ] ) ) {
+				return null;
+			}
+			if ( null === $target_id || '' === $target_id ) {
+				continue;
+			}
+			if ( ! is_scalar( $target_id ) ) {
+				return null;
+			}
+			$mappings[ $output_key ] = (string) $target_id;
+		}
+
 		return $mappings;
 	}
 
+	/**
+	 * Return runtime target descriptors for the owning form.
+	 *
+	 * @param array $form Current form.
+	 * @return array<int,array{id:string,type:string,displayOnly:bool}>
+	 */
 	private function runtime_target_descriptors( $form ) {
 		$targets = array();
 		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
-			if ( ! is_object( $field ) || empty( $field->id ) || empty( $field->type ) ) { continue; }
+			if ( ! is_object( $field ) || empty( $field->id ) || empty( $field->type ) ) {
+				continue;
+			}
+
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field public API property.
 			$display_only = ! empty( $field->displayOnly );
-			$targets[] = array( 'id' => (string) absint( $field->id ), 'type' => (string) $field->type, 'displayOnly' => $display_only );
+			$targets[]     = array(
+				'id'          => (string) absint( $field->id ),
+				'type'        => (string) $field->type,
+				'displayOnly' => $display_only,
+			);
 		}
+
 		return $targets;
 	}
 }
