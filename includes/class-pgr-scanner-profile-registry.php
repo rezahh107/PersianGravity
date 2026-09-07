@@ -370,7 +370,7 @@ final class PGR_Scanner_Profile_Registry {
 			}
 
 			$stored['profiles'][ $index ] = $normalized;
-			$found                         = true;
+			$found                        = true;
 			break;
 		}
 
