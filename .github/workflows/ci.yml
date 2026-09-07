@@ -23,6 +23,27 @@ jobs:
       - name: Install development dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Prepare WPCS repair diagnostic
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('admin/class-pgr-product-admin.php')
+          source = path.read_text(encoding='utf-8')
+          old = "\t\t\t\t/* translators: %d: number of effective scanner profiles. */\n\t\t\t\t$profile_count = sprintf(\n\t\t\t\t\t__( '%d effective profiles', 'persian-gravityforms' ),"
+          new = "\t\t\t\t$profile_count = sprintf(\n\t\t\t\t\t/* translators: %d: number of effective scanner profiles. */\n\t\t\t\t\t__( '%d effective profiles', 'persian-gravityforms' ),"
+          if source.count(old) != 1:
+              raise SystemExit('Expected exactly one WPCS translator-comment target')
+          path.write_text(source.replace(old, new), encoding='utf-8')
+          PY
+
+      - name: Upload WPCS repair diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: pgr-wpcs-product-admin
+          path: admin/class-pgr-product-admin.php
+          if-no-files-found: error
+
       - name: Install GNU gettext
         run: sudo apt-get update && sudo apt-get install --yes gettext
 
