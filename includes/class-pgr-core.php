@@ -7,13 +7,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable Generic.Files.LineLength.TooLong
+
 final class PGR_Core {
 
 	/** @var bool */
 	private static $initialized = false;
 
 	/**
-	 * Initialize all supported Gravity Forms capabilities exactly once.
+	 * Initialize only enabled Gravity Forms capabilities exactly once.
 	 *
 	 * @return void
 	 */
@@ -22,25 +24,40 @@ final class PGR_Core {
 			return;
 		}
 
-		GF_Fields::register( new PGR_GF_Field_National_ID() );
-		PGR_GF_Field_National_ID::register_editor_hooks();
+		if ( PGR_Module_Registry::is_enabled( 'national_id' ) ) {
+			GF_Fields::register( new PGR_GF_Field_National_ID() );
+			PGR_GF_Field_National_ID::register_editor_hooks();
+			add_filter( 'gform_value_pre_duplicate_check', array( __CLASS__, 'normalize_duplicate_value' ), 10, 3 );
+		}
 
-		GF_Fields::register( new PGR_GF_Field_Jalali_Date() );
-		PGR_GF_Field_Jalali_Date::register_editor_hooks();
+		if ( PGR_Module_Registry::is_enabled( 'jalali_date' ) ) {
+			GF_Fields::register( new PGR_GF_Field_Jalali_Date() );
+			PGR_GF_Field_Jalali_Date::register_editor_hooks();
+		}
 
-		GF_Fields::register( new PGR_GF_Field_Structured_Scanner() );
-		PGR_GF_Field_Structured_Scanner::register_editor_hooks();
+		if ( PGR_Module_Registry::is_enabled( 'structured_scanner' ) ) {
+			GF_Fields::register( new PGR_GF_Field_Structured_Scanner() );
+			PGR_GF_Field_Structured_Scanner::register_editor_hooks();
+		}
 
-		$address = new PGR_Address();
-		$address->hooks();
+		if ( PGR_Module_Registry::is_enabled( 'iranian_address' ) ) {
+			$address = new PGR_Address();
+			$address->hooks();
+		}
 
-		$currency = new PGR_Currency();
-		$currency->hooks();
+		if ( PGR_Module_Registry::is_enabled( 'iranian_currency' ) ) {
+			$currency = new PGR_Currency();
+			$currency->hooks();
+		}
 
-		add_filter( 'gform_form_settings_fields', array( __CLASS__, 'form_settings_fields' ), 10, 2 );
-		add_filter( 'gform_save_field_value', array( __CLASS__, 'normalize_form_value' ), 10, 5 );
-		add_filter( 'gform_value_pre_duplicate_check', array( __CLASS__, 'normalize_duplicate_value' ), 10, 3 );
-		add_action( 'gform_enqueue_scripts', array( __CLASS__, 'enqueue_field_assets' ), 10, 2 );
+		if ( PGR_Module_Registry::is_enabled( 'digit_normalization' ) ) {
+			add_filter( 'gform_form_settings_fields', array( __CLASS__, 'form_settings_fields' ), 10, 2 );
+			add_filter( 'gform_save_field_value', array( __CLASS__, 'normalize_form_value' ), 10, 5 );
+		}
+
+		if ( PGR_Module_Registry::is_enabled( 'national_id' ) || PGR_Module_Registry::is_enabled( 'structured_scanner' ) ) {
+			add_action( 'gform_enqueue_scripts', array( __CLASS__, 'enqueue_field_assets' ), 10, 2 );
+		}
 
 		self::$initialized = true;
 	}
@@ -81,7 +98,6 @@ final class PGR_Core {
 
 	/**
 	 * Normalize a saved Gravity Forms value when the form setting is enabled.
-	 * Server-side normalization is authoritative; JavaScript is never required.
 	 *
 	 * @param mixed         $value    Value about to be saved.
 	 * @param array         $entry    Current entry.
@@ -101,7 +117,7 @@ final class PGR_Core {
 	}
 
 	/**
-	 * Normalize National ID values before Gravity Forms performs its built-in no-duplicates check.
+	 * Normalize National ID values before the native duplicate check.
 	 *
 	 * @param mixed    $value   Submitted value.
 	 * @param GF_Field $field   Current field.
@@ -120,10 +136,7 @@ final class PGR_Core {
 	}
 
 	/**
-	 * Load field-owned frontend assets only when the current form needs them.
-	 *
-	 * Scanner profile definitions are serialized from the validated PHP registry;
-	 * no raw scanner payload is transported or persisted here.
+	 * Load enabled field-owned frontend assets only when the current form needs them.
 	 *
 	 * @param array $form    Current form.
 	 * @param bool  $is_ajax Whether AJAX is enabled.
@@ -131,6 +144,13 @@ final class PGR_Core {
 	 */
 	public static function enqueue_field_assets( $form, $is_ajax ) {
 		unset( $is_ajax );
+
+		$national_enabled = PGR_Module_Registry::is_enabled( 'national_id' );
+		$scanner_enabled  = PGR_Module_Registry::is_enabled( 'structured_scanner' );
+
+		if ( ! $national_enabled && ! $scanner_enabled ) {
+			return;
+		}
 
 		$needs_digit_normalizer = false;
 		$needs_scanner          = false;
@@ -141,64 +161,32 @@ final class PGR_Core {
 			}
 
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Persisted Gravity Forms custom-field property.
-			if ( 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
+			if ( $national_enabled && 'pgr_national_id' === $field->type && ! empty( $field->forceEnglish ) ) {
 				$needs_digit_normalizer = true;
 			}
 
-			if ( 'pgr_structured_scanner' === $field->type ) {
+			if ( $scanner_enabled && 'pgr_structured_scanner' === $field->type ) {
 				$needs_scanner = true;
-			}
-
-			if ( $needs_digit_normalizer && $needs_scanner ) {
-				break;
 			}
 		}
 
 		if ( $needs_digit_normalizer ) {
-			wp_enqueue_script(
-				'pgr-frontend',
-				PGR_URL . 'assets/js/pgr-frontend.js',
-				array(),
-				PGR_VERSION,
-				true
-			);
+			wp_enqueue_script( 'pgr-frontend', PGR_URL . 'assets/js/pgr-frontend.js', array(), PGR_VERSION, true );
 		}
 
 		if ( ! $needs_scanner ) {
 			return;
 		}
 
-		wp_enqueue_script(
-			'pgr-structured-scanner-core',
-			PGR_URL . 'assets/js/pgr-structured-scanner-core.js',
-			array(),
-			PGR_VERSION,
-			true
-		);
+		wp_enqueue_script( 'pgr-structured-scanner-core', PGR_URL . 'assets/js/pgr-structured-scanner-core.js', array(), PGR_VERSION, true );
 
 		$runtime_profiles = wp_json_encode( PGR_Scanner_Profile_Registry::runtime_profiles() );
 		if ( false === $runtime_profiles ) {
 			$runtime_profiles = '[]';
 		}
-		wp_add_inline_script(
-			'pgr-structured-scanner-core',
-			'window.PGRScannerProfiles = ' . $runtime_profiles . ';',
-			'before'
-		);
+		wp_add_inline_script( 'pgr-structured-scanner-core', 'window.PGRScannerProfiles = ' . $runtime_profiles . ';', 'before' );
 
-		wp_enqueue_script(
-			'pgr-structured-scanner',
-			PGR_URL . 'assets/js/pgr-structured-scanner.js',
-			array( 'pgr-structured-scanner-core' ),
-			PGR_VERSION,
-			true
-		);
-
-		wp_enqueue_style(
-			'pgr-structured-scanner-style',
-			PGR_URL . 'assets/css/pgr-structured-scanner.css',
-			array(),
-			PGR_VERSION
-		);
+		wp_enqueue_script( 'pgr-structured-scanner', PGR_URL . 'assets/js/pgr-structured-scanner.js', array( 'pgr-structured-scanner-core' ), PGR_VERSION, true );
+		wp_enqueue_style( 'pgr-structured-scanner-style', PGR_URL . 'assets/css/pgr-structured-scanner.css', array(), PGR_VERSION );
 	}
 }

@@ -1,0 +1,283 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Persian Gravity Forms 4.2.0\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#, php-format
+msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
+msgstr "%1$s در %2$d فرم استفاده می‌شود و نمی‌توان آن را با اطمینان غیرفعال کرد."
+
+#, php-format
+msgid "%d active profiles"
+msgstr "%d پروفایل فعال"
+
+#, php-format
+msgid "%d effective profiles"
+msgstr "%d پروفایل مؤثر"
+
+#, php-format
+msgid "%d outputs"
+msgstr "%d خروجی"
+
+#, php-format
+msgid "%s has been disabled."
+msgstr "%s غیرفعال شد."
+
+#, php-format
+msgid "%s has been enabled."
+msgstr "%s فعال شد."
+
+msgid "Active"
+msgstr "فعال"
+
+msgid "Available"
+msgstr "در دسترس"
+
+msgid "Bank branch"
+msgstr "شعبه بانک"
+
+msgid "Built-in"
+msgstr "داخلی"
+
+msgid "Cheque serial"
+msgstr "سریال چک"
+
+msgid "Contents"
+msgstr "فهرست مطالب"
+
+msgid "Convert Persian and Arabic digits to ASCII digits before entry values are saved."
+msgstr "پیش از ذخیره مقادیر ورودی، ارقام فارسی و عربی را به ارقام ASCII تبدیل کنید."
+
+msgid "Convert Persian/Arabic digits to ASCII in new National ID fields while the user types. Server-side normalization always remains authoritative."
+msgstr "در فیلدهای جدید کد ملی، هنگام تایپ کاربر ارقام فارسی و عربی را به ASCII تبدیل کنید. نرمال‌سازی سمت سرور همیشه مرجع نهایی باقی می‌ماند."
+
+#, php-format
+msgid "Copy of %s"
+msgstr "کپی %s"
+
+msgid "Create Profile"
+msgstr "ایجاد پروفایل"
+
+msgid "Create Scanner Profile"
+msgstr "ایجاد پروفایل اسکنر"
+
+msgid "Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk."
+msgstr "استفاده فعلی با اطمینان قابل تشخیص نیست. غیرفعال‌کردن ممکن است روی فرم‌های موجود اثر بگذارد. فقط در صورت پذیرش این ریسک تأیید کنید."
+
+msgid "Current use could not be determined confidently. Review the module card and confirm again to disable it."
+msgstr "استفاده فعلی با اطمینان قابل تشخیص نبود. کارت ماژول را بررسی کنید و برای غیرفعال‌کردن دوباره تأیید کنید."
+
+msgid "Custom"
+msgstr "سفارشی"
+
+msgid "Define deterministic structures for scanner input. Gravity Forms destination fields are mapped later inside each form."
+msgstr "برای ورودی اسکنر ساختارهای قطعی تعریف کنید. فیلدهای مقصد Gravity Forms بعداً در هر فرم نگاشت می‌شوند."
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Deleting a custom profile does not rewrite existing form mappings. Existing Scanner fields may then report the profile as unavailable."
+msgstr "حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
+
+msgid "Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?"
+msgstr "حذف این پروفایل ممکن است باعث شود فیلدهای موجود اسکنر ساختاریافته به پروفایلی دسترسی نداشته باشند. ادامه می‌دهید؟"
+
+msgid "Disable"
+msgstr "غیرفعال کردن"
+
+msgid "Disabled"
+msgstr "غیرفعال"
+
+msgid "Display name"
+msgstr "نام نمایشی"
+
+msgid "Documentation language"
+msgstr "زبان مستندات"
+
+msgid "Duplicate"
+msgstr "تکثیر"
+
+msgid "Edit"
+msgstr "ویرایش"
+
+msgid "Edit Scanner Profile"
+msgstr "ویرایش پروفایل اسکنر"
+
+msgid "Enable"
+msgstr "فعال کردن"
+
+msgid "Enabled"
+msgstr "فعال"
+
+msgid "Enter a valid 10-digit Iranian National ID."
+msgstr "یک کد ملی معتبر ۱۰ رقمی ایران وارد کنید."
+
+msgid "Enter a valid Jalali (Persian) date."
+msgstr "یک تاریخ جلالی معتبر وارد کنید."
+
+msgid "General PersianGravity defaults. Existing saved settings remain unchanged."
+msgstr "پیش‌فرض‌های عمومی PersianGravity. تنظیمات ذخیره‌شده موجود بدون تغییر باقی می‌مانند."
+
+msgid "Help"
+msgstr "راهنما"
+
+msgid "Help & Documentation"
+msgstr "راهنما و مستندات"
+
+msgid "IBAN"
+msgstr "شماره شبا"
+
+msgid "Inspect"
+msgstr "بررسی"
+
+msgid "Invalid request method."
+msgstr "روش درخواست نامعتبر است."
+
+msgid "Iran"
+msgstr "ایران"
+
+msgid "Iranian National ID"
+msgstr "کد ملی ایران"
+
+msgid "Iranian Provinces"
+msgstr "استان‌های ایران"
+
+msgid "Iranian Rial"
+msgstr "ریال ایران"
+
+msgid "Iranian Toman"
+msgstr "تومان ایران"
+
+msgid "Jalali Date"
+msgstr "تاریخ جلالی"
+
+msgid "Jalali date format"
+msgstr "قالب تاریخ جلالی"
+
+msgid "Manage Scanner Profiles"
+msgstr "مدیریت پروفایل‌های اسکنر"
+
+msgid "Manage the bounded Persian/Iranian capabilities that participate in Gravity Forms runtime."
+msgstr "قابلیت‌های محدود فارسی و ایرانی را که در اجرای Gravity Forms مشارکت دارند مدیریت کنید."
+
+msgid "Module"
+msgstr "ماژول"
+
+msgid "Move down"
+msgstr "انتقال به پایین"
+
+msgid "Move up"
+msgstr "انتقال به بالا"
+
+msgid "National ID is disabled. Its saved default remains preserved but is inactive until the module is enabled again."
+msgstr "کد ملی غیرفعال است. مقدار پیش‌فرض ذخیره‌شده حفظ می‌شود، اما تا فعال‌شدن دوباره ماژول غیرفعال می‌ماند."
+
+msgid "Normalize Persian/Arabic digits while typing"
+msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
+
+msgid "Not available"
+msgstr "در دسترس نیست"
+
+msgid "Open full documentation"
+msgstr "باز کردن مستندات کامل"
+
+msgid "Output key"
+msgstr "کلید خروجی"
+
+msgid "Output label"
+msgstr "برچسب خروجی"
+
+msgid "Output Mapping"
+msgstr "نگاشت خروجی"
+
+msgid "Overview"
+msgstr "نمای کلی"
+
+msgid "Owner identifier"
+msgstr "شناسه مالک"
+
+msgid "Owner type"
+msgstr "نوع مالک"
+
+msgid "Persian digit normalization"
+msgstr "نرمال‌سازی ارقام فارسی"
+
+msgid "Persian Gravity"
+msgstr "پرشین گرویتی"
+
+#, php-format
+msgid "Persian Gravity Forms requires Gravity Forms %s or newer."
+msgstr "Persian Gravity Forms به Gravity Forms نسخه %s یا جدیدتر نیاز دارد."
+
+msgid "Persian Gravity Forms requires Gravity Forms to be installed and active."
+msgstr "Persian Gravity Forms نیاز دارد Gravity Forms نصب و فعال باشد."
+
+msgid "PersianGravity Help"
+msgstr "راهنمای PersianGravity"
+
+msgid "Postal Code"
+msgstr "کد پستی"
+
+msgid "Profile details"
+msgstr "جزئیات پروفایل"
+
+msgid "Profile ID"
+msgstr "شناسه پروفایل"
+
+msgid "Profile Registry"
+msgstr "رجیستری پروفایل"
+
+msgid "Province"
+msgstr "استان"
+
+msgid "QR version"
+msgstr "نسخه QR"
+
+msgid "Read-only"
+msgstr "فقط‌خواندنی"
+
+msgid "Remove"
+msgstr "حذف"
+
+msgid "Required"
+msgstr "الزامی"
+
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Sayad ID"
+msgstr "شناسه صیاد"
+
+msgid "Sayad v0.1"
+msgstr "صیاد v0.1"
+
+msgid "Scanner Profile"
+msgstr "پروفایل اسکنر"
+
+msgid "Scanner Profiles"
+msgstr "پروفایل‌های اسکنر"
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "Structured Scanner"
+msgstr "اسکنر ساختاریافته"
+
+msgid "Structured Scanner runtime is disabled. Profiles remain available and will be used again after the module is enabled."
+msgstr "اجرای اسکنر ساختاریافته غیرفعال است. پروفایل‌ها همچنان در دسترس هستند و پس از فعال‌شدن دوباره ماژول استفاده خواهند شد."
+
+msgid "System Status"
+msgstr "وضعیت سیستم"
+
+msgid "The requested module state change was invalid."
+msgstr "درخواست تغییر وضعیت ماژول نامعتبر بود."
+
+msgid "Waiting for Gravity Forms"
+msgstr "در انتظار Gravity Forms"
+
+msgid "You are not allowed to change PersianGravity modules."
+msgstr "شما اجازه تغییر ماژول‌های PersianGravity را ندارید."

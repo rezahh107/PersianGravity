@@ -1,187 +1,76 @@
 # Persian Gravity Forms
 
-افزونه‌ای متمرکز برای افزودن قابلیت‌های عمومی فارسی/ایرانی به Gravity Forms، بدون درگیر شدن با فونت، workflow، منطق پروژه‌های خاص یا ترجمه افزونه‌های دیگر.
+Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*` runtime.
 
-## وضعیت فعلی
-
-- Plugin version: `4.0.0`
+- Plugin version: `4.2.0`
 - WordPress minimum: `6.7`
 - PHP minimum: `8.2`
 - Gravity Forms minimum: `3.0`
-- Canonical runtime: `PGR_*`
 - Text domain: `persian-gravityforms`
-- Entrypoint: `persian-gravityforms.php`
 
-نسخه 4 معماری‌های موازی و legacy قبلی را حذف کرده و فقط یک runtime اصلی نگه می‌دارد. قابلیت Structured Scanner فعلاً در PR توسعه‌ای قرار دارد و به معنی انتشار نسخه جدید نیست؛ `4.0.0` و Stable tag بدون تغییر باقی مانده‌اند.
+## Current capabilities
 
-## قابلیت‌ها
+PersianGravity 4.2.0 exposes six bounded, source-defined modules. All default to enabled, including on upgrade when `pgr_modules` does not yet exist:
 
-### Iranian National ID
+- `national_id` — `pgr_national_id`, server-authoritative checksum validation, canonical ten-ASCII-digit storage, native No Duplicates normalization, optional typing normalization.
+- `jalali_date` — `pgr_jalali_date`, server-side Jalali validation and canonical ASCII `YYYY-MM-DD` storage with Jalali semantics.
+- `iranian_address` — Iranian Gravity Forms address type (`iran`) plus the 31-province predefined choice list.
+- `digit_normalization` — form-level `pgr_normalize_digits` and server-side `gform_save_field_value` digit normalization.
+- `iranian_currency` — IRR and IRT currency definitions with zero decimal places.
+- `structured_scanner` — transient `pgr_structured_scanner` controller with versioned Scanner Profiles and ordinary-field output mapping.
 
-فیلد اختصاصی Gravity Forms با type زیر:
+The Module Manager is not decorative. Disabled modules do not register their owned Gravity Forms fields/hooks and do not enqueue their owned frontend assets. Administrative infrastructure remains available independently of module state and Gravity Forms availability.
 
-`pgr_national_id`
+## Admin product surface
 
-قابلیت‌ها:
+`Persian Gravity` contains:
 
-- ورودی ۱۰ رقمی کد ملی ایران
-- تبدیل ارقام فارسی و عربی به ASCII
-- اعتبارسنجی server-side checksum
-- ذخیره مقدار canonical به‌صورت ۱۰ رقم ASCII
-- پشتیبانی از Gravity Forms conditional logic
-- استفاده از سازوکار native `No Duplicates` خود Gravity Forms
-- گزینه اختیاری برای normalize کردن ارقام هنگام تایپ
+1. Overview / Module Manager
+2. Scanner Profiles
+3. Settings
+4. System Status
+5. Help & Documentation
 
-### Jalali Date
+Overview always shows Persian and English product labels/descriptions. Persian is primary only for a Persian WordPress user locale; otherwise English is primary. Ordinary interface strings continue to use WordPress gettext.
 
-فیلد اختصاصی Gravity Forms با type زیر:
+Disable requests use bounded form-metadata inspection. Detected use blocks disable. When safe non-use cannot be proven, the action requires an explicit second confirmation. The current currency module deliberately uses `UNKNOWN` because site-wide IRR/IRT usage is not reliably enumerable from the documented public Form Object alone.
 
-`pgr_jalali_date`
+Scanner Profiles remain available while Structured Scanner runtime is disabled.
 
-قابلیت‌ها:
+## Persistence
 
-- اعتبارسنجی server-side تاریخ جلالی
-- چند presentation format قابل انتخاب در Form Editor
-- ذخیره canonical به شکل `YYYY-MM-DD` با ارقام ASCII
-- مقدار ذخیره‌شده همچنان **Jalali** است و به Gregorian تبدیل نمی‌شود
-- پشتیبانی از conditional logic و merge-tag / entry display
+- `pgr_modules` — schema version plus boolean state for the six bounded modules; metadata is never stored.
+- `pgr_settings` — current plugin settings, including `default_force_english`.
+- `pgr_scanner_profiles` — existing versioned Custom Scanner Profiles.
+- `pgr_normalize_digits`, field types, Scanner mappings and other field configuration — Gravity Forms form metadata.
 
-این افزونه Date field عادی Gravity Forms را override نمی‌کند.
+Disabling a module does not delete Entries, field definitions, settings, Scanner Profiles, mappings, or form metadata.
 
-### Structured Scanner v0.1
+## Structured Scanner contract
 
-فیلد کنترل‌گر غیرذخیره‌ای Gravity Forms با type زیر:
+The Scanner field is `displayOnly` and transient. Its raw multiline capture has no Gravity Forms submission `name` and is not intentionally persisted as a Scanner field value. Parsed outputs map only to ordinary `text` and `hidden` fields. Mapping changes are planned atomically and fail closed.
 
-`pgr_structured_scanner`
+Built-in `sayad_v01` uses `segments_v1` and outputs, in order: `qr_version`, `owner_type`, `owner_identifier`, `iban`, `bank_branch`, `cheque_serial`, `sayad_id`. It is structural only: no Sayad checksum authority, bank validity, cross-bank guarantee, online inquiry, workflow, or payment behavior is implied.
 
-پروفایل ساختاری فعلی:
+## Help and i18n
 
-`sayad_v01`
+The complete bilingual Help Center ships locally with the plugin and is version-controlled. Native `WP_Screen` contextual help on PersianGravity admin pages links into the corresponding full topic. No runtime Internet documentation fetch or third-party frontend framework is used.
 
-خروجی‌های این پروفایل دقیقاً به این ترتیب هستند:
+Translation assets for `fa_IR` ship in `languages/` as POT, PO and MO. Only the `persian-gravityforms` text domain belongs to this plugin.
 
-1. `qr_version`
-2. `owner_type`
-3. `owner_identifier`
-4. `iban`
-5. `bank_branch`
-6. `cheque_serial`
-7. `sayad_id`
+## Development and validation
 
-رفتار فعلی:
-
-- Scanner یک `textarea` چندخطی transient و بدون `name="input_<id>"` رندر می‌کند؛ raw payload خودش Entry value نیست.
-- LF و CRLF در مرز capture حفظ می‌شوند و parser موجود آن‌ها را normalize می‌کند.
-- ارقام فارسی/عربی به ASCII به‌صورت string تبدیل می‌شوند و leading zero از بین نمی‌رود.
-- Enterهای جداکننده تا وقتی parser payload را کامل و معتبر ندانسته‌اند scan را زودهنگام finalize نمی‌کنند.
-- Enter روی payload کامل، Tab به‌عنوان finalization صریح، paste صریح، و idle روی payload کامل از همان parser موجود برای تصمیم completion استفاده می‌کنند.
-- mapping فقط به Gravity Forms Single Line Text (`text`) و Hidden (`hidden`) مجاز است.
-- `scanner_profile` و `scanner_mappings` configuration ذخیره می‌شوند؛ raw scan ذخیره نمی‌شود.
-- mapping نامعتبر، target حذف‌شده/نامعتبر، duplicate target و self-target به‌صورت fail-closed رد می‌شوند.
-- mapped-field update اتمیک است: ابتدا کل plan معتبر می‌شود و سپس همه مقصدها به‌روزرسانی می‌شوند؛ scan ناموفق نباید بخشی از state موفق قبلی را تغییر دهد.
-- assetهای Scanner فقط روی فرم‌هایی load می‌شوند که `pgr_structured_scanner` دارند و lifecycle بعد از render از `gform/post_render` پشتیبانی می‌کند.
-
-این پروفایل فقط **ساختار هفت‌بخشی** را تفسیر می‌کند. این قابلیت authority برای checksum صیادی، اعتبار بانکی، cross-bank compatibility یا business validation مالی ایجاد نمی‌کند.
-
-### قابلیت‌های عمومی دیگر
-
-- form-level Persian/Arabic digit normalization قبل از ذخیره Entry
-- Iranian address type و فهرست استان‌ها
-- currencyهای `IRR` و `IRT`
-- localization فقط برای stringهای خود PersianGravity
-
-## معماری
-
-```text
-persian-gravityforms.php
-        │
-        └── gform_loaded
-              │
-              └── PGR_Core
-                    ├── PGR_Admin
-                    ├── PGR_Utils
-                    ├── PGR_Address
-                    ├── PGR_Currency
-                    ├── PGR_Persian_Date
-                    ├── PGR_Scanner_Profile_Registry
-                    ├── PGR_GF_Field_National_ID
-                    ├── PGR_GF_Field_Jalali_Date
-                    └── PGR_GF_Field_Structured_Scanner
-```
-
-جزئیات بیشتر: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-
-## مرز مسئولیت
-
-PersianGravity عمداً این کارها را انجام **نمی‌دهد**:
-
-- مدیریت Vazir/Vazirmatn یا سایر فونت‌ها
-- ترجمه Gravity Forms، Gravity Flow یا GravityView
-- payment gateway
-- workflow/business logic
-- منطق SRWF یا سایر پروژه‌های خاص
-- custom database
-- bank/checksum authority برای Structured Scanner
-- compatibility با field IDها و migrationهای legacy حذف‌شده
-
-## نصب
-
-1. پوشه افزونه را در `wp-content/plugins/` قرار دهید.
-2. Gravity Forms 3.0+ باید نصب و فعال باشد.
-3. افزونه **Persian Gravity Forms** را فعال کنید.
-4. در Gravity Forms Form Editor، فیلدهای `Jalali Date`، `Iranian National ID` و در source فعلی PR، `Structured Scanner` در Advanced Fields در دسترس هستند.
-
-## تنظیمات
-
-صفحه تنظیمات:
-
-`Settings → Persian Gravity Forms`
-
-در نسخه فعلی تنظیم global برای default رفتار typing-time normalization فیلد National ID وجود دارد.
-
-همچنین هر فرم یک تنظیم `Persian digit normalization` دارد که در صورت فعال بودن، مقادیر string را قبل از ذخیره به ارقام ASCII تبدیل می‌کند.
-
-Structured Scanner تنظیم global جدیدی اضافه نمی‌کند. configuration آن field-owned است و در `scanner_profile` و `scanner_mappings` نگه‌داری می‌شود.
-
-## توسعه و تست
-
-```bash
+```sh
 composer install
 composer test
 composer cs
 composer compat
 node --test tests/js/structured-scanner.test.js
-```
-
-CI فعلی runtime واقعی shipped plugin را بررسی می‌کند، Scanner pure-JavaScript tests را اجرا می‌کند و PHPUnit را روی PHP `8.2`, `8.3`, `8.4`, `8.5` اجرا می‌کند.
-
-توجه: unit/runtime CI جای integration test روی یک WordPress + Gravity Forms licensed environment واقعی را نمی‌گیرد. برای Structured Scanner، مرورگر/Gravity Forms واقعی تا وقتی طبق `docs/VALIDATION.md` اجرا نشده باشد `NOT_PROVEN` باقی می‌ماند.
-
-## Translation
-
-فقط text domain زیر متعلق به این افزونه است:
-
-`persian-gravityforms`
-
-POT را می‌توان با این دستور ساخت:
-
-```bash
 composer i18n:pot
 ```
 
-ترجمه محصولات دیگر Gravity ecosystem باید از مکانیزم رسمی همان محصول انجام شود.
+CI covers syntax, WPCS, PHPCompatibility, Scanner JavaScript tests, runtime-integrity guards, repository consistency, and PHPUnit on the supported PHP matrix. Source/unit tests are not browser proof; real WordPress + Gravity Forms validation is recorded separately in `docs/VALIDATION.md`.
 
-## Release
+## Scope
 
-قبل از release باید حداقل این موارد هم‌راستا باشند:
-
-- plugin header / `PGR_VERSION`
-- `readme.txt` Stable tag
-- Composer PHP baseline
-- CI matrix
-- changelog
-- production package contents
-
-Structured Scanner در این PR موجب version bump یا release نمی‌شود.
-
-مستندات contributor/agent: [`AGENTS.md`](AGENTS.md)
+PersianGravity does not own Gravity Flow workflows, GravityView, SRWF-specific business logic, fonts, payment gateways, online Sayad inquiry, OCR/camera scanning, custom databases, or translations for external plugins.
