@@ -49,6 +49,21 @@ final class RepositoryConsistencyTest extends TestCase {
 		$this->assertGreaterThan( 20, filesize( $root . '/languages/persian-gravityforms-fa_IR.mo' ) );
 	}
 
+	public function test_persian_translation_source_has_clean_bytes() {
+		$root = dirname( __DIR__ );
+		$po   = file_get_contents( $root . '/languages/persian-gravityforms-fa_IR.po' );
+
+		$this->assertTrue( $this->has_clean_persian_gettext_bytes( $po ) );
+		$this->assertTrue( $this->has_clean_persian_gettext_bytes( "msgid \"Hello\"\nmsgstr \"سلام\"\n" ) );
+
+		$this->assertFalse( $this->has_clean_persian_gettext_bytes( "msgid \"Bad\"\nmsgstr \"\xC3\x28\"\n" ) );
+		$this->assertFalse( $this->has_clean_persian_gettext_bytes( "msgid \"Bad\"\nmsgstr \"سلام\x01\"\n" ) );
+
+		foreach ( array( 'Ø', 'Ù', 'Û', 'â€' ) as $signature ) {
+			$this->assertFalse( $this->has_clean_persian_gettext_bytes( "msgid \"Bad\"\nmsgstr \"{$signature}\"\n" ) );
+		}
+	}
+
 	public function test_module_admin_write_surface_is_post_nonce_capability_and_allowlist_based() {
 		$admin = file_get_contents( dirname( __DIR__ ) . '/admin/class-pgr-product-admin.php' );
 		$this->assertStringContainsString( "add_action( 'admin_post_pgr_module_toggle'", $admin );
@@ -65,5 +80,31 @@ final class RepositoryConsistencyTest extends TestCase {
 			. file_get_contents( $root . '/includes/class-pgr-core.php' );
 		$this->assertStringContainsString( 'persian-gravityforms', $source );
 		$this->assertStringNotContainsString( 'load_textdomain_mofile', $source );
+	}
+
+	/**
+	 * Validate the byte-level invariants required for the shipped Persian gettext source.
+	 *
+	 * This deliberately does not parse PO syntax; GNU gettext remains the format authority.
+	 *
+	 * @param string $content Candidate gettext source bytes.
+	 * @return bool
+	 */
+	private function has_clean_persian_gettext_bytes( $content ) {
+		if ( 1 !== preg_match( '//u', $content ) ) {
+			return false;
+		}
+
+		if ( 1 === preg_match( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $content ) ) {
+			return false;
+		}
+
+		foreach ( array( 'Ø', 'Ù', 'Û', 'â€' ) as $signature ) {
+			if ( false !== strpos( $content, $signature ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

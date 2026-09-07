@@ -23,26 +23,41 @@ final class PGR_Module_Usage {
 	 */
 	public static function inspect( $module_id ) {
 		if ( ! PGR_Module_Registry::exists( $module_id ) ) {
-			return array( 'status' => self::UNKNOWN, 'count' => 0 );
+			return array(
+				'status' => self::UNKNOWN,
+				'count'  => 0,
+			);
 		}
 
 		if ( 'iranian_currency' === $module_id ) {
-			return array( 'status' => self::UNKNOWN, 'count' => 0 );
+			return array(
+				'status' => self::UNKNOWN,
+				'count'  => 0,
+			);
 		}
 
 		if ( ! class_exists( 'GFAPI' ) || ! method_exists( 'GFAPI', 'get_forms' ) ) {
-			return array( 'status' => self::UNKNOWN, 'count' => 0 );
+			return array(
+				'status' => self::UNKNOWN,
+				'count'  => 0,
+			);
 		}
 
 		try {
 			$forms = GFAPI::get_forms( null, false );
 		} catch ( Throwable $exception ) {
 			unset( $exception );
-			return array( 'status' => self::UNKNOWN, 'count' => 0 );
+			return array(
+				'status' => self::UNKNOWN,
+				'count'  => 0,
+			);
 		}
 
 		if ( ! is_array( $forms ) ) {
-			return array( 'status' => self::UNKNOWN, 'count' => 0 );
+			return array(
+				'status' => self::UNKNOWN,
+				'count'  => 0,
+			);
 		}
 
 		$count = 0;
@@ -88,7 +103,15 @@ final class PGR_Module_Usage {
 			}
 
 			if ( 'iranian_address' === $module_id && 'address' === $type ) {
-				$address_type = is_object( $field ) ? (string) ( $field->addressType ?? '' ) : ( is_array( $field ) ? (string) ( $field['addressType'] ?? '' ) : '' );
+				if ( is_object( $field ) ) {
+					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- addressType is defined by the Gravity Forms public field API.
+					$address_type = (string) ( $field->addressType ?? '' );
+				} elseif ( is_array( $field ) ) {
+					$address_type = (string) ( $field['addressType'] ?? '' );
+				} else {
+					$address_type = '';
+				}
+
 				if ( 'iran' === $address_type ) {
 					return true;
 				}

@@ -21,7 +21,7 @@ final class PGR_Module_Registry {
 	 */
 	public static function all() {
 		return array(
-			'national_id' => array(
+			'national_id'         => array(
 				'id'              => 'national_id',
 				'default_enabled' => true,
 				'label_fa'        => 'کد ملی ایران',
@@ -31,7 +31,7 @@ final class PGR_Module_Registry {
 				'help_topic'      => 'national-id',
 				'field_types'     => array( 'pgr_national_id' ),
 			),
-			'jalali_date' => array(
+			'jalali_date'         => array(
 				'id'              => 'jalali_date',
 				'default_enabled' => true,
 				'label_fa'        => 'تاریخ جلالی',
@@ -41,7 +41,7 @@ final class PGR_Module_Registry {
 				'help_topic'      => 'jalali-date',
 				'field_types'     => array( 'pgr_jalali_date' ),
 			),
-			'iranian_address' => array(
+			'iranian_address'     => array(
 				'id'              => 'iranian_address',
 				'default_enabled' => true,
 				'label_fa'        => 'نشانی ایران',
@@ -61,7 +61,7 @@ final class PGR_Module_Registry {
 				'help_topic'      => 'digit-normalization',
 				'field_types'     => array(),
 			),
-			'iranian_currency' => array(
+			'iranian_currency'    => array(
 				'id'              => 'iranian_currency',
 				'default_enabled' => true,
 				'label_fa'        => 'ریال و تومان ایران',
@@ -71,7 +71,7 @@ final class PGR_Module_Registry {
 				'help_topic'      => 'iranian-currency',
 				'field_types'     => array(),
 			),
-			'structured_scanner' => array(
+			'structured_scanner'  => array(
 				'id'              => 'structured_scanner',
 				'default_enabled' => true,
 				'label_fa'        => 'اسکنر ساختاریافته',
