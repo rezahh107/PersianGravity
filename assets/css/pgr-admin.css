@@ -1,0 +1,157 @@
+.pgr-admin {
+	max-width: 1180px;
+}
+
+.pgr-admin__header,
+.pgr-section-heading,
+.pgr-profile-card__heading,
+.pgr-badge-row,
+.pgr-checkbox-row,
+.pgr-output-row__actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.pgr-admin__header,
+.pgr-section-heading,
+.pgr-profile-card__heading {
+	justify-content: space-between;
+}
+
+.pgr-admin__lead {
+	max-width: 760px;
+	color: #50575e;
+	font-size: 14px;
+}
+
+.pgr-card-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 16px;
+	margin-block-start: 20px;
+}
+
+.pgr-card,
+.pgr-panel {
+	box-sizing: border-box;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	padding: 20px;
+}
+
+.pgr-panel {
+	margin-block: 16px;
+}
+
+.pgr-badge {
+	display: inline-flex;
+	align-items: center;
+	min-height: 24px;
+	padding-inline: 9px;
+	border-radius: 999px;
+	background: #f0f0f1;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pgr-badge[data-state="AVAILABLE"] {
+	background: #edfaef;
+}
+
+.pgr-badge[data-state="WARNING"] {
+	background: #fff8e5;
+}
+
+.pgr-badge[data-state="UNAVAILABLE"],
+.pgr-badge[data-state="DISABLED"] {
+	background: #f6f7f7;
+	color: #646970;
+}
+
+.pgr-form-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 16px;
+}
+
+.pgr-form-grid label > span,
+.pgr-output-row label > span {
+	display: block;
+	margin-block-end: 6px;
+	font-weight: 600;
+}
+
+.pgr-checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.pgr-output-list {
+	display: grid;
+	gap: 10px;
+}
+
+.pgr-output-row {
+	display: grid;
+	grid-template-columns: auto minmax(150px, 1fr) minmax(180px, 1.25fr) auto auto;
+	align-items: end;
+	gap: 10px;
+	padding: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fdfdfd;
+}
+
+.pgr-output-row__index {
+	align-self: center;
+	font-weight: 700;
+	color: #646970;
+}
+
+.pgr-ltr {
+	direction: ltr;
+	text-align: left;
+}
+
+.pgr-warning-note {
+	padding: 12px 14px;
+	border-inline-start: 4px solid #dba617;
+	background: #fff8e5;
+}
+
+.pgr-definition-list {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 8px 16px;
+}
+
+.pgr-definition-list dt {
+	font-weight: 600;
+}
+
+.pgr-status-value,
+.pgr-card__meta {
+	color: #50575e;
+}
+
+@media (max-width: 782px) {
+	.pgr-admin__header,
+	.pgr-section-heading,
+	.pgr-profile-card__heading,
+	.pgr-checkbox-row {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.pgr-output-row {
+		grid-template-columns: 1fr;
+	}
+
+	.pgr-output-row__actions {
+		flex-wrap: wrap;
+	}
+}

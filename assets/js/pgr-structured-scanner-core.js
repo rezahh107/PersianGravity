@@ -3,27 +3,20 @@
 
 	const api = factory();
 
-	if ( typeof module === 'object' && module.exports ) {
-		module.exports = api;
-	}
-
 	if ( root ) {
 		root.PGRStructuredScannerCore = api;
+		api.configureProfiles( root.PGRScannerProfiles );
+	}
+
+	if ( typeof module === 'object' && module.exports ) {
+		module.exports = api;
 	}
 } )( typeof globalThis !== 'undefined' ? globalThis : this, function () {
 	'use strict';
 
-	const SAYAD_V01_OUTPUTS = Object.freeze( [
-		'qr_version',
-		'owner_type',
-		'owner_identifier',
-		'iban',
-		'bank_branch',
-		'cheque_serial',
-		'sayad_id',
-	] );
-
 	const SUPPORTED_TARGET_TYPES = Object.freeze( [ 'text', 'hidden' ] );
+	const PROFILE_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
+	let profileRegistry = Object.create( null );
 
 	function failure( code, details ) {
 		return Object.assign( { ok: false, code: code }, details || {} );
@@ -39,65 +32,163 @@
 			} );
 	}
 
-	function parseSayadV01( payload ) {
+	function normalizeRuntimeProfile( definition ) {
+		if ( ! definition || typeof definition !== 'object' || Array.isArray( definition ) ) {
+			return null;
+		}
+
+		const id = typeof definition.id === 'string' ? definition.id : '';
+		const parser = definition.parser;
+		const outputs = definition.outputs;
+
+		if (
+			! PROFILE_ID_PATTERN.test( id ) ||
+			! parser ||
+			typeof parser !== 'object' ||
+			Array.isArray( parser ) ||
+			parser.type !== 'segments_v1' ||
+			parser.separator !== 'newline' ||
+			typeof parser.trim !== 'boolean' ||
+			typeof parser.normalize_digits !== 'boolean' ||
+			! Array.isArray( outputs ) ||
+			outputs.length === 0
+		) {
+			return null;
+		}
+
+		const normalizedOutputs = [];
+		const seenKeys = new Set();
+
+		for ( const output of outputs ) {
+			if (
+				! output ||
+				typeof output !== 'object' ||
+				Array.isArray( output ) ||
+				typeof output.key !== 'string' ||
+				! PROFILE_ID_PATTERN.test( output.key ) ||
+				seenKeys.has( output.key ) ||
+				typeof output.required !== 'boolean'
+			) {
+				return null;
+			}
+
+			seenKeys.add( output.key );
+			normalizedOutputs.push( Object.freeze( {
+				key: output.key,
+				required: output.required,
+			} ) );
+		}
+
+		return Object.freeze( {
+			id: id,
+			parser: Object.freeze( {
+				type: 'segments_v1',
+				separator: 'newline',
+				trim: parser.trim,
+				normalize_digits: parser.normalize_digits,
+			} ),
+			outputs: Object.freeze( normalizedOutputs ),
+		} );
+	}
+
+	function configureProfiles( definitions ) {
+		const next = Object.create( null );
+		const rejected = [];
+
+		if ( ! Array.isArray( definitions ) ) {
+			profileRegistry = next;
+			return { ok: false, count: 0, rejected: [ 'INVALID_PROFILE_REGISTRY' ] };
+		}
+
+		definitions.forEach( function ( definition, index ) {
+			const normalized = normalizeRuntimeProfile( definition );
+			if ( ! normalized ) {
+				rejected.push( index );
+				return;
+			}
+			if ( Object.prototype.hasOwnProperty.call( next, normalized.id ) ) {
+				rejected.push( index );
+				return;
+			}
+			next[ normalized.id ] = normalized;
+		} );
+
+		profileRegistry = next;
+		return { ok: true, count: Object.keys( next ).length, rejected: rejected };
+	}
+
+	function getProfile( profileId ) {
+		if ( typeof profileId !== 'string' ) {
+			return null;
+		}
+		return profileRegistry[ profileId ] || null;
+	}
+
+	function outputKeys( profile ) {
+		return profile.outputs.map( function ( output ) {
+			return output.key;
+		} );
+	}
+
+	function parseSegmentsV1( payload, profile ) {
+		const expected = profile.outputs.length;
 		if ( typeof payload !== 'string' ) {
-			return failure( 'INVALID_SEGMENT_COUNT', { expected: 7, received: 0 } );
+			return failure( 'INVALID_SEGMENT_COUNT', { expected: expected, received: 0 } );
 		}
 
-		const normalizedPayload = payload.replace( /\r\n?/g, '\n' ).trim();
+		const normalizedPayload = payload.replace( /\r\n?/g, '\n' );
+		let segments = normalizedPayload === '' ? [] : normalizedPayload.split( '\n' );
 
-		if ( normalizedPayload === '' ) {
-			return failure( 'INVALID_SEGMENT_COUNT', { expected: 7, received: 0 } );
+		if ( profile.parser.trim ) {
+			segments = segments.map( function ( segment ) {
+				return segment.trim();
+			} );
+
+			while ( segments.length > expected && segments[ 0 ] === '' ) {
+				segments.shift();
+			}
+			while ( segments.length > expected && segments[ segments.length - 1 ] === '' ) {
+				segments.pop();
+			}
 		}
 
-		const segments = normalizedPayload.split( '\n' ).map( function ( segment ) {
-			return normalizeDigits( segment.trim() );
-		} );
-
-		if ( segments.length !== SAYAD_V01_OUTPUTS.length ) {
-			return failure(
-				'INVALID_SEGMENT_COUNT',
-				{ expected: SAYAD_V01_OUTPUTS.length, received: segments.length }
-			);
-		}
-
-		const emptyIndex = segments.findIndex( function ( segment ) {
-			return segment === '';
-		} );
-
-		if ( emptyIndex !== -1 ) {
-			return failure( 'EMPTY_SEGMENT', { segment: emptyIndex + 1 } );
+		if ( segments.length !== expected ) {
+			return failure( 'INVALID_SEGMENT_COUNT', {
+				expected: expected,
+				received: segments.length,
+			} );
 		}
 
 		const data = {};
-		SAYAD_V01_OUTPUTS.forEach( function ( output, index ) {
-			data[ output ] = segments[ index ];
-		} );
+		for ( let index = 0; index < profile.outputs.length; index++ ) {
+			const output = profile.outputs[ index ];
+			let value = segments[ index ];
+
+			if ( profile.parser.normalize_digits ) {
+				value = normalizeDigits( value );
+			}
+
+			if ( output.required && value === '' ) {
+				return failure( 'EMPTY_SEGMENT', { segment: index + 1 } );
+			}
+			data[ output.key ] = value;
+		}
 
 		return {
 			ok: true,
-			profileId: 'sayad_v01',
-			outputs: SAYAD_V01_OUTPUTS.slice(),
+			profileId: profile.id,
+			outputs: outputKeys( profile ),
 			data: data,
 		};
 	}
 
-	const PROFILE_REGISTRY = Object.freeze( {
-		sayad_v01: Object.freeze( {
-			id: 'sayad_v01',
-			outputs: SAYAD_V01_OUTPUTS,
-			parse: parseSayadV01,
-		} ),
-	} );
-
 	function parseScan( payload, profileId ) {
-		const profile = PROFILE_REGISTRY[ profileId ];
-
+		const profile = getProfile( profileId );
 		if ( ! profile ) {
 			return failure( 'PROFILE_NOT_FOUND' );
 		}
 
-		return profile.parse( payload );
+		return parseSegmentsV1( payload, profile );
 	}
 
 	function decideCaptureAction( payload, profileId, trigger ) {
@@ -128,31 +219,24 @@
 	}
 
 	function normalizeMappings( profile, mappings ) {
-		if (
-			! mappings ||
-			typeof mappings !== 'object' ||
-			Array.isArray( mappings )
-		) {
+		if ( ! mappings || typeof mappings !== 'object' || Array.isArray( mappings ) ) {
 			return failure( 'INVALID_MAPPING' );
 		}
 
-		const allowedKeys = new Set( profile.outputs );
-		const keys = Object.keys( mappings );
-
-		for ( const key of keys ) {
+		const keys = outputKeys( profile );
+		const allowedKeys = new Set( keys );
+		for ( const key of Object.keys( mappings ) ) {
 			if ( ! allowedKeys.has( key ) ) {
 				return failure( 'INVALID_MAPPING' );
 			}
 		}
 
 		const normalized = {};
-		for ( const output of profile.outputs ) {
+		for ( const output of keys ) {
 			const targetId = normalizeTargetId( mappings[ output ] );
-
 			if ( targetId === null ) {
 				return failure( 'INVALID_MAPPING' );
 			}
-
 			if ( targetId !== '' ) {
 				normalized[ output ] = targetId;
 			}
@@ -167,30 +251,25 @@
 		}
 
 		const index = new Map();
-
 		targetDescriptors.forEach( function ( descriptor ) {
 			if ( ! descriptor || typeof descriptor !== 'object' ) {
 				return;
 			}
-
 			const targetId = normalizeTargetId( descriptor.id );
 			if ( ! targetId ) {
 				return;
 			}
-
 			index.set( targetId, {
 				id: targetId,
 				type: String( descriptor.type || '' ),
 				displayOnly: descriptor.displayOnly === true,
 			} );
 		} );
-
 		return index;
 	}
 
 	function validateMappings( profileId, mappings, targetDescriptors, scannerFieldId ) {
-		const profile = PROFILE_REGISTRY[ profileId ];
-
+		const profile = getProfile( profileId );
 		if ( ! profile ) {
 			return failure( 'PROFILE_NOT_FOUND' );
 		}
@@ -203,18 +282,16 @@
 		const scannerId = normalizeTargetId( scannerFieldId );
 		const targets = indexTargetDescriptors( targetDescriptors );
 		const usedTargets = new Set();
+		const keys = outputKeys( profile );
 
-		for ( const output of profile.outputs ) {
+		for ( const output of keys ) {
 			const targetId = normalizedResult.mappings[ output ];
-
 			if ( ! targetId ) {
 				continue;
 			}
-
 			if ( scannerId && targetId === scannerId ) {
 				return failure( 'SELF_TARGET' );
 			}
-
 			if ( usedTargets.has( targetId ) ) {
 				return failure( 'DUPLICATE_TARGET' );
 			}
@@ -224,11 +301,7 @@
 			if ( ! descriptor ) {
 				return failure( 'TARGET_NOT_FOUND' );
 			}
-
-			if (
-				descriptor.displayOnly ||
-				! SUPPORTED_TARGET_TYPES.includes( descriptor.type )
-			) {
+			if ( descriptor.displayOnly || ! SUPPORTED_TARGET_TYPES.includes( descriptor.type ) ) {
 				return failure( 'UNSUPPORTED_TARGET' );
 			}
 		}
@@ -236,7 +309,7 @@
 		return {
 			ok: true,
 			profileId: profileId,
-			outputs: profile.outputs.slice(),
+			outputs: keys,
 			mappings: normalizedResult.mappings,
 		};
 	}
@@ -259,11 +332,10 @@
 
 		for ( let index = 0; index < profile.outputs.length; index++ ) {
 			const output = profile.outputs[ index ];
-
 			if (
-				parsed.outputs[ index ] !== output ||
-				typeof parsed.data[ output ] !== 'string' ||
-				parsed.data[ output ] === ''
+				parsed.outputs[ index ] !== output.key ||
+				typeof parsed.data[ output.key ] !== 'string' ||
+				( output.required && parsed.data[ output.key ] === '' )
 			) {
 				return false;
 			}
@@ -279,11 +351,10 @@
 			);
 		}
 
-		const profile = PROFILE_REGISTRY[ parsed.profileId ];
+		const profile = getProfile( parsed.profileId );
 		if ( ! profile ) {
 			return failure( 'PROFILE_NOT_FOUND' );
 		}
-
 		if ( ! parsedResultMatchesProfile( parsed, profile ) ) {
 			return failure( 'INVALID_MAPPING' );
 		}
@@ -294,18 +365,16 @@
 			targetDescriptors,
 			scannerFieldId
 		);
-
 		if ( ! mappingResult.ok ) {
 			return mappingResult;
 		}
 
 		const updates = [];
-		for ( const output of profile.outputs ) {
+		for ( const output of outputKeys( profile ) ) {
 			const targetId = mappingResult.mappings[ output ];
 			if ( ! targetId ) {
 				continue;
 			}
-
 			updates.push( {
 				output: output,
 				targetId: targetId,
@@ -321,10 +390,9 @@
 	}
 
 	return Object.freeze( {
-		PROFILE_REGISTRY: PROFILE_REGISTRY,
-		SAYAD_V01_OUTPUTS: SAYAD_V01_OUTPUTS,
 		SUPPORTED_TARGET_TYPES: SUPPORTED_TARGET_TYPES,
 		normalizeDigits: normalizeDigits,
+		configureProfiles: configureProfiles,
 		parseScan: parseScan,
 		decideCaptureAction: decideCaptureAction,
 		validateMappings: validateMappings,

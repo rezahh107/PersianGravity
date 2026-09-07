@@ -4,7 +4,7 @@
 
 Persian Gravity Forms is a focused Gravity Forms extension for generic Persian/Iranian capabilities. Version 4 deliberately uses one canonical runtime and keeps responsibility boundaries narrow.
 
-Structured Scanner v0.1 is an unreleased source capability in the current development PR. It does not change the plugin version or create a new release authority.
+Structured Scanner v0.1 is an unreleased source capability in the current development PR. It does not create release authority.
 
 ## Runtime topology
 
@@ -14,10 +14,12 @@ persian-gravityforms.php
         ├── own text-domain loading
         ├── dependency notice
         │
+        ├── plugins_loaded
+        │     └── PGR_Admin
+        │
         └── gform_loaded
               │
               └── PGR_Core::init()
-                    ├── PGR_Admin
                     ├── PGR_Utils
                     ├── PGR_Address
                     ├── PGR_Currency
@@ -42,13 +44,13 @@ Important constants:
 - `PGR_URL`
 - `PGR_MIN_GF_VERSION`
 
-Gravity Forms-dependent runtime initialization is attached to `gform_loaded`. Initialization is idempotent and exits when required Gravity Forms classes or the minimum Gravity Forms version are unavailable.
+The WordPress admin product surface initializes independently so Settings and System Status can remain available when Gravity Forms is absent. Gravity Forms-dependent runtime initialization is attached to `gform_loaded`. Initialization is idempotent and exits when required Gravity Forms classes or the minimum Gravity Forms version are unavailable.
 
 ## Product modules
 
 ### `PGR_Core`
 
-Coordinates field registration, admin/settings, address/currency integrations, form-level digit normalization, duplicate normalization, and conditional field assets.
+Coordinates field registration, address/currency integrations, form-level digit normalization, duplicate normalization, and conditional field assets.
 
 It registers all three current custom field implementations and conditionally loads National ID and Structured Scanner assets only for forms that need them.
 
@@ -89,13 +91,13 @@ Contract:
 
 ### `PGR_Scanner_Profile_Registry`
 
-Owns Structured Scanner profile metadata only. It does not own browser capture state and does not provide a second PHP parser.
+Owns Structured Scanner profile definitions and custom-profile persistence. It does not own browser capture state and does not provide a second PHP parser.
 
-Current profile ID:
+Built-in profile ID:
 
 `sayad_v01`
 
-The ordered structural outputs are exactly:
+The ordered built-in outputs remain exactly:
 
 1. `qr_version`
 2. `owner_type`
@@ -105,12 +107,30 @@ The ordered structural outputs are exactly:
 6. `cheque_serial`
 7. `sayad_id`
 
+Custom profiles are stored in the single versioned option:
+
+`pgr_scanner_profiles`
+
+Scanner Profiles v1 is intentionally bounded to:
+
+- parser type `segments_v1`;
+- separator `newline`;
+- boolean `trim`;
+- boolean `normalize_digits`;
+- ordered output definitions containing safe ASCII `key`, human `label`, and boolean `required`.
+
+There is no stored executable callback, `eval`, arbitrary regular-expression language, or scripting DSL. Malformed stored profiles are skipped and never become executable runtime definitions. Built-in IDs win over stored custom collisions.
+
+For compatibility with existing form metadata, a custom profile's executable contract is immutable after creation. The immutable portion is parser type/separator/flags plus ordered output keys and their `required` semantics. Display labels and enabled state may change. Attempts to reorder, add, remove, rename, or otherwise change executable outputs on an existing custom profile fail with an explicit `immutable_contract` result rather than silently reinterpreting old form mappings. A structurally different contract must use a new profile ID.
+
+`runtime_profiles()` exports only enabled, validated definitions. PHP serializes these definitions before the pure Scanner core script as `window.PGRScannerProfiles`; the JavaScript core validates the bounded model again before accepting it.
+
 Supported mapped destination field types are exactly:
 
 - `text`
 - `hidden`
 
-The profile is structural only. It does not assert bank validity, cheque validity, checksum authority, cross-bank compatibility, payment behavior, or financial business rules.
+Profiles are structural only. They do not assert bank validity, cheque validity, checksum authority, cross-bank compatibility, payment behavior, or financial business rules.
 
 ### `PGR_GF_Field_Structured_Scanner`
 
@@ -125,7 +145,17 @@ Field-owned persisted configuration properties:
 - `scanner_profile`
 - `scanner_mappings`
 
-`scanner_mappings` is stored as the ordered Gravity Forms field configuration aligned with the selected profile outputs. At runtime it is converted to a keyed mapping object for the browser parser/update planner.
+The canonical mapping representation for new/edited Scanner fields is keyed by stable output key:
+
+```text
+scanner_mappings = {
+  output_key: gravity_forms_field_id
+}
+```
+
+Legacy forms that already contain positional `scanner_mappings` arrays remain readable. A legacy array is deterministically converted from position to the selected profile's ordered output keys at runtime and in the Form Editor. That compatibility is safe because the executable output contract for an existing custom profile is immutable and the built-in `sayad_v01` contract remains fixed. No migration rewrites forms silently.
+
+A keyed mapping that contains a key not present in the selected profile is invalid. A positional mapping longer than the selected profile output list is invalid. Missing/disabled profiles and malformed mappings produce an explicit unavailable/configuration state rather than a partial or remapped update.
 
 Raw Scanner payload is not a persisted field value:
 
@@ -137,23 +167,41 @@ Raw Scanner payload is not a persisted field value:
 - `get_value_merge_tag()` returns an empty string;
 - `get_value_export()` returns an empty string.
 
-The PHP field exports only configuration metadata needed by the browser: selected profile, normalized mapping configuration, allowed target descriptors, safe status strings, and Scanner field ID.
+The PHP field exports only configuration metadata needed by the browser: selected profile, normalized keyed mapping configuration, allowed target descriptors, safe status strings, and Scanner field ID.
 
 ## Structured Scanner browser contract
 
 ### Authority split
 
-`assets/js/pgr-structured-scanner-core.js` is the pure authority for:
+`PGR_Scanner_Profile_Registry` is the PHP authority for which built-in/custom profiles are valid and enabled. Its validated runtime definitions are serialized into `window.PGRScannerProfiles` before the pure core loads.
 
-- `sayad_v01` structural parsing;
+`assets/js/pgr-structured-scanner-core.js` is the pure browser authority for:
+
+- validating the serialized bounded runtime profile model;
+- `segments_v1` newline structural parsing for built-in and custom profiles;
 - LF/CRLF normalization;
-- Persian/Arabic digit normalization;
+- optional Persian/Arabic digit normalization according to the profile flag;
+- required/optional output semantics;
 - profile lookup;
 - mapping validation;
 - atomic update-plan construction;
 - parser-driven capture-completion decisions.
 
-`assets/js/pgr-structured-scanner.js` is a thin DOM adapter. It does not define a second seven-segment grammar.
+The core does not contain a second hard-coded executable Sayad-only registry. Tests may inject profile fixtures through the same bounded configuration function, but production runtime definitions come from PHP.
+
+`assets/js/pgr-structured-scanner.js` is a thin DOM adapter. It does not define a second segment grammar or display raw parser diagnostics to officers.
+
+### Message-state contract
+
+The PHP-rendered component and the DOM adapter share these states:
+
+- `ready` — capture can begin;
+- `processing` — an explicit/complete capture is being evaluated;
+- `success` — the complete mapped update was applied;
+- `invalid` — the scanned payload could not be parsed safely;
+- `configuration` — profile/mapping/target configuration is unavailable or invalid.
+
+The adapter uses only PHP-provided ready/processing/success/invalid/configuration messages. Parser failures such as invalid segment count resolve to the non-empty generic invalid message; configuration failures resolve to the configuration message. There is no dependency on an undeclared `data-pgr-message-segment-count` attribute.
 
 ### Capture boundary
 
@@ -183,12 +231,14 @@ The pure core validates the full mapping and builds the full update plan before 
 Fail-closed conditions include:
 
 - malformed mapping metadata;
-- unknown profile;
+- unknown/unavailable profile;
+- malformed runtime profile definition;
 - missing target;
 - unsupported target type;
 - duplicate target;
 - self-target;
-- invalid scan structure.
+- invalid scan structure;
+- missing required segment.
 
 Only after the complete plan is valid does the DOM adapter resolve every target and apply the mapped values. A failed later scan must not expose or apply a partial plan over the prior successful state. Repeated successful scans may replace all mapped values.
 
@@ -218,15 +268,23 @@ Provides Iranian Rial (`IRR`) and Toman (`IRT`) definitions through Gravity Form
 
 ## `PGR_Admin`
 
-Uses the WordPress Settings API.
+Uses normal WordPress admin pages. Scanner Profiles writes require `manage_options`, a matching nonce, request sanitization, and registry validation.
 
-Current plugin option:
+Current settings option remains:
 
 `pgr_settings`
 
-Current option key:
+Current settings key remains:
 
 `default_force_english`
+
+Scanner Profiles admin assets are scoped to PersianGravity admin pages:
+
+- `assets/css/pgr-admin.css`
+- `assets/js/pgr-admin-profiles.js` on the Scanner Profiles page
+- `assets/css/pgr-scanner-editor.css` only in the Gravity Forms Form Editor
+
+The profile-admin JavaScript only manages output-row presentation/order and deletion confirmation. It does not create or execute parser rules.
 
 ## Form-level persistence
 
@@ -236,7 +294,7 @@ Current form property:
 
 When enabled, string values pass through server-side Persian/Arabic digit normalization before Gravity Forms persists them.
 
-Structured Scanner field configuration adds `scanner_profile` and `scanner_mappings` to its field object. Scanner raw payload is explicitly outside persistence authority.
+Structured Scanner field configuration adds `scanner_profile` and `scanner_mappings` to its field object. New mappings are stable-key based; legacy positional mappings are accepted only under the immutable profile-contract compatibility rule described above. Scanner raw payload is explicitly outside persistence authority.
 
 ## Asset policy
 
@@ -246,7 +304,7 @@ National ID frontend JavaScript:
 
 It is conditionally enqueued only when a National ID field opts into typing-time digit normalization.
 
-Structured Scanner assets:
+Structured Scanner frontend assets:
 
 - `assets/js/pgr-structured-scanner-core.js`
 - `assets/js/pgr-structured-scanner.js`
@@ -280,7 +338,7 @@ Canonical text domain:
 
 `persian-gravityforms`
 
-The plugin may translate only its own strings.
+The plugin may translate only its own strings. Scanner Profiles/Admin and officer-facing Scanner strings use this text domain.
 
 It must not intercept or own translations for:
 
@@ -299,6 +357,7 @@ Do not add these without a new product decision:
 - SRWF-specific behavior;
 - custom databases;
 - bank/checksum/business validation for `sayad_v01`;
+- executable custom parser callbacks, eval, or arbitrary scripting;
 - a general barcode/scanner framework or global keyboard interception layer;
 - historical field-ID compatibility (`mellicart`, `ir_national_id`);
 - broad migration machinery for removed legacy installations;
@@ -306,7 +365,7 @@ Do not add these without a new product decision:
 
 ## Testing boundary
 
-Automated tests cover pure Scanner parsing/mapping/completion behavior, bootstrap contracts, non-persistence value surfaces, capture markup, conditional asset loading, runtime integrity, WPCS, PHPCompatibility, and repository PHPUnit behavior that can be exercised without a licensed real Gravity Forms environment.
+Automated tests cover built-in/custom Scanner parsing, malformed profile rejection, required/optional semantics, mapping compatibility/atomicity, custom-profile persistence and immutable edit behavior, bootstrap contracts, non-persistence value surfaces, capture markup, conditional asset loading, runtime integrity, WPCS, PHPCompatibility, and repository PHPUnit behavior that can be exercised without a licensed real Gravity Forms environment.
 
 A real WordPress + Gravity Forms integration environment is still required to prove browser/editor/frontend behavior for Structured Scanner. Unit/stub coverage and green CI are not equivalent to that proof.
 

@@ -13,7 +13,7 @@ final class PGR_Core {
 	private static $initialized = false;
 
 	/**
-	 * Initialize all supported plugin capabilities exactly once.
+	 * Initialize all supported Gravity Forms capabilities exactly once.
 	 *
 	 * @return void
 	 */
@@ -30,9 +30,6 @@ final class PGR_Core {
 
 		GF_Fields::register( new PGR_GF_Field_Structured_Scanner() );
 		PGR_GF_Field_Structured_Scanner::register_editor_hooks();
-
-		$admin = new PGR_Admin();
-		$admin->hooks();
 
 		$address = new PGR_Address();
 		$address->hooks();
@@ -125,6 +122,9 @@ final class PGR_Core {
 	/**
 	 * Load field-owned frontend assets only when the current form needs them.
 	 *
+	 * Scanner profile definitions are serialized from the validated PHP registry;
+	 * no raw scanner payload is transported or persisted here.
+	 *
 	 * @param array $form    Current form.
 	 * @param bool  $is_ajax Whether AJAX is enabled.
 	 * @return void
@@ -174,6 +174,16 @@ final class PGR_Core {
 			array(),
 			PGR_VERSION,
 			true
+		);
+
+		$runtime_profiles = wp_json_encode( PGR_Scanner_Profile_Registry::runtime_profiles() );
+		if ( false === $runtime_profiles ) {
+			$runtime_profiles = '[]';
+		}
+		wp_add_inline_script(
+			'pgr-structured-scanner-core',
+			'window.PGRScannerProfiles = ' . $runtime_profiles . ';',
+			'before'
 		);
 
 		wp_enqueue_script(

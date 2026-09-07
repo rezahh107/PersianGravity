@@ -7,6 +7,14 @@
 	}
 
 	const SCAN_IDLE_MS = 150;
+	const CONFIGURATION_CODES = new Set( [
+		'PROFILE_NOT_FOUND',
+		'INVALID_MAPPING',
+		'TARGET_NOT_FOUND',
+		'UNSUPPORTED_TARGET',
+		'DUPLICATE_TARGET',
+		'SELF_TARGET',
+	] );
 	const instanceStates = new WeakMap();
 
 	function parseJson( value, fallback ) {
@@ -32,7 +40,23 @@
 
 	function setStatus( state, statusName, message ) {
 		state.root.dataset.pgrStatus = statusName;
-		state.status.textContent = message;
+		if ( typeof message === 'string' && message !== '' ) {
+			state.status.textContent = message;
+		}
+	}
+
+	function statusForFailure( state, result ) {
+		if ( result && CONFIGURATION_CODES.has( result.code ) ) {
+			return {
+				status: 'configuration',
+				message: state.messages.configuration || state.messages.invalid,
+			};
+		}
+
+		return {
+			status: 'invalid',
+			message: state.messages.invalid || state.messages.configuration,
+		};
 	}
 
 	function clearIdleTimer( state ) {
@@ -44,21 +68,14 @@
 
 	function scheduleIdleProcessing( state ) {
 		clearIdleTimer( state );
-
 		if ( state.capture.value === '' ) {
 			return;
 		}
 
 		state.idleTimer = window.setTimeout( function () {
 			state.idleTimer = null;
-
 			const rawPayload = state.capture.value;
-			const decision = core.decideCaptureAction(
-				rawPayload,
-				state.profileId,
-				'idle'
-			);
-
+			const decision = core.decideCaptureAction( rawPayload, state.profileId, 'idle' );
 			if ( decision.action === 'finalize' ) {
 				processCapture( state, rawPayload, decision.parsed );
 			}
@@ -67,14 +84,12 @@
 
 	function inputElementsByFieldId( form ) {
 		const inputs = new Map();
-
 		form.querySelectorAll( 'input[name]' ).forEach( function ( input ) {
 			const match = /^input_([1-9]\d*)$/.exec( input.name );
 			if ( match ) {
 				inputs.set( match[ 1 ], input );
 			}
 		} );
-
 		return inputs;
 	}
 
@@ -82,7 +97,6 @@
 		const inputs = inputElementsByFieldId( state.form );
 		const descriptors = [];
 		const elements = new Map();
-
 		if ( ! Array.isArray( configuredTargets ) ) {
 			return { descriptors: descriptors, elements: elements };
 		}
@@ -91,12 +105,10 @@
 			if ( ! descriptor || typeof descriptor !== 'object' ) {
 				return;
 			}
-
 			const id = String( descriptor.id || '' );
 			if ( ! /^[1-9]\d*$/.test( id ) || ! inputs.has( id ) ) {
 				return;
 			}
-
 			descriptors.push( {
 				id: id,
 				type: String( descriptor.type || '' ),
@@ -104,34 +116,16 @@
 			} );
 			elements.set( id, inputs.get( id ) );
 		} );
-
 		return { descriptors: descriptors, elements: elements };
-	}
-
-	function safeErrorMessage( state, result ) {
-		if (
-			result &&
-			result.code === 'INVALID_SEGMENT_COUNT' &&
-			Number.isInteger( result.expected ) &&
-			Number.isInteger( result.received )
-		) {
-			return state.messages.segmentCount
-				.replace( '%1$d', String( result.expected ) )
-				.replace( '%2$d', String( result.received ) );
-		}
-
-		return state.messages.invalid;
 	}
 
 	function applyUpdatePlan( plan, elements ) {
 		const prepared = [];
-
 		for ( const update of plan.updates ) {
 			const input = elements.get( update.targetId );
 			if ( ! input ) {
 				return false;
 			}
-
 			prepared.push( { input: input, value: String( update.value ) } );
 		}
 
@@ -140,38 +134,29 @@
 			item.input.dispatchEvent( new Event( 'input', { bubbles: true } ) );
 			item.input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 		} );
-
 		return true;
 	}
 
 	function processCapture( state, suppliedPayload, suppliedParsed ) {
 		clearIdleTimer( state );
-
-		let rawPayload = typeof suppliedPayload === 'string'
-			? suppliedPayload
-			: state.capture.value;
+		let rawPayload = typeof suppliedPayload === 'string' ? suppliedPayload : state.capture.value;
 		state.capture.value = '';
 		setStatus( state, 'processing', state.messages.processing );
-
 		const parsed = suppliedParsed || core.parseScan( rawPayload, state.profileId );
 		rawPayload = null;
 
 		if ( ! parsed.ok ) {
-			setStatus( state, 'invalid', safeErrorMessage( state, parsed ) );
+			const failureState = statusForFailure( state, parsed );
+			setStatus( state, failureState.status, failureState.message );
 			state.capture.focus();
 			return;
 		}
 
 		const targetState = availableTargets( state, state.targetDescriptors );
-		const plan = core.buildUpdatePlan(
-			parsed,
-			state.mappings,
-			targetState.descriptors,
-			state.scannerFieldId
-		);
-
+		const plan = core.buildUpdatePlan( parsed, state.mappings, targetState.descriptors, state.scannerFieldId );
 		if ( ! plan.ok || ! applyUpdatePlan( plan, targetState.elements ) ) {
-			setStatus( state, 'invalid', safeErrorMessage( state, plan ) );
+			const failureState = statusForFailure( state, plan.ok ? { code: 'TARGET_NOT_FOUND' } : plan );
+			setStatus( state, failureState.status, failureState.message );
 			state.capture.focus();
 			return;
 		}
@@ -182,20 +167,14 @@
 
 	function maybeAutofocus( state ) {
 		const active = document.activeElement;
-
 		if ( ! active || active === document.body ) {
 			state.capture.focus();
 			return;
 		}
-
 		if ( state.form.contains( active ) ) {
 			return;
 		}
-
-		const visibleScanners = Array.from(
-			state.form.querySelectorAll( '[data-pgr-structured-scanner]' )
-		).filter( isVisible );
-
+		const visibleScanners = Array.from( state.form.querySelectorAll( '[data-pgr-structured-scanner]' ) ).filter( isVisible );
 		if ( visibleScanners.length === 1 && visibleScanners[ 0 ] === state.root ) {
 			state.capture.focus();
 		}
@@ -205,12 +184,10 @@
 		if ( instanceStates.has( root ) ) {
 			return;
 		}
-
 		const form = root.closest( 'form' );
 		const capture = root.querySelector( '[data-pgr-scanner-capture]' );
 		const status = root.querySelector( '[data-pgr-scanner-status]' );
 		const focusButton = root.querySelector( '[data-pgr-scanner-focus]' );
-
 		if ( ! form || ! capture || ! status || ! focusButton ) {
 			return;
 		}
@@ -227,13 +204,13 @@
 			mappings: parseJson( root.dataset.pgrMappings || '{}', null ),
 			targetDescriptors: parseJson( root.dataset.pgrTargets || '[]', [] ),
 			messages: {
+				ready: root.dataset.pgrMessageReady || '',
 				processing: root.dataset.pgrMessageProcessing || '',
 				success: root.dataset.pgrMessageSuccess || '',
 				invalid: root.dataset.pgrMessageInvalid || '',
-				segmentCount: root.dataset.pgrMessageSegmentCount || '',
+				configuration: root.dataset.pgrMessageConfiguration || '',
 			},
 		};
-
 		instanceStates.set( root, state );
 
 		capture.addEventListener( 'input', function () {
@@ -243,16 +220,10 @@
 		capture.addEventListener( 'keydown', function ( event ) {
 			if ( event.key === 'Enter' ) {
 				const rawPayload = state.capture.value;
-				const decision = core.decideCaptureAction(
-					rawPayload,
-					state.profileId,
-					'enter'
-				);
-
+				const decision = core.decideCaptureAction( rawPayload, state.profileId, 'enter' );
 				if ( decision.action !== 'finalize' ) {
 					return;
 				}
-
 				event.preventDefault();
 				event.stopPropagation();
 				processCapture( state, rawPayload, decision.parsed );
@@ -262,14 +233,8 @@
 			if ( event.key !== 'Tab' || state.capture.value === '' ) {
 				return;
 			}
-
 			const rawPayload = state.capture.value;
-			const decision = core.decideCaptureAction(
-				rawPayload,
-				state.profileId,
-				'tab'
-			);
-
+			const decision = core.decideCaptureAction( rawPayload, state.profileId, 'tab' );
 			event.preventDefault();
 			event.stopPropagation();
 			processCapture( state, rawPayload, decision.parsed );
@@ -280,42 +245,27 @@
 			if ( ! clipboard ) {
 				return;
 			}
-
 			const rawPayload = clipboard.getData( 'text' );
 			if ( rawPayload === '' ) {
 				return;
 			}
-
 			event.preventDefault();
-
-			const decision = core.decideCaptureAction(
-				rawPayload,
-				state.profileId,
-				'paste'
-			);
+			const decision = core.decideCaptureAction( rawPayload, state.profileId, 'paste' );
 			processCapture( state, rawPayload, decision.parsed );
 		} );
 
 		focusButton.addEventListener( 'click', function () {
 			state.capture.focus();
 		} );
-
 		maybeAutofocus( state );
 	}
 
 	function initializeAll( scope ) {
 		const rootScope = scope && scope.querySelectorAll ? scope : document;
-
-		if (
-			rootScope.nodeType === Node.ELEMENT_NODE &&
-			rootScope.matches( '[data-pgr-structured-scanner]' )
-		) {
+		if ( rootScope.nodeType === Node.ELEMENT_NODE && rootScope.matches( '[data-pgr-structured-scanner]' ) ) {
 			initializeScanner( rootScope );
 		}
-
-		rootScope.querySelectorAll( '[data-pgr-structured-scanner]' ).forEach(
-			initializeScanner
-		);
+		rootScope.querySelectorAll( '[data-pgr-structured-scanner]' ).forEach( initializeScanner );
 	}
 
 	if ( document.readyState === 'loading' ) {
