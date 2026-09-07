@@ -34,6 +34,7 @@ jobs:
           trap 'rm -f "$tmp_mo"' EXIT
           msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          echo "GNU_MSGFMT_BASE64=$(base64 -w0 "$tmp_mo")"
           cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
 
       - name: Syntax check shipped PHP
