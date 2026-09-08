@@ -38,7 +38,7 @@ Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these or
 
 The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
 
-Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Exact licensed source/POT inspection remains unavailable in this repository-side work: provider PO scaffolds stay empty, source/package hashes stay null, no JS handles are approved, and no production catalogs are generated. Product coverage remains unknown; this preparatory reconciliation does not provide visible product translations yet. See docs/LOCALIZATION.md for admission gates and load-order boundaries.
+Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Exact owner-supplied packages for Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 have been SHA-256-pinned and admitted as metadata-only source evidence; GravityView remains package-unavailable. Product PO scaffolds remain header-only, all runtime JS handle maps remain empty, and no production product MO, `.l10n.php` or translation JSON is generated. Source admission therefore does not provide visible product Persian translations. See docs/LOCALIZATION.md for admission evidence and load-order boundaries.
 
 == Requirements ==
 
@@ -84,9 +84,10 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
-* Reconciled owner-authorized localization targets to Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4 while source packages remain unavailable and all product catalogs remain dormant.
+* Admitted exact Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 package/source evidence in metadata-only mode while keeping all product translation content and runtime JS activation dormant; GravityView remains package-unavailable.
+* Reconciled owner-authorized localization targets to Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4.
 * Integrated the shared localization provider foundation with the existing 4.2.0 module manager and bilingual admin/help. Localization remains outside the six modules.
-* Preserved provider fallback, deterministic build/provenance checks and dormant catalogs pending exact licensed source admission. No version bump or release.
+* Preserved provider fallback and deterministic build/provenance checks. No version bump or release.
 
 = 4.2.0 =
 * Added bounded `PGR_Module_Registry` with the small autoloaded `pgr_modules` option and default-enabled upgrade behavior.

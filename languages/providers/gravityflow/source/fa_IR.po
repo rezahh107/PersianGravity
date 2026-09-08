@@ -1,4 +1,4 @@
-# Empty source scaffold. Exact licensed source/POT unavailable. No coverage claim.
+# Metadata-only source admission for exact 3.1.0 package. No production strings.
 msgid ""
 msgstr ""
 "Project-Id-Version: gravityflow 3.1.0\n"
