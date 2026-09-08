@@ -21,7 +21,22 @@ jobs:
           coverage: none
 
       - name: Install development dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: |
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install GNU gettext
+        run: sudo apt-get update && sudo apt-get install --yes gettext
+
+      - name: Validate Persian gettext catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
+          trap 'rm -f "$tmp_mo"' EXIT
+          msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
 
       - name: Syntax check shipped PHP
         run: find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l

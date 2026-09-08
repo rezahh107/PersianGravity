@@ -2,39 +2,43 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.1.0
+Stable tag: 4.2.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
-Small, focused Persian and Iranian enhancements for Gravity Forms.
+Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
 
 == Description ==
 
-Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms without owning typography, workflow business rules, or payment gateways.
+Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms without owning typography, workflow business rules, payment gateways, or translations for other plugins.
 
-Current source capabilities:
+Version 4.2.0 exposes six bounded source-defined modules, all enabled by default for backward compatibility:
 
-* Iranian National ID field using the Gravity Forms `GF_Field` architecture (`pgr_national_id`).
-* Dedicated Jalali Date field using its own `GF_Field` type (`pgr_jalali_date`).
-* Generic non-persistent Structured Scanner controller field (`pgr_structured_scanner`) with the structural `sayad_v01` profile.
-* `sayad_v01` exposes exactly seven ordered outputs: `qr_version`, `owner_type`, `owner_identifier`, `iban`, `bank_branch`, `cheque_serial`, and `sayad_id`.
-* Structured Scanner captures multiline LF/CRLF input in a transient `textarea`, has no Gravity Forms submission `name`, and does not persist its raw scan payload.
-* Structured Scanner maps only to Single Line Text (`text`) and Hidden (`hidden`) fields. Its `scanner_profile` and `scanner_mappings` configuration is field-owned and persisted with the form field configuration.
-* Scanner keyboard completion is parser-driven: separator Enter events remain in-progress until the existing parser accepts the full payload; complete Enter and complete idle may finalize; non-empty Tab and paste are explicit finalization paths.
-* Scanner mapped-field changes are planned atomically and fail closed for malformed mappings, missing/unsupported/self/duplicate targets, or invalid scan structure.
-* Server-authoritative Iranian National ID checksum validation and Persian/Arabic digit normalization.
-* Server-authoritative Jalali parsing and validation across field-owned presentation formats.
-* Canonical Jalali persistence as ASCII `YYYY-MM-DD`; the stored value retains Jalali calendar semantics and is never implicitly converted to Gregorian.
-* Ordinary Gravity Forms Date fields remain untouched.
-* Optional typing-time digit normalization for National ID UX.
-* Optional form-level Persian/Arabic digit normalization before entry values are saved.
-* Iranian address type and province choices.
+* Iranian National ID (`pgr_national_id`).
+* Jalali Date (`pgr_jalali_date`).
+* Iranian Address type and province choices.
+* Form-level Persian/Arabic digit normalization (`pgr_normalize_digits`).
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
-* Standard WordPress localization for Persian Gravity Forms' own strings.
-* Partial fa_IR provider foundation for explicitly managed Gravity ecosystem domains; current provider PO scaffolds have no production translations or approved JS handles pending exact source/POT inspection.
+* Structured Scanner (`pgr_structured_scanner`).
 
-The Structured Scanner profile is structural only. It does not establish bank/checksum authority, cross-bank validation, financial business rules, or payment behavior.
+The Module Manager affects real runtime participation. Disabled modules do not register their owned Gravity Forms fields/hooks and do not enqueue their owned frontend assets. Core administration, Settings, System Status, Help, translation bootstrap, dependency notices, Module Registry, and Scanner Profiles administration remain available.
 
-This plugin intentionally does not provide fonts, arbitrary third-party localization, payment gateways, workflow rules, SRWF-specific behavior, custom databases, or legacy PersianGravity compatibility layers.
+Before disable, PersianGravity performs a bounded Gravity Forms form-metadata usage check. Confirmed use blocks disable. When safe non-use cannot be established, the state is UNKNOWN and a second explicit confirmation is required. No Entries are scanned and no direct SQL is used.
+
+Overview always presents capability names and concise descriptions in Persian and English. Ordinary application UI remains WordPress-gettext based with the `persian-gravityforms` text domain.
+
+The complete Help & Documentation Center ships locally with Persian and English content and native WordPress contextual help links.
+
+= Structured Scanner =
+
+Structured Scanner is a transient, display-only controller. Raw scan input is not intentionally persisted as the Scanner field value. Parsed outputs map only to ordinary `text` and `hidden` fields. Mapping is validated as one atomic update plan and fails closed for invalid scans or mappings.
+
+Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these ordered outputs: `qr_version`, `owner_type`, `owner_identifier`, `iban`, `bank_branch`, `cheque_serial`, and `sayad_id`. It does not establish Sayad checksum authority, bank validity, cross-bank compatibility, payment behavior, or online inquiry.
+
+= Gravity ecosystem localization foundation =
+
+The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
+
+Exact licensed source/POTs for Gravity Forms 3.1.1.1, Gravity Flow 3.1.1 and GravityView 3.3.3 remain unverified. Current provider PO scaffolds are empty, no JS handles are approved, and no production catalogs are generated. Product coverage is unknown; this foundation does not provide visible product translations yet. See docs/LOCALIZATION.md for admission gates and load-order boundaries.
 
 == Requirements ==
 
@@ -42,82 +46,61 @@ This plugin intentionally does not provide fonts, arbitrary third-party localiza
 * PHP 8.2 or newer.
 * Gravity Forms 3.0 or newer.
 
-PHP 8.3 is the recommended production target for the current Gravity Forms stack. The repository CI runs its unit/runtime-characterization test suite on PHP 8.2, 8.3, 8.4, and 8.5. A licensed WordPress + Gravity Forms integration environment remains a separate validation layer.
-
 == Installation ==
 
 1. Install and activate Gravity Forms 3.0 or newer.
 2. Upload and activate Persian Gravity Forms.
-3. Open a Gravity Forms Form Editor.
-4. Add `Iranian National ID`, `Jalali Date`, or, in the current development source, `Structured Scanner` from Advanced Fields.
-5. Configure plugin defaults under Settings > Persian Gravity Forms if needed.
+3. Open Persian Gravity > Overview to review module state.
+4. Open a Gravity Forms Form Editor and use enabled PersianGravity fields/features.
+5. Use Persian Gravity > Help & Documentation for the complete bilingual guide.
 
-== Field behavior ==
+== Persistence ==
 
-= Iranian National ID =
+* `pgr_modules` stores schema version 1 and boolean module state only.
+* `pgr_settings` stores plugin settings such as `default_force_english`.
+* `pgr_scanner_profiles` stores Custom Scanner Profiles.
+* Field configuration, `pgr_normalize_digits`, Scanner Profile selection, and Scanner mappings remain Gravity Forms form metadata.
 
-* Accepts Iranian National ID input as a scalar field.
-* Persian and Arabic digits are normalized to ASCII server-side.
-* Validates the 10-digit Iranian National ID checksum server-side.
-* Stores the canonical value as ten ASCII digits.
-* Supports Gravity Forms conditional logic and native No Duplicates behavior.
-
-= Jalali Date =
-
-* Uses a dedicated custom field rather than modifying the native Gravity Forms Date field.
-* Validates Jalali dates server-side.
-* Supports multiple field-owned presentation formats.
-* Stores canonical ASCII `YYYY-MM-DD` while preserving Jalali calendar semantics.
-
-= Structured Scanner =
-
-* Field type: `pgr_structured_scanner`.
-* Current profile: `sayad_v01`.
-* Uses a transient multiline `textarea` capture without a Gravity Forms submission name.
-* Raw payload is excluded from save-entry, entry-detail, entry-list, merge-tag, and export value surfaces.
-* Only `text` and `hidden` destination fields are supported.
-* LF/CRLF segmentation and digit normalization remain owned by the pure Scanner parser.
-* Enter/Tab/idle/paste completion decisions are parser-driven and do not introduce a second segment-count authority.
-* Successful scans may replace mapped values; failed later scans do not expose a partial update plan.
-* Scanner assets load only when a form contains this field and reinitialization uses the supported `gform/post_render` lifecycle.
+Disabling a module does not delete Entries, form definitions, settings, Profiles, or mappings.
 
 == Development ==
 
-Install development dependencies with Composer and run:
+Run the repository validation commands:
 
+`composer install`
 `composer test`
 `composer cs`
 `composer compat`
 `node --test tests/js/structured-scanner.test.js`
+`composer i18n:check`
+`PGR_WP_CORE=/path/to/pinned/core composer i18n:test`
 
-Generate the plugin-owned translation template with WP-CLI:
+Generate/update the POT template with WP-CLI when available:
 
 `composer i18n:pot`
 
-The production plugin does not require Composer at runtime.
-
-== Validation note ==
-
-Repository CI verifies shipped PHP syntax, WordPress Coding Standards, PHPCompatibility, Structured Scanner pure-JavaScript tests, runtime-integrity guards, and PHPUnit across the configured PHP matrix. CI does not by itself prove browser/UI behavior in a real licensed Gravity Forms installation.
-
-For the current Structured Scanner work, the automated source-repair checkpoint passed. Real WordPress + Gravity Forms browser validation remains separate and must not be claimed unless actually executed. See `docs/VALIDATION.md`.
+Source/unit tests are not equivalent to a real licensed WordPress + Gravity Forms browser integration test.
 
 == Changelog ==
 
 = Unreleased =
-* Added a shared request-driven localization foundation with declarative manifests, upstream fallback and deterministic build tooling. Exact licensed product/POT/JS surface verification remains blocked; no production translation coverage is claimed.
-* Reconciled stale documentation with the existing 4.1.0 runtime identity; no new version or release.
-* Added the generic non-persistent Structured Scanner source capability (`pgr_structured_scanner`) with the structural `sayad_v01` profile.
-* Added transient multiline capture, parser-driven Enter/Tab/idle/paste completion, atomic mapped-field updates, conditional Scanner assets, and focused regression coverage.
-* No plugin version bump or release is performed by this development PR.
+* Integrated the shared localization provider foundation with the existing 4.2.0 module manager and bilingual admin/help. Localization remains outside the six modules.
+* Preserved provider fallback, deterministic build/provenance checks and dormant catalogs pending exact licensed source admission. No version bump or release.
+
+= 4.2.0 =
+* Added bounded `PGR_Module_Registry` with the small autoloaded `pgr_modules` option and default-enabled upgrade behavior.
+* Added real runtime gating for National ID, Jalali Date, Iranian Address, digit normalization, IRR/IRT currencies, and Structured Scanner.
+* Added bounded safe-disable form-metadata checks with USED/UNUSED/UNKNOWN behavior and explicit second confirmation for UNKNOWN.
+* Added bilingual Persian/English capability cards and module state controls on Overview.
+* Added local bilingual Help & Documentation plus native WordPress contextual help.
+* Added module states to System Status while keeping Scanner Profiles available when Scanner runtime is disabled.
+* Added Persian `fa_IR` translation assets and repository consistency/module/help regression tests.
+* Synchronized active release metadata to 4.2.0.
+
+= 4.1.0 =
+* Established the current Structured Scanner and Scanner Profiles administration foundation used by 4.2.0.
 
 = 4.0.0 =
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
-* Replaced removed form-settings integration with `gform_form_settings_fields`.
-* Reduced National ID support to one `GF_Field` implementation with one server-side checksum/normalization implementation.
-* Added one dedicated Jalali `GF_Field` using canonical ASCII `YYYY-MM-DD` Jalali storage.
-* Removed native-Date Jalali modification and obsolete bundled Jalali datepicker replacement paths.
-* Removed historical field IDs, migrations, legacy `GFPersian_*` architecture, typography/font delivery, payment/RSS code, and external-plugin translation interception.
-* Retained and bounded generic Iranian address, currency, digit-normalization, and Jalali functionality.
-* Rebuilt tests and CI around the shipped runtime.
+* Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.

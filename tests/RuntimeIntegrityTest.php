@@ -58,13 +58,15 @@ final class RuntimeIntegrityTest extends TestCase {
 	private function production_php_files( $root ) {
 		$php_files = array(
 			$root . '/persian-gravityforms.php',
-			$root . '/admin/class-pgr-admin.php',
+			$root . '/uninstall.php',
 		);
 
-		$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/includes', FilesystemIterator::SKIP_DOTS ) );
-		foreach ( $iterator as $file ) {
-			if ( $file->isFile() && 'php' === $file->getExtension() ) {
-				$php_files[] = $file->getPathname();
+		foreach ( array( 'includes', 'admin' ) as $directory ) {
+			$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/' . $directory, FilesystemIterator::SKIP_DOTS ) );
+			foreach ( $iterator as $file ) {
+				if ( $file->isFile() && 'php' === $file->getExtension() ) {
+					$php_files[] = $file->getPathname();
+				}
 			}
 		}
 

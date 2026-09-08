@@ -6,6 +6,29 @@ use PHPUnit\Framework\TestCase;
 final class RuntimeBootstrapTest extends TestCase {
 
 	#[RunInSeparateProcess]
+	public function test_localization_is_independent_of_all_six_module_states() {
+		$ids = array( 'national_id', 'jalali_date', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' );
+		$GLOBALS['pgr_test_options']['pgr_modules'] = array(
+			'schema_version' => 1,
+			'states'         => array_fill_keys( $ids, false ),
+		);
+
+		require dirname( __DIR__ ) . '/persian-gravityforms.php';
+		foreach ( array( 'lang_dir_for_domain', 'load_translation_file', 'load_script_translations', 'pre_load_script_translations' ) as $hook ) {
+			$this->assertInstanceOf( PGR_Localization::class, $GLOBALS['pgr_test_filters'][ $hook ][10][0][0][0] );
+		}
+		$this->assertFalse( function_exists( 'load_textdomain' ) );
+		$this->assertFalse( class_exists( 'GFForms', false ) );
+		$this->assertFalse( class_exists( 'PGR_Core', false ) );
+
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
+		$this->assertSame( $ids, array_keys( PGR_Module_Registry::all() ) );
+		foreach ( $ids as $id ) {
+			$this->assertFalse( PGR_Module_Registry::is_enabled( $id ) );
+		}
+	}
+
+	#[RunInSeparateProcess]
 	public function test_localization_filters_register_before_any_late_bootstrap_event() {
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 		foreach ( array( 'lang_dir_for_domain', 'load_translation_file', 'load_script_translations', 'pre_load_script_translations' ) as $hook ) {

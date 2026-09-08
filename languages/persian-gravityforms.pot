@@ -1,0 +1,281 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Persian Gravity Forms 4.2.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#, php-format
+msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
+msgstr ""
+
+#, php-format
+msgid "%d active profiles"
+msgstr ""
+
+#, php-format
+msgid "%d effective profiles"
+msgstr ""
+
+#, php-format
+msgid "%d outputs"
+msgstr ""
+
+#, php-format
+msgid "%s has been disabled."
+msgstr ""
+
+#, php-format
+msgid "%s has been enabled."
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
+msgid "Bank branch"
+msgstr ""
+
+msgid "Built-in"
+msgstr ""
+
+msgid "Cheque serial"
+msgstr ""
+
+msgid "Contents"
+msgstr ""
+
+msgid "Convert Persian and Arabic digits to ASCII digits before entry values are saved."
+msgstr ""
+
+msgid "Convert Persian/Arabic digits to ASCII in new National ID fields while the user types. Server-side normalization always remains authoritative."
+msgstr ""
+
+#, php-format
+msgid "Copy of %s"
+msgstr ""
+
+msgid "Create Profile"
+msgstr ""
+
+msgid "Create Scanner Profile"
+msgstr ""
+
+msgid "Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk."
+msgstr ""
+
+msgid "Current use could not be determined confidently. Review the module card and confirm again to disable it."
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "Define deterministic structures for scanner input. Gravity Forms destination fields are mapped later inside each form."
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Deleting a custom profile does not rewrite existing form mappings. Existing Scanner fields may then report the profile as unavailable."
+msgstr ""
+
+msgid "Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Display name"
+msgstr ""
+
+msgid "Documentation language"
+msgstr ""
+
+msgid "Duplicate"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Edit Scanner Profile"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Enter a valid 10-digit Iranian National ID."
+msgstr ""
+
+msgid "Enter a valid Jalali (Persian) date."
+msgstr ""
+
+msgid "General PersianGravity defaults. Existing saved settings remain unchanged."
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Help & Documentation"
+msgstr ""
+
+msgid "IBAN"
+msgstr ""
+
+msgid "Inspect"
+msgstr ""
+
+msgid "Invalid request method."
+msgstr ""
+
+msgid "Iran"
+msgstr ""
+
+msgid "Iranian National ID"
+msgstr ""
+
+msgid "Iranian Provinces"
+msgstr ""
+
+msgid "Iranian Rial"
+msgstr ""
+
+msgid "Iranian Toman"
+msgstr ""
+
+msgid "Jalali Date"
+msgstr ""
+
+msgid "Jalali date format"
+msgstr ""
+
+msgid "Manage Scanner Profiles"
+msgstr ""
+
+msgid "Manage the bounded Persian/Iranian capabilities that participate in Gravity Forms runtime."
+msgstr ""
+
+msgid "Module"
+msgstr ""
+
+msgid "Move down"
+msgstr ""
+
+msgid "Move up"
+msgstr ""
+
+msgid "National ID is disabled. Its saved default remains preserved but is inactive until the module is enabled again."
+msgstr ""
+
+msgid "Normalize Persian/Arabic digits while typing"
+msgstr ""
+
+msgid "Not available"
+msgstr ""
+
+msgid "Open full documentation"
+msgstr ""
+
+msgid "Output key"
+msgstr ""
+
+msgid "Output label"
+msgstr ""
+
+msgid "Output Mapping"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Owner identifier"
+msgstr ""
+
+msgid "Owner type"
+msgstr ""
+
+msgid "Persian digit normalization"
+msgstr ""
+
+msgid "Persian Gravity"
+msgstr ""
+
+#, php-format
+msgid "Persian Gravity Forms requires Gravity Forms %s or newer."
+msgstr ""
+
+msgid "Persian Gravity Forms requires Gravity Forms to be installed and active."
+msgstr ""
+
+msgid "PersianGravity Help"
+msgstr ""
+
+msgid "Postal Code"
+msgstr ""
+
+msgid "Profile details"
+msgstr ""
+
+msgid "Profile ID"
+msgstr ""
+
+msgid "Profile Registry"
+msgstr ""
+
+msgid "Province"
+msgstr ""
+
+msgid "QR version"
+msgstr ""
+
+msgid "Read-only"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Required"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Sayad ID"
+msgstr ""
+
+msgid "Sayad v0.1"
+msgstr ""
+
+msgid "Scanner Profile"
+msgstr ""
+
+msgid "Scanner Profiles"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Structured Scanner"
+msgstr ""
+
+msgid "Structured Scanner runtime is disabled. Profiles remain available and will be used again after the module is enabled."
+msgstr ""
+
+msgid "System Status"
+msgstr ""
+
+msgid "The requested module state change was invalid."
+msgstr ""
+
+msgid "Waiting for Gravity Forms"
+msgstr ""
+
+msgid "You are not allowed to change PersianGravity modules."
+msgstr ""
