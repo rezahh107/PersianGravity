@@ -108,7 +108,7 @@ Injecting provider JSON at an earlier missing path would wrongly suppress a late
 valid upstream file. Earlier non-null short-circuit results from other plugins
 are respected. Competing third-party short-circuits are outside that guarantee.
 
-No handle is presently activated. `tools/i18n/admission/javascript.json` records source-proven evidence only. Gravity Forms has eight compact classic-script records: one native `wp_set_script_translations()` attachment (`gform_editor_block_form`), seven without native translation attachment, and seven PHP-localized-JS surfaces. Gravity Flow has seven classic records, zero native translation attachments, and four PHP-localized-JS surfaces. No WordPress Script Module API is present in either target source: `NOT_PRESENT_IN_TARGET_SOURCE`. PHP-localized JavaScript remains separate from JSON gettext-catalog activation.
+No handle is presently activated. `tools/i18n/admission/javascript.json` records source-proven evidence only. Gravity Forms has eight compact classic-script records: one native `wp_set_script_translations()` attachment (`gform_editor_block_form`), seven without native translation attachment, and eight PHP-localized-JS surfaces. Gravity Flow has seven classic records, zero native translation attachments, and four PHP-localized-JS surfaces. No WordPress Script Module API is present in either target source: `NOT_PRESENT_IN_TARGET_SOURCE`. PHP-localized JavaScript remains separate from JSON gettext-catalog activation.
 
 ## Ownership and provenance
 
