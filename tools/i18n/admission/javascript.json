@@ -1,0 +1,27 @@
+{
+  "gravityforms": {
+    "target_version":"3.1.1.1","classic_script_surfaces":8,"native_translation_attached":1,"registered_without_translation_attachment":7,"php_localized_js":8,"script_modules":"NOT_PRESENT_IN_TARGET_SOURCE","runtime_activated_handles":0,
+    "records":[
+      {"handle":"gform_editor_block_form","classification":"REGISTERED_AND_NATIVE_TRANSLATION_ATTACHED","php_localized_js":"MIXED","evidence":["includes/blocks/class-gf-block-form.php:32","includes/blocks/class-gf-block-form.php:183-196"]},
+      {"handle":"gform_duplicate_submissions","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/duplicate-submissions/class-gf-duplicate-submissions-handler.php:76-77"]},
+      {"handle":"gaddon_results_js","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/addon/class-gf-results.php:64-85"]},
+      {"handle":"gforms_locking","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/locking/class-gf-locking.php:117-165"]},
+      {"handle":"gforms_locking_list","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/locking/class-gf-locking.php:119-177"]},
+      {"handle":"gforms_locking_view","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/locking/class-gf-locking.php:118-193"]},
+      {"handle":"gform_shortcode_ui","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["gravityforms.php:3201","gravityforms.php:3585-3587"]},
+      {"handle":"gform_form_editor","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"PHP_TRANSLATED_STRINGS_PASSED_TO_JS","evidence":["gravityforms.php:3183","gravityforms.php:3612"]}
+    ]
+  },
+  "gravityflow": {
+    "target_version":"3.1.0","classic_script_surfaces":7,"native_translation_attached":0,"registered_without_translation_attachment":7,"php_localized_js":4,"script_modules":"NOT_PRESENT_IN_TARGET_SOURCE","runtime_activated_handles":0,
+    "records":[
+      {"handle":"gravityflow_admin_js","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["class-gravity-flow.php:40","class-gravity-flow.php:6995-6996","includes/config/class-js-config.php:16-25"]},
+      {"handle":"gravityflow_theme_js","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"CONFIG_DATA_PASSED_TO_JS","evidence":["class-gravity-flow.php:35","class-gravity-flow.php:1150-1151","includes/config/class-js-config.php:30-41"]},
+      {"handle":"gravityflow_status_list","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"CONFIG_DATA_PASSED_TO_JS","evidence":["class-gravity-flow.php:1155-1166"]},
+      {"handle":"gravityflow_inbox","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"CONFIG_DATA_PASSED_TO_JS","evidence":["class-gravity-flow.php:1158-1167"]},
+      {"handle":"gravityflow_entry_detail","classification":"REGISTERED_BUT_TRANSLATION_NOT_ATTACHED","evidence":["class-gravity-flow.php:1154"]},
+      {"handle":"gravityflow_frontend","classification":"REGISTERED_BUT_TRANSLATION_NOT_ATTACHED","evidence":["class-gravity-flow.php:1157"]},
+      {"handle":"gravityflow_reports","classification":"REGISTERED_BUT_TRANSLATION_NOT_ATTACHED","evidence":["class-gravity-flow.php:6537"]}
+    ]
+  }
+}

@@ -1,11 +1,13 @@
 <?php
-/** Deterministic build/check. Canonical PO is only read, never purged or rewritten. */
+/** Deterministic provider build/check and metadata-only admission guard. */
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 require __DIR__ . '/catalog.php';
+require __DIR__ . '/admission.php';
 define('ABSPATH', dirname(__DIR__, 2) . '/');
 $mode = $argv[1] ?? '--check';
 if (!in_array($mode, ['--write', '--check'], true)) { throw new RuntimeException('Use --check or --write'); }
 $products = require ABSPATH . 'includes/localization/products.php';
+$admission = pgr_validate_admission(ABSPATH);
 $root = ABSPATH . 'languages/providers';
 $expected = [];
 foreach ($products as $domain => $product) {
@@ -15,10 +17,24 @@ foreach ($products as $domain => $product) {
     $built = pgr_compile_catalog($source . '/fa_IR.po', $domain);
     $counts = $built['counts'];
     $known = array_sum($counts);
-    $verified = $provenance['source_status'] === 'VERIFIED';
+    $status = $provenance['source_status'] ?? '';
+    $verified = $status === 'VERIFIED';
+    $metadata_only = $status === 'PACKAGE_INSPECTED_METADATA_ONLY';
+    $unavailable = $status === 'PACKAGE_UNAVAILABLE';
+    if (!$verified && !$metadata_only && !$unavailable) { throw new RuntimeException('Unknown source status: ' . $domain); }
     if ($product['target_version'] !== $provenance['target_product_version']) { throw new RuntimeException('Target version drift'); }
-    if (!$verified && ($known !== 0 || $product['scripts'] !== [])) {
-        throw new RuntimeException('Unverified source must not ship invented strings or handles: ' . $domain);
+    if (($metadata_only || $unavailable) && ($known !== 0 || $product['scripts'] !== [])) {
+        throw new RuntimeException('Non-content source state must remain runtime dormant: ' . $domain);
+    }
+    if ($metadata_only) {
+        $record = $admission[$product['product']] ?? null;
+        if (!$record || $provenance['source_product_version'] !== $record['observed_source_version'] ||
+            $provenance['source_package_sha256'] !== $record['package_sha256'] ||
+            $provenance['vendor_pot_sha256'] !== $record['vendor_pot_sha256'] ||
+            null !== $provenance['source_pot_sha256'] ||
+            $provenance['source_pot_consistency'] !== 'PASS' || is_file($source . '/source.pot')) {
+            throw new RuntimeException('Invalid metadata-only admission provenance: ' . $domain);
+        }
     }
     if ($verified) {
         if (!is_file($source . '/source.pot') || hash_file('sha256', $source . '/source.pot') !== $provenance['source_pot_sha256'] ||
@@ -38,7 +54,6 @@ foreach ($products as $domain => $product) {
         if ($keys($pot) !== $keys($po)) { throw new RuntimeException('PO source census does not match authoritative POT: ' . $domain); }
     }
     $artifacts = [];
-    // Header-only scaffolds must remain dormant: no registry/loader interception.
     if ($counts['translated'] > 0) {
         $base = $product['prefix'] . '-fa_IR';
         $artifacts[$base . '.mo'] = $built['mo'];
@@ -49,7 +64,6 @@ foreach ($products as $domain => $product) {
             ($record['source_version'] ?? '') !== $product['target_version']) {
             throw new RuntimeException('Unverified script record: ' . $handle);
         }
-        // Match source references explicitly; never broadcast a whole product PO to every handle.
         $subset = clone $built['catalog'];
         foreach ($subset as $entry) {
             $paths = array_keys(iterator_to_array($entry->getReferences()));
@@ -64,14 +78,17 @@ foreach ($products as $domain => $product) {
     }
     $hashes = [];
     foreach ($artifacts as $name => $bytes) { $hashes[$name] = hash('sha256', $bytes); }
+    $authoritative_total = $verified ? $known : ($metadata_only ? $admission[$product['product']]['canonical_message_count'] : null);
+    $coverage = $verified && $known > 0 ? round(100 * $counts['translated'] / $known, 2) : ($metadata_only ? 0 : null);
+    $content_status = $verified ? 'PARTIAL_TRANSLATION_CONTENT' : ($metadata_only ? 'SOURCE_INSPECTED_METADATA_ONLY_NO_TRANSLATION_CONTENT' : 'SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD');
+    $surface_status = $verified ? 'SOURCE_POT_VERIFIED' : ($metadata_only ? 'STATIC_SOURCE_CONFIRMED' : 'NOT_EXECUTED_PACKAGE_UNAVAILABLE');
     $metadata = [
         'product' => $product['product'], 'domain' => $domain, 'locale' => 'fa_IR',
         'provenance' => $provenance, 'provider_po_sha256' => hash_file('sha256', $source . '/fa_IR.po'),
-        'counts_in_committed_po' => $counts, 'authoritative_total' => $verified ? $known : null,
-        'coverage_percent' => $verified && $known > 0 ? round(100 * $counts['translated'] / $known, 2) : null,
-        'content_status' => $verified ? 'PARTIAL_TRANSLATION_CONTENT' : 'SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD',
+        'counts_in_committed_po' => $counts, 'authoritative_total' => $authoritative_total,
+        'coverage_percent' => $coverage, 'content_status' => $content_status,
         'validated_script_handles' => array_keys($product['scripts']), 'artifact_sha256' => (object) $hashes,
-        'vendor_surface_drift_check' => 'NOT_EXECUTED_PACKAGE_UNAVAILABLE',
+        'vendor_surface_drift_check' => $surface_status,
         'generator' => 'gettext/gettext 5.7.3 + tools/i18n/catalog.php',
     ];
     $artifacts['metadata.json'] = json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
@@ -90,4 +107,4 @@ foreach ($expected as $path => $bytes) {
         if (!is_file($path) || hash_file('sha256', $temp) !== hash_file('sha256', $path)) { throw new RuntimeException('Artifact drift: ' . $path); }
     } finally { unlink($temp); }
 }
-echo 'Catalog ' . $mode . ': PASS; production source/handles remain explicitly unavailable.' . PHP_EOL;
+echo 'Catalog ' . $mode . ': PASS; source admission does not activate translation content or product JS handles.' . PHP_EOL;

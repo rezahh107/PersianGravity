@@ -135,7 +135,6 @@ Work unit: `WU-PR8-SEMANTIC-RECONCILIATION-01`. Normal merge of main `62ee8b2808
 | VENDOR_SURFACE_DRIFT_STATUS | NOT_EXECUTED_PACKAGE_UNAVAILABLE | Internal metadata/artifact/manifest checks are separate from exact source verification |
 | REAL_INTEGRATION_STATUS | NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABLE | No licensed WordPress + GF/Flow/View site/browser execution |
 
-
 ### Integrated validation execution
 
 Executed on 2026-09-08 with PHP 8.3.6, Composer 2.8.12, Node and GNU gettext:
@@ -164,3 +163,33 @@ The two Core checkouts are read-only dependencies. Their translation implementat
 with host/DB/cache services stubbed; no licensed product integration is implied. Exact
 resulting-head GitHub Actions and ancestry evidence are recorded in PR #8 after execution.
 A fresh independent review of that exact Head remains required before any owner merge decision.
+
+## WU-PGR-GF-FLOW-REAL-SOURCE-ADMISSION-01
+
+Required and observed base: `b35453e68a1e71063d8f4212bed4f62791ca856e`.
+
+| Evidence | Gravity Forms | Gravity Flow |
+| --- | --- | --- |
+| Observed version | 3.1.1.1 | 3.1.0 |
+| Package SHA-256 | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` |
+| Vendor POT SHA-256 | `a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf` | `09a66357bb86fa4b425c2905a6c3417b057da18a9d423d934aa4c544be306961` |
+| Source status | `PACKAGE_INSPECTED_METADATA_ONLY` | `PACKAGE_INSPECTED_METADATA_ONLY` |
+| Vendor authenticity | `NOT_PROVEN` | `NOT_PROVEN` |
+| Source-backed / vendor keys | 4207 / 4208 | 1098 / 1098 |
+| Missing from vendor POT | 0 | 0 |
+| Vendor-POT-only stale | 1 | 0 |
+| Context / plural differences | 0 / 0 | 0 / 0 |
+
+GravityView 3.3.4 remains `PACKAGE_UNAVAILABLE` / `NOT_ADMITTED_PACKAGE_UNAVAILABLE`.
+
+Static source extraction used a deterministic PHP tokenizer plus byte-level reconciliation for distributed JavaScript and plugin-header strings. Temporary WP-CLI 2.12.0 regeneration was attempted but not executed because the environment blocked the tool download; this is recorded as a tooling gap, not a passed check.
+
+Gravity Forms source confirms `gravityforms`, its explicit `load_textdomain()` path, `load_plugin_textdomain()`, one native script-translation attachment, and multiple `wp_localize_script()` surfaces. Gravity Flow confirms `gravityflow`, parent/add-on translation lifecycle, no native `wp_set_script_translations()` call in the admitted target, and multiple PHP-localized classic-script surfaces. Script Modules are `NOT_PRESENT_IN_TARGET_SOURCE` for both.
+
+The committed Surface Registry contains 13 source-backed surfaces: six Gravity Forms and seven Gravity Flow. GF message census: 4207 unique, 1759 classified, 2448 unclassified, 55 multi-surface. Flow: 1098 unique, 732 classified, 366 unclassified, 30 multi-surface. Classification is explicit source-path-rule driven with no hidden semantic fallback.
+
+RTL/Bidi inspection is source-informed but visual execution remains `NOT_EXECUTED_ENVIRONMENT_UNAVAILABLE`; no production RTL patch is included. Terminology baseline contains 5 common provisional entries with both-product evidence, 2 Gravity Forms extensions, 3 Gravity Flow extensions, and 9 anti-glossary tokens; `Entry` is not hard-locked.
+
+Metadata-only scope invariants are enforced by `tools/i18n/admission.php`, `tools/i18n/build.php`, `SourceAdmissionTest`, and `CatalogBuildTest`: production product translated `msgstr` = 0; product MO = absent; product `.l10n.php` = absent; product translation JSON = absent; active product JS handles = 0; production RTL patches = 0; vendor ZIP/source/full POT committed = 0; PGR version bump = none. `source_pot_sha256` remains null in metadata-only state because no full source POT is committed; the inspected POT identity is held in `vendor_pot_sha256`.
+
+The exact PR-head CI for this work unit is the completion authority for repository tests, existing pinned WordPress localization contracts, admission consistency, Surface Registry validation, glossary evidence, and runtime integrity. A green static/source CI run still does not prove licensed browser/runtime RTL behavior.

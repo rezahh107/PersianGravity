@@ -1,10 +1,3 @@
 {
-  "source_status": "PACKAGE_UNAVAILABLE",
-  "target_product_version": "3.1.0",
-  "source_product_version": null,
-  "source_pot_sha256": null,
-  "source_package_sha256": null,
-  "catalog_revision": 1,
-  "translation_review": "NO_PRODUCTION_STRINGS",
-  "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+  "source_status":"PACKAGE_INSPECTED_METADATA_ONLY","target_product_version":"3.1.0","source_product_version":"3.1.0","source_pot_sha256":null,"source_package_sha256":"ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404","vendor_pot_sha256":"09a66357bb86fa4b425c2905a6c3417b057da18a9d423d934aa4c544be306961","project_source_authority":"OWNER_SUPPLIED_EXACT_PACKAGE","vendor_authenticity":"NOT_PROVEN","admission_mode":"METADATA_ONLY_ADMISSION","source_pot_consistency":"PASS","admission_baseline":"tools/i18n/admission/baseline.json","catalog_revision":1,"translation_review":"NO_PRODUCTION_STRINGS","upstream_fallback_validation":"SYNTHETIC_CORE_ONLY"
 }

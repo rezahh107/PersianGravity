@@ -176,11 +176,14 @@ Provider entries win; missing entries fall back to vendor/TranslationsPress.
 No updater disabling, remote download, runtime compilation, translation DB/editor,
 plugin scanning or project-specific terminology is permitted.
 
-**Current source limitation:** exact target packages/POTs were unavailable. Manifests
-have no approved JS handles and production PO scaffolds have no translations;
-no runtime catalog is generated from empty source. All products remain dormant
-pass-through until verified source admission. See `docs/LOCALIZATION.md` for exact
-contracts, Core references, source versions/provenance and remaining validation.
+**Current source boundary:** exact owner-supplied Gravity Forms 3.1.1.1 and Gravity
+Flow 3.1.0 packages/POTs have been inspected and pinned as
+`PACKAGE_INSPECTED_METADATA_ONLY`; GravityView 3.3.4 remains `PACKAGE_UNAVAILABLE`.
+The manifests still have no active product JS handles and production PO scaffolds
+remain header-only, so no product runtime catalog is generated. Source admission
+therefore changes evidence only, not the runtime architecture or translation output.
+See `docs/LOCALIZATION.md` for exact contracts, hashes, source census and remaining
+runtime/browser validation gaps.
 
 ## Scope
 

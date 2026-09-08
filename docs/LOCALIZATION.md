@@ -5,33 +5,27 @@ Original foundation base: `b1a52c975988bf60f473d4b843de057ed5bd0c06`.
 Reconciled with main `62ee8b2808640578bfdba0583342d29b7ef8a164` through `WU-PR8-SEMANTIC-RECONCILIATION-01`; active repository identity is **4.2.0**. The six-module manager, module-state class-load gates, bilingual admin/help and own-plugin GNU-gettext assets remain authoritative. Localization is cross-cutting infrastructure outside `PGR_Module_Registry`, independent of every module toggle.
 
 Decision C is closed: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
-Implementation status: **PARTIAL**. The shared core is implemented; exact product
-source/POT admission and supported JavaScript surface activation are blocked.
 
 ## Product evidence and honest activation boundary
 
-| Product | Owner-supplied target version | PHP domain | Filename prefix | Exact package/POT inspected | Approved JS handles |
+| Product | Target / observed | Source status | Package SHA-256 | Vendor POT SHA-256 | Active JS handles |
 | --- | --- | --- | --- | --- | --- |
-| Gravity Forms | 3.1.1.1 | gravityforms | gravityforms | No | None |
-| Gravity Flow | 3.1.0 | gravityflow | gravityflow | No | None |
-| GravityView | 3.3.4 | gk-gravityview | gravityview | No | None |
+| Gravity Forms | 3.1.1.1 / 3.1.1.1 | `PACKAGE_INSPECTED_METADATA_ONLY` | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf` | 0 |
+| Gravity Flow | 3.1.0 / 3.1.0 | `PACKAGE_INSPECTED_METADATA_ONLY` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` | `09a66357bb86fa4b425c2905a6c3417b057da18a9d423d934aa4c544be306961` | 0 |
+| GravityView | 3.3.4 / — | `PACKAGE_UNAVAILABLE` | — | — | 0 |
 
-The target versions above are the owner's current authorized compatibility targets.
-They are target metadata only and are **not re-verified vendor-source evidence**.
-The exact product packages/POTs are unavailable in this repository-side execution,
-so `source_product_version`, source/package hashes, vendor surface census and JS
-handle approval remain unproven/null. No untrusted redistributed package is used.
+For Gravity Forms and Gravity Flow, `PROJECT_SOURCE_AUTHORITY=OWNER_SUPPLIED_EXACT_PACKAGE`, `VENDOR_AUTHENTICITY=NOT_PROVEN`, and `admission_mode=METADATA_ONLY_ADMISSION`. Exact package bytes were inspected and pinned, but vendor authenticity is not claimed. Vendor ZIPs, extracted vendor source, full vendor POT/message corpora, and production product translations are not committed.
 
-The manifests therefore have empty `scripts` maps, and production PO sources
-contain only headers. Build emits metadata only; there are no production MO,
-PHP or JSON catalogs. With these scaffolds, all original vendor/WordPress
-translation behavior remains intact. This repository does **not** yet deliver
-visible product Persian translations; it remains a reviewable foundation awaiting sources.
+`SOURCE VERIFIED != TRANSLATION CONTENT ADMITTED != JS SURFACE ACTIVATED`. Metadata-only admission keeps each provider PO header-only, leaves every runtime `scripts` map empty, and creates no product MO, `.l10n.php`, or translation JSON. In this state `source_pot_sha256` remains `null` because no full `source.pot` is committed; `vendor_pot_sha256` records the exact inspected vendor POT bytes.
 
-Counts in each committed PO: translated **0**, untranslated **0**, fuzzy **0**.
-The authoritative product total and coverage percentage are **unknown/null**;
-a header-only scaffold is neither a complete census nor 0/100% product coverage.
-Smoke fixtures are clearly marked synthetic and excluded from distribution.
+### Source ↔ POT consistency
+
+The exact packages were inspected with a deterministic PHP tokenizer plus byte-level reconciliation for distributed JavaScript and plugin-header strings. A temporary WP-CLI 2.12.0 source-POT regeneration was attempted but could not execute because the environment blocked tool download; that tooling gap remains explicitly separate from the source-backed consistency result.
+
+- Gravity Forms: vendor POT 4208 unique keys; 4207 source-backed keys; 0 missing from vendor POT; 1 vendor-POT-only stale test key whose referenced test path is absent from the supplied package; 22 context messages; 16 plural messages; context/plural differences 0.
+- Gravity Flow: vendor POT 1098 unique keys; 1098 source-backed keys; 0 missing; 0 stale; 3 context messages; 6 plural messages; context/plural differences 0.
+
+Canonical identity is SHA-256 over `msgctxt + U+001F + msgid + U+001F + msgid_plural`. Aggregate keyset/reference hashes and the minimum individual evidence identities required by terminology validation live in `tools/i18n/admission/baseline.json`.
 
 ## WordPress implementation authority
 
@@ -76,7 +70,7 @@ directory. Thus registry fallback knowledge is not replaced or reconstructed.
 The file filter also handles requests against a registered custom directory that
 contains no Persian file. No catalogs means no discovery override.
 
-### PHP precedence
+### PHP precedence and admitted source findings
 
 During `load_translation_file`, a guarded targeted `load_textdomain()` loads the
 provider before Core loads the original requested candidate. Core's translation
@@ -96,7 +90,9 @@ the approved `{prefix}-fa_IR` basename, in the same directory. Existing ordinary
 paths are respected. This expresses GravityView's supplied prefix as data; the
 actual 3.3.4 loader and its paths still require package inspection.
 
-### JavaScript precedence
+Gravity Forms 3.1.1.1 declares `gravityforms`. `gravityforms.php` calls `GFCommon::load_gf_text_domain()`; the implementation in `common.php` checks an explicit `WP_LANG_DIR/gravityforms/{domain}-{locale}.mo` path using `load_textdomain()` and then calls `load_plugin_textdomain()` for the plugin `languages` directory. Gravity Flow 3.1.0 declares `gravityflow` and does not independently call `load_plugin_textdomain()`/`load_textdomain()` in the admitted source; its add-on lifecycle delegates to the Gravity Forms add-on parent, with an older-GF compatibility translation manager path. These product findings are `STATIC_SOURCE_CONFIRMED`, not browser/runtime proof.
+
+### JavaScript precedence and admitted census
 
 Only approved domain/handle pairs and effective locale `fa_IR` may participate.
 `load_script_translations` composes a valid upstream Jed result with the local
@@ -110,12 +106,9 @@ false so Core can try its next candidate. Provider file reads are request-cached
 final `file=false` fallback**, after custom/handle/hash candidates are exhausted.
 Injecting provider JSON at an earlier missing path would wrongly suppress a later
 valid upstream file. Earlier non-null short-circuit results from other plugins
-are respected. Competing third-party short-circuits are outside this guarantee.
+are respected. Competing third-party short-circuits are outside that guarantee.
 
-No handle is presently approved: this content implementation is dormant for all
-products. Pure composition tests are not vendor script lifecycle proof.
-Strings translated in PHP and passed through `wp_localize_script()` require only
-PHP translation; no separate browser retranslation mechanism is added.
+No handle is presently activated. `tools/i18n/admission/javascript.json` records source-proven evidence only. Gravity Forms has eight compact classic-script records: one native `wp_set_script_translations()` attachment (`gform_editor_block_form`), seven without native translation attachment, and eight PHP-localized-JS surfaces. Gravity Flow has seven classic records, zero native translation attachments, and four PHP-localized-JS surfaces. No WordPress Script Module API is present in either target source: `NOT_PRESENT_IN_TARGET_SOURCE`. PHP-localized JavaScript remains separate from JSON gettext-catalog activation.
 
 ## Ownership and provenance
 
@@ -126,58 +119,36 @@ Upstream/vendor/TranslationsPress catalogs remain valid fallback sources. Their
 updaters, directories and packages are not disabled, changed, overwritten or deleted.
 No SRWF terminology or business semantic rewriting belongs in these catalogs.
 
-Each source directory records target version separately from **inspected source
-version**, POT/package hashes, catalog revision and review status. Build metadata
-adds PO hash, actual counts, artifact hashes and approved handles. Missing source
-hashes/versions are null, not fabricated. Upstream availability in this validation
-is **synthetic Core fixtures only**. Installed product version does not establish
-catalog compatibility.
+Each source directory records target version separately from inspected source version, package hash, vendor POT hash, source-status and review state. In metadata-only admission there is deliberately no committed full `source.pot`; `source_pot_sha256` therefore remains null. `tools/i18n/admission/` records the non-expressive source census, keyset/reference hashes, JavaScript evidence, surface registry, RTL/Bidi checklist and provisional terminology evidence. Installed product version alone does not establish catalog compatibility.
 
 ## Deterministic development build
 
-- Editable source: `languages/providers/<product>/source/fa_IR.po`.
-- Source authority: `source/provenance.json` and, after admission, `source/source.pot`.
-- Runtime output: sibling MO, `.l10n.php`, and per-approved-handle Jed JSON files.
+- Editable provider source: `languages/providers/<product>/source/fa_IR.po`.
+- Metadata-only source authority: `source/provenance.json` plus `tools/i18n/admission/` evidence.
+- Future content-admitted `VERIFIED` state may additionally use a committed `source/source.pot` when redistribution authority allows it.
+- Runtime output: sibling MO, `.l10n.php`, and per-approved-handle Jed JSON files only when translated content/handles are legitimately admitted.
 - Metadata: sibling `metadata.json`; never consumed by the runtime.
 - Development-only PO/MO dependency: `gettext/gettext` **5.7.3**, with Composer lock.
-- PHP and Jed serialization is a small build-only mapping of PO entries; fuzzy,
-  empty and incomplete plural entries are excluded.
+- PHP and Jed serialization is a small build-only mapping of PO entries; fuzzy, empty and incomplete plural entries are excluded.
 - No make-json purge, runtime generation, runtime downloads, database or editor.
-- `composer i18n:build` deliberately writes approved outputs. `composer i18n:check`
-  generates comparison files in temporary storage and fails on any byte/hash drift
-  or orphan artifact, without modifying canonical PO or committed artifacts.
-- CI validates shipped PHP including generated catalogs; generated arrays are
-  checked by syntax, PHPCompatibility and deterministic build (not runtime WPCS).
-- `.distignore` excludes tools, tests, dependencies, Core checkout and source PO
-  provenance directories; runtime code/manifests and eventual generated catalogs ship.
+- `composer i18n:build` deliberately writes approved outputs. `composer i18n:check` generates comparison files in temporary storage and fails on any byte/hash drift or orphan artifact, without modifying canonical PO or committed artifacts.
+- Metadata-only state rejects non-empty provider translation content and all runtime product JS handles.
+- CI validates shipped PHP including generated catalogs; generated arrays are checked by syntax, PHPCompatibility and deterministic build (not runtime WPCS).
+- `.distignore` excludes tools, tests, dependencies, Core checkout and source PO provenance directories; runtime code/manifests and eventual generated catalogs ship.
 
-## Source admission and update-time verification
+## Surface Registry, RTL/Bidi and terminology
 
-1. Obtain the owner's exact licensed packages. Inspect headers/version and hash the
-   original package plus POT. Do not commit licensed vendor ZIPs or vendor code.
-2. Inspect PHP domains, JIT/custom loaders, upstream directories and file prefixes.
-   Re-check GravityView's real `.mo`/`.l10n.php` behavior before accepting data-only
-   compatibility. Add a bounded executable exception only from a failing test.
-3. Inspect every `wp_set_script_translations()` call and registered handle/domain,
-   plus actual `@wordpress/i18n` references and production bundled filenames.
-   Exclude PHP `wp_localize_script()` surfaces from the JS manifest.
-4. Populate canonical PO from authoritative POT, keeping all msgids/context/plurals,
-   and only available reviewed generic Persian msgstrs. Review placeholders and
-   plural semantics. Preserve provenance; do not invent completeness.
-5. Record `source_status=VERIFIED`, actual source version, POT/package SHA-256 and
-   review authority in provenance. Build checks a complete PO/POT key census.
-6. Add each JS handle with `source_version`, `evidence` (source file/line/hash
-   reference) and `references` (exact PO source paths). Build derives only that
-   script's messages and fails on missing provenance fields/JSON or orphan JSON.
-7. Generate, review diff, run all checks, and add real request-lifecycle tests for
-   those **verified** handles. The dormant scaffolding test must be updated to
-   assert the newly established evidence rather than retained as a false blocker.
-8. Run the licensed smoke matrix below; keep coverage and integration separate.
+The canonical registry in `tools/i18n/admission/surfaces.json` contains 13 deterministic source-backed surfaces: six Gravity Forms and seven Gravity Flow. Classification uses explicit source-path rules only; there is no semantic fallback. GF: 4207 unique / 1759 classified / 2448 unclassified / 55 multi-surface. Flow: 1098 / 732 / 366 / 30. Control types are source-backed and do not imply RTL correctness.
 
-Internal drift is automatically checked. Exact vendor surface drift is
-`VENDOR_SURFACE_DRIFT_CHECK = NOT_EXECUTED_PACKAGE_UNAVAILABLE`.
-CI has no licensed packages and does not claim automatic vendor drift detection.
-A manually populated evidence field is not itself independent source verification.
+`tools/i18n/admission/rtl-bidi.json` keys the inspection checklist to all admitted RTL surfaces and records `runtime_execution=NOT_EXECUTED_ENVIRONMENT_UNAVAILABLE`; no production RTL patch is included.
+
+`tools/i18n/admission/glossary.json` contains five provisional common terms with evidence in both admitted products, two Gravity Forms extensions, three Gravity Flow extensions, and nine protected technical/brand tokens. `Entry` is not hard-locked. These are governance evidence, not production translation catalog entries.
+
+## Source admission and future content admission
+
+The current GF/Flow work unit ends at metadata-only source evidence. It does not populate provider PO strings or activate discovered handles. A later content-production work unit must separately select reviewed Persian content, approve any handles, generate runtime artifacts, and validate those changes against the then-current source contract. GravityView remains `PACKAGE_UNAVAILABLE` until its exact target package is supplied and inspected.
+
+Internal admission consistency is checked by `tools/i18n/admission.php` and consumed by `tools/i18n/build.php`; CI can validate committed metadata without possessing licensed vendor packages. That is not equivalent to re-running vendor extraction in CI.
 
 ## Core test command and licensed smoke matrix
 
@@ -208,3 +179,5 @@ Licensed integration remains `NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABL
 - Load order before/after PersianGravity inclusion, without rewriting vendor files.
 
 No real integration PASS may be inferred from green Core/unit tests.
+
+The next separate work unit is `GRAVITY_FLOW_CATALOG_PRODUCTION`; this source-admission work does not authorize starting it, merging this PR, or releasing.
