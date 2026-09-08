@@ -13,21 +13,20 @@ source/POT admission and supported JavaScript surface activation are blocked.
 | Product | Owner-supplied target version | PHP domain | Filename prefix | Exact package/POT inspected | Approved JS handles |
 | --- | --- | --- | --- | --- | --- |
 | Gravity Forms | 3.1.1.1 | gravityforms | gravityforms | No | None |
-| Gravity Flow | 3.1.1 | gravityflow | gravityflow | No | None |
-| GravityView | 3.3.3 | gk-gravityview | gravityview | No | None |
+| Gravity Flow | 3.1.0 | gravityflow | gravityflow | No | None |
+| GravityView | 3.3.4 | gk-gravityview | gravityview | No | None |
 
-Domains, versions and GravityView's prefix above are supplied by the owner's
-implementation contract. They are **not re-verified vendor-source evidence**.
-No licensed product packages or authoritative POTs were available in this work
-session. File searches found unrelated SMS and knowledge-checkpoint archives,
-not these product packages. Public documentation did not establish the exact
-requested version/handle pairs. No untrusted redistributed package was used.
+The target versions above are the owner's current authorized compatibility targets.
+They are target metadata only and are **not re-verified vendor-source evidence**.
+The exact product packages/POTs are unavailable in this repository-side execution,
+so `source_product_version`, source/package hashes, vendor surface census and JS
+handle approval remain unproven/null. No untrusted redistributed package is used.
 
 The manifests therefore have empty `scripts` maps, and production PO sources
 contain only headers. Build emits metadata only; there are no production MO,
 PHP or JSON catalogs. With these scaffolds, all original vendor/WordPress
-translation behavior remains intact. This PR does **not** deliver visible
-product Persian translations. It is a reviewable foundation awaiting sources.
+translation behavior remains intact. This repository does **not** yet deliver
+visible product Persian translations; it remains a reviewable foundation awaiting sources.
 
 Counts in each committed PO: translated **0**, untranslated **0**, fuzzy **0**.
 The authoritative product total and coverage percentage are **unknown/null**;
@@ -95,7 +94,7 @@ and MO are consumed by WordPress, never a runtime PO/MO parser here.
 The prefix field maps only an exact Core-generated `{domain}-fa_IR` basename to
 the approved `{prefix}-fa_IR` basename, in the same directory. Existing ordinary
 paths are respected. This expresses GravityView's supplied prefix as data; the
-actual 3.3.3 loader and its paths still require package inspection.
+actual 3.3.4 loader and its paths still require package inspection.
 
 ### JavaScript precedence
 

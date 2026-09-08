@@ -1,7 +1,7 @@
 # Empty source scaffold. Exact licensed source/POT unavailable. No coverage claim.
 msgid ""
 msgstr ""
-"Project-Id-Version: gravityflow 3.1.1\n"
+"Project-Id-Version: gravityflow 3.1.0\n"
 "Language: fa_IR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

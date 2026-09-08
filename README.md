@@ -64,7 +64,7 @@ Localization is cross-cutting infrastructure outside the six-module registry. It
 
 برای دامنه‌های `gravityforms`، `gravityflow` و `gk-gravityview` زیرساخت مشترک ترجمهٔ فارسی اضافه شده است. اگر ترجمهٔ ارائه‌دهنده موجود باشد اولویت دارد؛ در غیر این صورت ترجمهٔ upstream/TranslationsPress باقی می‌ماند و بعد از آن متن اصلی نمایش داده می‌شود. هیچ فایل فروشنده یا updater تغییر نمی‌کند.
 
-**وضعیت این PR ناقص است:** بسته/POT دقیق GF `3.1.1.1`، Flow `3.1.1` و GravityView `3.3.3` در محیط اجرای کار در دسترس نبود. بنابراین POها فعلاً scaffold خالی هستند، هیچ ترجمهٔ تولیدی و هیچ handle تأییدنشده‌ای فعال نشده است. هسته و ساخت کاتالوگ قابل بررسی‌اند؛ این PR ادعای فارسی‌سازی آمادهٔ استفاده ندارد. پوشش کل محصولات نامعلوم است، نه ۱۰۰٪ و نه حتی یک شمارش کامل با صفر ترجمه.
+**وضعیت فعلی provider ناقص است:** targetهای مالک اکنون GF `3.1.1.1`، Flow `3.1.0` و GravityView `3.3.4` هستند، اما بسته/POT دقیق آن‌ها در این اجرای repository-side در دسترس نبود. بنابراین POها همچنان scaffold خالی هستند، `source_product_version` و hashهای source/package تهی می‌مانند، هیچ ترجمهٔ تولیدی و هیچ handle تأییدنشده‌ای فعال نشده است. این تغییر فقط target metadata را با تصمیم مالک هماهنگ می‌کند و ادعای source verification یا فارسی‌سازی آمادهٔ استفاده ندارد.
 
 `composer i18n:check` سازگاری source و metadata و نبود خروجی یتیم را کنترل می‌کند. برای تولید آگاهانه `composer i18n:build` و برای آزمون Core، `PGR_WP_CORE=/path/to/wordpress composer i18n:test` را اجرا کنید. PO هنگام ساخت دست‌نخورده می‌ماند. فایل‌های `.mo`، `.l10n.php` و JSON فقط برای محتوای معتبر و ثبت‌شده ساخته می‌شوند.
 

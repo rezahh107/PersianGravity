@@ -38,7 +38,7 @@ Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these or
 
 The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
 
-Exact licensed source/POTs for Gravity Forms 3.1.1.1, Gravity Flow 3.1.1 and GravityView 3.3.3 remain unverified. Current provider PO scaffolds are empty, no JS handles are approved, and no production catalogs are generated. Product coverage is unknown; this foundation does not provide visible product translations yet. See docs/LOCALIZATION.md for admission gates and load-order boundaries.
+Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Exact licensed source/POT inspection remains unavailable in this repository-side work: provider PO scaffolds stay empty, source/package hashes stay null, no JS handles are approved, and no production catalogs are generated. Product coverage remains unknown; this preparatory reconciliation does not provide visible product translations yet. See docs/LOCALIZATION.md for admission gates and load-order boundaries.
 
 == Requirements ==
 
@@ -84,6 +84,7 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Reconciled owner-authorized localization targets to Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4 while source packages remain unavailable and all product catalogs remain dormant.
 * Integrated the shared localization provider foundation with the existing 4.2.0 module manager and bilingual admin/help. Localization remains outside the six modules.
 * Preserved provider fallback, deterministic build/provenance checks and dormant catalogs pending exact licensed source admission. No version bump or release.
 

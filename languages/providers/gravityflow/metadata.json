@@ -4,7 +4,7 @@
     "locale": "fa_IR",
     "provenance": {
         "source_status": "PACKAGE_UNAVAILABLE",
-        "target_product_version": "3.1.1",
+        "target_product_version": "3.1.0",
         "source_product_version": null,
         "source_pot_sha256": null,
         "source_package_sha256": null,
@@ -12,7 +12,7 @@
         "translation_review": "NO_PRODUCTION_STRINGS",
         "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
     },
-    "provider_po_sha256": "7678117ac1e02e56b5e96c24e7ec5b3e92a20206dc59b866590b9435125b1f8b",
+    "provider_po_sha256": "0936c98df0ccb10c2a9e725ef8f3ce4b40adaa5ec838f9a4e1b469d4d24cfb93",
     "counts_in_committed_po": {
         "translated": 0,
         "untranslated": 0,
