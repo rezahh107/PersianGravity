@@ -1,0 +1,29 @@
+# Synthetic test strings, never a production product catalog.
+msgid ""
+msgstr ""
+"Project-Id-Version: Synthetic test fixture\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityforms\n"
+
+msgid "Synthetic collision"
+msgstr "ارائه‌دهنده"
+
+msgid "Synthetic missing"
+msgstr ""
+
+#, fuzzy
+msgid "Synthetic unreviewed"
+msgstr "بازبینی‌نشده"
+
+msgctxt "test-context"
+msgid "Synthetic context"
+msgstr "زمینه"
+
+msgid "Synthetic one"
+msgid_plural "Synthetic many"
+msgstr[0] "یکی"
+msgstr[1] "چندتا"

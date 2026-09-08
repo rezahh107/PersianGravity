@@ -2,14 +2,14 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.0.0
+Stable tag: 4.1.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Small, focused Persian and Iranian enhancements for Gravity Forms.
 
 == Description ==
 
-Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms without owning typography, workflow business rules, payment gateways, or translations for other plugins.
+Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms without owning typography, workflow business rules, or payment gateways.
 
 Current source capabilities:
 
@@ -29,11 +29,12 @@ Current source capabilities:
 * Optional form-level Persian/Arabic digit normalization before entry values are saved.
 * Iranian address type and province choices.
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
-* Standard WordPress localization for Persian Gravity Forms' own strings only.
+* Standard WordPress localization for Persian Gravity Forms' own strings.
+* Partial fa_IR provider foundation for explicitly managed Gravity ecosystem domains; current provider PO scaffolds have no production translations or approved JS handles pending exact source/POT inspection.
 
 The Structured Scanner profile is structural only. It does not establish bank/checksum authority, cross-bank validation, financial business rules, or payment behavior.
 
-This plugin intentionally does not provide fonts, Gravity Flow/GravityView localization, payment gateways, workflow rules, SRWF-specific behavior, custom databases, or legacy PersianGravity compatibility layers.
+This plugin intentionally does not provide fonts, arbitrary third-party localization, payment gateways, workflow rules, SRWF-specific behavior, custom databases, or legacy PersianGravity compatibility layers.
 
 == Requirements ==
 
@@ -104,6 +105,8 @@ For the current Structured Scanner work, the automated source-repair checkpoint 
 == Changelog ==
 
 = Unreleased =
+* Added a shared request-driven localization foundation with declarative manifests, upstream fallback and deterministic build tooling. Exact licensed product/POT/JS surface verification remains blocked; no production translation coverage is claimed.
+* Reconciled stale documentation with the existing 4.1.0 runtime identity; no new version or release.
 * Added the generic non-persistent Structured Scanner source capability (`pgr_structured_scanner`) with the structural `sayad_v01` profile.
 * Added transient multiline capture, parser-driven Enter/Tab/idle/paste completion, atomic mapped-field updates, conditional Scanner assets, and focused regression coverage.
 * No plugin version bump or release is performed by this development PR.

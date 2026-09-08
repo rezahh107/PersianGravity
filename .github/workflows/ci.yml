@@ -24,7 +24,7 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Syntax check shipped PHP
-        run: find persian-gravityforms.php includes admin uninstall.php -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: WordPress Coding Standards
         run: composer cs
@@ -34,6 +34,22 @@ jobs:
 
       - name: Structured Scanner pure JavaScript tests
         run: node --test tests/js/structured-scanner.test.js
+
+      - name: Check out pinned current WordPress Core
+        uses: actions/checkout@v7
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6 # WordPress 7.1
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Current WordPress Core localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
+
+      - name: Provider catalog integrity and deterministic drift
+        run: composer i18n:check
 
       - name: Runtime integrity guard
         shell: bash
@@ -48,6 +64,8 @@ jobs:
           test -f includes/fields/class-gf-field-jalali-date.php
           test -f includes/fields/class-gf-field-structured-scanner.php
           test -f includes/class-pgr-scanner-profile-registry.php
+          test -f includes/class-pgr-localization.php
+          test -f includes/localization/products.php
 
   unit:
     runs-on: ubuntu-latest
@@ -67,6 +85,19 @@ jobs:
 
       - name: Install development dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Check out pinned WordPress translation implementation
+        uses: actions/checkout@v7
+        with:
+          repository: WordPress/WordPress
+          ref: 6abb46bec8b58abba32602738a785ba1c83f2a1c # WordPress 6.7.2
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Run real WordPress Core localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
 
       - name: Run PHPUnit
         run: composer test

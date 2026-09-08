@@ -6,7 +6,7 @@ This document defines current repository rules for human contributors and coding
 
 - Repository: `rezahh107/PersianGravity`
 - Plugin name: `Persian Gravity Forms`
-- Version: `4.0.0`
+- Version: `4.1.0`
 - Entrypoint: `persian-gravityforms.php`
 - Runtime prefix: `PGR_`
 - Text domain: `persian-gravityforms`
@@ -18,7 +18,7 @@ There is exactly **one canonical runtime**. Do not recreate the removed `src/Per
 
 ## 2. Product scope
 
-PersianGravity owns only generic Persian/Iranian Gravity Forms capabilities.
+PersianGravity owns generic Persian/Iranian Gravity Forms capabilities and a bounded generic `fa_IR` overlay for explicitly supported Gravity ecosystem domains.
 
 Current product scope:
 
@@ -29,13 +29,14 @@ Current product scope:
 - Iranian address/province support
 - IRR/IRT currency definitions
 - localization of PersianGravity's own strings
+- generic `fa_IR` provider overlays for explicitly supported Gravity Forms, Gravity Flow and GravityView domains
 
 Structured Scanner is a generic, transient field controller. Its current `sayad_v01` profile is limited to structural seven-segment parsing and mapped-field population. It does not establish bank/checksum authority or financial business validation.
 
 Out of scope:
 
 - Vazir/Vazirmatn or other font delivery
-- Gravity Flow or GravityView translation ownership
+- arbitrary third-party translation ownership
 - payment gateways
 - workflow/business rules
 - SRWF-specific behavior
@@ -50,6 +51,7 @@ Do not reintroduce removed capabilities without an explicit product decision and
 ```text
 persian-gravityforms.php
         │
+        ├── PGR_Localization (immediate resolver registration)
         └── gform_loaded
               │
               └── PGR_Core
@@ -73,7 +75,7 @@ Detailed contract: `docs/ARCHITECTURE.md`.
 3. Each custom field has one canonical implementation.
 4. Server-side validation/normalization is authoritative for National ID, Jalali Date, and persisted form-value normalization.
 5. Ordinary Gravity Forms Date fields are not converted into Jalali fields.
-6. External plugin text domains are never globally intercepted.
+6. Only explicitly manifested Gravity ecosystem domains under `fa_IR` may use the shared localization provider; arbitrary-domain interception remains forbidden.
 7. Tests target the same runtime WordPress executes.
 8. Structured Scanner raw capture remains transient and is never a persisted Scanner field value.
 9. Structured Scanner parsing/mapping completion has one pure browser authority in `pgr-structured-scanner-core.js`; do not duplicate its seven-segment grammar in a second frontend validator.
@@ -184,17 +186,31 @@ Any new persisted identifier must be documented in `docs/ARCHITECTURE.md` before
 
 ## 9. Internationalization
 
-Only this text domain belongs to PersianGravity:
+PersianGravity's own UI uses `persian-gravityforms`. For explicitly supported products
+and `fa_IR`, PersianGravity may act as the generic local provider/overlay through
+**Shared Core + Declarative Product Manifests + Bounded Adapters** (closed decision C).
+This intentionally replaces the previous blanket foreign-translation ban.
 
-`persian-gravityforms`
+Locked contracts:
 
-Generate/update the POT with:
+- Provider entries win collisions; missing entries retain upstream/vendor/TranslationsPress fallback.
+- Registry-level discovery supports operation without an upstream Persian catalog and preserves existing upstream paths.
+- Partial JavaScript catalogs preserve upstream messages, contexts and compatible plural metadata.
+- Resolver registration occurs immediately in the plugin file, independently of optional vendor classes; registration must not load foreign translations.
+- Load activity before PersianGravity itself is included cannot be intercepted. Do not erase already-loaded translation state to hide this boundary.
+- PO is editable source; compilation, source census, hashes and drift checks belong exclusively to development/CI.
+- Domain/handle approval and catalog content require source provenance. Empty scaffolds do not prove product support or translation coverage.
 
-```bash
-composer i18n:pot
-```
+Gravity Forms and Gravity Flow remain data-only. Add executable GravityView handling
+only for a source-proven failure which data cannot express. Do not introduce a service
+container, product-class hierarchy, arbitrary callbacks/DSL, gettext replacement engine,
+translation database/editor, vendor writes or updater disabling, SRWF semantic rewriting,
+or runtime compilation/downloads. `load_textdomain_mofile` remains prohibited.
 
-Translations for Gravity Forms, Gravity Flow, GravityView, or third-party add-ons must use their own official localization mechanisms.
+Commands: `composer i18n:pot` for own UI; `composer i18n:build` for deliberate
+provider generation; `composer i18n:check` for non-mutating drift validation;
+`PGR_WP_CORE=/path/to/pinned/core composer i18n:test` for real Core translation tests.
+See `docs/LOCALIZATION.md` for source-admission and licensed integration gaps.
 
 ## 10. Testing and CI
 

@@ -11,6 +11,7 @@ Structured Scanner v0.1 is an unreleased source capability in the current develo
 ```text
 persian-gravityforms.php
         │
+        ├── PGR_Localization (immediate filter registration; no foreign loading)
         ├── own text-domain loading
         ├── dependency notice
         │
@@ -332,20 +333,46 @@ Important current integration points include:
 
 Structured Scanner Form Editor configuration uses Gravity Forms field properties and the existing `SetFieldProperty()` editor mechanism. It does not depend on Gravity Flow, GravityView, Nested Forms internals, direct SQL, or private Gravity Forms DOM identifiers for mapped target discovery.
 
-## Localization boundary
+## Localization provider
 
-Canonical text domain:
+Decision C: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
+`PGR_Localization` is the single shared core. `includes/localization/products.php`
+contains data for `gravityforms`, `gravityflow` and `gk-gravityview` only. No standard
+product classes or service container are introduced. GravityView's owner-supplied
+`gravityview` prefix is data; no executable exception is claimed without exact
+package evidence.
 
-`persian-gravityforms`
+Registration is synchronous in the main plugin file, before any late lifecycle
+hook and without gettext, foreign loads or optional vendor classes. Optional
+products may all be absent. Requests before PersianGravity itself loads cannot be
+intercepted; already-loaded state is preserved.
 
-The plugin may translate only its own strings. Scanner Profiles/Admin and officer-facing Scanner strings use this text domain.
+`lang_dir_for_domain` supplies a provider directory only if Core has no upstream
+path and a managed `fa_IR` catalog exists. During actual PHP requests,
+`load_translation_file` makes a guarded native `load_textdomain()` call to load
+provider entries first, then retains Core's upstream file attempt. Core provides
+MO/PHP parsing and lookup; upstream-only keys remain available. No vendor paths
+are overwritten and no PO is read at runtime.
 
-It must not intercept or own translations for:
+JS uses content composition through `load_script_translations`; provider-only
+fallback is supplied through `pre_load_script_translations` only at the final
+`file=false` request. Partial catalogs retain upstream keys, context/plural arrays
+and compatible metadata. It applies only to approved handles/domains and `fa_IR`.
+PHP-localized script data relies on PHP translations.
 
-- Gravity Forms
-- Gravity Flow
-- GravityView
-- third-party add-ons
+PO, compilation, census, review provenance and artifact drift belong to development/
+CI. The runtime performs only discovery, request-driven file resolution and overlay.
+PersianGravity's own UI remains on `persian-gravityforms`. Provider ownership means
+a local generic overlay, not vendor file ownership or official upstream status.
+Provider entries win; missing entries fall back to vendor/TranslationsPress.
+No updater disabling, remote download, runtime compilation, translation DB/editor,
+plugin scanning or project-specific terminology is permitted.
+
+**Current source limitation:** exact target packages/POTs were unavailable. Manifests
+have no approved JS handles and production PO scaffolds have no translations;
+no runtime catalog is generated from empty source. All products remain dormant
+pass-through until verified source admission. See `docs/LOCALIZATION.md` for exact
+contracts, Core references, source versions/provenance and remaining validation.
 
 ## Explicit non-goals
 

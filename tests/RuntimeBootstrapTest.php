@@ -6,6 +6,18 @@ use PHPUnit\Framework\TestCase;
 final class RuntimeBootstrapTest extends TestCase {
 
 	#[RunInSeparateProcess]
+	public function test_localization_filters_register_before_any_late_bootstrap_event() {
+		require dirname( __DIR__ ) . '/persian-gravityforms.php';
+		foreach ( array( 'lang_dir_for_domain', 'load_translation_file', 'load_script_translations', 'pre_load_script_translations' ) as $hook ) {
+			$this->assertArrayHasKey( 10, $GLOBALS['pgr_test_filters'][ $hook ] );
+			$this->assertInstanceOf( PGR_Localization::class, $GLOBALS['pgr_test_filters'][ $hook ][10][0][0][0] );
+		}
+		// load_textdomain() is deliberately not stubbed: an eager call would fatal.
+		$this->assertFalse( function_exists( 'load_textdomain' ) );
+		$this->assertFalse( class_exists( 'GFForms', false ) );
+	}
+
+	#[RunInSeparateProcess]
 	public function test_bootstrap_is_safe_when_gravity_forms_is_absent() {
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 

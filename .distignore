@@ -12,3 +12,7 @@
 /COMPLIANCE_REPORT.md
 /docs
 /README.md
+
+/tools
+/.wordpress-core
+/languages/providers/*/source

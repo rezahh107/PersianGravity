@@ -4,6 +4,56 @@ Status date: `2026-09-07`
 
 This document separates automated repository evidence from manual/real WordPress + Gravity Forms evidence. A green unit or CI result must not be promoted to browser integration proof.
 
+## Localization provider work unit (implementation 02)
+
+Required/observed base: `b1a52c975988bf60f473d4b843de057ed5bd0c06`.
+Branch: `feat/gravity-ecosystem-localization-provider`.
+No version bump: existing runtime identity **4.1.0** retained; stale README,
+Stable tag and governance wording reconciled. No merge/release.
+
+| Independent dimension | Status | Evidence / boundary |
+| --- | --- | --- |
+| RUNTIME_PROVIDER_STATUS | PARTIAL | Shared core implemented; empty production source scaffolds and no approved JS handles |
+| PHP_PRECEDENCE_STATUS | AUTOMATED_PASS | Actual Core gettext/JIT/controller with synthetic provider and upstream catalogs, all three manifest domains |
+| JS_PRECEDENCE_STATUS | CONTENT_COMPOSITION_PASS; PRODUCT_LIFECYCLE_NOT_PROVEN | Pure Jed composition/pass-through tests; no invented vendor handle is tested |
+| DISCOVERY_STATUS | AUTOMATED_PASS | Provider-only JIT, upstream custom path retained, unmanaged/non-fa_IR pass-through |
+| CATALOG_BUILD_STATUS | AUTOMATED_PASS_FOR_SCAFFOLDS_AND_SYNTHETIC_FIXTURES | Pinned PO/MO dependency, reproducible PHP/JSON, PO unchanged, no fake production output |
+| TRANSLATION_CONTENT_COVERAGE | SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD | Each product PO: 0 translated / 0 untranslated / 0 fuzzy; actual product totals and coverage unknown |
+| VENDOR_SURFACE_DRIFT_STATUS | NOT_EXECUTED_PACKAGE_UNAVAILABLE | Internal metadata/artifact/manifest checks are separate from exact source verification |
+| REAL_INTEGRATION_STATUS | NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABLE | No licensed WordPress + GF/Flow/View site/browser execution |
+
+Executed local environment: PHP **8.3.6**, Composer **2.8.12**, Node; actual
+WordPress Core **6.7.2** (`6abb46bec8b58abba32602738a785ba1c83f2a1c`) and **7.1**
+(`b998fef9238af183f9523b3df71618e6e57498b6`) translation files with host/DB/cache
+services stubbed. This is neither a full site nor vendor integration.
+
+Executed local commands at the final source checkpoint:
+
+| Command/check | Result |
+| --- | --- |
+| `composer install` / `composer validate --strict` | AUTOMATED_PASS |
+| `composer test` | AUTOMATED_PASS — 46 tests, 370 assertions |
+| `composer cs` | AUTOMATED_PASS — 15 shipped source files |
+| `composer compat` | AUTOMATED_PASS — configured PHP 8.2+ baseline |
+| `node --test tests/js/structured-scanner.test.js` | AUTOMATED_PASS — 15 tests |
+| Shipped PHP syntax | AUTOMATED_PASS — 15 files |
+| `composer i18n:build` / `composer i18n:check` | AUTOMATED_PASS — empty production scaffolds and metadata |
+| `composer i18n:test` with WordPress 6.7.2 | AUTOMATED_PASS — 97 checks |
+| `composer i18n:test` with WordPress 7.1 | AUTOMATED_PASS — 97 checks |
+| Isolated negative drift checks | AUTOMATED_PASS — stale artifact, changed PO hash, orphan JSON and unapproved manifest handle each rejected |
+
+Exact final PR-head CI is reported in the PR and final implementation report. The suite
+adds earliest-bootstrap/no-foreign-load checks, actual PHP/MO precedence and
+fallback, GravityView's supplied data-only prefix mapping, reload/non-Persian
+behavior, generated plural/context consumption, pure Jed composition and
+canonical-source/build integrity. Existing Scanner/field tests are preserved.
+
+The known lazy-parse Core boundary is not hidden: invalid PHP data is not promised
+automatic MO recovery; build checks keep generated data valid. Pre-registration
+translation requests and competing third-party short-circuit loaders also remain
+outside the interception guarantee. See `docs/LOCALIZATION.md` for source-admission
+procedure, ownership, source links and the licensed smoke matrix.
+
 ## Evidence vocabulary
 
 Use these terms consistently:

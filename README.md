@@ -4,7 +4,7 @@
 
 ## وضعیت فعلی
 
-- Plugin version: `4.0.0`
+- Plugin version: `4.1.0`
 - WordPress minimum: `6.7`
 - PHP minimum: `8.2`
 - Gravity Forms minimum: `3.0`
@@ -12,7 +12,7 @@
 - Text domain: `persian-gravityforms`
 - Entrypoint: `persian-gravityforms.php`
 
-نسخه 4 معماری‌های موازی و legacy قبلی را حذف کرده و فقط یک runtime اصلی نگه می‌دارد. قابلیت Structured Scanner فعلاً در PR توسعه‌ای قرار دارد و به معنی انتشار نسخه جدید نیست؛ `4.0.0` و Stable tag بدون تغییر باقی مانده‌اند.
+نسخه 4 معماری‌های موازی و legacy قبلی را حذف کرده و فقط یک runtime اصلی نگه می‌دارد. شناسهٔ فعلی سورس `4.1.0` است. این تغییر زیرساخت ترجمه، نسخهٔ جدید یا انتشار ایجاد نمی‌کند.
 
 ## قابلیت‌ها
 
@@ -88,13 +88,14 @@
 - form-level Persian/Arabic digit normalization قبل از ذخیره Entry
 - Iranian address type و فهرست استان‌ها
 - currencyهای `IRR` و `IRT`
-- localization فقط برای stringهای خود PersianGravity
+- ترجمهٔ متن‌های خود PersianGravity و زیرساخت overlay عمومی `fa_IR` برای محصولات صریحاً ثبت‌شده
 
 ## معماری
 
 ```text
 persian-gravityforms.php
         │
+        ├── PGR_Localization (ثبت فوری resolverها)
         └── gform_loaded
               │
               └── PGR_Core
@@ -116,7 +117,7 @@ persian-gravityforms.php
 PersianGravity عمداً این کارها را انجام **نمی‌دهد**:
 
 - مدیریت Vazir/Vazirmatn یا سایر فونت‌ها
-- ترجمه Gravity Forms، Gravity Flow یا GravityView
+- ترجمهٔ دامنه‌های دلخواه یا تغییر اصطلاحات برای پروژه‌ای خاص
 - payment gateway
 - workflow/business logic
 - منطق SRWF یا سایر پروژه‌های خاص
@@ -159,17 +160,13 @@ CI فعلی runtime واقعی shipped plugin را بررسی می‌کند، Sc
 
 ## Translation
 
-فقط text domain زیر متعلق به این افزونه است:
+برای دامنه‌های `gravityforms`، `gravityflow` و `gk-gravityview` زیرساخت مشترک ترجمهٔ فارسی اضافه شده است. اگر ترجمهٔ ارائه‌دهنده موجود باشد اولویت دارد؛ در غیر این صورت ترجمهٔ upstream/TranslationsPress باقی می‌ماند و بعد از آن متن اصلی نمایش داده می‌شود. هیچ فایل فروشنده یا updater تغییر نمی‌کند.
 
-`persian-gravityforms`
+**وضعیت این PR ناقص است:** بسته/POT دقیق GF `3.1.1.1`، Flow `3.1.1` و GravityView `3.3.3` در محیط اجرای کار در دسترس نبود. بنابراین POها فعلاً scaffold خالی هستند، هیچ ترجمهٔ تولیدی و هیچ handle تأییدنشده‌ای فعال نشده است. هسته و ساخت کاتالوگ قابل بررسی‌اند؛ این PR ادعای فارسی‌سازی آمادهٔ استفاده ندارد. پوشش کل محصولات نامعلوم است، نه ۱۰۰٪ و نه حتی یک شمارش کامل با صفر ترجمه.
 
-POT را می‌توان با این دستور ساخت:
+`composer i18n:check` سازگاری source و metadata و نبود خروجی یتیم را کنترل می‌کند. برای تولید آگاهانه `composer i18n:build` و برای آزمون Core، `PGR_WP_CORE=/path/to/wordpress composer i18n:test` را اجرا کنید. PO هنگام ساخت دست‌نخورده می‌ماند. فایل‌های `.mo`، `.l10n.php` و JSON فقط برای محتوای معتبر و ثبت‌شده ساخته می‌شوند.
 
-```bash
-composer i18n:pot
-```
-
-ترجمه محصولات دیگر Gravity ecosystem باید از مکانیزم رسمی همان محصول انجام شود.
+ثبت resolverها فوری و بدون بارگذاری ترجمه است. درخواست‌هایی که پیش از بارگذاری خود PersianGravity رخ داده‌اند خارج از این مرز هستند. جزئیات، شواهد و مراحل تکمیل در [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) ثبت شده‌اند.
 
 ## Release
 
