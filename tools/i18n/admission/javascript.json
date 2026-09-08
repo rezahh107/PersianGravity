@@ -1,6 +1,6 @@
 {
   "gravityforms": {
-    "target_version":"3.1.1.1","classic_script_surfaces":8,"native_translation_attached":1,"registered_without_translation_attachment":7,"php_localized_js":7,"script_modules":"NOT_PRESENT_IN_TARGET_SOURCE","runtime_activated_handles":0,
+    "target_version":"3.1.1.1","classic_script_surfaces":8,"native_translation_attached":1,"registered_without_translation_attachment":7,"php_localized_js":8,"script_modules":"NOT_PRESENT_IN_TARGET_SOURCE","runtime_activated_handles":0,
     "records":[
       {"handle":"gform_editor_block_form","classification":"REGISTERED_AND_NATIVE_TRANSLATION_ATTACHED","php_localized_js":"MIXED","evidence":["includes/blocks/class-gf-block-form.php:32","includes/blocks/class-gf-block-form.php:183-196"]},
       {"handle":"gform_duplicate_submissions","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["includes/duplicate-submissions/class-gf-duplicate-submissions-handler.php:76-77"]},
