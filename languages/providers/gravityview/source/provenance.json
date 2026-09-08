@@ -1,0 +1,10 @@
+{
+  "source_status": "PACKAGE_UNAVAILABLE",
+  "target_product_version": "3.3.3",
+  "source_product_version": null,
+  "source_pot_sha256": null,
+  "source_package_sha256": null,
+  "catalog_revision": 1,
+  "translation_review": "NO_PRODUCTION_STRINGS",
+  "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+}

@@ -56,7 +56,34 @@ Built-in `sayad_v01` uses `segments_v1` and outputs, in order: `qr_version`, `ow
 
 The complete bilingual Help Center ships locally with the plugin and is version-controlled. Native `WP_Screen` contextual help on PersianGravity admin pages links into the corresponding full topic. No runtime Internet documentation fetch or third-party frontend framework is used.
 
-Translation assets for `fa_IR` ship in `languages/` as POT, PO and MO. Only the `persian-gravityforms` text domain belongs to this plugin.
+Translation assets for `fa_IR` ship in `languages/` as POT, PO and MO. These root assets serve the `persian-gravityforms` UI domain. The separate provider directory holds the bounded ecosystem localization foundation described below.
+
+## Gravity ecosystem localization foundation
+
+Localization is cross-cutting infrastructure outside the six-module registry. Its resolvers register immediately after plugin constants, independently of module state and optional vendor classes.
+
+برای دامنه‌های `gravityforms`، `gravityflow` و `gk-gravityview` زیرساخت مشترک ترجمهٔ فارسی اضافه شده است. اگر ترجمهٔ ارائه‌دهنده موجود باشد اولویت دارد؛ در غیر این صورت ترجمهٔ upstream/TranslationsPress باقی می‌ماند و بعد از آن متن اصلی نمایش داده می‌شود. هیچ فایل فروشنده یا updater تغییر نمی‌کند.
+
+**وضعیت این PR ناقص است:** بسته/POT دقیق GF `3.1.1.1`، Flow `3.1.1` و GravityView `3.3.3` در محیط اجرای کار در دسترس نبود. بنابراین POها فعلاً scaffold خالی هستند، هیچ ترجمهٔ تولیدی و هیچ handle تأییدنشده‌ای فعال نشده است. هسته و ساخت کاتالوگ قابل بررسی‌اند؛ این PR ادعای فارسی‌سازی آمادهٔ استفاده ندارد. پوشش کل محصولات نامعلوم است، نه ۱۰۰٪ و نه حتی یک شمارش کامل با صفر ترجمه.
+
+`composer i18n:check` سازگاری source و metadata و نبود خروجی یتیم را کنترل می‌کند. برای تولید آگاهانه `composer i18n:build` و برای آزمون Core، `PGR_WP_CORE=/path/to/wordpress composer i18n:test` را اجرا کنید. PO هنگام ساخت دست‌نخورده می‌ماند. فایل‌های `.mo`، `.l10n.php` و JSON فقط برای محتوای معتبر و ثبت‌شده ساخته می‌شوند.
+
+ثبت resolverها فوری و بدون بارگذاری ترجمه است. درخواست‌هایی که پیش از بارگذاری خود PersianGravity رخ داده‌اند خارج از این مرز هستند. جزئیات، شواهد و مراحل تکمیل در [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) ثبت شده‌اند.
+
+## Release
+
+قبل از release باید حداقل این موارد هم‌راستا باشند:
+
+- plugin header / `PGR_VERSION`
+- `readme.txt` Stable tag
+- Composer PHP baseline
+- CI matrix
+- changelog
+- production package contents
+
+این تطبیق شاخه، شناسهٔ فعلی `4.2.0` را حفظ می‌کند و نسخه یا انتشار جدید ایجاد نمی‌کند.
+
+مستندات contributor/agent: [`AGENTS.md`](AGENTS.md)
 
 ## Development and validation
 
@@ -66,11 +93,12 @@ composer test
 composer cs
 composer compat
 node --test tests/js/structured-scanner.test.js
-composer i18n:pot
+composer i18n:check
+PGR_WP_CORE=/path/to/pinned/core composer i18n:test
 ```
 
-CI covers syntax, WPCS, PHPCompatibility, Scanner JavaScript tests, runtime-integrity guards, repository consistency, and PHPUnit on the supported PHP matrix. Source/unit tests are not browser proof; real WordPress + Gravity Forms validation is recorded separately in `docs/VALIDATION.md`.
+Own UI POT extraction uses `composer i18n:pot` when deliberately updating source assets. CI preserves GNU-gettext PO/POT/MO validation, provider drift checks, pinned Core localization contracts, syntax, WPCS, PHPCompatibility, Scanner JavaScript tests, runtime-integrity guards, repository consistency, and PHPUnit on the supported PHP matrix. Source/unit tests are not browser proof; real WordPress + Gravity Forms validation is recorded separately in `docs/VALIDATION.md`.
 
 ## Scope
 
-PersianGravity does not own Gravity Flow workflows, GravityView, SRWF-specific business logic, fonts, payment gateways, online Sayad inquiry, OCR/camera scanning, custom databases, or translations for external plugins.
+PersianGravity does not own Gravity Flow workflows, GravityView business behavior, SRWF-specific business logic, fonts, payment gateways, online Sayad inquiry, OCR/camera scanning, custom databases, or arbitrary third-party translations. Only explicitly manifested generic `fa_IR` overlays are permitted; vendor files and updaters remain vendor-owned.

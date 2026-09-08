@@ -34,6 +34,12 @@ Structured Scanner is a transient, display-only controller. Raw scan input is no
 
 Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these ordered outputs: `qr_version`, `owner_type`, `owner_identifier`, `iban`, `bank_branch`, `cheque_serial`, and `sayad_id`. It does not establish Sayad checksum authority, bank validity, cross-bank compatibility, payment behavior, or online inquiry.
 
+= Gravity ecosystem localization foundation =
+
+The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
+
+Exact licensed source/POTs for Gravity Forms 3.1.1.1, Gravity Flow 3.1.1 and GravityView 3.3.3 remain unverified. Current provider PO scaffolds are empty, no JS handles are approved, and no production catalogs are generated. Product coverage is unknown; this foundation does not provide visible product translations yet. See docs/LOCALIZATION.md for admission gates and load-order boundaries.
+
 == Requirements ==
 
 * WordPress 6.7 or newer.
@@ -66,6 +72,8 @@ Run the repository validation commands:
 `composer cs`
 `composer compat`
 `node --test tests/js/structured-scanner.test.js`
+`composer i18n:check`
+`PGR_WP_CORE=/path/to/pinned/core composer i18n:test`
 
 Generate/update the POT template with WP-CLI when available:
 
@@ -74,6 +82,10 @@ Generate/update the POT template with WP-CLI when available:
 Source/unit tests are not equivalent to a real licensed WordPress + Gravity Forms browser integration test.
 
 == Changelog ==
+
+= Unreleased =
+* Integrated the shared localization provider foundation with the existing 4.2.0 module manager and bilingual admin/help. Localization remains outside the six modules.
+* Preserved provider fallback, deterministic build/provenance checks and dormant catalogs pending exact licensed source admission. No version bump or release.
 
 = 4.2.0 =
 * Added bounded `PGR_Module_Registry` with the small autoloaded `pgr_modules` option and default-enabled upgrade behavior.

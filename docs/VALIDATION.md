@@ -42,7 +42,7 @@ The 4.2 branch adds:
 - module/usage/runtime/help/repository-consistency tests;
 - active version metadata synchronized to 4.2.0.
 
-## Executed before commit
+## Historical 4.2 preparation evidence
 
 ### PHP syntax
 
@@ -75,7 +75,7 @@ The existing workflow continues to run:
 
 The new PHPUnit files are discovered through the existing test suite; no second CI system is introduced.
 
-CI result for the 4.2 commit: `NOT_EXECUTED` until GitHub Actions runs on the pushed branch/PR. Exact run IDs must be recorded after execution.
+The original preparation record did not bind a CI run. Reconciliation evidence below supersedes that pending statement for the integrated source tree; exact resulting-head CI is recorded in PR #8 after execution.
 
 ## Translation generation
 
@@ -112,10 +112,55 @@ Therefore all of the following remain `NOT_EXECUTED` / `NOT_PROVEN` until perfor
 
 ## Evidence ceiling
 
-Until repository CI is green, `SOURCE_IMPLEMENTATION_PASS` is not established.
+Source validation claims must be bound to the integrated tree and its exact resulting PR Head; an older branch run does not validate reconciliation.
 
 Until real WordPress/GF checks are executed, browser/admin/GF behavior remains `NOT_PROVEN` even if source/unit tests pass.
 
 ## Historical validation record
 
 The complete pre-4.2 validation record from baseline `b1a52c975988bf60f473d4b843de057ed5bd0c06` is preserved byte-for-byte as `docs/VALIDATION_HISTORY_4.1.md`. It remains historical evidence and is not promoted to proof of 4.2 behavior.
+
+## PR #8 semantic reconciliation
+
+Work unit: `WU-PR8-SEMANTIC-RECONCILIATION-01`. Normal merge of main `62ee8b2808640578bfdba0583342d29b7ef8a164` into PR #8 starting at `7aa31708c38deffd98cd99752a75fdf2297ee0cf`; both histories are preserved. Active identity remains **4.2.0**, with exactly six modules, the current module-state gates, bilingual admin/help and own-plugin GNU-gettext assets. Localization is immediate, load-free, cross-cutting infrastructure outside the module registry. No PR merge into main, tag or release is performed.
+
+| Independent dimension | Status | Evidence / boundary |
+| --- | --- | --- |
+| RUNTIME_PROVIDER_STATUS | PARTIAL | Shared core implemented; empty production source scaffolds and no approved JS handles |
+| PHP_PRECEDENCE_STATUS | AUTOMATED_PASS | Actual Core gettext/JIT/controller with synthetic provider and upstream catalogs, all three manifest domains |
+| JS_PRECEDENCE_STATUS | CONTENT_COMPOSITION_PASS; PRODUCT_LIFECYCLE_NOT_PROVEN | Pure Jed composition/pass-through tests; no invented vendor handle is tested |
+| DISCOVERY_STATUS | AUTOMATED_PASS | Provider-only JIT, upstream custom path retained, unmanaged/non-fa_IR pass-through |
+| CATALOG_BUILD_STATUS | AUTOMATED_PASS_FOR_SCAFFOLDS_AND_SYNTHETIC_FIXTURES | Pinned PO/MO dependency, reproducible PHP/JSON, PO unchanged, no fake production output |
+| TRANSLATION_CONTENT_COVERAGE | SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD | Each product PO: 0 translated / 0 untranslated / 0 fuzzy; actual product totals and coverage unknown |
+| VENDOR_SURFACE_DRIFT_STATUS | NOT_EXECUTED_PACKAGE_UNAVAILABLE | Internal metadata/artifact/manifest checks are separate from exact source verification |
+| REAL_INTEGRATION_STATUS | NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABLE | No licensed WordPress + GF/Flow/View site/browser execution |
+
+
+### Integrated validation execution
+
+Executed on 2026-09-08 with PHP 8.3.6, Composer 2.8.12, Node and GNU gettext:
+
+| Required local check | Result |
+| --- | --- |
+| `composer validate --strict` and locked `composer install` | PASS; dependency graph unchanged |
+| GNU `msgfmt --check`, `msgcmp`, and exact generated/committed MO comparison | PASS; existing PO header warnings for missing revision date, translator and language team |
+| Shipped PHP syntax, including `languages/` | PASS; 19 PHP files |
+| `composer cs` | PASS; 19 shipped PHP files |
+| `composer compat` | PASS; configured PHP 8.2+ baseline |
+| Scanner JavaScript tests | PASS; 15 tests |
+| `composer i18n:check` | PASS; dormant source, provenance and artifact state unchanged |
+| Pinned WordPress 6.7.2 (`6abb46bec8b58abba32602738a785ba1c83f2a1c`) | PASS; 97 localization contract checks |
+| Pinned WordPress 7.1 (`b998fef9238af183f9523b3df71618e6e57498b6`) | PASS; 97 localization contract checks |
+| Combined `composer test` | PASS; 72 tests, 708 assertions |
+
+The integrated suite preserves every current-main test and PR #8 localization test.
+An additional bootstrap regression verifies resolver registration with all six module
+states disabled and all optional vendors absent. The runtime-integrity test now covers
+all admin PHP files and uninstall code as well as includes; the legacy hook ban remains.
+The workflow contains the union of the own-catalog GNU-gettext gate and pinned Core/provider
+checks, plus the existing quality gates and PHP 8.2/8.3/8.4/8.5 unit jobs.
+
+The two Core checkouts are read-only dependencies. Their translation implementations run
+with host/DB/cache services stubbed; no licensed product integration is implied. Exact
+resulting-head GitHub Actions and ancestry evidence are recorded in PR #8 after execution.
+A fresh independent review of that exact Head remains required before any owner merge decision.

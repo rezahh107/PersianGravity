@@ -1,0 +1,28 @@
+{
+    "product": "gravityview",
+    "domain": "gk-gravityview",
+    "locale": "fa_IR",
+    "provenance": {
+        "source_status": "PACKAGE_UNAVAILABLE",
+        "target_product_version": "3.3.3",
+        "source_product_version": null,
+        "source_pot_sha256": null,
+        "source_package_sha256": null,
+        "catalog_revision": 1,
+        "translation_review": "NO_PRODUCTION_STRINGS",
+        "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+    },
+    "provider_po_sha256": "3bc9d1958044a9214b18fe4ff1645cc005b2b61908f2b27feeaef54394a03c65",
+    "counts_in_committed_po": {
+        "translated": 0,
+        "untranslated": 0,
+        "fuzzy": 0
+    },
+    "authoritative_total": null,
+    "coverage_percent": null,
+    "content_status": "SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD",
+    "validated_script_handles": [],
+    "artifact_sha256": {},
+    "vendor_surface_drift_check": "NOT_EXECUTED_PACKAGE_UNAVAILABLE",
+    "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php"
+}

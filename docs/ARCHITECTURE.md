@@ -5,6 +5,8 @@
 ```text
 persian-gravityforms.php
         |
+        +-- PGR_Localization (immediate, load-free resolver registration)
+        |
         +-- non-disableable admin infrastructure
         |     +-- PGR_Module_Registry
         |     +-- PGR_Module_Usage
@@ -62,7 +64,7 @@ The option is small and explicitly autoloaded when first persisted. Missing/malf
 
 ## Runtime gating
 
-The bootstrap loads `PGR_Module_Registry` first, then conditionally loads only enabled Gravity Forms runtime files. `PGR_Core::init()` independently honors the same states before registering fields/hooks.
+At `gform_loaded`, the GF runtime bootstrap loads `PGR_Module_Registry` first, then conditionally loads only enabled Gravity Forms runtime files. `PGR_Core::init()` independently honors the same states before registering fields/hooks.
 
 ### Ownership matrix
 
@@ -136,6 +138,50 @@ Built-in `sayad_v01` remains a structural `segments_v1` profile with exactly:
 
 It adds no Sayad checksum authority, bank validity, cross-bank guarantee, payment behavior, or online inquiry.
 
+## Localization provider
+
+Localization is cross-cutting infrastructure, never a seventh `PGR_Module_Registry` module and never gated by `pgr_modules`. Registration follows plugin constants and precedes all late lifecycle registration. The six-module manager and bilingual admin/help remain the 4.2.0 authority.
+
+
+Decision C: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
+`PGR_Localization` is the single shared core. `includes/localization/products.php`
+contains data for `gravityforms`, `gravityflow` and `gk-gravityview` only. No standard
+product classes or service container are introduced. GravityView's owner-supplied
+`gravityview` prefix is data; no executable exception is claimed without exact
+package evidence.
+
+Registration is synchronous in the main plugin file, before any late lifecycle
+hook and without gettext, foreign loads or optional vendor classes. Optional
+products may all be absent. Requests before PersianGravity itself loads cannot be
+intercepted; already-loaded state is preserved.
+
+`lang_dir_for_domain` supplies a provider directory only if Core has no upstream
+path and a managed `fa_IR` catalog exists. During actual PHP requests,
+`load_translation_file` makes a guarded native `load_textdomain()` call to load
+provider entries first, then retains Core's upstream file attempt. Core provides
+MO/PHP parsing and lookup; upstream-only keys remain available. No vendor paths
+are overwritten and no PO is read at runtime.
+
+JS uses content composition through `load_script_translations`; provider-only
+fallback is supplied through `pre_load_script_translations` only at the final
+`file=false` request. Partial catalogs retain upstream keys, context/plural arrays
+and compatible metadata. It applies only to approved handles/domains and `fa_IR`.
+PHP-localized script data relies on PHP translations.
+
+PO, compilation, census, review provenance and artifact drift belong to development/
+CI. The runtime performs only discovery, request-driven file resolution and overlay.
+PersianGravity's own UI remains on `persian-gravityforms`. Provider ownership means
+a local generic overlay, not vendor file ownership or official upstream status.
+Provider entries win; missing entries fall back to vendor/TranslationsPress.
+No updater disabling, remote download, runtime compilation, translation DB/editor,
+plugin scanning or project-specific terminology is permitted.
+
+**Current source limitation:** exact target packages/POTs were unavailable. Manifests
+have no approved JS handles and production PO scaffolds have no translations;
+no runtime catalog is generated from empty source. All products remain dormant
+pass-through until verified source admission. See `docs/LOCALIZATION.md` for exact
+contracts, Core references, source versions/provenance and remaining validation.
+
 ## Scope
 
-PersianGravity does not own Gravity Flow workflow, GravityView, SRWF business logic, fonts, payment gateways, external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases.
+PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases.

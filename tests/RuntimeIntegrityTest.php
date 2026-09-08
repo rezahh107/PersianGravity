@@ -42,11 +42,15 @@ final class RuntimeIntegrityTest extends TestCase {
 		}
 	}
 
-	public function test_only_own_text_domain_is_used_by_production_php() {
+	public function test_foreign_domains_are_declared_only_in_the_approved_manifest() {
 		$root = dirname( __DIR__ );
 		foreach ( $this->production_php_files( $root ) as $file ) {
 			$content = file_get_contents( $file );
-			$this->assertStringNotContainsString( "'gravityforms'", $content );
+			if ( $file !== $root . '/includes/localization/products.php' ) {
+				foreach ( array( 'gravityforms', 'gravityflow', 'gk-gravityview' ) as $domain ) {
+					$this->assertStringNotContainsString( "'" . $domain . "'", $content );
+				}
+			}
 			$this->assertStringNotContainsString( 'load_textdomain_mofile', $content );
 		}
 	}
@@ -54,13 +58,15 @@ final class RuntimeIntegrityTest extends TestCase {
 	private function production_php_files( $root ) {
 		$php_files = array(
 			$root . '/persian-gravityforms.php',
-			$root . '/admin/class-pgr-admin.php',
+			$root . '/uninstall.php',
 		);
 
-		$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/includes', FilesystemIterator::SKIP_DOTS ) );
-		foreach ( $iterator as $file ) {
-			if ( $file->isFile() && 'php' === $file->getExtension() ) {
-				$php_files[] = $file->getPathname();
+		foreach ( array( 'includes', 'admin' ) as $directory ) {
+			$iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/' . $directory, FilesystemIterator::SKIP_DOTS ) );
+			foreach ( $iterator as $file ) {
+				if ( $file->isFile() && 'php' === $file->getExtension() ) {
+					$php_files[] = $file->getPathname();
+				}
 			}
 		}
 

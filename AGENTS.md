@@ -20,12 +20,16 @@ There is exactly one canonical runtime. Do not recreate removed `src/PersianGrav
 
 Current bounded modules are exactly `national_id`, `jalali_date`, `iranian_address`, `digit_normalization`, `iranian_currency`, and `structured_scanner`. `PGR_Module_Registry` owns their source metadata and defaults; it is not a third-party extension framework.
 
-Out of scope: fonts, Gravity Flow/GravityView translation ownership, payment gateways, workflow/SRWF rules, custom databases, bank/checksum/cross-bank authority, OCR/camera scanning, remote module registries or marketplaces.
+Out of scope: fonts, arbitrary third-party translation ownership, payment gateways, workflow/SRWF rules, custom databases, bank/checksum/cross-bank authority, OCR/camera scanning, remote module registries or marketplaces.
+
+PersianGravity may also provide generic `fa_IR` localization overlays for explicitly manifested Gravity ecosystem domains. This is cross-cutting infrastructure, not a seventh user module. Exact licensed source admission is required before activating catalog content or JS handles.
 
 ## 3. Runtime architecture
 
 ```text
 persian-gravityforms.php
+        |
+        +-- PGR_Localization (immediate, load-free resolver registration)
         |
         +-- non-disableable admin infrastructure
         |     +-- PGR_Module_Registry
@@ -72,7 +76,36 @@ Persian Gravity admin pages are Overview, Scanner Profiles, Settings, System Sta
 
 Capability presentation explicitly contains FA/EN metadata together. Persian is primary only when WordPress user locale is Persian; otherwise English is primary. Technical identifiers are LTR.
 
-Ordinary UI uses WordPress gettext with text domain `persian-gravityforms`. Do not intercept external plugin domains. The full bilingual Help Catalog is static, local, source-owned and version-controlled. Use native `WP_Screen` contextual help for concise page help and links into the full Help Center.
+Ordinary UI uses WordPress gettext with text domain `persian-gravityforms`. Arbitrary external-domain interception remains prohibited; only the bounded provider contract below is permitted. The full bilingual Help Catalog is static, local, source-owned and version-controlled. Use native `WP_Screen` contextual help for concise page help and links into the full Help Center.
+
+### Bounded localization provider
+
+
+PersianGravity's own UI uses `persian-gravityforms`. For explicitly supported products
+and `fa_IR`, PersianGravity may act as the generic local provider/overlay through
+**Shared Core + Declarative Product Manifests + Bounded Adapters** (closed decision C).
+This intentionally replaces the previous blanket foreign-translation ban.
+
+Locked contracts:
+
+- Provider entries win collisions; missing entries retain upstream/vendor/TranslationsPress fallback.
+- Registry-level discovery supports operation without an upstream Persian catalog and preserves existing upstream paths.
+- Partial JavaScript catalogs preserve upstream messages, contexts and compatible plural metadata.
+- Resolver registration occurs immediately in the plugin file, independently of optional vendor classes; registration must not load foreign translations.
+- Load activity before PersianGravity itself is included cannot be intercepted. Do not erase already-loaded translation state to hide this boundary.
+- PO is editable source; compilation, source census, hashes and drift checks belong exclusively to development/CI.
+- Domain/handle approval and catalog content require source provenance. Empty scaffolds do not prove product support or translation coverage.
+
+Gravity Forms and Gravity Flow remain data-only. Add executable GravityView handling
+only for a source-proven failure which data cannot express. Do not introduce a service
+container, product-class hierarchy, arbitrary callbacks/DSL, gettext replacement engine,
+translation database/editor, vendor writes or updater disabling, SRWF semantic rewriting,
+or runtime compilation/downloads. `load_textdomain_mofile` remains prohibited.
+
+Commands: `composer i18n:pot` for own UI; `composer i18n:build` for deliberate
+provider generation; `composer i18n:check` for non-mutating drift validation;
+`PGR_WP_CORE=/path/to/pinned/core composer i18n:test` for real Core translation tests.
+See `docs/LOCALIZATION.md` for source-admission and licensed integration gaps.
 
 ## 7. Gravity Forms API policy
 
@@ -90,9 +123,11 @@ composer test
 composer cs
 composer compat
 node --test tests/js/structured-scanner.test.js
+composer i18n:check
+PGR_WP_CORE=/path/to/pinned/core composer i18n:test
 ```
 
-CI continues PHP syntax, WPCS, PHPCompatibility, Scanner JS, runtime-integrity guards and PHPUnit PHP 8.2–8.5. Repository consistency tests must keep active version declarations, bilingual module metadata, Help coverage and translation assets aligned.
+CI preserves GNU-gettext validation of the own-plugin PO/POT/MO, provider artifact/provenance drift checks, pinned WordPress 6.7.2 and 7.1 localization contracts, PHP syntax, WPCS, PHPCompatibility, Scanner JS, runtime-integrity guards and PHPUnit PHP 8.2–8.5. Repository consistency tests must keep active version declarations, bilingual module metadata, Help coverage and translation assets aligned.
 
 Unit/stub/source tests are not equivalent to a real WordPress + licensed Gravity Forms browser/integration test. Record executed vs unexecuted evidence in `docs/VALIDATION.md`.
 

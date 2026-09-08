@@ -1,6 +1,5 @@
 vendor/
 node_modules/
-composer.lock
 .DS_Store
 .vscode/
 *.min.js
@@ -12,3 +11,6 @@ composer.lock
 *.jpeg
 *.gif
 *.pdf
+
+.wordpress-core/
+.phpunit.cache/
