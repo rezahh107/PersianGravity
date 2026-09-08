@@ -19,13 +19,13 @@ return array(
 	),
 	'gravityflow'    => array(
 		'product'        => 'gravityflow',
-		'target_version' => '3.1.1',
+		'target_version' => '3.1.0',
 		'prefix'         => 'gravityflow',
 		'scripts'        => array(),
 	),
 	'gk-gravityview' => array(
 		'product'        => 'gravityview',
-		'target_version' => '3.3.3',
+		'target_version' => '3.3.4',
 		'prefix'         => 'gravityview',
 		'scripts'        => array(),
 	),
