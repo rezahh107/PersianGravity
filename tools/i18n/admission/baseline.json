@@ -19,6 +19,9 @@
       "canonical_keyset_sha256": "1b92edc87f2d152cb98a026dde815ab93e3e8303eef2954e95b3a816a85801fb",
       "source_reference_index_sha256": "599e6e80e4761d3968e3da8917f76fadfeb14b8204cc5d2d5220a97a09624b89",
       "source_reference_count": 6510,
+      "vendor_pot_unique_keys": 4208,
+      "vendor_pot_only_stale": 1,
+      "reference_only_differences": 5,
       "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["04dfa6982a82b362ec75ce8654d10cb4cbbbbebc65fe061d0a4dc92a726af549","0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f","f2991b1644ceaa39bae1ac754b4fc0d0547cf07c6be6f00dd92243fc3feb88b6"]}
     },
     {
@@ -38,6 +41,9 @@
       "canonical_keyset_sha256": "cea9efe9c99f0e4424de029137ecef044133129684918ba6523f4691e6d58c82",
       "source_reference_index_sha256": "b9a9a01620cf74738dfeb9e759f4af747a6a2e59a4b547ff659bfcc5314b5f75",
       "source_reference_count": 1576,
+      "vendor_pot_unique_keys": 1098,
+      "vendor_pot_only_stale": 0,
+      "reference_only_differences": 3,
       "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","4fdeb6a736bb32cdbb52e8e5afb633cbe782b408f989ca796f7b86f1efe90daf","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","7a4f7f1df53fc4d0b94d9f5fd8621bd70741f1d3a5ea3d8a7272ecbe4299aa91","864f855869b51b47250b80de695b9d99116ca39d717cb0dbe1a5a9610da0427b","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}
     }
   ]
