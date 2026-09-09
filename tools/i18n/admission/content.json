@@ -1,5 +1,5 @@
 {
-  "content_admission_revision": 1,
+  "content_admission_revision": 2,
   "identity_hash_method": "SHA256_UTF8_MSGCTXT_US_MSGID_US_MSGID_PLURAL",
   "keyset_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256",
   "surface_path_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_US_MATCHED_SOURCE_PATH",
