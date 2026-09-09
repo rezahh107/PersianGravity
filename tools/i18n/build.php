@@ -19,18 +19,18 @@ $root              = ABSPATH . 'languages/providers';
 $expected          = array();
 
 foreach ( $products as $domain => $product ) {
-	$dir           = $root . '/' . $product['product'];
-	$source        = $dir . '/source';
-	$provenance    = json_decode( file_get_contents( $source . '/provenance.json' ), true, 512, JSON_THROW_ON_ERROR );
-	$built         = pgr_compile_catalog( $source . '/fa_IR.po', $domain );
-	$counts        = $built['counts'];
-	$known         = array_sum( $counts );
-	$status        = $provenance['source_status'] ?? '';
-	$verified      = 'VERIFIED' === $status;
+	$dir        = $root . '/' . $product['product'];
+	$source     = $dir . '/source';
+	$provenance = json_decode( file_get_contents( $source . '/provenance.json' ), true, 512, JSON_THROW_ON_ERROR );
+	$built      = pgr_compile_catalog( $source . '/fa_IR.po', $domain );
+	$counts     = $built['counts'];
+	$known      = array_sum( $counts );
+	$status     = $provenance['source_status'] ?? '';
+	$verified   = 'VERIFIED' === $status;
 	$metadata_only = 'PACKAGE_INSPECTED_METADATA_ONLY' === $status;
 	$unavailable   = 'PACKAGE_UNAVAILABLE' === $status;
-	$partial       = isset( $content_admission[ $product['product'] ] ) &&
-		'CONTENT_ADMITTED_PARTIAL' === $content_admission[ $product['product'] ]['content_state'];
+	$content       = $content_admission[ $product['product'] ] ?? null;
+	$partial       = is_array( $content ) && 'CONTENT_ADMITTED_PARTIAL' === ( $content['content_state'] ?? null );
 
 	if ( ! $verified && ! $metadata_only && ! $unavailable ) {
 		throw new RuntimeException( 'Unknown source status: ' . $domain );
@@ -41,9 +41,12 @@ foreach ( $products as $domain => $product ) {
 	if ( ( $metadata_only || $unavailable ) && ! $partial && ( 0 !== $known || array() !== $product['scripts'] ) ) {
 		throw new RuntimeException( 'Non-content source state must remain runtime dormant: ' . $domain );
 	}
-	if ( $partial && ( ! $metadata_only || array() !== $product['scripts'] ||
-		$known !== $content_admission[ $product['product'] ]['admitted_message_count'] ) ) {
-		throw new RuntimeException( 'Invalid partial-content runtime boundary: ' . $domain );
+	if ( $partial &&
+		( ! $metadata_only ||
+			array() !== $product['scripts'] ||
+			$known !== $content['aggregate']['admitted_message_count'] ||
+			hash_file( 'sha256', $source . '/fa_IR.po' ) !== $content['aggregate']['provider_source_sha256'] ) ) {
+		throw new RuntimeException( 'Invalid partial-content aggregate runtime boundary: ' . $domain );
 	}
 
 	if ( $metadata_only ) {
@@ -85,9 +88,9 @@ foreach ( $products as $domain => $product ) {
 
 	$artifacts = array();
 	if ( $counts['translated'] > 0 ) {
-		$base                               = $product['prefix'] . '-fa_IR';
-		$artifacts[ $base . '.mo' ]         = $built['mo'];
-		$artifacts[ $base . '.l10n.php' ]   = $built['php'];
+		$base                             = $product['prefix'] . '-fa_IR';
+		$artifacts[ $base . '.mo' ]       = $built['mo'];
+		$artifacts[ $base . '.l10n.php' ] = $built['php'];
 	}
 
 	foreach ( $product['scripts'] as $handle => $script_record ) {
@@ -119,7 +122,7 @@ foreach ( $products as $domain => $product ) {
 		$hashes[ $name ] = hash( 'sha256', $bytes );
 	}
 
-	$source_record      = $admission[ $product['product'] ] ?? null;
+	$source_record       = $admission[ $product['product'] ] ?? null;
 	$authoritative_total = $verified ? $known : ( $metadata_only ? $source_record['canonical_message_count'] : null );
 	if ( $verified && $known > 0 ) {
 		$coverage = round( 100 * $counts['translated'] / $known, 2 );
@@ -156,17 +159,11 @@ foreach ( $products as $domain => $product ) {
 		'generator'                  => 'gettext/gettext 5.7.3 + tools/i18n/catalog.php',
 	);
 	if ( $partial ) {
-		$content = $content_admission[ $product['product'] ];
 		$metadata['content_admission'] = array(
-			'state'                              => $content['content_state'],
-			'reviewed_source_po_sha256'          => $content['reviewed_source_po_sha256'],
-			'surface_id'                         => $content['surface_id'],
-			'admitted_message_count'             => $content['admitted_message_count'],
-			'admitted_keyset_sha256'             => $content['admitted_keyset_sha256'],
-			'admitted_surface_path_index_sha256' => $content['admitted_surface_path_index_sha256'],
-			'admitted_translation_content_sha256'=> $content['admitted_translation_content_sha256'],
-			'native_js_handles_activated'         => 0,
-			'js_translation_json_generated'       => 0,
+			'revision'   => 2,
+			'state'      => $content['content_state'],
+			'admissions' => array_map( 'pgr_content_provenance_record', $content['admissions'] ),
+			'aggregate'  => $content['aggregate'],
 		);
 	}
 
