@@ -142,7 +142,6 @@ It adds no Sayad checksum authority, bank validity, cross-bank guarantee, paymen
 
 Localization is cross-cutting infrastructure, never a seventh `PGR_Module_Registry` module and never gated by `pgr_modules`. Registration follows plugin constants and precedes all late lifecycle registration. The six-module manager and bilingual admin/help remain the 4.2.0 authority.
 
-
 Decision C: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
 `PGR_Localization` is the single shared core. `includes/localization/products.php`
 contains data for `gravityforms`, `gravityflow` and `gk-gravityview` only. No standard
@@ -176,14 +175,23 @@ Provider entries win; missing entries fall back to vendor/TranslationsPress.
 No updater disabling, remote download, runtime compilation, translation DB/editor,
 plugin scanning or project-specific terminology is permitted.
 
-**Current source boundary:** exact owner-supplied Gravity Forms 3.1.1.1 and Gravity
-Flow 3.1.0 packages/POTs have been inspected and pinned as
-`PACKAGE_INSPECTED_METADATA_ONLY`; GravityView 3.3.4 remains `PACKAGE_UNAVAILABLE`.
-The manifests still have no active product JS handles and production PO scaffolds
-remain header-only, so no product runtime catalog is generated. Source admission
-therefore changes evidence only, not the runtime architecture or translation output.
-See `docs/LOCALIZATION.md` for exact contracts, hashes, source census and remaining
-runtime/browser validation gaps.
+**Current source/content boundary:** exact owner-supplied Gravity Forms 3.1.1.1 and Gravity
+Flow 3.1.0 packages/POTs are inspected and pinned as source evidence; GravityView 3.3.4
+remains `PACKAGE_UNAVAILABLE`. Gravity Forms has no production content-admission record
+in this boundary. Gravity Flow production content authority is revision 2 with exactly
+two independently validated records: Inbox
+(`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`, 255 identities) and
+Status (`gravityflow::workflow_runtime::admin_page:gravityflow-status`, 43 identities,
+source path exactly `includes/pages/class-status.php`). The two records share 10 canonical
+identities with identical reviewed translations and therefore deterministically union to
+288 unique admitted identities. The Gravity Flow source census remains separately 1098.
+Inbox locked keyset/path/content fingerprints remain unchanged. The aggregate sparse PO is
+the exact set union; MO and `.l10n.php` are deterministic generated outputs. Gravity Flow
+script handles remain zero and no Gravity Flow translation JSON is generated. Non-admitted
+keys still fall through to upstream/vendor/TranslationsPress and then source English.
+This is partial surface authority only, not full Gravity Flow localization or licensed
+browser proof. See `docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md` and
+`docs/VALIDATION_CONTENT_ADMISSION_V2.md` for the exact content contract.
 
 ## Scope
 

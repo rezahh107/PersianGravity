@@ -1,8 +1,9 @@
 # Content Admission v2 — deterministic multi-record authority
 
-Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
+Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
+Current production extension: `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`.
 
-This contract generalizes the previously proven single Gravity Flow Inbox admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
+This contract generalizes bounded content admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
 
 ## Authority layers
 
@@ -12,7 +13,12 @@ Source admission and translation-content admission remain separate. A valid prod
 
 `product + domain + locale + target_version + surface_id`
 
-Duplicate tuples fail closed. Production currently contains exactly one record: Gravity Flow 3.1.0 Inbox (`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`). No second production content admission is introduced by this Work Unit.
+Duplicate tuples fail closed. Production currently contains exactly two Gravity Flow 3.1.0 records:
+
+1. Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
+2. Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
+
+No third production content admission is authorized by WU-005.
 
 ## Independent record validation
 
@@ -30,11 +36,21 @@ Each record is validated without product-specific or surface-specific branches. 
 
 Evidence entry ordering is not authority: semantically equivalent ordering is normalized before set fingerprints are computed.
 
+The Status record is additionally bounded by its registered source-path rule exactly `includes/pages/class-status.php`; the evidence-derived set contains 43 canonical identities from the reviewed Gravity Flow 3.1.0 Persian baseline.
+
 ## Deterministic per-product union
 
 Validated records are grouped by product and sorted by record identity tuple. The product aggregate is the set union of canonical gettext identities.
 
 When an identity occurs in more than one record, identical translation content is counted once. Different translation content for the same canonical identity is a hard validation failure; input order never selects a winner.
+
+For the production Gravity Flow Inbox + Status pair:
+
+- Inbox count: 255;
+- Status count: 43;
+- identical shared identities: 10;
+- aggregate unique admitted count: 288;
+- full Gravity Flow source census, reported separately: 1098.
 
 The aggregate records at least:
 
@@ -63,10 +79,17 @@ Generated `metadata.json` mirrors the validated multi-record state under `conten
 
 `tools/i18n/build.php` grants partial runtime catalog generation only when a validated product aggregate exists and the committed product PO matches the aggregate message count and SHA-256. A product with valid source admission but zero validated content records has no content authority; metadata-only products remain runtime dormant.
 
-The production Gravity Flow Inbox PO and derived artifacts are intentionally unchanged:
+WU-005 preserves the existing Inbox authority independently while extending the Gravity Flow aggregate with Status. Locked Inbox fingerprints remain:
 
-- provider PO: `ac77a1812d8edcf0264b4f4ffa3bfb918a3915929f3dd35847df4d062d14b570`
-- MO: `cefef16940557a5b4586972d5abeb3be3f0b2f17eba8a53db2f14f30c543d04b`
-- `.l10n.php`: `731d54d4a612533fe614293328c9912cd59b267cd49585416a4c6aaaeb48f983`
+- admitted count: `255`;
+- keyset: `446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a`;
+- path fingerprint: `6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09`;
+- translation fingerprint: `6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f`.
 
-All product script maps remain empty. No native JavaScript translation handle or product translation JSON is activated by this Work Unit.
+The resulting aggregate artifacts are:
+
+- provider PO: `bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757`;
+- MO: `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640`;
+- `.l10n.php`: `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
+
+All Gravity Flow product script maps remain empty. No native JavaScript translation handle or Gravity Flow translation JSON is activated by WU-005. Non-admitted keys retain upstream/vendor/TranslationsPress fallback.
