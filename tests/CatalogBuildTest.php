@@ -3,6 +3,9 @@
 use PHPUnit\Framework\TestCase;
 
 require_once dirname( __DIR__ ) . '/tools/i18n/catalog.php';
+require_once dirname( __DIR__ ) . '/tools/i18n/admission.php';
+require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+require_once dirname( __DIR__ ) . '/tools/i18n/content-admission.php';
 
 final class CatalogBuildTest extends TestCase {
 	public function test_compilation_is_reproducible_preserves_po_and_excludes_unreviewed_entries() {
@@ -24,28 +27,41 @@ final class CatalogBuildTest extends TestCase {
 		$this->assertStringNotContainsString( 'Synthetic missing', $one['php'] );
 	}
 
-	public function test_provider_content_states_match_the_admission_boundary() {
-		$products = require dirname( __DIR__ ) . '/includes/localization/products.php';
-		$expected = array(
-			'gravityforms'   => array( 'source_status' => 'PACKAGE_INSPECTED_METADATA_ONLY', 'translated' => 0, 'runtime' => false ),
-			'gravityflow'    => array( 'source_status' => 'PACKAGE_INSPECTED_METADATA_ONLY', 'translated' => 255, 'runtime' => true ),
-			'gk-gravityview' => array( 'source_status' => 'PACKAGE_UNAVAILABLE', 'translated' => 0, 'runtime' => false ),
+	public function test_provider_content_states_match_the_validated_admission_boundary() {
+		$root              = dirname( __DIR__ );
+		$products          = require $root . '/includes/localization/products.php';
+		$source_admission  = pgr_validate_admission( $root );
+		$content_admission = pgr_validate_content_admission( $root, $source_admission, $products );
+		$source_statuses   = array(
+			'gravityforms'   => 'PACKAGE_INSPECTED_METADATA_ONLY',
+			'gravityflow'    => 'PACKAGE_INSPECTED_METADATA_ONLY',
+			'gk-gravityview' => 'PACKAGE_UNAVAILABLE',
 		);
+
 		foreach ( $products as $domain => $product ) {
-			$path = dirname( __DIR__ ) . '/languages/providers/' . $product['product'];
-			$meta = json_decode( file_get_contents( $path . '/metadata.json' ), true );
-			$this->assertSame( $expected[ $domain ]['source_status'], $meta['provenance']['source_status'] );
-			$this->assertSame( $expected[ $domain ]['translated'], $meta['counts_in_committed_po']['translated'] );
+			$path      = $root . '/languages/providers/' . $product['product'];
+			$meta      = json_decode( file_get_contents( $path . '/metadata.json' ), true );
+			$admission = $content_admission[ $product['product'] ] ?? null;
+			$mo        = $path . '/' . $product['prefix'] . '-fa_IR.mo';
+			$php       = $path . '/' . $product['prefix'] . '-fa_IR.l10n.php';
+
+			$this->assertSame( $source_statuses[ $domain ], $meta['provenance']['source_status'] );
 			$this->assertSame( array(), $product['scripts'] );
-			$mo  = $path . '/' . $product['prefix'] . '-fa_IR.mo';
-			$php = $path . '/' . $product['prefix'] . '-fa_IR.l10n.php';
-			if ( $expected[ $domain ]['runtime'] ) {
-				$this->assertFileExists( $mo );
-				$this->assertFileExists( $php );
-			} else {
+
+			if ( null === $admission ) {
+				$this->assertSame( 0, $meta['counts_in_committed_po']['translated'] );
 				$this->assertFileDoesNotExist( $mo );
 				$this->assertFileDoesNotExist( $php );
+				continue;
 			}
+
+			$this->assertSame( 'CONTENT_ADMITTED_PARTIAL', $admission['content_state'] );
+			$this->assertSame( $admission['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
+			$this->assertSame( 0, $admission['native_js_handles_activated'] );
+			$this->assertSame( 0, $admission['js_translation_json_generated'] );
+			$this->assertFileExists( $mo );
+			$this->assertFileExists( $php );
+			$this->assertSame( array(), glob( $path . '/' . $domain . '-fa_IR-*.json' ) ?: array() );
 		}
 	}
 }
