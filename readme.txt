@@ -38,7 +38,7 @@ Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these or
 
 The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
 
-Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Exact owner-supplied packages for Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 have been SHA-256-pinned and admitted as metadata-only source evidence; GravityView remains package-unavailable. Product PO scaffolds remain header-only, all runtime JS handle maps remain empty, and no production product MO, `.l10n.php` or translation JSON is generated. Source admission therefore does not provide visible product Persian translations. See docs/LOCALIZATION.md for admission evidence and load-order boundaries.
+Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Exact owner-supplied packages for Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 are SHA-256-pinned as source evidence; GravityView remains package-unavailable. Gravity Flow now has exactly two bounded production content-admission records: Inbox (255 identities) and Status (43 identities), with 10 identical overlaps deduplicated to an aggregate of 288 unique admitted identities from a separate 1098-message source census. Inbox fingerprints remain unchanged. All Gravity Flow runtime JS handle maps remain empty and no Gravity Flow translation JSON is generated. This is partial surface admission, not full-product or browser-complete localization. See docs/LOCALIZATION.md and docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md for the source/load-order and content-authority boundaries.
 
 == Requirements ==
 
@@ -84,7 +84,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
-* Admitted exact Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 package/source evidence in metadata-only mode while keeping all product translation content and runtime JS activation dormant; GravityView remains package-unavailable.
+* Admitted the reviewed Gravity Flow 3.1.0 Status surface alongside the existing Inbox surface through revision-2 deterministic multi-record content authority: 43 Status identities, 10 identical Inbox/Status overlaps, and 288 unique aggregate identities from a separate 1098-message source census; zero JS handles and no translation JSON remain unchanged.
+* Admitted exact Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 package/source evidence while GravityView remains package-unavailable.
 * Reconciled owner-authorized localization targets to Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4.
 * Integrated the shared localization provider foundation with the existing 4.2.0 module manager and bilingual admin/help. Localization remains outside the six modules.
 * Preserved provider fallback and deterministic build/provenance checks. No version bump or release.

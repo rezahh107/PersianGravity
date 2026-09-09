@@ -64,11 +64,11 @@ Localization is cross-cutting infrastructure outside the six-module registry. It
 
 برای دامنه‌های `gravityforms`، `gravityflow` و `gk-gravityview` زیرساخت مشترک ترجمهٔ فارسی اضافه شده است. اگر ترجمهٔ ارائه‌دهنده موجود باشد اولویت دارد؛ در غیر این صورت ترجمهٔ upstream/TranslationsPress باقی می‌ماند و بعد از آن متن اصلی نمایش داده می‌شود. هیچ فایل فروشنده یا updater تغییر نمی‌کند.
 
-**وضعیت فعلی provider ناقص است:** targetهای مالک اکنون GF `3.1.1.1`، Flow `3.1.0` و GravityView `3.3.4` هستند، اما بسته/POT دقیق آن‌ها در این اجرای repository-side در دسترس نبود. بنابراین POها همچنان scaffold خالی هستند، `source_product_version` و hashهای source/package تهی می‌مانند، هیچ ترجمهٔ تولیدی و هیچ handle تأییدنشده‌ای فعال نشده است. این تغییر فقط target metadata را با تصمیم مالک هماهنگ می‌کند و ادعای source verification یا فارسی‌سازی آمادهٔ استفاده ندارد.
+**وضعیت provider همچنان جزئی و source-bounded است:** targetهای مالک GF `3.1.1.1`، Flow `3.1.0` و GravityView `3.3.4` هستند. Gravity Forms در این مرز فقط source-admitted است و GravityView همچنان package-unavailable باقی می‌ماند. برای Gravity Flow، runtime content authority اکنون دقیقاً دو surface مرورشده دارد: Inbox (`255` identity) و Status (`43` identity) با `10` identity مشترک یکسان؛ union نهایی `288` identity یکتا از source census مستقل `1098` است. Inbox fingerprintهای قفل‌شده بدون تغییر مانده‌اند. همهٔ Gravity Flow script handleها همچنان خالی‌اند و هیچ translation JSON تولید نمی‌شود. این وضعیت نه ترجمهٔ کامل Gravity Flow است و نه browser/licensed integration proof.
 
-`composer i18n:check` سازگاری source و metadata و نبود خروجی یتیم را کنترل می‌کند. برای تولید آگاهانه `composer i18n:build` و برای آزمون Core، `PGR_WP_CORE=/path/to/wordpress composer i18n:test` را اجرا کنید. PO هنگام ساخت دست‌نخورده می‌ماند. فایل‌های `.mo`، `.l10n.php` و JSON فقط برای محتوای معتبر و ثبت‌شده ساخته می‌شوند.
+`composer i18n:check` سازگاری source و metadata، content-admission fingerprints و deterministic artifact drift را کنترل می‌کند. برای تولید آگاهانه `composer i18n:build` و برای آزمون Core، `PGR_WP_CORE=/path/to/wordpress composer i18n:test` را اجرا کنید. PO هنگام ساخت دست‌نخورده می‌ماند. فایل‌های `.mo` و `.l10n.php` فقط برای محتوای معتبر و ثبت‌شده ساخته می‌شوند و JSON تنها برای handleهای صریحاً مجاز ممکن است.
 
-ثبت resolverها فوری و بدون بارگذاری ترجمه است. درخواست‌هایی که پیش از بارگذاری خود PersianGravity رخ داده‌اند خارج از این مرز هستند. جزئیات، شواهد و مراحل تکمیل در [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) ثبت شده‌اند.
+ثبت resolverها فوری و بدون بارگذاری ترجمه است. درخواست‌هایی که پیش از بارگذاری خود PersianGravity رخ داده‌اند خارج از این مرز هستند. جزئیات source/load-order در [`docs/LOCALIZATION.md`](docs/LOCALIZATION.md) و قرارداد multi-record content authority در [`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md`](docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md) ثبت شده‌اند.
 
 ## Release
 

@@ -193,3 +193,35 @@ RTL/Bidi inspection is source-informed but visual execution remains `NOT_EXECUTE
 Metadata-only scope invariants are enforced by `tools/i18n/admission.php`, `tools/i18n/build.php`, `SourceAdmissionTest`, and `CatalogBuildTest`: production product translated `msgstr` = 0; product MO = absent; product `.l10n.php` = absent; product translation JSON = absent; active product JS handles = 0; production RTL patches = 0; vendor ZIP/source/full POT committed = 0; PGR version bump = none. `source_pot_sha256` remains null in metadata-only state because no full source POT is committed; the inspected POT identity is held in `vendor_pot_sha256`.
 
 The exact PR-head CI for this work unit is the completion authority for repository tests, existing pinned WordPress localization contracts, admission consistency, Surface Registry validation, glossary evidence, and runtime integrity. A green static/source CI run still does not prove licensed browser/runtime RTL behavior.
+
+## WU-005 — Gravity Flow Status bounded content admission
+
+Required base: `main@8c8a7642fa8362775bc0730c6db3e00dede3eb3a`.
+
+This Work Unit changes only Gravity Flow translation-content authority. Source admission remains separately pinned. Production revision-2 authority must contain exactly Inbox plus Status, with no third content record. The Status path rule is exactly `includes/pages/class-status.php`.
+
+Deterministic preparation and independent reproduction establish these locked values before exact-final-Head CI:
+
+| Evidence | Value |
+| --- | --- |
+| Reviewed Gravity Flow PO | `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9` |
+| Source census | `1098` |
+| Inbox admitted count | `255` |
+| Inbox keyset | `446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a` |
+| Inbox path fingerprint | `6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09` |
+| Inbox translation fingerprint | `6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f` |
+| Status admitted count | `43` |
+| Status keyset | `08f03c79014c427b13d0f8cb37fd2f3d873b7f60b63db9bb7bc06e1f0640ba6d` |
+| Status path fingerprint | `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed` |
+| Status translation fingerprint | `32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7` |
+| Inbox/Status identical overlap | `10` |
+| Aggregate admitted unique count | `288` |
+| Aggregate keyset | `58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363` |
+| Aggregate translation fingerprint | `00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139` |
+| Aggregate PO | `bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757` |
+| Generated MO | `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` |
+| Generated `.l10n.php` | `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44` |
+
+The aggregate admitted count `288` is intentionally reported separately from the full Gravity Flow source census `1098`; no full-product coverage claim is implied. Gravity Flow native JS handles remain zero and no Gravity Flow translation JSON is generated. Provider-first/upstream-fallback semantics are unchanged.
+
+`GravityFlowInboxContentAdmissionTest`, `GravityFlowStatusContentAdmissionTest`, the generic revision-2 content-admission regression suite, `composer i18n:check`, the PHP 8.2–8.5 CI matrix, and pinned WordPress Core localization contracts are the automated completion gates. Exact PASS/FAIL claims belong to the final PR Head only. Real WordPress + licensed Gravity Flow browser/UI validation remains `NOT_EXECUTED` unless separately evidenced.
