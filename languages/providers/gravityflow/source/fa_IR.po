@@ -1,10 +1,776 @@
-# Metadata-only source admission for exact 3.1.0 package. No production strings.
+# Gravity Flow 3.1.0 Persian production catalog — Inbox surface only.
+# Derived deterministically from reviewed final-v2 baseline; do not broaden by hand.
 msgid ""
 msgstr ""
-"Project-Id-Version: gravityflow 3.1.0\n"
+"Project-Id-Version: Gravity Flow 3.1.0\n"
 "Language: fa_IR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Domain: gravityflow\n"
+
+msgid "Contains"
+msgstr "شامل"
+
+msgid "Step"
+msgstr "مرحله"
+
+msgid "Submitted"
+msgstr "ارسال‌شده"
+
+msgid "Due Date"
+msgstr "تاریخ سررسید"
+
+msgid "Apply"
+msgstr "اعمال"
+
+msgid "Labels"
+msgstr "برچسب‌ها"
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "Submit"
+msgstr "ارسال"
+
+msgid "Return to list"
+msgstr "بازگشت به فهرست"
+
+msgid "Workflow Inbox"
+msgstr "کارهای من"
+
+msgid "Note"
+msgstr "یادداشت"
+
+msgid "Cancel"
+msgstr "لغو"
+
+msgid "Note:"
+msgstr "توجه:"
+
+msgid "(Select All)"
+msgstr "(انتخاب همه)"
+
+msgid "(Select All Search Results)"
+msgstr "(انتخاب همه نتایج جستجو)"
+
+msgid "Search..."
+msgstr "جستجو…"
+
+msgid "(Blanks)"
+msgstr "(موارد خالی)"
+
+msgid "No matches"
+msgstr "موردی یافت نشد"
+
+msgid "Filter..."
+msgstr "فیلتر…"
+
+msgid "Equals"
+msgstr "برابر است"
+
+msgid "Not equal"
+msgstr "برابر نیست"
+
+msgid "Blank"
+msgstr "خالی"
+
+msgid "Not blank"
+msgstr "خالی نیست"
+
+msgid "Choose One"
+msgstr "یکی را انتخاب کنید"
+
+msgid "Less than"
+msgstr "کوچک‌تر از"
+
+msgid "Greater than"
+msgstr "بزرگ‌تر از"
+
+msgid "Less than or equal"
+msgstr "کوچک‌تر یا مساوی"
+
+msgid "Greater than or equal"
+msgstr "بزرگ‌تر یا مساوی"
+
+msgid "In range"
+msgstr "در بازه"
+
+msgid "from"
+msgstr "از"
+
+msgid "to"
+msgstr "تا"
+
+msgid "Not contains"
+msgstr "شامل نیست"
+
+msgid "Starts with"
+msgstr "شروع می‌شود با"
+
+msgid "Ends with"
+msgstr "پایان می‌یابد با"
+
+msgid "yyyy-mm-dd"
+msgstr "yyyy-mm-dd"
+
+msgid "AND"
+msgstr "و"
+
+msgid "OR"
+msgstr "یا"
+
+msgid "Reset"
+msgstr "بازنشانی"
+
+msgid "Clear"
+msgstr "پاک‌کردن"
+
+msgid "Text Filter"
+msgstr "فیلتر متنی"
+
+msgid "Number Filter"
+msgstr "فیلتر عددی"
+
+msgid "Date Filter"
+msgstr "فیلتر تاریخ"
+
+msgid "Set Filter"
+msgstr "فیلتر مجموعه"
+
+msgid "Columns"
+msgstr "ستون‌ها"
+
+msgid "Filters"
+msgstr "فیلترها"
+
+msgid "Pivot Mode"
+msgstr "حالت Pivot"
+
+msgid "Row Groups"
+msgstr "گروه‌های ردیف"
+
+msgid "Drag here to set row groups"
+msgstr "برای تعیین گروه‌های ردیف، اینجا بکشید"
+
+msgid "Values"
+msgstr "مقادیر"
+
+msgid "Drag here to aggregate"
+msgstr "برای تجمیع، اینجا بکشید"
+
+msgid "Column Labels"
+msgstr "برچسب‌های ستون"
+
+msgid "Drag here to set column labels"
+msgstr "برای تنظیم برچسب‌های ستون، اینجا را بکشید"
+
+msgid "Group"
+msgstr "گروه"
+
+msgid "rows"
+msgstr "ردیف‌ها"
+
+msgid "Loading..."
+msgstr "در حال بارگیری…"
+
+msgid "No Rows To Show"
+msgstr "هیچ ردیفی برای نمایش وجود ندارد"
+
+msgid "Enabled"
+msgstr "فعال"
+
+msgid "Pin Column"
+msgstr "ثابت‌کردن ستون"
+
+msgid "Pin Left"
+msgstr "ثابت در چپ"
+
+msgid "Pin Right"
+msgstr "ثابت در راست"
+
+msgid "No Pin"
+msgstr "بدون تثبیت"
+
+msgid "Value Aggregation"
+msgstr "تجمیع مقدار"
+
+msgid "Autosize This Column"
+msgstr "تنظیم خودکار اندازه این ستون"
+
+msgid "Autosize All Columns"
+msgstr "تنظیم خودکار اندازه همه ستون‌ها"
+
+msgid "Group by"
+msgstr "گروه‌بندی بر اساس"
+
+msgid "Un-Group by"
+msgstr "لغو گروه‌بندی بر اساس"
+
+msgid "Add ${variable} to values"
+msgstr "${variable} را به مقادیر اضافه کنید"
+
+msgid "Remove ${variable} from values"
+msgstr "${variable} را از مقادیر حذف کنید"
+
+msgid "Add ${variable} to labels"
+msgstr "${variable} را به برچسب‌ها اضافه کنید"
+
+msgid "Remove ${variable} from labels"
+msgstr "${variable} را از برچسب‌ها حذف کنید"
+
+msgid "Reset Columns"
+msgstr "بازنشانی ستون‌ها"
+
+msgid "Expand All"
+msgstr "بازکردن همه"
+
+msgid "Close All"
+msgstr "بستن همه"
+
+msgid "Copy"
+msgstr "کپی"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Copy With Headers"
+msgstr "کپی همراه سربرگ‌ها"
+
+msgid "Copy With Header Groups"
+msgstr "کپی همراه گروه‌های سربرگ"
+
+msgid "Paste"
+msgstr "چسباندن"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Export"
+msgstr "برون‌بری"
+
+msgid "CSV Export"
+msgstr "برون‌بری CSV"
+
+msgid "Excel Export"
+msgstr "برون‌بری Excel"
+
+msgid "Sum"
+msgstr "مجموع"
+
+msgid "Min"
+msgstr "حداقل"
+
+msgid "Max"
+msgstr "حداکثر"
+
+msgid "None"
+msgstr "هیچ‌کدام"
+
+msgid "Count"
+msgstr "تعداد"
+
+msgid "Average"
+msgstr "میانگین"
+
+msgid "Filtered"
+msgstr "فیلترشده"
+
+msgid "Selected"
+msgstr "انتخاب‌شده"
+
+msgid "Total Rows"
+msgstr "کل ردیف‌ها"
+
+msgid "Rows"
+msgstr "ردیف‌ها"
+
+msgid "More"
+msgstr "بیشتر"
+
+msgid "of"
+msgstr "از"
+
+msgid "Page"
+msgstr "صفحه"
+
+msgid "Next Page"
+msgstr "صفحه بعدی"
+
+msgid "Last Page"
+msgstr "آخرین صفحه"
+
+msgid "First Page"
+msgstr "صفحه اول"
+
+msgid "Previous Page"
+msgstr "صفحه قبلی"
+
+msgid "Total"
+msgstr "جمع"
+
+msgid "Pivot Chart & Pivot Mode"
+msgstr "نمودار Pivot و حالت Pivot"
+
+msgid "Pivot Chart"
+msgstr "نمودار Pivot"
+
+msgid "Chart Range"
+msgstr "محدوده نمودار"
+
+msgid "Column"
+msgstr "ستون"
+
+msgid "Grouped"
+msgstr "گروه‌بندی‌شده"
+
+msgid "Stacked"
+msgstr "انباشته"
+
+msgid "100% Stacked"
+msgstr "انباشته 100٪"
+
+msgid "Bar"
+msgstr "میله‌ای"
+
+msgid "Pie"
+msgstr "دایره‌ای"
+
+msgid "Doughnut"
+msgstr "حلقه‌ای"
+
+msgid "Line"
+msgstr "خطی"
+
+msgid "X Y (Scatter)"
+msgstr "XY (پراکندگی)"
+
+msgid "Scatter"
+msgstr "پراکندگی"
+
+msgid "Bubble"
+msgstr "حبابی"
+
+msgid "Area"
+msgstr "ناحیه‌ای"
+
+msgid "Histogram"
+msgstr "هیستوگرام"
+
+msgid "Combination"
+msgstr "ترکیبی"
+
+msgid "Column & Line"
+msgstr "ستون و خط"
+
+msgid "Area & Column"
+msgstr "ناحیه و ستون"
+
+msgid "Range Chart"
+msgstr "نمودار محدوده"
+
+msgid "Data"
+msgstr "داده‌ها"
+
+msgid "Format"
+msgstr "قالب"
+
+msgid "Categories"
+msgstr "دسته‌ها"
+
+msgid "(None)"
+msgstr "(هیچ‌کدام)"
+
+msgid "Series"
+msgstr "سری"
+
+msgid "X Y Values"
+msgstr "مقادیر XY"
+
+msgid "Paired Mode"
+msgstr "حالت جفتی"
+
+msgid "Axis"
+msgstr "محور"
+
+msgid "Navigator"
+msgstr "پیمایش‌گر"
+
+msgid "Color"
+msgstr "رنگ"
+
+msgid "Thickness"
+msgstr "ضخامت"
+
+msgid "X Type"
+msgstr "نوع X"
+
+msgid "Automatic"
+msgstr "خودکار"
+
+msgid "Category"
+msgstr "دسته"
+
+msgid "Number"
+msgstr "عدد"
+
+msgid "Time"
+msgstr "زمان"
+
+msgid "X Rotation"
+msgstr "چرخش X"
+
+msgid "Y Rotation"
+msgstr "چرخش Y"
+
+msgid "Ticks"
+msgstr "درجه‌ها"
+
+msgid "Width"
+msgstr "عرض"
+
+msgid "Height"
+msgstr "ارتفاع"
+
+msgid "Length"
+msgstr "طول"
+
+msgid "Padding"
+msgstr "فاصله داخلی"
+
+msgid "Spacing"
+msgstr "فاصله"
+
+msgid "Chart"
+msgstr "نمودار"
+
+msgid "Title"
+msgstr "عنوان"
+
+msgid "Chart title - double click to edit"
+msgstr "عنوان نمودار - برای ویرایش دوبار کلیک کنید"
+
+msgid "Background"
+msgstr "پس‌زمینه"
+
+msgid "Font"
+msgstr "فونت"
+
+msgid "Top"
+msgstr "بالا"
+
+msgid "Right"
+msgstr "راست"
+
+msgid "Bottom"
+msgstr "پایین"
+
+msgid "Left"
+msgstr "چپ"
+
+msgid "Size"
+msgstr "اندازه"
+
+msgid "Minimum Size"
+msgstr "حداقل اندازه"
+
+msgid "Maximum Size"
+msgstr "حداکثر اندازه"
+
+msgid "Legend"
+msgstr "راهنما"
+
+msgid "Position"
+msgstr "موقعیت"
+
+msgid "Marker Size"
+msgstr "اندازه نشانگر"
+
+msgid "Marker Stroke"
+msgstr "خط دور نشانگر"
+
+msgid "Marker Padding"
+msgstr "فاصله داخلی نشانگر"
+
+msgid "Item Spacing"
+msgstr "فاصله آیتم‌ها"
+
+msgid "Item Padding X"
+msgstr "فاصله داخلی X آیتم"
+
+msgid "Item Padding Y"
+msgstr "فاصله داخلی Y آیتم"
+
+msgid "Horizontal Spacing"
+msgstr "فاصله افقی"
+
+msgid "Vertical Spacing"
+msgstr "فاصله عمودی"
+
+msgid "Stroke Width"
+msgstr "ضخامت خط"
+
+msgid "Offset"
+msgstr "جابه‌جایی"
+
+msgid "Offsets"
+msgstr "جابه‌جایی‌ها"
+
+msgid "Tooltips"
+msgstr "راهنماهای شناور"
+
+msgid "Callout"
+msgstr "خط راهنما"
+
+msgid "Markers"
+msgstr "نشانگرها"
+
+msgid "Shadow"
+msgstr "سایه"
+
+msgid "Blur"
+msgstr "محوشدگی"
+
+msgid "X Offset"
+msgstr "جابه‌جایی X"
+
+msgid "Y Offset"
+msgstr "جابه‌جایی Y"
+
+msgid "Line Width"
+msgstr "عرض خط"
+
+msgid "Normal"
+msgstr "طبیعی"
+
+msgid "Bold"
+msgstr "پررنگ"
+
+msgid "Italic"
+msgstr "مورب"
+
+msgid "Bold Italic"
+msgstr "پررنگ و مورب"
+
+msgid "Predefined"
+msgstr "از پیش تعریف شده"
+
+msgid "Fill Opacity"
+msgstr "شفافیت پرشدگی"
+
+msgid "Line Opacity"
+msgstr "شفافیت خط"
+
+msgid "Bin count"
+msgstr "تعداد بازه‌ها"
+
+msgid "Custom Combination"
+msgstr "ترکیب سفارشی"
+
+msgid "No data available to be charted."
+msgstr "داده‌ای برای رسم نمودار موجود نیست."
+
+msgid "Pivot Chart requires Pivot Mode enabled."
+msgstr "برای نمودار Pivot باید حالت Pivot فعال باشد."
+
+msgid "Menu"
+msgstr "منو"
+
+msgid "Linked to Grid"
+msgstr "متصل به شبکه"
+
+msgid "Unlinked from Grid"
+msgstr "از شبکه جدا شده"
+
+msgid "Download Chart"
+msgstr "دانلود نمودار"
+
+msgid "Series Chart Type"
+msgstr "نوع نمودار سری"
+
+msgid "Series Type"
+msgstr "نوع سری"
+
+msgid "Secondary Axis"
+msgstr "محور ثانویه"
+
+msgid "hidden"
+msgstr "پنهان"
+
+msgid "visible"
+msgstr "قابل مشاهده"
+
+msgid "checked"
+msgstr "علامت‌خورده"
+
+msgid "unchecked"
+msgstr "بدون علامت"
+
+msgid "indeterminate"
+msgstr "نامشخص"
+
+msgid "list"
+msgstr "فهرست"
+
+msgid "Toggle Select All Columns"
+msgstr "انتخاب یا لغو انتخاب همه ستون‌ها"
+
+msgid "Input Editor"
+msgstr "ویرایشگر ورودی"
+
+msgid "Date Filter Input"
+msgstr "ورودی فیلتر تاریخ"
+
+msgid "Filter list"
+msgstr "فهرست فیلتر"
+
+msgid "Filter Input"
+msgstr "ورودی فیلتر"
+
+msgid "Filter Columns Input"
+msgstr "ورودی فیلتر ستون‌ها"
+
+msgid "Filter Value"
+msgstr "مقدار فیلتر"
+
+msgid "Filter from value"
+msgstr "فیلتر از مقدار"
+
+msgid "Filter to value"
+msgstr "فیلتر تا مقدار"
+
+msgid "Filtering Operator"
+msgstr "عملگر فیلتر"
+
+msgid "Column list"
+msgstr "فهرست ستون‌ها"
+
+msgid "Column Group"
+msgstr "گروه ستون"
+
+msgid "Press SPACE to select this row"
+msgstr "برای انتخاب این ردیف، SPACE را فشار دهید"
+
+msgid "Press SPACE to deselect this row"
+msgstr "برای لغو انتخاب این ردیف، SPACE را فشار دهید"
+
+msgid "Press SPACE to toggle row selection"
+msgstr "برای انتخاب یا لغو انتخاب این ردیف، SPACE را فشار دهید"
+
+msgid "Press SPACE to toggle all rows selection"
+msgstr "برای انتخاب یا لغو انتخاب همه ردیف‌ها، SPACE را فشار دهید"
+
+msgid "Press SPACE to toggle visibility"
+msgstr "برای نمایش یا پنهان‌کردن، SPACE را فشار دهید"
+
+msgid "Search"
+msgstr "جستجو"
+
+msgid "Search filter values"
+msgstr "جستجوی مقادیر فیلتر"
+
+msgid "Press DELETE to remove"
+msgstr "برای حذف، DELETE را فشار دهید"
+
+msgid "Press ENTER to change the aggregation type"
+msgstr "برای تغییر نوع تجمیع، ENTER را فشار دهید"
+
+msgid "Column Menu"
+msgstr "منوی ستون"
+
+msgid "Cell Editor"
+msgstr "ویرایشگر سلول"
+
+msgid "Dialog"
+msgstr "پنجره محاوره"
+
+msgid "Select Field"
+msgstr "فیلد را انتخاب کنید"
+
+msgid "Tooltip"
+msgstr "راهنمای شناور"
+
+msgid "Context Menu"
+msgstr "منوی زمینه"
+
+msgid "SubMenu"
+msgstr "منوی فرعی"
+
+msgid "Aggregation function"
+msgstr "تابع تجمیع"
+
+msgid ","
+msgstr "،"
+
+msgid " . "
+msgstr "."
+
+msgid "Your browser does not support notifications. "
+msgstr "مرورگر شما از اعلان‌ها پشتیبانی نمی‌کند. "
+
+msgid "Disabled"
+msgstr "غیرفعال"
+
+msgid "Inbox Settings"
+msgstr "تنظیمات کارهای من"
+
+msgid "You have a new item in your workflow inbox. "
+msgstr "یک کار جدید برای اقدام به شما ارجاع شده است. "
+
+msgid "No Pending Tasks"
+msgstr "کاری در انتظار نیست"
+
+msgid "Can't find inbox options for grid ID:"
+msgstr "گزینه‌های «کارهای من» برای شناسه شبکه پیدا نشد:"
+
+msgid "Search Inbox"
+msgstr "جستجو در کارهای من"
+
+msgid "Enable Push Notifications"
+msgstr "فعال‌کردن اعلان‌های فشاری"
+
+msgid "You will have to allow push notifications for this domain and browser to enable this feature. If you haven't already,\n\t\tyour browser will ask you to enable them one time."
+msgstr "برای فعال‌کردن این قابلیت باید اعلان‌های فشاری را برای این دامنه و مرورگر مجاز کنید. اگر قبلاً اجازه نداده‌اید، مرورگر یک‌بار از شما درخواست مجوز می‌کند."
+
+msgid "Toggle fullscreen for this table"
+msgstr "تغییر حالت تمام‌صفحه این جدول"
+
+msgid "Toggle settings for this table"
+msgstr "نمایش یا پنهان‌کردن تنظیمات این جدول"
+
+msgid "Clear active filters for this table"
+msgstr "پاک‌کردن فیلترهای فعال این جدول"
+
+msgid "View"
+msgstr "مشاهده"
+
+msgid "View quick actions"
+msgstr "مشاهده اقدام‌های سریع"
+
+msgid "ID"
+msgstr "شناسه"
+
+msgid "Form"
+msgstr "فرم"
+
+msgid "Submitter"
+msgstr "ارسال‌کننده"
+
+msgid "Form ID"
+msgstr "شناسه فرم"
+
+msgid "Submitted HR"
+msgstr "زمان ارسال (خوانا)"
+
+msgid "Last Updated"
+msgstr "آخرین به‌روزرسانی"
+
+msgid "Last Updated HR"
+msgstr "زمان آخرین به‌روزرسانی (خوانا)"
+
+msgid "Due Date HR"
+msgstr "تاریخ سررسید (خوانا)"
+
+msgid "No pending tasks"
+msgstr "کاری در انتظار نیست"

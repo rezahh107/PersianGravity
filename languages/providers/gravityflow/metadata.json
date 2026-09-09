@@ -14,21 +14,48 @@
         "admission_mode": "METADATA_ONLY_ADMISSION",
         "source_pot_consistency": "PASS",
         "admission_baseline": "tools/i18n/admission/baseline.json",
-        "catalog_revision": 1,
-        "translation_review": "NO_PRODUCTION_STRINGS",
-        "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+        "content_admission_manifest": "tools/i18n/admission/content.json",
+        "content_admission_state": "CONTENT_ADMITTED_PARTIAL",
+        "reviewed_source_po_sha256": "c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9",
+        "reviewed_source_message_count": 1098,
+        "admitted_surface_id": "gravityflow::workflow_runtime::admin_page:gravityflow-inbox",
+        "admitted_message_count": 255,
+        "admitted_keyset_sha256": "446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a",
+        "admitted_surface_path_index_sha256": "6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09",
+        "admitted_translation_content_sha256": "6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f",
+        "surface_evidence_index_sha256": "7eb6a9203d194995cd1de8e7cbb91d83b935dd591247506c386f0145bb731e0f",
+        "admitted_provider_po_sha256": "ac77a1812d8edcf0264b4f4ffa3bfb918a3915929f3dd35847df4d062d14b570",
+        "catalog_revision": 2,
+        "translation_review": "FINAL_V2_REVIEWED_BASELINE_EXACT_SUBSET",
+        "native_js_handles_activated": 0,
+        "js_translation_json_generated": 0,
+        "upstream_fallback_validation": "SYNTHETIC_CORE_SPARSE_PRECEDENCE"
     },
-    "provider_po_sha256": "d9ef5efbc7bbacba3f48cf0fdddfc07b8c444803601de779037abb4668edecff",
+    "provider_po_sha256": "ac77a1812d8edcf0264b4f4ffa3bfb918a3915929f3dd35847df4d062d14b570",
     "counts_in_committed_po": {
-        "translated": 0,
+        "translated": 255,
         "untranslated": 0,
         "fuzzy": 0
     },
     "authoritative_total": 1098,
-    "coverage_percent": 0,
-    "content_status": "SOURCE_INSPECTED_METADATA_ONLY_NO_TRANSLATION_CONTENT",
+    "coverage_percent": 23.22,
+    "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
     "validated_script_handles": [],
-    "artifact_sha256": {},
+    "artifact_sha256": {
+        "gravityflow-fa_IR.mo": "cefef16940557a5b4586972d5abeb3be3f0b2f17eba8a53db2f14f30c543d04b",
+        "gravityflow-fa_IR.l10n.php": "731d54d4a612533fe614293328c9912cd59b267cd49585416a4c6aaaeb48f983"
+    },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-    "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php"
+    "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",
+    "content_admission": {
+        "state": "CONTENT_ADMITTED_PARTIAL",
+        "reviewed_source_po_sha256": "c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9",
+        "surface_id": "gravityflow::workflow_runtime::admin_page:gravityflow-inbox",
+        "admitted_message_count": 255,
+        "admitted_keyset_sha256": "446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a",
+        "admitted_surface_path_index_sha256": "6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09",
+        "admitted_translation_content_sha256": "6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f",
+        "native_js_handles_activated": 0,
+        "js_translation_json_generated": 0
+    }
 }
