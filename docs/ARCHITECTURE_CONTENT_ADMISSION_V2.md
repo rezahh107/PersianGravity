@@ -2,6 +2,7 @@
 
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
 Current production extension: `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`.
+Current data repair: `WU-PGR-PR14-STATUS-PO-HEADER-REPAIR-01`.
 
 This contract generalizes bounded content admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
 
@@ -18,7 +19,7 @@ Duplicate tuples fail closed. Production currently contains exactly two Gravity 
 1. Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
 2. Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
 
-No third production content admission is authorized by WU-005.
+No third production content admission is authorized by WU-005 or the Status PO header repair.
 
 ## Independent record validation
 
@@ -37,6 +38,8 @@ Each record is validated without product-specific or surface-specific branches. 
 Evidence entry ordering is not authority: semantically equivalent ordering is normalized before set fingerprints are computed.
 
 The Status record is additionally bounded by its registered source-path rule exactly `includes/pages/class-status.php`; the evidence-derived set contains 43 canonical identities from the reviewed Gravity Flow 3.1.0 Persian baseline.
+
+Sparse PO headers are data-source authority. `StrictPoLoader` must parse `Language: fa_IR`, `X-Domain: gravityflow`, and `Plural-Forms: nplurals=2; plural=(n > 1);`. Literal double-escaped header newlines are invalid and remain fail-closed; the validator is not normalized, weakened, or special-cased.
 
 ## Deterministic per-product union
 
@@ -61,7 +64,7 @@ The aggregate records at least:
 - exact aggregate sparse provider PO path and SHA-256; and
 - zero JS activation/generation state.
 
-The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal this union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, or token-unsafe identities fail closed.
+The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal this union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
 
 ## Provenance and generated metadata
 
@@ -86,10 +89,14 @@ WU-005 preserves the existing Inbox authority independently while extending the 
 - path fingerprint: `6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09`;
 - translation fingerprint: `6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f`.
 
-The resulting aggregate artifacts are:
+The Status header repair changes only raw PO byte identity. Current raw source digests are:
 
-- provider PO: `bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757`;
+- Status sparse PO: `c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718`;
+- aggregate provider PO: `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`.
+
+Semantic Status/Inbox/aggregate fingerprints are unchanged. Deterministic generated runtime artifacts remain:
+
 - MO: `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640`;
 - `.l10n.php`: `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
-All Gravity Flow product script maps remain empty. No native JavaScript translation handle or Gravity Flow translation JSON is activated by WU-005. Non-admitted keys retain upstream/vendor/TranslationsPress fallback.
+All Gravity Flow product script maps remain empty. No native JavaScript translation handle or Gravity Flow translation JSON is activated by WU-005 or the header repair. Non-admitted keys retain upstream/vendor/TranslationsPress fallback.

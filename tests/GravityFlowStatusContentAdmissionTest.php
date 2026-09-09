@@ -36,7 +36,8 @@ final class GravityFlowStatusContentAdmissionTest extends TestCase {
 		$this->assertSame( '0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed', $status['admitted_surface_path_index_sha256'] );
 		$this->assertSame( '32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7', $status['admitted_translation_content_sha256'] );
 		$this->assertSame( 'c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e', $status['surface_evidence_index_sha256'] );
-		$this->assertSame( '9d82982c5117ed5e2988e2958dc21ae8b4bd6003453a63b2f8ce38d033271958', $status['provider_source_sha256'] );
+		$this->assertSame( 'c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718', $status['provider_source_sha256'] );
+		$this->assertSame( $status['provider_source_sha256'], hash_file( 'sha256', $root . '/' . $status['provider_source_path'] ) );
 		$this->assertSame( $index_ids, $provider['ids'] );
 	}
 
@@ -58,6 +59,30 @@ final class GravityFlowStatusContentAdmissionTest extends TestCase {
 		}
 		$this->assertSame( 288, $content['gravityflow']['aggregate']['admitted_message_count'] );
 		$this->assertSame( 255 + 43 - 10, $content['gravityflow']['aggregate']['admitted_message_count'] );
+	}
+
+	public function test_literal_double_escaped_status_header_newlines_fail_closed(): void {
+		$temp     = $this->productionFixture();
+		$manifest = pgr_admission_json( $temp . '/tools/i18n/admission/content.json' );
+		$status_i = $this->statusRecordIndex( $manifest['admissions'] );
+		$record   = &$manifest['admissions'][ $status_i ];
+		$path     = $temp . '/' . $record['provider_source_path'];
+		$contents = file_get_contents( $path );
+		$this->assertIsString( $contents );
+		$body_offset = strpos( $contents, "\n\nmsgid \"Fields\"" );
+		$this->assertNotFalse( $body_offset );
+		$header = substr( $contents, 0, $body_offset );
+		$body   = substr( $contents, $body_offset );
+		$this->assertSame( 7, substr_count( $header, "\\n\"" ) );
+		$malformed_header = str_replace( "\\n\"", "\\\\n\"", $header );
+		$this->assertSame( 7, substr_count( $malformed_header, "\\\\n\"" ) );
+		$this->assertNotFalse( file_put_contents( $path, $malformed_header . $body ) );
+		$record['provider_source_sha256'] = hash_file( 'sha256', $path );
+		$this->writeJson( $temp . '/tools/i18n/admission/content.json', $manifest );
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Invalid sparse provider PO headers' );
+		$this->validateFixture( $temp );
 	}
 
 	public function test_status_manifest_fingerprint_tampering_fails_closed(): void {

@@ -52,7 +52,7 @@
                 "surface_evidence_index_path": "tools/i18n/admission/gravityflow-status-index.json",
                 "surface_evidence_index_sha256": "c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e",
                 "provider_source_path": "languages/providers/gravityflow/source/records/status-fa_IR.po",
-                "provider_source_sha256": "9d82982c5117ed5e2988e2958dc21ae8b4bd6003453a63b2f8ce38d033271958"
+                "provider_source_sha256": "c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718"
             }
         ],
         "content_aggregate": {
@@ -60,7 +60,7 @@
             "admitted_keyset_sha256": "58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363",
             "admitted_translation_content_sha256": "00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139",
             "provider_source_path": "languages/providers/gravityflow/source/fa_IR.po",
-            "provider_source_sha256": "bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757"
+            "provider_source_sha256": "838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267"
         },
         "catalog_revision": 3,
         "translation_review": "FINAL_V2_REVIEWED_BASELINE_EXACT_BOUNDED_INBOX_STATUS_SUBSETS",
@@ -68,7 +68,7 @@
         "js_translation_json_generated": 0,
         "upstream_fallback_validation": "SYNTHETIC_CORE_SPARSE_PRECEDENCE"
     },
-    "provider_po_sha256": "bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757",
+    "provider_po_sha256": "838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267",
     "counts_in_committed_po": {
         "translated": 288,
         "untranslated": 0,
@@ -122,7 +122,7 @@
                 "surface_evidence_index_path": "tools/i18n/admission/gravityflow-status-index.json",
                 "surface_evidence_index_sha256": "c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e",
                 "provider_source_path": "languages/providers/gravityflow/source/records/status-fa_IR.po",
-                "provider_source_sha256": "9d82982c5117ed5e2988e2958dc21ae8b4bd6003453a63b2f8ce38d033271958"
+                "provider_source_sha256": "c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718"
             }
         ],
         "aggregate": {
@@ -130,7 +130,7 @@
             "admitted_keyset_sha256": "58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363",
             "admitted_translation_content_sha256": "00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139",
             "provider_source_path": "languages/providers/gravityflow/source/fa_IR.po",
-            "provider_source_sha256": "bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757",
+            "provider_source_sha256": "838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267",
             "native_js_handles_activated": 0,
             "js_translation_json_generated": 0
         }

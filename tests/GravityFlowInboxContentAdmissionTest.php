@@ -39,7 +39,7 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 		$this->assertSame( 288, $flow['aggregate']['admitted_message_count'] );
 		$this->assertSame( '58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363', $flow['aggregate']['admitted_keyset_sha256'] );
 		$this->assertSame( '00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139', $flow['aggregate']['admitted_translation_content_sha256'] );
-		$this->assertSame( 'bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757', $flow['aggregate']['provider_source_sha256'] );
+		$this->assertSame( '838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267', $flow['aggregate']['provider_source_sha256'] );
 		$this->assertSame( array(), $products['gravityflow']['scripts'] );
 		$this->assertSame( 0, $flow['aggregate']['native_js_handles_activated'] );
 		$this->assertSame( 0, $flow['aggregate']['js_translation_json_generated'] );

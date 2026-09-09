@@ -45,7 +45,7 @@
       "surface_evidence_index_path": "tools/i18n/admission/gravityflow-status-index.json",
       "surface_evidence_index_sha256": "c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e",
       "provider_source_path": "languages/providers/gravityflow/source/records/status-fa_IR.po",
-      "provider_source_sha256": "9d82982c5117ed5e2988e2958dc21ae8b4bd6003453a63b2f8ce38d033271958",
+      "provider_source_sha256": "c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718",
       "native_js_handles_activated": 0,
       "js_translation_json_generated": 0
     }

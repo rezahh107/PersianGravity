@@ -18,6 +18,8 @@ For Gravity Forms and Gravity Flow, `PROJECT_SOURCE_AUTHORITY=OWNER_SUPPLIED_EXA
 
 `SOURCE VERIFIED != TRANSLATION CONTENT ADMITTED != JS SURFACE ACTIVATED`. Gravity Forms remains source-admitted without production content authority in this boundary. Gravity Flow has revision-2 production content authority for exactly Inbox and Status: 255 Inbox identities, 43 Status identities, 10 identical overlaps, and a deterministic 288-identity aggregate from a separately reported 1098-message source census. Status evidence is restricted exactly to `includes/pages/class-status.php`; Inbox locked fingerprints remain unchanged. All runtime `scripts` maps remain empty and no Gravity Flow translation JSON is generated. `source_pot_sha256` remains `null` because no full `source.pot` is committed; `vendor_pot_sha256` records the exact inspected vendor POT bytes.
 
+The PR #14 Status sparse-PO header repair corrects only malformed gettext header escaping. The unchanged strict loader must parse `Language: fa_IR`, `X-Domain: gravityflow`, and `Plural-Forms: nplurals=2; plural=(n > 1);`. Current repaired raw SHA-256 values are Status `c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718` and aggregate provider PO `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`; semantic identities, translations, content fingerprints, JS authority and runtime architecture are unchanged.
+
 ### Source ↔ POT consistency
 
 The exact packages were inspected with a deterministic PHP tokenizer plus byte-level reconciliation for distributed JavaScript and plugin-header strings. A temporary WP-CLI 2.12.0 source-POT regeneration was attempted but could not execute because the environment blocked tool download; that tooling gap remains explicitly separate from the source-backed consistency result.
@@ -80,10 +82,7 @@ The guard is cleared in `finally`, so unload/reload is not blocked by stale flag
 
 An absent upstream `.l10n.php` must not suppress an existing upstream `.mo` attempt.
 If neither upstream format exists, a valid provider path lets the original Core
-request succeed. Provider read/load failure returns the original path. Core lazily parses PHP data;
-a corrupt PHP catalog does not promise automatic MO recovery, and build validation
-must keep shipped catalogs valid. Upstream entries remain available. `.l10n.php`
-and MO are consumed by WordPress, never a runtime PO/MO parser here.
+request succeed. Provider read/load failure returns the original path. Core lazily parses PHP data; a corrupt PHP catalog does not promise automatic MO recovery, and build validation must keep shipped catalogs valid. Upstream entries remain available. `.l10n.php` and MO are consumed by WordPress, never a runtime PO/MO parser here.
 
 The prefix field maps only an exact Core-generated `{domain}-fa_IR` basename to
 the approved `{prefix}-fa_IR` basename, in the same directory. Existing ordinary
@@ -148,7 +147,7 @@ The canonical registry in `tools/i18n/admission/surfaces.json` contains 13 deter
 
 Source admission does not itself populate provider translations. Gravity Forms remains source-admitted without production content authority in this boundary. GravityView remains `PACKAGE_UNAVAILABLE` until its exact target package is supplied and inspected.
 
-Gravity Flow content authority is revision 2 and intentionally partial. The reviewed baseline SHA-256 is `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9`. Production contains exactly the Inbox and Status records. Inbox remains 255 identities with its locked fingerprints unchanged. Status derives exactly 43 identities from `includes/pages/class-status.php`; the records overlap on 10 identities with identical translation rows; aggregate authority is the deterministic 288-identity union while the source census remains separately 1098. The aggregate provider PO SHA-256 is `bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757`, with deterministic MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
+Gravity Flow content authority is revision 2 and intentionally partial. The reviewed baseline SHA-256 is `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9`. Production contains exactly the Inbox and Status records. Inbox remains 255 identities with its locked fingerprints unchanged. Status derives exactly 43 identities from `includes/pages/class-status.php`; the records overlap on 10 identities with identical translation rows; aggregate authority is the deterministic 288-identity union while the source census remains separately 1098. The current aggregate provider PO SHA-256 is `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`, with deterministic MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
 Internal source-admission consistency is checked by `tools/i18n/admission.php`; revision-2 content authority is checked by `tools/i18n/content-admission.php`; both are consumed by `tools/i18n/build.php`. CI can validate committed metadata/content evidence without possessing licensed vendor packages or the full reviewed baseline. That is not equivalent to re-running vendor extraction or licensed browser integration in CI.
 
@@ -180,4 +179,4 @@ Licensed integration remains `NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABL
 - Non-Persian locale unchanged, user/site locale switching, and optional product absence.
 - Load order before/after PersianGravity inclusion, without rewriting vendor files.
 
-No real integration PASS may be inferred from green Core/unit tests. WU-005 does not merge, release, deploy, broaden product content authority, or claim full Gravity Flow localization.
+No real integration PASS may be inferred from green Core/unit tests. WU-005 and the Status PO header repair do not merge, release, deploy, broaden product content authority, or claim full Gravity Flow localization.
