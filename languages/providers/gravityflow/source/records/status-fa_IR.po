@@ -1,0 +1,147 @@
+# Gravity Flow 3.1.0 Persian sparse admission record — Status surface only.
+# Derived deterministically from reviewed final-v2 baseline; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Flow 3.1.0\\n"
+"Language: fa_IR\\n"
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\\n"
+"X-Domain: gravityflow\\n"
+
+msgid "Fields"
+msgstr "فیلدها"
+
+msgid "Step"
+msgstr "مرحله"
+
+msgid "Status:"
+msgstr "وضعیت:"
+
+msgid "Status"
+msgstr "وضعیت"
+
+msgid "Due Date"
+msgstr "تاریخ سررسید"
+
+msgid "Expires"
+msgstr "منقضی می‌شود"
+
+msgid "Queued"
+msgstr "در صف"
+
+msgid "Apply"
+msgstr "اعمال"
+
+msgid "Restart Workflow"
+msgstr "شروع دوباره گردش‌کار"
+
+msgid "Workflow restarted."
+msgstr "گردش‌کار دوباره آغاز شد."
+
+msgid "yyyy-mm-dd"
+msgstr "yyyy-mm-dd"
+
+msgid "Export"
+msgstr "برون‌بری"
+
+msgid "Search"
+msgstr "جستجو"
+
+msgid "ID"
+msgstr "شناسه"
+
+msgid "Form"
+msgstr "فرم"
+
+msgid "Submitter"
+msgstr "ارسال‌کننده"
+
+msgid "Last Updated"
+msgstr "آخرین به‌روزرسانی"
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Duration"
+msgstr "مدت‌زمان"
+
+msgid "Print"
+msgstr "چاپ"
+
+msgid "The destination file is not writeable"
+msgstr "فایل مقصد قابل نوشتن نیست"
+
+msgid "Send to Step: %s"
+msgstr "ارسال به مرحله: %s"
+
+msgid "You haven't submitted any workflow forms yet."
+msgstr "شما هنوز هیچ فرم گردش‌کار ارسال نکرده‌اید."
+
+msgid "All"
+msgstr "همه"
+
+msgid "Start:"
+msgstr "شروع:"
+
+msgid "End:"
+msgstr "پایان:"
+
+msgid "Clear Filter"
+msgstr "پاک‌کردن فیلتر"
+
+msgid "Workflow Form"
+msgstr "فرم گردش‌کار"
+
+msgid "Print all of the selected entries at once."
+msgstr "همه ورودی‌های انتخاب‌شده را یک‌جا چاپ کنید."
+
+msgid "Include timelines"
+msgstr "همراه با تاریخچه"
+
+msgid "Add page break between entries"
+msgstr "شروع صفحه جدید بین ورودی‌ها"
+
+msgid "(deleted)"
+msgstr "حذف‌شده"
+
+msgid "Step %s (deleted)"
+msgstr "مرحله %s (حذف‌شده)"
+
+msgid "Checkbox"
+msgstr "کادر انتخاب"
+
+msgid "Select"
+msgstr "انتخاب"
+
+msgid "Workflows restarted."
+msgstr "گردش‌کار دوباره شروع شد."
+
+msgid "You are not allowed to perform this action."
+msgstr "اجازه انجام این اقدام را ندارید."
+
+msgid "Filter the workflow status list by a single form before using Send to Step."
+msgstr "پیش از استفاده از «ارسال به مرحله»، فهرست وضعیت گردش‌کار را به یک فرم محدود کنید."
+
+msgid "The selected step is not valid for this form."
+msgstr "مرحله انتخاب‌شده برای این فرم معتبر نیست."
+
+msgid "%d entry sent to the selected step."
+msgid_plural "%d entries sent to the selected step."
+msgstr[0] "%d ورودی به مرحله انتخاب‌شده ارسال شد."
+msgstr[1] "%d ورودی به مرحله انتخاب‌شده ارسال شدند."
+
+msgid "%d entry skipped (not part of the filtered form)."
+msgid_plural "%d entries skipped (not part of the filtered form)."
+msgstr[0] "%d ورودی نادیده گرفته شد (جزو فرم فیلترشده نیست)."
+msgstr[1] "%d ورودی نادیده گرفته شدند (جزو فرم فیلترشده نیستند)."
+
+msgid "%d entry could not be loaded."
+msgid_plural "%d entries could not be loaded."
+msgstr[0] "%d ورودی بارگیری نشد."
+msgstr[1] "%d ورودی بارگیری نشدند."
+
+msgid "No entries were processed."
+msgstr "هیچ ورودی‌ای پردازش نشد."
+
