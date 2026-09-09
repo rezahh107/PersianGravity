@@ -27,7 +27,7 @@ final class CatalogBuildTest extends TestCase {
 		$this->assertStringNotContainsString( 'Synthetic missing', $one['php'] );
 	}
 
-	public function test_provider_content_states_match_the_validated_admission_boundary() {
+	public function test_provider_content_states_match_the_validated_aggregate_boundary() {
 		$root              = dirname( __DIR__ );
 		$products          = require $root . '/includes/localization/products.php';
 		$source_admission  = pgr_validate_admission( $root );
@@ -50,15 +50,22 @@ final class CatalogBuildTest extends TestCase {
 
 			if ( null === $admission ) {
 				$this->assertSame( 0, $meta['counts_in_committed_po']['translated'] );
+				$this->assertArrayNotHasKey( 'content_admission', $meta );
 				$this->assertFileDoesNotExist( $mo );
 				$this->assertFileDoesNotExist( $php );
+				$this->assertSame( array(), glob( $path . '/' . $domain . '-fa_IR-*.json' ) ?: array() );
 				continue;
 			}
 
+			$aggregate = $admission['aggregate'];
 			$this->assertSame( 'CONTENT_ADMITTED_PARTIAL', $admission['content_state'] );
-			$this->assertSame( $admission['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
-			$this->assertSame( 0, $admission['native_js_handles_activated'] );
-			$this->assertSame( 0, $admission['js_translation_json_generated'] );
+			$this->assertSame( $aggregate['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
+			$this->assertSame( $aggregate['provider_source_sha256'], $meta['provider_po_sha256'] );
+			$this->assertSame( 2, $meta['content_admission']['revision'] );
+			$this->assertSame( array_map( 'pgr_content_provenance_record', $admission['admissions'] ), $meta['content_admission']['admissions'] );
+			$this->assertSame( $aggregate, $meta['content_admission']['aggregate'] );
+			$this->assertSame( 0, $aggregate['native_js_handles_activated'] );
+			$this->assertSame( 0, $aggregate['js_translation_json_generated'] );
 			$this->assertFileExists( $mo );
 			$this->assertFileExists( $php );
 			$this->assertSame( array(), glob( $path . '/' . $domain . '-fa_IR-*.json' ) ?: array() );
