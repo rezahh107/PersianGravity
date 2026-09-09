@@ -23,6 +23,39 @@ function pgr_content_identity( $entry ) {
 }
 
 /**
+ * Whether a path uses the canonical repository-relative syntax.
+ *
+ * Repository path authority is lexical and platform-independent. Forward slashes
+ * are the only separators. One trailing slash is allowed for directory rules;
+ * dot/traversal segments, absolute paths and Windows-qualified forms are rejected
+ * rather than normalized.
+ *
+ * @param mixed $path Candidate repository-relative path.
+ * @return bool
+ */
+function pgr_content_repository_path_is_valid( $path ) {
+	if ( ! is_string( $path ) || '' === $path || str_starts_with( $path, '/' ) || str_contains( $path, '\\' ) || preg_match( '/^[A-Za-z]:/', $path ) ) {
+		return false;
+	}
+
+	$segments = explode( '/', $path );
+	$last     = count( $segments ) - 1;
+	foreach ( $segments as $index => $segment ) {
+		if ( '' === $segment ) {
+			if ( $index === $last && 0 < $index ) {
+				continue;
+			}
+			return false;
+		}
+		if ( '.' === $segment || '..' === $segment ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * Whether an evidence path belongs to the explicit surface rules.
  *
  * @param string $path  Source path.
@@ -30,6 +63,14 @@ function pgr_content_identity( $entry ) {
  * @return bool
  */
 function pgr_content_surface_path_matches( $path, array $rules ) {
+	if ( ! pgr_content_repository_path_is_valid( $path ) ) {
+		return false;
+	}
+	foreach ( $rules as $rule ) {
+		if ( ! pgr_content_repository_path_is_valid( $rule ) ) {
+			return false;
+		}
+	}
 	foreach ( $rules as $rule ) {
 		if ( str_ends_with( $rule, '/' ) ) {
 			if ( str_starts_with( $path, $rule ) ) {
@@ -78,7 +119,7 @@ function pgr_content_tokens( $value ) {
  * @return string
  */
 function pgr_content_repository_path( $root, $path, $label ) {
-	if ( ! is_string( $path ) || '' === $path || str_starts_with( $path, '/' ) || preg_match( '~(?:^|/)\.\.(?:/|$)~', $path ) ) {
+	if ( ! pgr_content_repository_path_is_valid( $path ) ) {
 		throw new RuntimeException( 'Invalid repository-relative path: ' . $label );
 	}
 	return rtrim( $root, '/\\' ) . '/' . $path;
