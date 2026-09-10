@@ -176,6 +176,16 @@ final class GravityFlowStatusContentAdmissionTest extends TestCase {
 			$this->assertTrue( is_dir( dirname( $target ) ) || mkdir( dirname( $target ), 0777, true ) );
 			$this->assertTrue( copy( $source_root . '/' . $path, $target ) );
 		}
+
+		$manifest = pgr_admission_json( $temp . '/tools/i18n/admission/content.json' );
+		$manifest['admissions'] = array_values(
+			array_filter(
+				$manifest['admissions'],
+				static fn( array $record ): bool => 'gravityflow' === ( $record['product'] ?? null )
+			)
+		);
+		$this->writeJson( $temp . '/tools/i18n/admission/content.json', $manifest );
+
 		$this->temporary_roots[] = $temp;
 		return $temp;
 	}

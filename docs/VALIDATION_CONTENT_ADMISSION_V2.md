@@ -1,11 +1,13 @@
 # Content Admission v2 validation record
 
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
-Current production extension: `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`.
-Current repair: `WU-PGR-PR14-STATUS-PO-HEADER-REPAIR-01`.
+Current production extensions:
+- `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`;
+- `WU-007 — PGR-GRAVITYFORMS-FRONTEND-FIRST-BOUNDED-CONTENT-ADMISSION-01`.
+Current recovery: `WU-PR15-COORD-01` recovery continuation.
 
 WU-005 required base: `main@8c8a7642fa8362775bc0730c6db3e00dede3eb3a`.
-Status-header repair required starting Head: `555ad3422e0c4041838f6ad32d91f37bd9f75507`.
+The Gravity Forms WU-007 identity scope remains exactly 41 messages from `form_display.php`; PR #15 changes only seven locked Persian translations within that same set.
 
 This record distinguishes repository/source evidence from licensed browser integration. Exact final-Head command and CI outcomes belong to the pull request and execution handoff; an unexecuted check is never promoted to PASS.
 
@@ -23,7 +25,9 @@ This record distinguishes repository/source evidence from licensed browser integ
 - record-order and permitted evidence-order fingerprint stability; and
 - valid source admission with zero content records yielding zero content authority.
 
-Production-focused tests bind revision 2 to exactly the Gravity Flow Inbox and Status records. They verify:
+Production-focused Gravity Flow tests are product-scoped against the global manifest. They verify that production may also contain Gravity Forms records while the Gravity Flow subset remains exactly Inbox plus Status. A third Gravity Flow record makes the exact-subset assertion fail. Dedicated Status fixtures filter to Gravity Flow before copying/validating product-specific evidence, so removing Status restores Inbox-only authority without requiring unrelated Gravity Forms fixture files. Existing validator-level fail-closed coverage for duplicate tuples, unknown/unowned surfaces, out-of-surface evidence and fingerprint drift remains unchanged.
+
+The Gravity Flow tests additionally verify:
 
 - Status source evidence is exactly within `includes/pages/class-status.php`;
 - Status contains exactly 43 canonical identities from reviewed baseline SHA-256 `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9`;
@@ -38,30 +42,39 @@ Production-focused tests bind revision 2 to exactly the Gravity Flow Inbox and S
 - every Gravity Flow product script map remains empty and no Gravity Flow translation JSON exists; and
 - generated MO/`.l10n.php` hashes match the deterministic aggregate.
 
-Current Status semantic values remain unchanged:
+Current Gravity Flow values remain unchanged:
 
-- keyset `08f03c79014c427b13d0f8cb37fd2f3d873b7f60b63db9bb7bc06e1f0640ba6d`;
-- path fingerprint `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed`;
-- translation fingerprint `32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7`;
-- evidence-index file `c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e`.
-
-The malformed pre-repair Status sparse PO raw SHA-256 was `9d82982c5117ed5e2988e2958dc21ae8b4bd6003453a63b2f8ce38d033271958`. After correcting only the seven gettext header newline escape representations, the SHA-256 recomputed from the actual repaired bytes is `c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718`. This is a byte-identity change only; Status identities and translations are unchanged.
-
-Current aggregate values are:
-
-- count `288`;
-- keyset `58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363`;
-- translation fingerprint `00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139`;
-- provider PO `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`;
+- Status keyset `08f03c79014c427b13d0f8cb37fd2f3d873b7f60b63db9bb7bc06e1f0640ba6d`;
+- Status path fingerprint `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed`;
+- Status translation fingerprint `32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7`;
+- Status evidence-index file `c3583bfb2695095dcd0b65baa78dfb3233e976124dd0a18ba3bd9af1d322dd9e`;
+- aggregate count `288`;
+- aggregate keyset `58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363`;
+- aggregate translation fingerprint `00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139`;
+- aggregate provider PO `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`;
 - MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640`;
 - `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
-The aggregate PO header representation was corrected through the same existing data-source contract because the unchanged aggregate validator also parses it through `StrictPoLoader`. This does not change the 288-message union, keyset, translation-content fingerprint, generated runtime semantics, JS authority, schema revision, or runtime architecture.
+## Gravity Forms WU-007 / PR #15 semantic recovery
 
-`composer i18n:check` remains the deterministic build/artifact drift gate. Repository CI additionally runs Composer dependency installation, PHPUnit on PHP 8.2–8.5, WPCS, PHPCompatibility, Structured Scanner Node tests, runtime-integrity checks, and pinned WordPress Core localization contracts on 6.7.2 and 7.1.
+Gravity Forms production authority is exactly one record:
+
+`gravityforms::frontend_runtime::shortcode:gravityform`
+
+Its source-path rule is exactly `form_display.php`; admitted count remains `41` from the separate `4207`-message source census. The keyset remains `827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb` and the path fingerprint remains `5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177`.
+
+The WU-003 reviewed full baseline SHA-256 `2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` is historical reviewed-input provenance. PR #15 applies exactly seven semantic corrections to the admitted sparse provider source, so the corrected final catalog is not described as a byte-for-byte untouched subset of WU-003. The corrected content fingerprint is `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6` and the sparse/aggregate PO SHA-256 is `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`.
+
+`GravityFormsFrontendContentAdmissionTest` mechanically asserts all seven exact English=>Persian mappings, retains the 41-message count and locked identity/path scope, verifies a known non-admitted current identity remains absent, and verifies Gravity Forms scripts/translation JSON remain empty. Generated artifact bytes are development outputs of `composer i18n:build`; `composer i18n:check` must reproduce them without drift. No validator or runtime fallback logic is changed by this recovery.
+
+## Deterministic generation and repository gates
+
+`composer i18n:build` is the deliberate source-to-artifact generation path. After source/provenance reconciliation, committed `.mo`, `.l10n.php` and generated `metadata.json` must be the bytes produced by that path. `composer i18n:check` remains the non-mutating deterministic drift gate.
+
+Repository CI additionally runs Composer validation/dependency installation, PHPUnit on PHP 8.2–8.5, WPCS, PHPCompatibility, Structured Scanner Node tests, runtime-integrity checks, pinned WordPress Core localization contracts on 6.7.2 and 7.1, and provider integrity/drift validation. Exact PASS/FAIL claims are bound to the resulting PR state only.
 
 ## Evidence boundary
 
-Real WordPress + licensed Gravity Forms / Gravity Flow / GravityView browser/UI validation is `NOT_EXECUTED` unless separately recorded with concrete evidence. A green source/unit/Core CI run does not prove visible browser lifecycle behavior, visual RTL correctness, or full Gravity Flow localization.
+Real WordPress + licensed Gravity Forms / Gravity Flow / GravityView browser/UI validation is `NOT_EXECUTED` unless separately recorded with concrete evidence. A green source/unit/Core CI run does not prove visible browser lifecycle behavior, visual RTL correctness, full-product localization, or licensed vendor integration.
 
-WU-005 and the header repair activate no JavaScript translation handle and generate no Gravity Flow translation JSON. Runtime fallback behavior is inherited from the unchanged shared localization core: provider entries win only for admitted identities; missing identities retain upstream/vendor/TranslationsPress fallback and then source English.
+WU-005, WU-007 and the PR #15 recovery activate no JavaScript translation handle and generate no Gravity Forms or Gravity Flow translation JSON. Runtime fallback behavior is inherited from the unchanged shared localization core: provider entries win only for admitted identities; missing identities retain upstream/vendor/TranslationsPress fallback and then source English.

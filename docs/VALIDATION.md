@@ -192,6 +192,8 @@ RTL/Bidi inspection is source-informed but visual execution remains `NOT_EXECUTE
 
 Metadata-only scope invariants are enforced by `tools/i18n/admission.php`, `tools/i18n/build.php`, `SourceAdmissionTest`, and `CatalogBuildTest`: production product translated `msgstr` = 0; product MO = absent; product `.l10n.php` = absent; product translation JSON = absent; active product JS handles = 0; production RTL patches = 0; vendor ZIP/source/full POT committed = 0; PGR version bump = none. `source_pot_sha256` remains null in metadata-only state because no full source POT is committed; the inspected POT identity is held in `vendor_pot_sha256`.
 
+These were source-admission-phase invariants at that historical checkpoint; later bounded Content Admission v2 records supersede the zero-content state only for their explicitly admitted surfaces. They are not a claim that current Gravity Forms or Gravity Flow production content authority is zero.
+
 The exact PR-head CI for this work unit is the completion authority for repository tests, existing pinned WordPress localization contracts, admission consistency, Surface Registry validation, glossary evidence, and runtime integrity. A green static/source CI run still does not prove licensed browser/runtime RTL behavior.
 
 ## WU-005 — Gravity Flow Status bounded content admission
@@ -225,3 +227,21 @@ Deterministic preparation and independent reproduction establish these locked va
 The aggregate admitted count `288` is intentionally reported separately from the full Gravity Flow source census `1098`; no full-product coverage claim is implied. Gravity Flow native JS handles remain zero and no Gravity Flow translation JSON is generated. Provider-first/upstream-fallback semantics are unchanged.
 
 `GravityFlowInboxContentAdmissionTest`, `GravityFlowStatusContentAdmissionTest`, the generic revision-2 content-admission regression suite, `composer i18n:check`, the PHP 8.2–8.5 CI matrix, and pinned WordPress Core localization contracts are the automated completion gates. Exact PASS/FAIL claims belong to the final PR Head only. Real WordPress + licensed Gravity Flow browser/UI validation remains `NOT_EXECUTED` unless separately evidenced.
+
+## WU-007 / PR #15 Gravity Forms frontend bounded content
+
+Gravity Forms production Content Admission v2 authority is exactly one record:
+
+`gravityforms::frontend_runtime::shortcode:gravityform`
+
+The registered source-path rule is exactly `form_display.php`; the admitted set remains 41 canonical identities from the independently admitted 4207-message source census. The keyset remains `827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb` and the source-path fingerprint remains `5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177`.
+
+The WU-003 reviewed full Persian baseline SHA-256 `2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` remains historical reviewed-input provenance. PR #15 applies exactly seven locked semantic corrections to the admitted sparse provider source; the final corrected translations are therefore not claimed to be a byte-for-byte untouched subset of WU-003. No msgid/context/plural/surface expansion is authorized.
+
+The repaired sparse and aggregate PO SHA-256 is `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`; its translation-content fingerprint is `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6`. `GravityFormsFrontendContentAdmissionTest` mechanically binds all seven exact English=>Persian mappings while retaining the 41-identity/keyset/path contract and non-admitted fallback check.
+
+Gravity Flow regression tests are product-scoped: the global manifest may contain the Gravity Forms record, while the Gravity Flow production subset must remain exactly Inbox plus Status. A third Gravity Flow production record fails that exact-set assertion. Dedicated Status fixtures filter to Gravity Flow records before validation so removing Status restores Inbox-only authority without unrelated Gravity Forms fixture files. The generic content validator and its fail-closed test coverage are unchanged.
+
+Gravity Forms runtime script handles remain empty and no Gravity Forms translation JSON is generated. `composer i18n:build` remains the sole deliberate generation path for `.mo`, `.l10n.php` and generated `metadata.json`; `composer i18n:check` is the deterministic non-mutating drift gate. Exact build/check/CI results are bound to the resulting PR state and must not be inferred from object existence alone.
+
+Real licensed WordPress + Gravity Forms browser/integration validation remains `NOT_PROVEN` unless separately executed and recorded. This bounded admission is not full-product Gravity Forms localization.

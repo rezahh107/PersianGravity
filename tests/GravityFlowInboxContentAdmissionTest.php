@@ -51,7 +51,13 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 	public function test_production_manifest_revision_two_contains_exactly_inbox_and_status(): void {
 		$root     = dirname( __DIR__ );
 		$manifest = pgr_admission_json( $root . '/tools/i18n/admission/content.json' );
-		$surfaces = array_column( $manifest['admissions'], 'surface_id' );
+		$flow     = array_values(
+			array_filter(
+				$manifest['admissions'],
+				static fn( array $record ): bool => 'gravityflow' === ( $record['product'] ?? null )
+			)
+		);
+		$surfaces = array_column( $flow, 'surface_id' );
 
 		$this->assertSame( 2, $manifest['content_admission_revision'] );
 		$this->assertSame(

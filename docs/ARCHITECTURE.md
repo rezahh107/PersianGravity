@@ -60,7 +60,7 @@ array(
 )
 ```
 
-The option is small and explicitly autoloaded when first persisted. Missing/malformed state falls back to source defaults. Unknown IDs and non-boolean values are ignored. All six current modules default enabled so upgrade from 4.1.0 does not remove capabilities.
+The option is small and explicitly autoloaded when first persisted. Missing/malformed state falls back safely to source defaults. Unknown IDs and non-boolean values are ignored. All six current modules default enabled so upgrade from 4.1.0 does not remove capabilities.
 
 ## Runtime gating
 
@@ -177,21 +177,29 @@ plugin scanning or project-specific terminology is permitted.
 
 **Current source/content boundary:** exact owner-supplied Gravity Forms 3.1.1.1 and Gravity
 Flow 3.1.0 packages/POTs are inspected and pinned as source evidence; GravityView 3.3.4
-remains `PACKAGE_UNAVAILABLE`. Gravity Forms has no production content-admission record
-in this boundary. Gravity Flow production content authority is revision 2 with exactly
-two independently validated records: Inbox
-(`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`, 255 identities) and
-Status (`gravityflow::workflow_runtime::admin_page:gravityflow-status`, 43 identities,
-source path exactly `includes/pages/class-status.php`). The two records share 10 canonical
-identities with identical reviewed translations and therefore deterministically union to
-288 unique admitted identities. The Gravity Flow source census remains separately 1098.
-Inbox locked keyset/path/content fingerprints remain unchanged. The aggregate sparse PO is
-the exact set union; MO and `.l10n.php` are deterministic generated outputs. Gravity Flow
-script handles remain zero and no Gravity Flow translation JSON is generated. Non-admitted
-keys still fall through to upstream/vendor/TranslationsPress and then source English.
-This is partial surface authority only, not full Gravity Flow localization or licensed
-browser proof. See `docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md` and
-`docs/VALIDATION_CONTENT_ADMISSION_V2.md` for the exact content contract.
+remains `PACKAGE_UNAVAILABLE`. Gravity Forms production content authority is revision 2
+with exactly one independently validated record:
+`gravityforms::frontend_runtime::shortcode:gravityform`, bounded by the source-path rule
+exactly `form_display.php`, with 41 canonical identities from a separately admitted
+4207-message source census. The WU-003 full reviewed baseline SHA-256
+`2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1`
+remains historical reviewed-input provenance; the final admitted sparse catalog applies
+exactly seven PR #15 semantic corrections within the same identity/keyset/path scope and
+is not claimed to be a byte-for-byte untouched subset of that baseline. Gravity Forms
+script handles remain zero and no Gravity Forms translation JSON is generated.
+
+Gravity Flow production content authority remains revision 2 with exactly two independently
+validated records: Inbox (`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`,
+255 identities) and Status (`gravityflow::workflow_runtime::admin_page:gravityflow-status`,
+43 identities, source path exactly `includes/pages/class-status.php`). The two records share
+10 canonical identities with identical reviewed translations and deterministically union to
+288 unique admitted identities from the separate 1098-message source census. Inbox locked
+keyset/path/content fingerprints remain unchanged. Gravity Flow script handles remain zero and
+no Gravity Flow translation JSON is generated. Non-admitted identities for both products still
+fall through to upstream/vendor/TranslationsPress and then source English. These are partial
+surface authorities only, not full-product localization or licensed/browser proof. See
+`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md` and `docs/VALIDATION_CONTENT_ADMISSION_V2.md`
+for the exact content contract.
 
 ## Scope
 

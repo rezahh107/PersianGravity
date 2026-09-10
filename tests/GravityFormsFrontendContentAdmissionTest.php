@@ -28,7 +28,7 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$this->assertSame( 41, $record['admitted_message_count'] );
 		$this->assertSame( '827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb', $record['admitted_keyset_sha256'] );
 		$this->assertSame( '5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177', $record['admitted_surface_path_index_sha256'] );
-		$this->assertSame( 'e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05', $record['admitted_translation_content_sha256'] );
+		$this->assertSame( '1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6', $record['admitted_translation_content_sha256'] );
 		$this->assertSame( $record['surface_evidence_index_sha256'], hash_file( 'sha256', $root . '/' . $record['surface_evidence_index_path'] ) );
 		$this->assertSame( $record['provider_source_sha256'], hash_file( 'sha256', $root . '/' . $record['provider_source_path'] ) );
 		$this->assertSame( $index_ids, $provider['ids'] );
@@ -44,11 +44,39 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$this->assertCount( 1, $content['gravityforms']['admissions'] );
 		$this->assertSame( 41, $aggregate['admitted_message_count'] );
 		$this->assertSame( '827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb', $aggregate['admitted_keyset_sha256'] );
-		$this->assertSame( 'e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05', $aggregate['admitted_translation_content_sha256'] );
+		$this->assertSame( '1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6', $aggregate['admitted_translation_content_sha256'] );
 		$this->assertSame( array(), $products['gravityforms']['scripts'] );
 		$this->assertSame( 0, $aggregate['native_js_handles_activated'] );
 		$this->assertSame( 0, $aggregate['js_translation_json_generated'] );
 		$this->assertSame( array(), glob( $root . '/languages/providers/gravityforms/gravityforms-fa_IR-*.json' ) ?: array() );
+	}
+
+	public function test_locked_pr15_semantic_corrections_are_exact(): void {
+		$root     = dirname( __DIR__ );
+		$catalog  = ( new Gettext\Loader\StrictPoLoader() )->loadFile(
+			$root . '/languages/providers/gravityforms/source/records/frontend-shortcode-fa_IR.po'
+		);
+		$expected = array(
+			'Sorry. This form is no longer accepting new submissions.' => 'متأسفانه، این فرم دیگر ارسال‌های جدید را نمی‌پذیرد.',
+			'Your form was not submitted. Please try again in a few minutes.' => 'فرم شما ارسال نشد. لطفاً چند دقیقهٔ دیگر دوباره تلاش کنید.',
+			'This field requires a unique entry and the values you entered have already been used.' => 'این فیلد باید مقدار یکتا داشته باشد و مقادیری که وارد کرده‌اید قبلاً استفاده شده‌اند.',
+			'Reason: %s' => 'دلیل: %s',
+			"This field requires a unique entry and '%s' has already been used" => "این فیلد باید مقدار یکتا داشته باشد و '%s' قبلاً استفاده شده است.",
+			'Save and Continue link used is expired or invalid.' => 'پیوند «ذخیره و ادامه» استفاده‌شده منقضی یا نامعتبر است.',
+			'Spam Filter' => 'فیلتر هرزنامه',
+		);
+		$actual = array();
+
+		foreach ( $catalog as $entry ) {
+			if ( isset( $expected[ $entry->getOriginal() ] ) ) {
+				$actual[ $entry->getOriginal() ] = $entry->getTranslation();
+			}
+		}
+
+		$this->assertSame( $expected, $actual );
+		$this->assertSame( 41, iterator_count( $catalog ) );
+		$this->assertStringContainsString( '%s', $actual['Reason: %s'] );
+		$this->assertStringContainsString( '%s', $actual["This field requires a unique entry and '%s' has already been used"] );
 	}
 
 	public function test_non_admitted_current_identity_is_absent_so_generic_upstream_fallback_remains_available(): void {

@@ -39,14 +39,14 @@ Each record is validated without product-specific or surface-specific branches. 
 
 Evidence entry ordering is not authority: semantically equivalent ordering is normalized before set fingerprints are computed.
 
-The Gravity Forms frontend record is bounded by the registered source-path rule exactly `form_display.php`. Deterministic tokenizer extraction over the exact 3.1.1.1 source produced 48 gettext calls and 41 unique canonical identities; the set equals the current vendor-POT identities referencing `form_display.php`. Its locked derived fingerprints are:
+The Gravity Forms frontend record is bounded by the registered source-path rule exactly `form_display.php`. Deterministic tokenizer extraction over the exact 3.1.1.1 source produced 48 gettext calls and 41 unique canonical identities; the set equals the current vendor-POT identities referencing `form_display.php`. The WU-003 full reviewed PO SHA-256 `2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` remains provenance for the reviewed input. PR #15 applies seven explicit semantic corrections within the same 41-identity set, so the final sparse catalog is not represented as an unmodified exact subset of that baseline. Final locked derived values are:
 
 - admitted count: `41`;
 - keyset: `827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb`;
 - path fingerprint: `5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177`;
-- translation fingerprint: `e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05`;
+- translation fingerprint: `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6`;
 - evidence-index raw SHA-256: `0e9fb3c7a44f3bc2ae14d25f694a2301be59d7e75fc1d1f0740fb3be94283d22`;
-- sparse record PO raw SHA-256: `2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971`.
+- sparse record PO raw SHA-256: `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`.
 
 The Gravity Flow Status record remains bounded by `includes/pages/class-status.php` with 43 canonical identities. Sparse PO headers remain data-source authority: `StrictPoLoader` must parse `Language: fa_IR`, the exact domain, and `Plural-Forms: nplurals=2; plural=(n > 1);`.
 
@@ -56,7 +56,7 @@ Validated records are grouped by product and sorted by record identity tuple. Th
 
 Current aggregates:
 
-- Gravity Forms frontend shortcode: 41 admitted identities from an indepent 4207-message source census; because this is the first Gravity Forms content record, the product aggregate is exactly those 41 identities.
+- Gravity Forms frontend shortcode: 41 admitted identities from an independent 4207-message source census; because this is the first Gravity Forms content record, the product aggregate is exactly those 41 identities.
 - Gravity Flow Inbox + Status: 255 + 43 with 10 identical overlaps = 288 unique admitted identities from an independent 1098-message source census.
 
 The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal the validated union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
@@ -73,17 +73,18 @@ Per-product `source/provenance.json` separates source evidence from content auth
 
 Deprecated singular authority fields such as `admitted_surface_id` are rejected when a product has validated content admissions.
 
-Generated `metadata.json` mirrors the validated multi-record state under `content_admission` with `revision`, `state`, `admissions`, and `aggregate`. Metadata is evidence only and is not consumed by runtime.
+Generated `metadata.json` mirrors the validated multi-record state under `content_admission` with `revision`, `state`, `admissions`, and `aggregate`. Metadata is evidence only and is not consumed by runtime. For Gravity Forms, `translation_review` records the WU-003 reviewed baseline as provenance and separately states that the final admitted source includes seven PR #15 semantic corrections; it is not a second authority schema.
 
 ## Build and runtime boundary
 
 `tools/i18n/build.php` grants partial runtime catalog generation only when a validated product aggregate exists and the committed product PO matches the aggregate message count and SHA-256. A product with valid source admission but zero validated content records has no content authority; metadata-only products remain runtime dormant.
 
-Gravity Forms WU-007 generates only the aggregate justified by the 41-identity frontend record:
+Gravity Forms WU-007 generates only the aggregate justified by the repaired 41-identity frontend record:
 
-- aggregate provider PO SHA-256: `2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971`;
-- MO SHA-256: `756eacdc638326ab7aa0fe7aadfaa2b0ad920c0bf1a3705e76d309852df1df7c`;
-- `.l10n.php` SHA-256: `26ca94067251b06b377dd23f9f16e74a423afc60e9cafaf20c5ea0f57851fbbe`.
+- aggregate provider PO SHA-256: `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`;
+- translation-content SHA-256: `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6`;
+- MO SHA-256: `c6c5bbd4fb1decaf1539bd8d4ef58148159e04653d059144572d5481e80ed9bb`;
+- `.l10n.php` SHA-256: `a8d1bee39d503e1a99c296f02f64708e57c7ef731db059778b575e20e0b11ca3`.
 
 Its `scripts` map remains empty and no Gravity Forms translation JSON is generated. Non-admitted Gravity Forms identities retain upstream/vendor/TranslationsPress/source-English fallback; this is partial surface coverage, not a full-product Persian claim.
 
@@ -103,4 +104,4 @@ Gravity Flow Status fingerprints remain:
 
 The current Gravity Flow aggregate remains 288 identities with MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
-All product script maps remain empty. No native JavaScript translation handle is activated by these content-admission records.
+All product script maps remain empty. No native JavaScript translation handle is activated by these content-admission records, and no Gravity Forms or Gravity Flow translation JSON is generated.

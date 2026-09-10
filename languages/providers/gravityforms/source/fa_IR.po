@@ -36,7 +36,7 @@ msgstr "مرحله"
 
 #. WU-007 source: form_display.php
 msgid "Sorry. This form is no longer accepting new submissions."
-msgstr "متاسفانه این فرم ارسال‌ها جدید را نمی‌پذیرد."
+msgstr "متأسفانه، این فرم دیگر ارسال‌های جدید را نمی‌پذیرد."
 
 #. WU-007 source: form_display.php
 msgid "All choices are unselected."
@@ -52,7 +52,7 @@ msgstr "دکمهٔ بعدی به‌وسیلهٔ منطق شرطی پنهان/غ�
 
 #. WU-007 source: form_display.php
 msgid "Your form was not submitted. Please try again in a few minutes."
-msgstr "فرم شما ثبت نشد. لطفاً لحظات دیگری تلاش نمایید."
+msgstr "فرم شما ارسال نشد. لطفاً چند دقیقهٔ دیگر دوباره تلاش کنید."
 
 #. WU-007 source: form_display.php
 msgid "Strong"
@@ -60,7 +60,7 @@ msgstr "قوی"
 
 #. WU-007 source: form_display.php
 msgid "This field requires a unique entry and the values you entered have already been used."
-msgstr "این فیلد به یک ورودی منحصربه فرد نیازمند است و مقداری که شما وارد نمودید در حال حاضر استفاده شده است."
+msgstr "این فیلد باید مقدار یکتا داشته باشد و مقادیری که وارد کرده‌اید قبلاً استفاده شده‌اند."
 
 #. WU-007 source: form_display.php
 msgid "Medium"
@@ -96,7 +96,7 @@ msgstr "بعدی"
 
 #. WU-007 source: form_display.php
 msgid "Reason: %s"
-msgstr "کد پاسخ: %s"
+msgstr "دلیل: %s"
 
 #. WU-007 source: form_display.php
 msgid "This entry has been flagged as spam."
@@ -128,7 +128,7 @@ msgstr "بازبینی فرم"
 
 #. WU-007 source: form_display.php
 msgid "This field requires a unique entry and '%s' has already been used"
-msgstr "این فیلد نیازمند یک ورودی واحد است و '%s' قبلا استفاده شده است."
+msgstr "این فیلد باید مقدار یکتا داشته باشد و '%s' قبلاً استفاده شده است."
 
 #. WU-007 source: form_display.php
 msgid "\"%s\" indicates required fields"
@@ -152,7 +152,7 @@ msgstr "حداکثر کاراکتر"
 
 #. WU-007 source: form_display.php
 msgid "Save and Continue link used is expired or invalid."
-msgstr "پیوند ذخیره و ادامه استفاده شده منقضی یا نامعتبر است."
+msgstr "پیوند «ذخیره و ادامه» استفاده‌شده منقضی یا نامعتبر است."
 
 #. WU-007 source: form_display.php
 msgid "No results matched"
@@ -168,7 +168,7 @@ msgstr "لطفاً فیلدهای زیر را بررسی کنید."
 
 #. WU-007 source: form_display.php
 msgid "Spam Filter"
-msgstr "فیلتر"
+msgstr "فیلتر هرزنامه"
 
 #. WU-007 source: form_display.php
 msgid "Email Address"
