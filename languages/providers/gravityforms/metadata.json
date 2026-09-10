@@ -14,21 +14,89 @@
         "admission_mode": "METADATA_ONLY_ADMISSION",
         "source_pot_consistency": "PASS",
         "admission_baseline": "tools/i18n/admission/baseline.json",
-        "catalog_revision": 1,
-        "translation_review": "NO_PRODUCTION_STRINGS",
-        "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+        "content_admission_manifest": "tools/i18n/admission/content.json",
+        "content_admission_revision": 2,
+        "content_admission_state": "CONTENT_ADMITTED_PARTIAL",
+        "content_admissions": [
+            {
+                "product": "gravityforms",
+                "domain": "gravityforms",
+                "locale": "fa_IR",
+                "target_version": "3.1.1.1",
+                "content_state": "CONTENT_ADMITTED_PARTIAL",
+                "reviewed_source_po_sha256": "2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1",
+                "reviewed_source_message_count": 4207,
+                "surface_id": "gravityforms::frontend_runtime::shortcode:gravityform",
+                "admitted_message_count": 41,
+                "admitted_keyset_sha256": "827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb",
+                "admitted_surface_path_index_sha256": "5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177",
+                "admitted_translation_content_sha256": "e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05",
+                "surface_evidence_index_path": "tools/i18n/admission/gravityforms-frontend-shortcode-index.json",
+                "surface_evidence_index_sha256": "0e9fb3c7a44f3bc2ae14d25f694a2301be59d7e75fc1d1f0740fb3be94283d22",
+                "provider_source_path": "languages/providers/gravityforms/source/records/frontend-shortcode-fa_IR.po",
+                "provider_source_sha256": "2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971"
+            }
+        ],
+        "content_aggregate": {
+            "admitted_message_count": 41,
+            "admitted_keyset_sha256": "827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb",
+            "admitted_translation_content_sha256": "e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05",
+            "provider_source_path": "languages/providers/gravityforms/source/fa_IR.po",
+            "provider_source_sha256": "2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971"
+        },
+        "catalog_revision": 2,
+        "translation_review": "WU003_FINAL_REVIEWED_BASELINE_EXACT_FRONTEND_SHORTCODE_SUBSET",
+        "native_js_handles_activated": 0,
+        "js_translation_json_generated": 0,
+        "upstream_fallback_validation": "SYNTHETIC_CORE_SPARSE_PRECEDENCE"
     },
-    "provider_po_sha256": "a735887dafe46692634f844a3b299b96943380c7fe4647faf8439191ed2901b6",
+    "provider_po_sha256": "2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971",
     "counts_in_committed_po": {
-        "translated": 0,
+        "translated": 41,
         "untranslated": 0,
         "fuzzy": 0
     },
     "authoritative_total": 4207,
-    "coverage_percent": 0,
-    "content_status": "SOURCE_INSPECTED_METADATA_ONLY_NO_TRANSLATION_CONTENT",
+    "coverage_percent": 0.97,
+    "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
     "validated_script_handles": [],
-    "artifact_sha256": {},
+    "artifact_sha256": {
+        "gravityforms-fa_IR.mo": "756eacdc638326ab7aa0fe7aadfaa2b0ad920c0bf1a3705e76d309852df1df7c",
+        "gravityforms-fa_IR.l10n.php": "26ca94067251b06b377dd23f9f16e74a423afc60e9cafaf20c5ea0f57851fbbe"
+    },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-    "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php"
+    "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",
+    "content_admission": {
+        "revision": 2,
+        "state": "CONTENT_ADMITTED_PARTIAL",
+        "admissions": [
+            {
+                "product": "gravityforms",
+                "domain": "gravityforms",
+                "locale": "fa_IR",
+                "target_version": "3.1.1.1",
+                "content_state": "CONTENT_ADMITTED_PARTIAL",
+                "reviewed_source_po_sha256": "2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1",
+                "reviewed_source_message_count": 4207,
+                "surface_id": "gravityforms::frontend_runtime::shortcode:gravityform",
+                "admitted_message_count": 41,
+                "admitted_keyset_sha256": "827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb",
+                "admitted_surface_path_index_sha256": "5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177",
+                "admitted_translation_content_sha256": "e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05",
+                "surface_evidence_index_path": "tools/i18n/admission/gravityforms-frontend-shortcode-index.json",
+                "surface_evidence_index_sha256": "0e9fb3c7a44f3bc2ae14d25f694a2301be59d7e75fc1d1f0740fb3be94283d22",
+                "provider_source_path": "languages/providers/gravityforms/source/records/frontend-shortcode-fa_IR.po",
+                "provider_source_sha256": "2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971"
+            }
+        ],
+        "aggregate": {
+            "admitted_message_count": 41,
+            "admitted_keyset_sha256": "827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb",
+            "admitted_translation_content_sha256": "e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05",
+            "provider_source_path": "languages/providers/gravityforms/source/fa_IR.po",
+            "provider_source_sha256": "2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971",
+            "native_js_handles_activated": 0,
+            "js_translation_json_generated": 0
+        }
+    }
 }

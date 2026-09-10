@@ -1,25 +1,27 @@
 # Content Admission v2 — deterministic multi-record authority
 
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
-Current production extension: `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`.
-Current data repair: `WU-PGR-PR14-STATUS-PO-HEADER-REPAIR-01`.
+Current production extensions:
+- `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`;
+- `WU-007 — PGR-GRAVITYFORMS-FRONTEND-FIRST-BOUNDED-CONTENT-ADMISSION-01`.
 
 This contract generalizes bounded content admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
 
 ## Authority layers
 
-Source admission and translation-content admission remain separate. A valid product identity, package/source admission, manifest entry, or Surface Registry entry does not by itself authorize runtime translated content.
+Source admission and translation-content admission remain separate. A valid product identity, package/source admission, manifest entry, reviewed full baseline, or Surface Registry entry does not by itself authorize runtime translated content.
 
 `tools/i18n/admission/content.json` revision 2 contains zero or more independently validated records. A record identity is the exact tuple:
 
 `product + domain + locale + target_version + surface_id`
 
-Duplicate tuples fail closed. Production currently contains exactly two Gravity Flow 3.1.0 records:
+Duplicate tuples fail closed. Production currently contains exactly three bounded records:
 
-1. Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
-2. Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
+1. Gravity Forms frontend shortcode — `gravityforms::frontend_runtime::shortcode:gravityform`;
+2. Gravity Flow Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
+3. Gravity Flow Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
 
-No third production content admission is authorized by WU-005 or the Status PO header repair.
+No other Gravity Forms or Gravity Flow surface is authorized by those Work Units.
 
 ## Independent record validation
 
@@ -31,40 +33,35 @@ Each record is validated without product-specific or surface-specific branches. 
 - the exact registered source-path rules;
 - a repository-relative evidence index whose raw SHA-256, identity set, path membership, message count, keyset fingerprint, and path fingerprint match the record;
 - a repository-relative sparse record PO whose raw SHA-256 and canonical identity set exactly match that record;
-- non-fuzzy, non-empty, plural-complete translations with existing placeholder/markup/URL/entity/literal token preservation;
+- non-fuzzy, non-empty, plural-complete translations with placeholder/markup/URL/entity/literal token preservation;
 - the admitted translation-content fingerprint; and
 - explicit zero native JS handles and zero generated translation JSON.
 
 Evidence entry ordering is not authority: semantically equivalent ordering is normalized before set fingerprints are computed.
 
-The Status record is additionally bounded by its registered source-path rule exactly `includes/pages/class-status.php`; the evidence-derived set contains 43 canonical identities from the reviewed Gravity Flow 3.1.0 Persian baseline.
+The Gravity Forms frontend record is bounded by the registered source-path rule exactly `form_display.php`. Deterministic tokenizer extraction over the exact 3.1.1.1 source produced 48 gettext calls and 41 unique canonical identities; the set equals the current vendor-POT identities referencing `form_display.php`. Its locked derived fingerprints are:
 
-Sparse PO headers are data-source authority. `StrictPoLoader` must parse `Language: fa_IR`, `X-Domain: gravityflow`, and `Plural-Forms: nplurals=2; plural=(n > 1);`. Literal double-escaped header newlines are invalid and remain fail-closed; the validator is not normalized, weakened, or special-cased.
+- admitted count: `41`;
+- keyset: `827255f0e88f86eac6f25217e801100fa8597a2ea28ab98236cb87cd9aa45ecb`;
+- path fingerprint: `5ced80516bff2df13f4c8e4a3fd46446548d90fa6ea4beec9b31f1ada7b0d177`;
+- translation fingerprint: `e6fd34b1a2670a4ac14309296dd718e46394ae5627bc32efc20a5e45a38d0b05`;
+- evidence-index raw SHA-256: `0e9fb3c7a44f3bc2ae14d25f694a2301be59d7e75fc1d1f0740fb3be94283d22`;
+- sparse record PO raw SHA-256: `2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971`.
+
+The Gravity Flow Status record remains bounded by `includes/pages/class-status.php` with 43 canonical identities. Sparse PO headers remain data-source authority: `StrictPoLoader` must parse `Language: fa_IR`, the exact domain, and `Plural-Forms: nplurals=2; plural=(n > 1);`.
 
 ## Deterministic per-product union
 
-Validated records are grouped by product and sorted by record identity tuple. The product aggregate is the set union of canonical gettext identities.
+Validated records are grouped by product and sorted by record identity tuple. The product aggregate is the set union of canonical gettext identities. When an identity occurs in more than one record, identical translation content is counted once. Different translation content for the same canonical identity is a hard validation failure; input order never selects a winner.
 
-When an identity occurs in more than one record, identical translation content is counted once. Different translation content for the same canonical identity is a hard validation failure; input order never selects a winner.
+Current aggregates:
 
-For the production Gravity Flow Inbox + Status pair:
+- Gravity Forms frontend shortcode: 41 admitted identities from an indepent 4207-message source census; because this is the first Gravity Forms content record, the product aggregate is exactly those 41 identities.
+- Gravity Flow Inbox + Status: 255 + 43 with 10 identical overlaps = 288 unique admitted identities from an independent 1098-message source census.
 
-- Inbox count: 255;
-- Status count: 43;
-- identical shared identities: 10;
-- aggregate unique admitted count: 288;
-- full Gravity Flow source census, reported separately: 1098.
+The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal the validated union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
 
-The aggregate records at least:
-
-- sorted validated admissions;
-- unique admitted message count;
-- aggregate keyset SHA-256;
-- aggregate translation-content SHA-256;
-- exact aggregate sparse provider PO path and SHA-256; and
-- zero JS activation/generation state.
-
-The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal this union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
+Three Gravity Forms frontend identities (`Medium`, `Submit`, `Strong`) also have source references matching another registered Gravity Forms surface. They remain single canonical identities; any later independently authorized record must supply identical translation content for them or validation fails closed.
 
 ## Provenance and generated metadata
 
@@ -82,21 +79,28 @@ Generated `metadata.json` mirrors the validated multi-record state under `conten
 
 `tools/i18n/build.php` grants partial runtime catalog generation only when a validated product aggregate exists and the committed product PO matches the aggregate message count and SHA-256. A product with valid source admission but zero validated content records has no content authority; metadata-only products remain runtime dormant.
 
-WU-005 preserves the existing Inbox authority independently while extending the Gravity Flow aggregate with Status. Locked Inbox fingerprints remain:
+Gravity Forms WU-007 generates only the aggregate justified by the 41-identity frontend record:
+
+- aggregate provider PO SHA-256: `2c90a0be260f15bb366065896dd67b723d4e223e01a9e488a9b872900e917971`;
+- MO SHA-256: `756eacdc638326ab7aa0fe7aadfaa2b0ad920c0bf1a3705e76d309852df1df7c`;
+- `.l10n.php` SHA-256: `26ca94067251b06b377dd23f9f16e74a423afc60e9cafaf20c5ea0f57851fbbe`.
+
+Its `scripts` map remains empty and no Gravity Forms translation JSON is generated. Non-admitted Gravity Forms identities retain upstream/vendor/TranslationsPress/source-English fallback; this is partial surface coverage, not a full-product Persian claim.
+
+Gravity Flow Inbox fingerprints remain:
 
 - admitted count: `255`;
 - keyset: `446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a`;
 - path fingerprint: `6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09`;
 - translation fingerprint: `6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f`.
 
-The Status header repair changes only raw PO byte identity. Current raw source digests are:
+Gravity Flow Status fingerprints remain:
 
-- Status sparse PO: `c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718`;
-- aggregate provider PO: `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`.
+- admitted count: `43`;
+- keyset: `08f03c79014c427b13d0f8cb37fd2f3d873b7f60b63db9bb7bc06e1f0640ba6d`;
+- path fingerprint: `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed`;
+- translation fingerprint: `32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7`.
 
-Semantic Status/Inbox/aggregate fingerprints are unchanged. Deterministic generated runtime artifacts remain:
+The current Gravity Flow aggregate remains 288 identities with MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
-- MO: `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640`;
-- `.l10n.php`: `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
-
-All Gravity Flow product script maps remain empty. No native JavaScript translation handle or Gravity Flow translation JSON is activated by WU-005 or the header repair. Non-admitted keys retain upstream/vendor/TranslationsPress fallback.
+All product script maps remain empty. No native JavaScript translation handle is activated by these content-admission records.
