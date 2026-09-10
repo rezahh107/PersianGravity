@@ -61,7 +61,7 @@
     "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gravityforms-fa_IR.mo": "c6c5bbd4fb1decaf1539bd8d4ef58148159e04653d059144572d5481e80ed9bb",
+        "gravityforms-fa_IR.mo": "de4ceac4c44892cdaa75a918a3f9e3b2c4a8b864700f1662f59e5073e118fff2",
         "gravityforms-fa_IR.l10n.php": "a8d1bee39d503e1a99c296f02f64708e57c7ef731db059778b575e20e0b11ca3"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",

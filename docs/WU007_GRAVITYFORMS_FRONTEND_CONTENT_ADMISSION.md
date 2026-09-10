@@ -36,7 +36,7 @@ This is partial surface content, not a full-product translation admission. The a
 
 The Gravity Forms runtime script map remains empty. No Gravity Forms translation JSON is generated or activated. The deterministic PHP artifacts derived from the final repaired 41-identity aggregate are:
 
-- `gravityforms-fa_IR.mo`: `c6c5bbd4fb1decaf1539bd8d4ef58148159e04653d059144572d5481e80ed9bb`;
+- `gravityforms-fa_IR.mo`: `de4ceac4c44892cdaa75a918a3f9e3b2c4a8b864700f1662f59e5073e118fff2`;
 - `gravityforms-fa_IR.l10n.php`: `a8d1bee39d503e1a99c296f02f64708e57c7ef731db059778b575e20e0b11ca3`.
 
 Provider entries can win only for these admitted identities. A current identity such as `Form`, which is not in the `form_display.php` record, is absent from the provider catalog and therefore remains subject to the existing upstream/vendor/TranslationsPress/source-English fallback chain.

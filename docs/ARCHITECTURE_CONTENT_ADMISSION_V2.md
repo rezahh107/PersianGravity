@@ -83,7 +83,7 @@ Gravity Forms WU-007 generates only the aggregate justified by the repaired 41-i
 
 - aggregate provider PO SHA-256: `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`;
 - translation-content SHA-256: `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6`;
-- MO SHA-256: `c6c5bbd4fb1decaf1539bd8d4ef58148159e04653d059144572d5481e80ed9bb`;
+- MO SHA-256: `de4ceac4c44892cdaa75a918a3f9e3b2c4a8b864700f1662f59e5073e118fff2`;
 - `.l10n.php` SHA-256: `a8d1bee39d503e1a99c296f02f64708e57c7ef731db059778b575e20e0b11ca3`.
 
 Its `scripts` map remains empty and no Gravity Forms translation JSON is generated. Non-admitted Gravity Forms identities retain upstream/vendor/TranslationsPress/source-English fallback; this is partial surface coverage, not a full-product Persian claim.
