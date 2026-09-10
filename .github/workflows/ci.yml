@@ -63,6 +63,13 @@ jobs:
         env:
           PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
 
+      - name: Regenerate provider catalogs and prove no drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer i18n:build
+          git diff --exit-code
+
       - name: Provider catalog integrity and deterministic drift
         run: composer i18n:check
 
