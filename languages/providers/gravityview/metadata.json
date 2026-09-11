@@ -63,7 +63,7 @@
     "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gravityview-fa_IR.mo": "a77b6f4cfb0ad994595f2fb16e09fab5ad11a127a4f7c686636bda5c9ee370d5",
+        "gravityview-fa_IR.mo": "9ba47e194420791882ceef7e183e65f441e185933a8c5fccfdfa7304b0baeeb7",
         "gravityview-fa_IR.l10n.php": "f6896f38496a97074f079c173683f63f1160dbf5bfb381a319d8f2c283e7de37"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
