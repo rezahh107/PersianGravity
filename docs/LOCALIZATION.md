@@ -10,13 +10,13 @@ Decision C is closed: **Shared Core + Declarative Product Manifests + Bounded Ad
 
 | Product | Target / observed | Source status | Package SHA-256 | Vendor POT SHA-256 | Active JS handles |
 | --- | --- | --- | --- | --- | --- |
-| Gravity Forms | 3.1.1.1 / 3.1.1.1 | `PACKAGE_INSPECTED_METADATA_ONLY` | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf` | 0 |
+| Gravity Forms | 3.1.1.1 / 3.1.1.1 | `PACKAGE_INSPECTED_METADATA_ONLY` + bounded content | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf` | 0 |
 | Gravity Flow | 3.1.0 / 3.1.0 | `PACKAGE_INSPECTED_METADATA_ONLY` + bounded content | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` | `09a66357bb86fa4b425c2905a6c3417b057da18a9d423d934aa4c544be306961` | 0 |
 | GravityView | 3.3.4 / — | `PACKAGE_UNAVAILABLE` | — | — | 0 |
 
 For Gravity Forms and Gravity Flow, `PROJECT_SOURCE_AUTHORITY=OWNER_SUPPLIED_EXACT_PACKAGE`, `VENDOR_AUTHENTICITY=NOT_PROVEN`, and source admission remains separately evidenced. Exact package bytes were inspected and pinned, but vendor authenticity is not claimed. Vendor ZIPs, extracted vendor source, full vendor POT/message corpora, and the full reviewed Persian baseline are not committed.
 
-`SOURCE VERIFIED != TRANSLATION CONTENT ADMITTED != JS SURFACE ACTIVATED`. Gravity Forms remains source-admitted without production content authority in this boundary. Gravity Flow has revision-2 production content authority for exactly Inbox and Status: 255 Inbox identities, 43 Status identities, 10 identical overlaps, and a deterministic 288-identity aggregate from a separately reported 1098-message source census. Status evidence is restricted exactly to `includes/pages/class-status.php`; Inbox locked fingerprints remain unchanged. All runtime `scripts` maps remain empty and no Gravity Flow translation JSON is generated. `source_pot_sha256` remains `null` because no full `source.pot` is committed; `vendor_pot_sha256` records the exact inspected vendor POT bytes.
+`SOURCE VERIFIED != TRANSLATION CONTENT ADMITTED != JS SURFACE ACTIVATED`. Gravity Forms now has revision-2 production content authority for exactly one bounded surface: `gravityforms::frontend_runtime::shortcode:gravityform`, source-path rule exactly `form_display.php`, 41 identities from the independent 4207-message source census. The WU-003 reviewed full baseline SHA-256 `2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` remains reviewed-input provenance; the final sparse provider content contains exactly seven explicit PR #15 semantic corrections within the same identity/keyset/path scope and is not represented as an untouched byte-for-byte subset of that baseline. Gravity Flow retains revision-2 authority for exactly Inbox and Status: 255 Inbox identities, 43 Status identities, 10 identical overlaps, and a deterministic 288-identity aggregate from a separate 1098-message source census. All runtime `scripts` maps remain empty and no Gravity Forms or Gravity Flow translation JSON is generated. `source_pot_sha256` remains `null` because no full `source.pot` is committed; `vendor_pot_sha256` records the exact inspected vendor POT bytes.
 
 The PR #14 Status sparse-PO header repair corrects only malformed gettext header escaping. The unchanged strict loader must parse `Language: fa_IR`, `X-Domain: gravityflow`, and `Plural-Forms: nplurals=2; plural=(n > 1);`. Current repaired raw SHA-256 values are Status `c160913904bf991b29274bfbda3615a1a12049c9b97b81f7b687ac9e5d0fd718` and aggregate provider PO `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`; semantic identities, translations, content fingerprints, JS authority and runtime architecture are unchanged.
 
@@ -137,7 +137,7 @@ Each source directory records target version separately from inspected source ve
 
 ## Surface Registry, RTL/Bidi and terminology
 
-The canonical registry in `tools/i18n/admission/surfaces.json` contains 13 deterministic source-backed surfaces: six Gravity Forms and seven Gravity Flow. Classification uses explicit source-path rules only; there is no semantic fallback. GF: 4207 unique / 1759 classified / 2448 unclassified / 55 multi-surface. Flow: 1098 / 732 / 366 / 30. Control types are source-backed and do not imply RTL correctness.
+The canonical registry in `tools/i18n/admission/surfaces.json` contains 13 deterministic source-backed surfaces: six Gravity Forms and seven Gravity Flow. Classification uses explicit source-path rules only; there is no semantic fallback. GF: 4207 unique / 1759 classified / 2448 unclassified / 55 multi-surface. Flow: 1098 / 732 / 366 unclassified / 30 multi-surface. Control types are source-backed and do not imply RTL correctness.
 
 `tools/i18n/admission/rtl-bidi.json` keys the inspection checklist to all admitted RTL surfaces and records `runtime_execution=NOT_EXECUTED_ENVIRONMENT_UNAVAILABLE`; no production RTL patch is included.
 
@@ -145,7 +145,7 @@ The canonical registry in `tools/i18n/admission/surfaces.json` contains 13 deter
 
 ## Source admission and bounded content admission
 
-Source admission does not itself populate provider translations. Gravity Forms remains source-admitted without production content authority in this boundary. GravityView remains `PACKAGE_UNAVAILABLE` until its exact target package is supplied and inspected.
+Source admission does not itself populate provider translations. Gravity Forms production content authority is intentionally partial: exactly one record for `gravityforms::frontend_runtime::shortcode:gravityform`, bounded by `form_display.php`, with 41 canonical identities from the separate 4207-message source census. The WU-003 reviewed full baseline remains provenance, while exactly seven PR #15 semantic corrections define the final admitted sparse content. The corrected record preserves the original 41-identity keyset and path fingerprint, activates zero native JS handles, generates zero translation JSON, and does not broaden runtime fallback semantics. GravityView remains `PACKAGE_UNAVAILABLE` until its exact target package is supplied and inspected.
 
 Gravity Flow content authority is revision 2 and intentionally partial. The reviewed baseline SHA-256 is `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9`. Production contains exactly the Inbox and Status records. Inbox remains 255 identities with its locked fingerprints unchanged. Status derives exactly 43 identities from `includes/pages/class-status.php`; the records overlap on 10 identities with identical translation rows; aggregate authority is the deterministic 288-identity union while the source census remains separately 1098. The current aggregate provider PO SHA-256 is `838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267`, with deterministic MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
 
@@ -179,4 +179,4 @@ Licensed integration remains `NOT_PROVEN_REAL_INTEGRATION_ENVIRONMENT_UNAVAILABL
 - Non-Persian locale unchanged, user/site locale switching, and optional product absence.
 - Load order before/after PersianGravity inclusion, without rewriting vendor files.
 
-No real integration PASS may be inferred from green Core/unit tests. WU-005 and the Status PO header repair do not merge, release, deploy, broaden product content authority, or claim full Gravity Flow localization.
+No real integration PASS may be inferred from green Core/unit tests. WU-005, the Status PO header repair, WU-007, and the PR #15 semantic recovery do not merge, release, deploy, broaden the locked 41-identity Gravity Forms scope, or claim full-product/browser localization.
