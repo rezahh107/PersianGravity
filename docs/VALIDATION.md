@@ -267,7 +267,7 @@ Deterministically derived fingerprints for the bounded record/aggregate are:
 | Surface-path fingerprint | `881e5750f77fbd1fedb4677d2e0775488ee9ac19ee42679e46ab6c045fe2668c` |
 | Translation-content fingerprint | `293073a2b4d1a49b8c5becb59fe1f00f5c83e5b578b8b27de57749792368d13d` |
 | Sparse / aggregate PO | `3232e2363aeebab7b83af786b2dfd17a2748b4918561e5123bd9cde900387fb4` |
-| Generated MO | `a77b6f4cfb0ad994595f2fb16e09fab5ad11a127a4f7c686636bda5c9ee370d5` |
+| Generated MO | `9ba47e194420791882ceef7e183e65f441e185933a8c5fccfdfa7304b0baeeb7` |
 | Generated `.l10n.php` | `f6896f38496a97074f079c173683f63f1160dbf5bfb381a319d8f2c283e7de37` |
 
 The exact source package contains no vendor POT. The content validator therefore permits `vendor_pot_sha256=null` only as a representable value; the record still must bind exactly to the already-validated source-admission record. Products with a vendor POT continue to require their exact 64-hex POT hash, and existing hash-drift regression coverage remains in force.
