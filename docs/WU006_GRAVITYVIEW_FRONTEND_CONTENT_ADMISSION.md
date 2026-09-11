@@ -30,7 +30,7 @@ Derived fingerprints for this implementation are:
 - admitted surface-path index SHA-256: `881e5750f77fbd1fedb4677d2e0775488ee9ac19ee42679e46ab6c045fe2668c`;
 - admitted translation-content SHA-256: `293073a2b4d1a49b8c5becb59fe1f00f5c83e5b578b8b27de57749792368d13d`;
 - sparse/aggregate provider PO SHA-256: `3232e2363aeebab7b83af786b2dfd17a2748b4918561e5123bd9cde900387fb4`;
-- generated MO SHA-256: `a77b6f4cfb0ad994595f2fb16e09fab5ad11a127a4f7c686636bda5c9ee370d5`;
+- generated MO SHA-256: `9ba47e194420791882ceef7e183e65f441e185933a8c5fccfdfa7304b0baeeb7`;
 - generated `.l10n.php` SHA-256: `f6896f38496a97074f079c173683f63f1160dbf5bfb381a319d8f2c283e7de37`.
 
 ## Runtime boundary
