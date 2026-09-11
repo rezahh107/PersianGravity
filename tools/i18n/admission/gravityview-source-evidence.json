@@ -1,0 +1,68 @@
+{
+  "format_revision": 1,
+  "package_sha256": "af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829",
+  "observed_source_version": "3.3.4",
+  "identity_hash_method": "SHA256_UTF8_MSGCTXT_US_MSGID_US_MSGID_PLURAL",
+  "keyset_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256",
+  "source_reference_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_US_SOURCE_PATH_COLON_LINE",
+  "literal_extraction": "PHP_TOKEN_GET_ALL_LITERAL_GETTEXT_CALLS_WITH_CONSTANT_STRING_CONCATENATION",
+  "domains": {
+    "action-scheduler": {
+      "domain": "action-scheduler",
+      "ownership": "THIRD_PARTY_COMPOSER_DEPENDENCY",
+      "scope": "EXCLUDED_FROM_GRAVITYVIEW_PROVIDER_BOUNDARY",
+      "canonical_message_count": 193,
+      "context_message_count": 6,
+      "plural_message_count": 28,
+      "source_reference_count": 217,
+      "canonical_keyset_sha256": "5ac30ba0b99a308502289607a8b84309374f65ed25781b1692ed649fe9ae3a17",
+      "source_reference_index_sha256": "0b0a0aae2fcb46ccfaf42fb619fce8916252b62c474729de6337eb2ba3677429"
+    },
+    "gk-gravityview": {
+      "domain": "gk-gravityview",
+      "ownership": "GRAVITYVIEW_PRODUCT",
+      "scope": "ADMITTED_PRIMARY_DOMAIN",
+      "canonical_message_count": 3127,
+      "context_message_count": 127,
+      "plural_message_count": 42,
+      "source_reference_count": 3931,
+      "canonical_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+      "source_reference_index_sha256": "4332466a4f585fd66110b7158d0bbfbf1947ef9e4a97bb924e9c0800fbf64c34"
+    },
+    "gk-query-filters": {
+      "domain": "gk-query-filters",
+      "ownership": "BOUNDED_COMPOSER_DEPENDENCY",
+      "scope": "ADMITTED_DEPENDENCY_DOMAIN_BOUNDARY",
+      "canonical_message_count": 97,
+      "context_message_count": 16,
+      "plural_message_count": 0,
+      "source_reference_count": 104,
+      "canonical_keyset_sha256": "138f359d520c76ba59d00489f839f07a10fa066d597b74181e2aec9e259ae9a6",
+      "source_reference_index_sha256": "5ecca2e1766c568b9779665939d373e0d77484f8302f4c1410ae8a06d4fa3ae0"
+    }
+  },
+  "dynamic_calls": [
+    {
+      "domain": "gk-gravityview",
+      "function": "esc_html__",
+      "reason": "NON_LITERAL_MSGID_NOT_CANONICALIZED",
+      "reference": "vendor_prefixed/gravitykit/foundation/src/Scheduler/Models/HealthCheck.php:329"
+    }
+  ],
+  "dependency_boundaries": {
+    "gk-query-filters": {
+      "code_loading_evidence": [
+        "src/Search/Querying/Visitors/QueryFilterVisitor.php:18",
+        "src/Search/Querying/Visitors/QueryFilterVisitor.php:332"
+      ],
+      "composer_package": "gravitykit/query-filters",
+      "decision": "BOUNDED_DEPENDENCY_DOMAIN_BOUNDARY_NOT_MERGED_NOT_RUNTIME_ACTIVATED",
+      "package_version": "v2.16.0",
+      "source_reference": "716d7498105d88ad580037a80a251ff1b11046b7",
+      "standalone_textdomain_loader": "NOT_FOUND_IN_EXACT_PACKAGE",
+      "textdomain_evidence": [
+        "vendor_prefixed/gravitykit/query-filters/src/QueryFilters.php:529-548"
+      ]
+    }
+  }
+}
