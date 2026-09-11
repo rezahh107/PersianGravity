@@ -23,5 +23,27 @@
       {"handle":"gravityflow_frontend","classification":"REGISTERED_BUT_TRANSLATION_NOT_ATTACHED","evidence":["class-gravity-flow.php:1157"]},
       {"handle":"gravityflow_reports","classification":"REGISTERED_BUT_TRANSLATION_NOT_ATTACHED","evidence":["class-gravity-flow.php:6537"]}
     ]
+  },
+  "gravityview": {
+    "target_version":"3.3.4","classic_script_surfaces":15,"native_translation_attached":1,"registered_without_translation_attachment":14,"php_localized_js":13,"script_modules":"NOT_PRESENT_IN_TARGET_SOURCE","runtime_activated_handles":0,"native_translation_attachment_sites":2,
+    "dynamic_native_translation_attachment":[{"handle_source":"generate_block_asset_handle($block_name, editorScript)","domain":"gk-gravityview","classification":"REGISTERED_AND_NATIVE_TRANSLATION_ATTACHED_DYNAMIC_HANDLE","block_names":["gk-gravityview-blocks/entry-field","gk-gravityview-blocks/entry-link","gk-gravityview-blocks/entry","gk-gravityview-blocks/view-details","gk-gravityview-blocks/view"],"evidence":["src/PageBuilder/Gutenberg/Blocks.php:126-164"]}],
+    "dependency_script_boundary":{"gk-query-filters":"SEPARATE_DEPENDENCY_NOT_RUNTIME_ACTIVATED_BY_PERSIANGRAVITY"},
+    "records":[
+      {"handle":"gk-gravityview-divi-vb","classification":"REGISTERED_AND_NATIVE_TRANSLATION_ATTACHED","evidence":["src/PageBuilder/Divi/BasicModule.php:91-101"]},
+      {"handle":"gk-gravityview-bb-sort-field","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/PageBuilder/BeaverBuilder/BeaverBuilder.php:93-113"]},
+      {"handle":"gk-gravityview-blocks","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"CONFIG_DATA_PASSED_TO_JS","evidence":["src/PageBuilder/Gutenberg/Blocks.php:268-277"]},
+      {"handle":"gforms_locking","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Extension/EditEntry/EditEntryLocking.php:385-397"]},
+      {"handle":"gravityview-fe-view","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Frontend/Frontend.php:1885-1899","src/Shortcode/ShortcodeRenderer.php:756-764","src/Extension/EditEntry/EditEntryRender.php:643-653"]},
+      {"handle":"gravityview_entry_creator","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Entry/ChangeEntryCreator.php:145-158"]},
+      {"handle":"gravityview_postedit_scripts","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Admin/AddShortcode.php:187-195"]},
+      {"handle":"gravityview_searchwidget_admin","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Widget/Types/SearchWidget.php:326-355"]},
+      {"handle":"gravityview_views_scripts","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Admin/AdminViews.php:2543-2550"]},
+      {"handle":"gravityview_widgets","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"CONFIG_DATA_PASSED_TO_JS","evidence":["src/Widget/WordPress/RecentEntriesWidget.php:103-112"]},
+      {"handle":"gv-user-activation","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Field/Types/UserActivation.php:54-70"]},
+      {"handle":"gravityview-field-approval","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Field/Types/EntryApproval.php:315-339"]},
+      {"handle":"gravityview-notes","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Field/Types/Notes.php:183-200"]},
+      {"handle":"gravityview_gf_entries_scripts","classification":"ENQUEUED_WITH_PHP_LOCALIZED_DATA","php_localized_js":"MIXED","evidence":["src/Entry/Approval/EntriesList.php:488-505"]},
+      {"handle":"gravityview_theme_picker","classification":"STATIC_FILE_ONLY","evidence":["src/Admin/AdminViews.php:2533-2541","assets/admin-theme-picker/theme-picker.js"]}
+    ]
   }
 }

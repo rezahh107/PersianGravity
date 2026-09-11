@@ -1,11 +1,11 @@
 {
   "entry_translation_hard_locked": false,
   "common": [
-    {"term":"Settings","persian":"تنظیمات","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41"],"gravityflow":["57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41"]}},
-    {"term":"Form","persian":"فرم","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381"],"gravityflow":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381"]}},
-    {"term":"Status","persian":"وضعیت","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4"],"gravityflow":["2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4"]}},
+    {"term":"Settings","persian":"تنظیمات","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41"],"gravityflow":["57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41"],"gravityview":["57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41"]}},
+    {"term":"Form","persian":"فرم","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381"],"gravityflow":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381"],"gravityview":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381"]}},
+    {"term":"Status","persian":"وضعیت","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4"],"gravityflow":["2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4"],"gravityview":["2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4"]}},
     {"term":"User","persian":"کاربر","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4"],"gravityflow":["0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4"]}},
-    {"term":"Email","persian":"ایمیل","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"],"gravityflow":["a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}}
+    {"term":"Email","persian":"ایمیل","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":{"gravityforms":["a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"],"gravityflow":["a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"],"gravityview":["a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}}
   ],
   "extensions": {
     "gravityforms": [
@@ -16,9 +16,10 @@
       {"term":"Workflow","persian":"گردش‌کار","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":["4fdeb6a736bb32cdbb52e8e5afb633cbe782b408f989ca796f7b86f1efe90daf"]},
       {"term":"Assignee","persian":"مسئول","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":["7a4f7f1df53fc4d0b94d9f5fd8621bd70741f1d3a5ea3d8a7272ecbe4299aa91"]},
       {"term":"Inbox","persian":"صندوق کار","type":"PREFERRED_TERM","review":"PROVISIONAL","evidence":["864f855869b51b47250b80de695b9d99116ca39d717cb0dbe1a5a9610da0427b"]}
-    ]
+    ],
+    "gravityview": []
   },
   "anti_glossary": [
-    {"term":"Gravity Forms","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"Gravity Flow","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"API","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"URL","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"PHP","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"CSS","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"hook","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"merge tag","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"reCAPTCHA","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"}
+    {"term":"Gravity Forms","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"Gravity Flow","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"GravityView","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"API","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"URL","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"PHP","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"CSS","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"hook","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"merge tag","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"},{"term":"reCAPTCHA","type":"DO_NOT_TRANSLATE","review":"PROVISIONAL"}
   ]
 }

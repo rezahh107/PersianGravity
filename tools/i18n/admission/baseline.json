@@ -22,7 +22,7 @@
       "vendor_pot_unique_keys": 4208,
       "vendor_pot_only_stale": 1,
       "reference_only_differences": 5,
-      "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["04dfa6982a82b362ec75ce8654d10cb4cbbbbebc65fe061d0a4dc92a726af549","0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f","f2991b1644ceaa39bae1ac754b4fc0d0547cf07c6be6f00dd92243fc3feb88b6"]}
+      "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["04dfa6982a82b362ec75ce8654d10cb4cbbbbebc65fe061d0a4dc92a726af549","0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f","f2991b1644ceaa39bae1ac754b4fc0d0547cf07c6be6f00dd92243fc3feb88b6"]}
     },
     {
       "product": "gravityflow",
@@ -44,7 +44,32 @@
       "vendor_pot_unique_keys": 1098,
       "vendor_pot_only_stale": 0,
       "reference_only_differences": 3,
-      "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1b8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","4fdeb6a736bb32cdbb52e8e5afb633cbe782b408f989ca796f7b86f1efe90daf","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","7a4f7f1df53fc4d0b94d9f5fd8621bd70741f1d3a5ea3d8a7272ecbe4299aa91","864f855869b51b47250b80de695b9d99116ca39d717cb0dbe1a5a9610da0427b","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}
+      "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["0c796052ed8260d715e63af70dd5f35c4dafb1bd9ee698562df93121304fc2e4","20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","4fdeb6a736bb32cdbb52e8e5afb633cbe782b408f989ca796f7b86f1efe90daf","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","7a4f7f1df53fc4d0b94d9f5fd8621bd70741f1d3a5ea3d8a7272ecbe4299aa91","864f855869b51b47250b80de695b9d99116ca39d717cb0dbe1a5a9610da0427b","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}
+    },
+    {
+      "product": "gravityview",
+      "target_version": "3.3.4",
+      "observed_source_version": "3.3.4",
+      "package_sha256": "af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829",
+      "vendor_pot_sha256": null,
+      "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "vendor_authenticity": "NOT_PROVEN",
+      "admission_mode": "METADATA_ONLY_ADMISSION",
+      "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+      "source_pot_consistency": {"status":"PASS","vendor_pot_present":false,"comparison":"NOT_APPLICABLE_VENDOR_POT_ABSENT","source_backed_unique_keys":3127,"extraction":"PHP_TOKEN_GET_ALL_LITERAL_GETTEXT_CALLS_WITH_CONSTANT_STRING_CONCATENATION","dynamic_non_literal_calls":1},
+      "canonical_message_count": 3127,
+      "context_message_count": 127,
+      "plural_message_count": 42,
+      "canonical_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+      "source_reference_index_sha256": "4332466a4f585fd66110b7158d0bbfbf1947ef9e4a97bb924e9c0800fbf64c34",
+      "source_reference_count": 3931,
+      "source_evidence_index_path": "tools/i18n/admission/gravityview-source-evidence.json",
+      "source_evidence_index_sha256": "d07d9c80f4c70d0dc3934b679a5baf51ebdc5cf199ad388d916c291559eb9072",
+      "domain_boundaries": {
+        "gk-query-filters": {"ownership":"BOUNDED_COMPOSER_DEPENDENCY","composer_package":"gravitykit/query-filters","package_version":"v2.16.0","source_reference":"716d7498105d88ad580037a80a251ff1b11046b7","runtime_manifested_by_persiangravity":false,"standalone_textdomain_loader":"NOT_FOUND_IN_EXACT_PACKAGE","decision":"BOUNDED_DEPENDENCY_DOMAIN_BOUNDARY_NOT_MERGED_NOT_RUNTIME_ACTIVATED","canonical_message_count":97,"context_message_count":16,"plural_message_count":0,"canonical_keyset_sha256":"138f359d520c76ba59d00489f839f07a10fa066d597b74181e2aec9e259ae9a6","source_reference_index_sha256":"5ecca2e1766c568b9779665939d373e0d77484f8302f4c1410ae8a06d4fa3ae0","source_reference_count":104},
+        "action-scheduler": {"ownership":"THIRD_PARTY_COMPOSER_DEPENDENCY","composer_package":"woocommerce/action-scheduler","package_version":"3.9.3","decision":"EXCLUDED_FROM_GRAVITYVIEW_PROVIDER_BOUNDARY","canonical_message_count":193,"canonical_keyset_sha256":"5ac30ba0b99a308502289607a8b84309374f65ed25781b1692ed649fe9ae3a17"}
+      },
+      "message_identity_index": {"mode":"AGGREGATE_KEYSET_PLUS_REFERENCED_EVIDENCE","evidence_ids":["20c9773ff51d4ac9d366e221f9db0993eb78bfa4b631ae36567b66e045090381","2caa056f09b1d8d97901ce330c98e29d13a67976a1ea205951574411c1e562e4","57f2b7a9eefe4dfc6639b98201dd75caa09f12f479c60242b2a25b5513c89d41","a40eed3ab51033b87473c6851321babc27601b4630b9766b9255e8397887879f"]}
     }
   ]
 }
