@@ -175,18 +175,31 @@ Provider entries win; missing entries fall back to vendor/TranslationsPress.
 No updater disabling, remote download, runtime compilation, translation DB/editor,
 plugin scanning or project-specific terminology is permitted.
 
-**Current source/content boundary:** exact owner-supplied Gravity Forms 3.1.1.1 and Gravity
-Flow 3.1.0 packages/POTs are inspected and pinned as source evidence; GravityView 3.3.4
-remains `PACKAGE_UNAVAILABLE`. Gravity Forms production content authority is revision 2
-with exactly one independently validated record:
-`gravityforms::frontend_runtime::shortcode:gravityform`, bounded by the source-path rule
-exactly `form_display.php`, with 41 canonical identities from a separately admitted
-4207-message source census. The WU-003 full reviewed baseline SHA-256
-`2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1`
-remains historical reviewed-input provenance; the final admitted sparse catalog applies
-exactly seven PR #15 semantic corrections within the same identity/keyset/path scope and
-is not claimed to be a byte-for-byte untouched subset of that baseline. Gravity Forms
-script handles remain zero and no Gravity Forms translation JSON is generated.
+**Current source/content boundary:** exact owner-supplied Gravity Forms 3.1.1.1, Gravity
+Flow 3.1.0 and GravityView 3.3.4 packages are inspected and pinned as source evidence.
+GravityView is `PACKAGE_INSPECTED_METADATA_ONLY` from package SHA-256
+`af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829`, with
+`project_source_authority=OWNER_SUPPLIED_EXACT_PACKAGE` and `vendor_authenticity=NOT_PROVEN`.
+Its exact package contains no vendor POT, so `vendor_pot_sha256=null` and no POT hash is
+invented. The primary `gk-gravityview` source census is 3127 canonical identities, 127
+contextual identities, 42 plural identities and 3931 source references. `gk-query-filters`
+remains a bounded separate Composer dependency/domain and is not manifested or runtime-
+activated by PersianGravity. GravityView contributes six source-backed surfaces; the full
+registry is now 19 surfaces total: 6 Gravity Forms + 7 Gravity Flow + 6 GravityView.
+GravityView production translated count and runtime script handles both remain zero, with no
+provider MO, `.l10n.php` or translation JSON admitted. RTL/BiDi evidence remains source-only
+and real licensed GravityView browser/UI validation is `NOT_RUN`. WU-004 is source admission
+only, not translation-content admission.
+
+Gravity Forms production content authority is revision 2 with exactly one independently
+validated record: `gravityforms::frontend_runtime::shortcode:gravityform`, bounded by the
+source-path rule exactly `form_display.php`, with 41 canonical identities from a separately
+admitted 4207-message source census. The WU-003 full reviewed baseline SHA-256
+`2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` remains historical
+reviewed-input provenance; the final admitted sparse catalog applies exactly seven PR #15
+semantic corrections within the same identity/keyset/path scope and is not claimed to be a
+byte-for-byte untouched subset of that baseline. Gravity Forms script handles remain zero and
+no Gravity Forms translation JSON is generated.
 
 Gravity Flow production content authority remains revision 2 with exactly two independently
 validated records: Inbox (`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`,
@@ -198,8 +211,8 @@ keyset/path/content fingerprints remain unchanged. Gravity Flow script handles r
 no Gravity Flow translation JSON is generated. Non-admitted identities for both products still
 fall through to upstream/vendor/TranslationsPress and then source English. These are partial
 surface authorities only, not full-product localization or licensed/browser proof. See
-`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md` and `docs/VALIDATION_CONTENT_ADMISSION_V2.md`
-for the exact content contract.
+`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md`, `docs/VALIDATION_CONTENT_ADMISSION_V2.md` and
+`docs/WU004_GRAVITYVIEW_SOURCE_ADMISSION.md` for the exact source/content contracts.
 
 ## Scope
 
