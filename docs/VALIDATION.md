@@ -245,3 +245,35 @@ Gravity Flow regression tests are product-scoped: the global manifest may contai
 Gravity Forms runtime script handles remain empty and no Gravity Forms translation JSON is generated. `composer i18n:build` remains the sole deliberate generation path for `.mo`, `.l10n.php` and generated `metadata.json`; `composer i18n:check` is the deterministic non-mutating drift gate. Exact build/check/CI results are bound to the resulting PR state and must not be inferred from object existence alone.
 
 Real licensed WordPress + Gravity Forms browser/integration validation remains `NOT_PROVEN` unless separately executed and recorded. This bounded admission is not full-product Gravity Forms localization.
+
+## WU-006 — GravityView first bounded frontend content admission
+
+Required base: `main@1a7108eea20ddd1d84680cc64e73e4c824f08811`.
+
+GravityView production Content Admission v2 authority now contains exactly one record:
+
+`gravityview::frontend_runtime::shortcode:gravityview`
+
+The registered source-path rule is exactly `src/Shortcode/GravityViewShortcode.php`. The admitted set is exactly the two WU-004 source-proven canonical identities `3fe848f1b629acdcb7bfd703d8a9787cf579eabb1fc3db0c1ba7bae368ed86de` and `8d69b8871a337eb30ca4da453d62b8fbae894f7859cbdae3129485f8ded2588c`, from the separately admitted `gk-gravityview` source census of 3127 canonical identities.
+
+The exact reviewed translation authority is final WU-002 baseline SHA-256 `2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca`. The full baseline contains 3281 reviewed canonical identities; only the two identities with exact target-surface source evidence are admitted here. Their Persian translations are copied unchanged from that baseline.
+
+Deterministically derived fingerprints for the bounded record/aggregate are:
+
+| Evidence | Value |
+| --- | --- |
+| Admitted count | `2` |
+| Admitted keyset | `061ddb2324a950ef0e64f9c252cec438403031c7a07a5c235dee5e71594729db` |
+| Surface-path fingerprint | `881e5750f77fbd1fedb4677d2e0775488ee9ac19ee42679e46ab6c045fe2668c` |
+| Translation-content fingerprint | `293073a2b4d1a49b8c5becb59fe1f00f5c83e5b578b8b27de57749792368d13d` |
+| Sparse / aggregate PO | `3232e2363aeebab7b83af786b2dfd17a2748b4918561e5123bd9cde900387fb4` |
+| Generated MO | `a77b6f4cfb0ad994595f2fb16e09fab5ad11a127a4f7c686636bda5c9ee370d5` |
+| Generated `.l10n.php` | `f6896f38496a97074f079c173683f63f1160dbf5bfb381a319d8f2c283e7de37` |
+
+The exact source package contains no vendor POT. The content validator therefore permits `vendor_pot_sha256=null` only as a representable value; the record still must bind exactly to the already-validated source-admission record. Products with a vendor POT continue to require their exact 64-hex POT hash, and existing hash-drift regression coverage remains in force.
+
+`gk-query-filters` remains a separate bounded dependency/domain and is not merged into `gk-gravityview` or runtime-activated. The GravityView product script map remains empty, zero native JS translation handles are activated, and no GravityView translation JSON is generated. Non-admitted GravityView identities remain absent from the sparse provider and therefore preserve the existing upstream/vendor/TranslationsPress fallback, then source English.
+
+`GravityViewContentAdmissionTest`, the generic Content Admission v2 suite, `CatalogBuildTest`, `composer i18n:check`, the PHP 8.2–8.5 test matrix, code style/compatibility checks, and pinned WordPress localization contracts are the automated repository evidence classes for the exact PR Head. Exact PASS/FAIL claims are recorded only after those checks execute on that Head.
+
+Real WordPress + licensed GravityView browser/UI validation remains `NOT_RUN` / `NOT_PROVEN`. This Work Unit establishes bounded `CONTENT_ADMITTED_PARTIAL` evidence only; it does not establish full GravityView translation coverage, product completion, ecosystem completion, or Work Unit/project closure.
