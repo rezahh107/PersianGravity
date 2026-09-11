@@ -35,7 +35,7 @@ final class CatalogBuildTest extends TestCase {
 		$source_statuses   = array(
 			'gravityforms'   => 'PACKAGE_INSPECTED_METADATA_ONLY',
 			'gravityflow'    => 'PACKAGE_INSPECTED_METADATA_ONLY',
-			'gk-gravityview' => 'PACKAGE_UNAVAILABLE',
+			'gk-gravityview' => 'PACKAGE_INSPECTED_METADATA_ONLY',
 		);
 
 		foreach ( $products as $domain => $product ) {

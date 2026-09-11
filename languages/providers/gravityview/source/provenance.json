@@ -1,10 +1,16 @@
 {
-  "source_status": "PACKAGE_UNAVAILABLE",
+  "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
   "target_product_version": "3.3.4",
-  "source_product_version": null,
+  "source_product_version": "3.3.4",
   "source_pot_sha256": null,
-  "source_package_sha256": null,
+  "source_package_sha256": "af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829",
+  "vendor_pot_sha256": null,
+  "source_pot_consistency": "PASS",
   "catalog_revision": 1,
   "translation_review": "NO_PRODUCTION_STRINGS",
-  "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY"
+  "upstream_fallback_validation": "SYNTHETIC_CORE_ONLY",
+  "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+  "vendor_authenticity": "NOT_PROVEN",
+  "source_evidence_index_path": "tools/i18n/admission/gravityview-source-evidence.json",
+  "source_evidence_index_sha256": "d07d9c80f4c70d0dc3934b679a5baf51ebdc5cf199ad388d916c291559eb9072"
 }

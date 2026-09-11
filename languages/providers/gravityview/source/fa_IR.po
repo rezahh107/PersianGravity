@@ -1,4 +1,4 @@
-# Empty source scaffold. Exact licensed source/POT unavailable. No coverage claim.
+# Source-admitted empty scaffold. Translation content remains deliberately unadmitted.
 msgid ""
 msgstr ""
 "Project-Id-Version: gravityview 3.3.4\n"
