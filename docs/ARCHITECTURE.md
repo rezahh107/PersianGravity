@@ -185,11 +185,22 @@ invented. The primary `gk-gravityview` source census is 3127 canonical identitie
 contextual identities, 42 plural identities and 3931 source references. `gk-query-filters`
 remains a bounded separate Composer dependency/domain and is not manifested or runtime-
 activated by PersianGravity. GravityView contributes six source-backed surfaces; the full
-registry is now 19 surfaces total: 6 Gravity Forms + 7 Gravity Flow + 6 GravityView.
-GravityView production translated count and runtime script handles both remain zero, with no
-provider MO, `.l10n.php` or translation JSON admitted. RTL/BiDi evidence remains source-only
-and real licensed GravityView browser/UI validation is `NOT_RUN`. WU-004 is source admission
-only, not translation-content admission.
+registry is 19 surfaces total: 6 Gravity Forms + 7 Gravity Flow + 6 GravityView.
+
+GravityView production content authority is revision 2 with exactly one independently
+validated record: `gravityview::frontend_runtime::shortcode:gravityview`, bounded by the
+source-path rule exactly `src/Shortcode/GravityViewShortcode.php`, with two canonical
+identities from the separately admitted 3127-message managed-domain source census. The exact
+reviewed translation authority is the final WU-002 Persian baseline SHA-256
+`2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca`; its full 3281
+canonical identities are reviewed input, not blanket runtime authority. Only the two source-
+proven identities are copied into the sparse record and aggregate. The product script map
+remains empty, native JS translation handles remain zero and no GravityView translation JSON
+is generated. Deterministic MO and `.l10n.php` are derived only from that two-message aggregate.
+Non-admitted `gk-gravityview` identities keep the existing upstream/vendor/TranslationsPress
+fallback and then source English. RTL/BiDi evidence remains source-only and real licensed
+GravityView browser/UI validation is `NOT_RUN`. This is bounded `CONTENT_ADMITTED_PARTIAL`,
+not full-product localization.
 
 Gravity Forms production content authority is revision 2 with exactly one independently
 validated record: `gravityforms::frontend_runtime::shortcode:gravityform`, bounded by the
@@ -208,11 +219,12 @@ validated records: Inbox (`gravityflow::workflow_runtime::admin_page:gravityflow
 10 canonical identities with identical reviewed translations and deterministically union to
 288 unique admitted identities from the separate 1098-message source census. Inbox locked
 keyset/path/content fingerprints remain unchanged. Gravity Flow script handles remain zero and
-no Gravity Flow translation JSON is generated. Non-admitted identities for both products still
-fall through to upstream/vendor/TranslationsPress and then source English. These are partial
-surface authorities only, not full-product localization or licensed/browser proof. See
-`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md`, `docs/VALIDATION_CONTENT_ADMISSION_V2.md` and
-`docs/WU004_GRAVITYVIEW_SOURCE_ADMISSION.md` for the exact source/content contracts.
+no Gravity Flow translation JSON is generated. Non-admitted identities for all three products
+still fall through to upstream/vendor/TranslationsPress and then source English. These are
+partial surface authorities only, not full-product localization or licensed/browser proof. See
+`docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md`, `docs/VALIDATION_CONTENT_ADMISSION_V2.md`,
+`docs/WU004_GRAVITYVIEW_SOURCE_ADMISSION.md`, and
+`docs/WU006_GRAVITYVIEW_FRONTEND_CONTENT_ADMISSION.md` for the exact source/content contracts.
 
 ## Scope
 

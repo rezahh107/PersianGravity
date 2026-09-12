@@ -70,6 +70,28 @@
       "provider_source_sha256": "ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a",
       "native_js_handles_activated": 0,
       "js_translation_json_generated": 0
+    },
+    {
+      "product": "gravityview",
+      "domain": "gk-gravityview",
+      "locale": "fa_IR",
+      "target_version": "3.3.4",
+      "content_state": "CONTENT_ADMITTED_PARTIAL",
+      "reviewed_source_po_sha256": "2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca",
+      "reviewed_source_message_count": 3127,
+      "source_package_sha256": "af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829",
+      "vendor_pot_sha256": null,
+      "surface_id": "gravityview::frontend_runtime::shortcode:gravityview",
+      "admitted_message_count": 2,
+      "admitted_keyset_sha256": "061ddb2324a950ef0e64f9c252cec438403031c7a07a5c235dee5e71594729db",
+      "admitted_surface_path_index_sha256": "881e5750f77fbd1fedb4677d2e0775488ee9ac19ee42679e46ab6c045fe2668c",
+      "admitted_translation_content_sha256": "293073a2b4d1a49b8c5becb59fe1f00f5c83e5b578b8b27de57749792368d13d",
+      "surface_evidence_index_path": "tools/i18n/admission/gravityview-frontend-shortcode-index.json",
+      "surface_evidence_index_sha256": "803deb0c39da2b725f9838dc04f33be4ebe04d8fd79a887b656b68c2e8caba36",
+      "provider_source_path": "languages/providers/gravityview/source/records/frontend-shortcode-fa_IR.po",
+      "provider_source_sha256": "3232e2363aeebab7b83af786b2dfd17a2748b4918561e5123bd9cde900387fb4",
+      "native_js_handles_activated": 0,
+      "js_translation_json_generated": 0
     }
   ]
 }

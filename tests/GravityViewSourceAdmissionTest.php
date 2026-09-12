@@ -5,12 +5,11 @@ use PHPUnit\Framework\TestCase;
 require_once dirname( __DIR__ ) . '/tools/i18n/admission.php';
 
 final class GravityViewSourceAdmissionTest extends TestCase {
-	public function test_gravityview_source_is_admitted_while_content_stays_dormant() {
+	public function test_gravityview_source_remains_admitted_with_bounded_dependency_boundary() {
 		$root        = dirname( __DIR__ );
 		$records     = pgr_validate_admission( $root );
 		$gravityview = $records['gravityview'];
 		$products    = require $root . '/includes/localization/products.php';
-		$metadata    = json_decode( file_get_contents( $root . '/languages/providers/gravityview/metadata.json' ), true, 512, JSON_THROW_ON_ERROR );
 
 		$this->assertSame( '3.3.4', $gravityview['observed_source_version'] );
 		$this->assertSame( 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829', $gravityview['package_sha256'] );
@@ -24,15 +23,6 @@ final class GravityViewSourceAdmissionTest extends TestCase {
 		$this->assertFalse( $query_filters['runtime_manifested_by_persiangravity'] );
 		$this->assertArrayNotHasKey( 'gk-query-filters', $products );
 		$this->assertSame( array(), $products['gk-gravityview']['scripts'] );
-
-		$this->assertSame( 0, $metadata['counts_in_committed_po']['translated'] );
-		$this->assertSame( 3127, $metadata['authoritative_total'] );
-		$this->assertSame( 'SOURCE_INSPECTED_METADATA_ONLY_NO_TRANSLATION_CONTENT', $metadata['content_status'] );
-		$this->assertSame( array(), $metadata['validated_script_handles'] );
-		$this->assertSame( array(), $metadata['artifact_sha256'] );
-		$this->assertFileDoesNotExist( $root . '/languages/providers/gravityview/gravityview-fa_IR.mo' );
-		$this->assertFileDoesNotExist( $root . '/languages/providers/gravityview/gravityview-fa_IR.l10n.php' );
-		$this->assertSame( array(), glob( $root . '/languages/providers/gravityview/gk-gravityview-fa_IR-*.json' ) ?: array() );
 	}
 
 	public function test_gravityview_recommendation_is_source_bounded_and_zero_js_activation() {

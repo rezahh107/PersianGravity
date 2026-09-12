@@ -133,6 +133,9 @@ function pgr_content_repository_path( $root, $path, $label ) {
  * @return void
  */
 function pgr_content_require_hash( $value, $label ) {
+	if ( 'vendor_pot_sha256' === $label && null === $value ) {
+		return;
+	}
 	if ( ! is_string( $value ) || ! preg_match( '/^[a-f0-9]{64}$/D', $value ) ) {
 		throw new RuntimeException( 'Invalid content-admission hash: ' . $label );
 	}
