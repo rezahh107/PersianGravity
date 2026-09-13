@@ -26,6 +26,18 @@ function wu008_plugin_version( $relative_main_file ) {
 	return isset( $data['Version'] ) ? (string) $data['Version'] : '';
 }
 
+/**
+ * Reset a domain without leaving Core's explicit-unload sentinel behind.
+ *
+ * This mirrors the repository's WordPress Core contract tests so the next
+ * gettext call exercises the real JIT registry path rather than a direct
+ * load_textdomain() shortcut.
+ */
+function wu008_reset_domain( $domain ) {
+	WP_Translation_Controller::get_instance()->unload_textdomain( $domain );
+	unset( $GLOBALS['l10n'][ $domain ], $GLOBALS['l10n_unloaded'][ $domain ] );
+}
+
 wu008_assert( 'fa_IR' === get_locale(), 'WordPress site locale must be fa_IR.' );
 wu008_assert( 'fa_IR' === determine_locale(), 'Effective runtime locale must be fa_IR.' );
 wu008_assert( class_exists( 'GFAPI' ), 'Gravity Forms runtime API is unavailable.' );
@@ -56,15 +68,19 @@ wu008_assert( 'مشکلی با این ارسال پیش آمده است.' === $p
 wu008_assert( 'کاری در انتظار نیست' === $provider['gravityflow'], 'Gravity Flow provider translation did not resolve.' );
 wu008_assert( 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.' === $provider['gravityview'], 'GravityView provider translation did not resolve.' );
 
-// Deterministically exercise provider-over-upstream precedence and upstream-only fallback
-// without modifying any licensed vendor package.
-$upstream_fixture = $artifact_dir . '/gravityforms-upstream-fixture-fa_IR.l10n.php';
+// Exercise provider-over-upstream precedence and upstream-only fallback through
+// WordPress' real JIT registry path without changing any licensed vendor package.
+$upstream_dir = $artifact_dir . '/upstream-gravityforms';
+wp_mkdir_p( $upstream_dir );
+$upstream_fixture = $upstream_dir . '/gravityforms-fa_IR.l10n.php';
 $fixture_php = <<<'PHP'
 <?php
 return array(
-    'project-id-version' => 'WU008 synthetic upstream fallback fixture',
+    'content-type' => 'text/plain; charset=UTF-8',
     'language' => 'fa_IR',
     'plural-forms' => 'nplurals=2; plural=(n > 1);',
+    'project-id-version' => 'WU008 synthetic upstream fallback fixture',
+    'x-domain' => 'gravityforms',
     'messages' => array(
         'There was a problem with your submission.' => 'UPSTREAM_COLLISION_MUST_NOT_WIN',
         'WU008 upstream-only fallback sentinel' => 'WU008_UPSTREAM_ONLY_PASS',
@@ -72,9 +88,12 @@ return array(
 );
 PHP;
 file_put_contents( $upstream_fixture, $fixture_php . "\n" );
-unload_textdomain( 'gravityforms' );
-$loaded = load_textdomain( 'gravityforms', $upstream_fixture, 'fa_IR' );
-wu008_assert( true === $loaded, 'Synthetic upstream fallback fixture did not load through WordPress.' );
+wu008_reset_domain( 'gravityforms' );
+$GLOBALS['wp_textdomain_registry']->set_custom_path( 'gravityforms', $upstream_dir );
+wu008_assert(
+	$upstream_dir . '/' === $GLOBALS['wp_textdomain_registry']->get( 'gravityforms', 'fa_IR' ),
+	'Synthetic upstream registry path was not preserved.'
+);
 $fallback = array(
 	'provider_collision' => __( $gf_key, 'gravityforms' ),
 	'upstream_only'      => __( 'WU008 upstream-only fallback sentinel', 'gravityforms' ),
