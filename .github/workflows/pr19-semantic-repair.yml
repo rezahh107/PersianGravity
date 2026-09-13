@@ -1,0 +1,186 @@
+name: PR19 semantic admission repair
+
+on:
+  push:
+    branches:
+      - feat/wu004-gravityforms-classified-admission
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.head_commit.message == 'chore: run PR19 semantic admission repair'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v7
+        with:
+          ref: feat/wu004-gravityforms-classified-admission
+          fetch-depth: 0
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+
+      - name: Apply source-authority semantic and printf repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .github/wu004-semantic-repair.py apply | tee /tmp/semantic-review.json
+          php -l tools/i18n/content-admission.php
+          php -l tests/ContentAdmissionTokenSemanticsTest.php
+          php -l tests/GravityFormsSemanticAdmissionTest.php
+
+      - name: Install repository dependencies
+        run: |
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Compute fingerprints with repository admission primitives
+        shell: bash
+        run: |
+          set -euo pipefail
+          php <<'PHP' > /tmp/pr19-fingerprints.json
+          <?php
+          require __DIR__ . '/vendor/autoload.php';
+          require __DIR__ . '/tools/i18n/content-admission.php';
+          $record_paths = glob( __DIR__ . '/languages/providers/gravityforms/source/records/*-fa_IR.po' );
+          sort( $record_paths, SORT_STRING );
+          $out = array( 'records' => array() );
+          foreach ( $record_paths as $path ) {
+              $provider = pgr_content_load_sparse_po( $path, 'gravityforms', 'fa_IR' );
+              $relative = substr( $path, strlen( __DIR__ ) + 1 );
+              $out['records'][ $relative ] = array(
+                  'provider_source_sha256' => hash_file( 'sha256', $path ),
+                  'admitted_translation_content_sha256' => pgr_content_hash_lines( array_values( $provider['translation_rows'] ) ),
+                  'admitted_message_count' => count( $provider['ids'] ),
+                  'admitted_keyset_sha256' => pgr_content_hash_lines( $provider['ids'] ),
+              );
+          }
+          $aggregate_path = __DIR__ . '/languages/providers/gravityforms/source/fa_IR.po';
+          $aggregate = pgr_content_load_sparse_po( $aggregate_path, 'gravityforms', 'fa_IR' );
+          $out['aggregate'] = array(
+              'provider_source_sha256' => hash_file( 'sha256', $aggregate_path ),
+              'admitted_translation_content_sha256' => pgr_content_hash_lines( array_values( $aggregate['translation_rows'] ) ),
+              'admitted_message_count' => count( $aggregate['ids'] ),
+              'admitted_keyset_sha256' => pgr_content_hash_lines( $aggregate['ids'] ),
+          );
+          echo json_encode( $out, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ) . "\n";
+          PHP
+          cat /tmp/pr19-fingerprints.json
+          python .github/wu004-semantic-repair.py sync /tmp/pr19-fingerprints.json
+
+      - name: Build and validate exact Content Admission v2 state
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer i18n:build
+          composer i18n:check
+          php -r '
+            require "vendor/autoload.php";
+            require "tools/i18n/admission.php";
+            require "tools/i18n/content-admission.php";
+            $products = require "includes/localization/products.php";
+            $content = pgr_validate_content_admission(__DIR__, pgr_validate_admission(__DIR__), $products);
+            $g = $content["gravityforms"];
+            $occ = 0; $freq = array();
+            foreach ($g["admissions"] as $record) {
+                $p = pgr_content_load_sparse_po(__DIR__ . "/" . $record["provider_source_path"], "gravityforms", "fa_IR");
+                $occ += count($p["ids"]);
+                foreach ($p["ids"] as $id) { $freq[$id] = ($freq[$id] ?? 0) + 1; }
+            }
+            $multi = count(array_filter($freq, static fn($n) => $n > 1));
+            if (count($g["admissions"]) !== 6 || $occ !== 1826 || count($freq) !== 1759 || $multi !== 55 || $occ - count($freq) !== 67 || 4207 - count($freq) !== 2448 || $g["aggregate"]["native_js_handles_activated"] !== 0) { throw new RuntimeException("GF admission invariants drift"); }
+            echo "GF admission invariants: PASS\n";
+          '
+          sha256sum \
+            languages/providers/gravityforms/source/fa_IR.po \
+            languages/providers/gravityforms/gravityforms-fa_IR.mo \
+            languages/providers/gravityforms/gravityforms-fa_IR.l10n.php \
+            languages/providers/gravityforms/metadata.json | tee /tmp/pr19-derived-hashes.txt
+
+      - name: Refresh directly affected fingerprint documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          root = Path('.')
+          fp = json.loads(Path('/tmp/pr19-fingerprints.json').read_text())
+          new = {
+              'aggregate_po': fp['aggregate']['provider_source_sha256'],
+              'aggregate_translation': fp['aggregate']['admitted_translation_content_sha256'],
+              'mo': hashlib.sha256((root/'languages/providers/gravityforms/gravityforms-fa_IR.mo').read_bytes()).hexdigest(),
+              'l10n': hashlib.sha256((root/'languages/providers/gravityforms/gravityforms-fa_IR.l10n.php').read_bytes()).hexdigest(),
+          }
+          replacements = {
+              '68c1208bdea40f025b7a526c010d3f29ce6f8c710984ecce1395647988fc7f5b': new['aggregate_po'],
+              '3054209761a3513fd34f3f038ccc9e07b2167661820c4a7c31cde300c1d7ea44': new['aggregate_translation'],
+              '8b78e73eb4d009b6fed9fc532ca2d3a2f735e8dda07022848fee967c51d6cc73': new['mo'],
+              '88a1d08326a0f669baab4732f02b31cd2891a0d375c15bf525d8f6116b777985': new['l10n'],
+          }
+          for path in (root/'docs').glob('*.md'):
+              text = path.read_text(encoding='utf-8')
+              updated = text
+              for old, value in replacements.items():
+                  updated = updated.replace(old, value)
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+          print(json.dumps(new, indent=2))
+          PY
+
+      - name: Run focused and repository regression suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          vendor/bin/phpunit tests/ContentAdmissionTokenSemanticsTest.php tests/GravityFormsSemanticAdmissionTest.php tests/GravityFormsFrontendContentAdmissionTest.php tests/GravityFormsClassifiedContentAdmissionTest.php
+          composer test
+          composer cs
+          composer compat
+          node --test tests/js/structured-scanner.test.js
+          composer i18n:check
+          git diff --check
+
+      - name: Check out pinned WordPress Core 7.1
+        uses: actions/checkout@v7
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Run pinned WordPress Core production localization contract
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
+
+      - name: Verify locked boundaries before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .wu004-transfer/part-00
+          test ! -e .wu004-transfer/part-01
+          test "$(find languages/providers/gravityforms/source/records -maxdepth 1 -name '*-fa_IR.po' -type f | wc -l)" -eq 6
+          test -z "$(find languages/providers/gravityforms -maxdepth 1 -name 'gravityforms-fa_IR-*.json' -print -quit)"
+          ! git diff --name-only origin/main...HEAD | grep -Ei 'wu008|real-integration'
+          grep -A1 'msgid "Colors"' languages/providers/gravityforms/source/records/frontend-block-fa_IR.po | grep -F 'msgstr "رنگ‌ها"'
+          grep -A1 'msgid "Accent"' languages/providers/gravityforms/source/records/frontend-block-fa_IR.po | grep -F 'msgstr "رنگ تاکیدی"'
+          git diff --check
+
+      - name: Remove temporary materializer and commit verified repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/wu004-semantic-repair.py .github/workflows/pr19-semantic-repair.yml
+          git add -A
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(i18n): close Gravity Forms semantic admission QA'
+          git push origin HEAD:feat/wu004-gravityforms-classified-admission
+          echo "RESULTING_HEAD=$(git rev-parse HEAD)"
