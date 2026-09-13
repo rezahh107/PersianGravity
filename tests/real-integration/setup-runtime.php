@@ -138,8 +138,9 @@ if ( is_wp_error( $page_id ) ) {
 	throw new RuntimeException( $page_id->get_error_message() );
 }
 
+$admin_url = admin_url();
 $manifest = array(
-	'schema_version' => '1.0.0',
+	'schema_version' => '1.1.0',
 	'evidence_class' => 'REAL_LICENSED_HEADLESS_BROWSER_RUNTIME',
 	'locale'         => get_locale(),
 	'rtl'            => is_rtl(),
@@ -149,8 +150,9 @@ $manifest = array(
 	'form_id'        => (int) $form_id,
 	'page_id'        => (int) $page_id,
 	'page_url'       => add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) ),
+	'login_url'      => wp_login_url( $admin_url ),
 	'gravityflow_inbox_url' => admin_url( 'admin.php?page=gravityflow-inbox' ),
-	'admin_url'      => admin_url(),
+	'admin_url'      => $admin_url,
 );
 wu008_assert( true === $manifest['rtl'], 'WordPress fa_IR runtime is not RTL.' );
 

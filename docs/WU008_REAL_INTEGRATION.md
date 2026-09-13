@@ -18,6 +18,18 @@ All three downloads must pass before any licensed ZIP is extracted into WordPres
 
 The uploaded evidence is intentionally bounded to verification metadata, runtime manifests, browser result JSON, screenshots, and the disposable server log. Package ZIPs and extracted vendor source are outside the artifact path and must never be uploaded.
 
+## Canonical browser navigation and authentication
+
+WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, and `gravityflow_inbox_url`; the Playwright browser must consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`. `WU008_BASE_URL` remains only the disposable server/site-origin input used while provisioning the runtime.
+
+The login step is a first-class diagnostics-gated browser operation. After manifest-derived login, the harness explicitly loads the manifest-derived admin URL and proves the authenticated WordPress admin shell before Flow or GravityView assertions run. Each product admin check repeats that authenticated-admin predicate after navigation. GravityView's product URL is discovered from the authenticated admin navigation and then verified as the `post_type=gravityview` surface.
+
+## Diagnostics fail-closed contract
+
+`browser-results.json` retains the full observed diagnostics stream. Every gated browser operation snapshots diagnostics before it starts and evaluates only the newly observed diagnostics before recording PASS. A new uncaught `pageerror`, or a new failed request to the disposable WordPress runtime origin, fails that same operation. Diagnostics that existed before the operation baseline are retained as evidence but do not retroactively fail the next operation. External request failures are retained but are not treated as WordPress-runtime blockers.
+
+The deterministic Node diagnostics test guards this per-operation behavior so a suite-global synthetic failure cannot leave the affected operation falsely marked PASS.
+
 ## Real-runtime checks
 
 The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, `fa_IR`, Playwright `1.55.0`, and Chromium. It checks:
@@ -26,8 +38,10 @@ The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, `fa_
 - Persian provider resolution for admitted Gravity Forms, Gravity Flow, and GravityView strings;
 - provider precedence plus deterministic upstream-only fallback through WordPress' real translation loader without modifying vendor files;
 - authentic Gravity Forms frontend validation in a real browser;
+- manifest-derived authentication and authenticated WordPress admin identity;
 - authentic Gravity Flow Inbox rendering in the real admin UI;
 - an authentic GravityView admin surface loading without fatal/critical runtime failure;
+- per-operation fail-closed browser diagnostics;
 - RTL direction in frontend/admin runtime;
 - screenshot and structured JSON evidence.
 
