@@ -21,7 +21,7 @@
     "i18n:pot": "wp i18n make-pot . languages/persian-gravityforms.pot --exclude=vendor,tests",
     "i18n:build": "php tools/i18n/build.php --write",
     "i18n:check": "php tools/i18n/build.php --check",
-    "i18n:test": "php tests/i18n/run.php"
+    "i18n:test": "php tests/i18n/run-production.php"
   },
   "config": {
     "allow-plugins": {
