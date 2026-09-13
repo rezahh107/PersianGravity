@@ -56,7 +56,7 @@ msgstr "این کار استایل‌های فرم شما را به مقادیر
 
 #: includes/blocks/config/class-gf-blocks-config.php:111
 msgid "Colors"
-msgstr "کلرادو"
+msgstr "رنگ‌ها"
 
 #: includes/blocks/config/class-gf-blocks-config.php:124
 msgid "Form Styles"
@@ -160,7 +160,7 @@ msgstr "پیشرفته"
 
 #: includes/blocks/config/class-gf-blocks-config.php:99
 msgid "Accent"
-msgstr "پذیرفتن"
+msgstr "رنگ تاکیدی"
 
 #: includes/blocks/config/class-gf-blocks-config.php:133
 msgid "Click or drag the Gravity Forms Block into the page to insert the form you selected. %1$sLearn More.%2$s"

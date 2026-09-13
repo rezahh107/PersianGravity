@@ -1,0 +1,720 @@
+# Gravity Forms 3.1.1.1 Persian sparse admission record — entry management surface.
+# Derived deterministically from accepted WU-001 classified authority; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms 3.1.1.1\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityforms\n"
+
+#: entry_list.php:1590
+msgid "%s restored from the spam."
+msgstr "%s از حالت هرزنامه خارج شدند."
+
+#: entry_list.php:1415
+msgid "Add Star"
+msgstr "افزودن ستاره"
+
+#: entry_detail.php:1547 entry_list.php:1243
+msgid "Mark as Spam"
+msgstr "علامت گذاری به عنوان هرزنامه"
+
+#: entry_detail.php:540 entry_list.php:1512 entry_list.php:1560 form_list.php:1023
+msgid "You don't have adequate permission to delete entries."
+msgstr "شما مجوز کافی برای حذف ورودی‌ها را ندارید."
+
+#: entry_detail.php:1521 entry_detail.php:1532 entry_list.php:1241 entry_list.php:1399 entry_list.php:1407
+msgid "Delete Permanently"
+msgstr "حذف غیرقابل برگشت"
+
+#: entry_list.php:1188
+msgid "This form does not have any unread entries matching the search criteria."
+msgstr "این فرم هیچ ورودی خوانده نشده مطابق با جستجوی شما ندارد."
+
+#: entry_detail.php:929
+msgid " Bulk action"
+msgstr " اقدامات دسته جمعی"
+
+#: entry_list.php:1570
+msgid "You don't have adequate permissions to trash entries."
+msgstr "شما مجوز کافی برای انتقال ورودی‌ها به زباله‌دان را ندارید."
+
+#: includes/locking/class-gf-locking.php:202
+msgid "%s is currently editing"
+msgstr "%s در حال ویرایش است"
+
+#: entry_detail.php:1479 includes/webapi/includes/class-gf-api-keys-table.php:28 includes/webapi/user-select/class-gf-user-select-config.php:53 includes/webapi/webapi.php:398
+msgid "User"
+msgstr "کاربر"
+
+#: entry_detail.php:839
+msgid "Details"
+msgstr "جزئیات"
+
+#: entry_list.php:507 entry_list.php:1242 entry_list.php:1426 form_list.php:848
+msgid "Trash"
+msgstr "زباله دان"
+
+#: entry_detail.php:1340
+msgid "Subscription Id"
+msgstr "شماره اشتراک"
+
+#: entry_detail.php:488
+msgid "You don't have adequate permission to trash entries."
+msgstr "شما مجوز کافی برای انتقال ورودی‌ها به زباله‌دان را ندارید."
+
+#: entry_list.php:2077
+msgid "Select all %s{0}%s entries."
+msgstr "همه %s{0}%s ورودی را انتخاب نمایید."
+
+#: includes/locking/locking.php:62
+msgid "%s is currently editing this entry"
+msgstr "%s در حال ویرایش این ورودی است"
+
+#: entry_detail.php:1464
+msgid "Submitted on"
+msgstr "ارسال‌شده در"
+
+#: entry_list.php:1618
+msgid "%s marked as read."
+msgstr "%s به عنوان خوانده شده علامت گذاری شدند."
+
+#: includes/locking/locking.php:24
+msgid "%s has requested permission to take over control of this form."
+msgstr "%s درخواست به دست گرفتن کنترل این فرم را دارد."
+
+#: includes/locking/class-gf-locking.php:290
+msgid "Your request has been sent to %s."
+msgstr "درخواست شما برای %s فرستاده شد"
+
+#: entry_list.php:501 entry_list.php:1423
+msgid "Spam"
+msgstr "هرزنامه"
+
+#: entry_detail.php:1358 includes/addon/class-gf-payment-addon.php:2723 includes/addon/class-gf-payment-addon.php:2727
+msgid "Recurring Amount"
+msgstr "مبلغ تمدید"
+
+#: entry_detail.php:1617 entry_list.php:2329
+msgid "Send To"
+msgstr "ارسال به"
+
+#: entry_list.php:1192
+msgid "This form does not have any starred entries."
+msgstr "این فرم هیچ ورودی ستاره دار ندارد."
+
+#: includes/locking/locking.php:149
+msgid "These settings are currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
+msgstr "این تنظیمات در حال حاضر قفل است. بر روی دکمهٔ درخواست کنترل کلیک نمایید تا بعدا %s به شما اجازه دهد."
+
+#: entry_list.php:212
+msgid "Default Filter"
+msgstr "فیلتر پیش‌فرض"
+
+#: entry_list.php:2327
+msgid "You may override the default notification settings by entering a comma delimited list of emails to which the selected notifications should be sent."
+msgstr "شما می‌توانید تنظیمات پیش‌فرض اعلان را با درون ریزی یک لیست از ایمیل‌ها که اعلان‌های انتخاب شده باید به آنها ارسال شوند تغییر دهید."
+
+#: entry_list.php:1207
+msgid "This form does not have any entries matching the selected filter."
+msgstr "این فرم هیچ ورودی منطبق با فیلتر انتخاب‌شده ندارد."
+
+#: entry_list.php:1777
+msgid "Entry starred."
+msgstr "ورودی ستاره‌دار شد."
+
+#: entry_list.php:1209
+msgid "This form does not have any entries yet."
+msgstr "این فرم هنوز هیچ ورودی ندارد."
+
+#: entry_list.php:1245
+msgid "Mark unread"
+msgstr "علامت گذاری به عنوان خوانده نشده"
+
+#: entry_detail.php:68 entry_detail.php:1281
+msgid "Payment Details"
+msgstr "جزئیات پرداخت"
+
+#: entry_list.php:1460
+msgid "WARNING! This operation cannot be undone. Empty trash? 'Ok' to empty trash. 'Cancel' to abort."
+msgstr "هشدار! این عملیات قابل بازگشت نیست. زباله‌دان خالی شود؟ برای خالی‌کردن زباله‌دان، عملیات را تأیید کنید؛ برای انصراف، آن را لغو کنید."
+
+#: entry_list.php:2369
+msgid "Add page break between entries"
+msgstr "بین ورودی‌ها جداکننده صفحه اضافه نمایید."
+
+#: entry_detail.php:60 entry_detail.php:953
+msgid "Notes"
+msgstr "یادداشت‌ها"
+
+#: entry_detail.php:1307 form_list.php:430 form_list.php:674
+msgid "Status"
+msgstr "وضعیت"
+
+#: entry_list.php:48 entry_list.php:62 entry_list.php:1546
+msgid "1 entry"
+msgstr "1 ورودی"
+
+#: includes/locking/class-gf-locking.php:508
+msgid "Reject Request"
+msgstr "رد درخواست"
+
+#: entry_list.php:487
+msgctxt "Entry List"
+msgid "Unread"
+msgstr "خوانده نشده"
+
+#: entry_list.php:1200
+msgid "This form does not have any entries in the trash."
+msgstr "این فرم هیچ ورودی موجود در زباله دان ندارد."
+
+#: includes/locking/locking.php:64
+msgid "%s has requested permission to take over control of this entry."
+msgstr "%s درخواست به دست گرفتن کنترل این ورودی را دارد."
+
+#: entry_list.php:889
+msgid "Select Entry Table Columns"
+msgstr "ستون‌های جدول ورودی را انتخاب کنید"
+
+#: entry_detail.php:1358 includes/addon/class-gf-payment-addon.php:2600
+msgid "Amount"
+msgstr "مبلغ"
+
+#: entry_list.php:1821
+msgid "Ajax error while setting entry property"
+msgstr "هنگام تنظیم ویژگی ورودی، خطای Ajax رخ داد."
+
+#: entry_list.php:353
+msgid "Search"
+msgstr "جستجو"
+
+#: includes/locking/class-gf-locking.php:200 includes/locking/locking.php:21
+msgid "Accept"
+msgstr "پذیرفتن"
+
+#: entry_list.php:495
+msgctxt "Entry List"
+msgid "Starred"
+msgstr "ستاره دار"
+
+#: entry_list.php:964
+msgid "Entry not starred"
+msgstr "ورودی ستاره‌دار نیست"
+
+#: entry_detail.php:1486 form_detail.php:2446 form_detail.php:3510 form_detail.php:3512 form_detail.php:3557 form_detail.php:3653 includes/addon/class-gf-feed-addon.php:1481 includes/blocks/config/class-gf-blocks-config.php:167 includes/system-status/class-gf-system-report.php:1162 includes/webapi/webapi.php:614 includes/webapi/webapi.php:631 settings.php:612 settings.php:728 settings.php:762 settings.php:896 tooltips.php:44 tooltips.php:104 tooltips.php:113
+msgid "(opens in a new tab)"
+msgstr "(در یک برگه جدید باز می‌شود)"
+
+#: includes/locking/locking.php:107
+msgid "These form settings are currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
+msgstr "تنظیمات این فرم در حال حاضر قفل است. بر روی دکمهٔ درخواست کنترل کلیک نمایید تا بعدا %s به شما اجازه دهد."
+
+#: entry_list.php:1878
+msgid "Please select at least one entry."
+msgstr "لطفاً حداقل یک ورودی انتخاب نمایید."
+
+#: entry_list.php:1632
+msgid "%s marked as unread."
+msgstr "%s به عنوان خوانده نشده علامت گذاری شدند."
+
+#: entry_detail.php:650 entry_list.php:1929
+msgid "You must select at least one type of notification to resend."
+msgstr "شما باید حداقل یک نوع اعلان برای ارسال مجدد انتخاب نمایید."
+
+#: includes/locking/class-gf-locking.php:208
+msgid "Request again"
+msgstr "درخواست دوباره"
+
+#: entry_detail.php:579
+msgid "Ajax error while deleting field."
+msgstr "خطای Ajax در حین حذف فیلد رخ داده است"
+
+#: entry_detail.php:1093
+msgid "show empty fields"
+msgstr "نمایش فیلدهای پرنشده"
+
+#: entry_list.php:1188
+msgid "This form does not have any unread entries."
+msgstr "این فرم هیچ ورودی خوانده نشده ندارد."
+
+#: entry_list.php:1239 includes/addon/class-gf-payment-addon.php:3589 includes/addon/class-gf-payment-addon.php:3590
+msgid "View"
+msgstr "نمایش"
+
+#: entry_list.php:2192
+msgid "Entry List"
+msgstr "لیست ورودی‌ها"
+
+#: includes/locking/class-gf-locking.php:203
+msgid "%s has taken over and is currently editing."
+msgstr "%s کنترل را به دست گرفته و در حال ویرایش اشت."
+
+#: entry_list.php:924
+msgid "Select entry %s"
+msgstr "انتخاب ورودی %s"
+
+#: includes/locking/locking.php:23
+msgid "%s has taken over and is currently editing this form."
+msgstr "%s کنترل را در دست گرفته و در حال ویرایش این فرم است."
+
+#: entry_list.php:2364
+msgid "Include notes"
+msgstr "شامل شدن یادداشت‌ها"
+
+#: entry_list.php:257 form_detail.php:1988
+msgid "Standard"
+msgstr "استاندارد"
+
+#: entry_detail.php:400
+msgid "%s: Unchecked \"%s\""
+msgstr "%s: علامت «%s» را بردارید"
+
+#: entry_list.php:2360
+msgid "Print all of the selected entries at once."
+msgstr "چاپ یکباره ی همه ورودی‌ها انتخاب شده."
+
+#: entry_list.php:1510
+msgid "Entry deleted."
+msgstr "ورودی حذف شد."
+
+#: entry_detail.php:1023
+msgid "Add Note"
+msgstr "افزودن یادداشت"
+
+#: entry_list.php:1892 entry_list.php:2273
+msgid "Print Entries"
+msgstr "چاپ ورودی‌ها"
+
+#: entry_list.php:1417 entry_list.php:1886 entry_list.php:2267 entry_list.php:2334
+msgid "Resend Notifications"
+msgstr "ارسال اعلان"
+
+#: includes/locking/locking.php:20
+msgid "This form is currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
+msgstr "این فرم در حال حاضر قفل است. بر روی دکمهٔ درخواست کنترل کلیک نمایید تا بعدا %s به شما اجازه دهد."
+
+#: entry_detail.php:1530 entry_list.php:1240 entry_list.php:1398 form_list.php:655 form_list.php:813
+msgid "Restore"
+msgstr "بازگردانی"
+
+#: includes/locking/class-gf-locking.php:204
+msgid "%s has requested permission to take over control."
+msgstr "%s درخواست به دست گرفتن کنترل را دارد."
+
+#: entry_detail.php:1006
+msgid "added"
+msgstr "افزوده شد در"
+
+#: entry_list.php:61
+msgid "%s permanently deleted."
+msgstr "%s برای همیشه حذف شد."
+
+#: entry_detail.php:1515 entry_list.php:1244 entry_list.php:1404
+msgid "Not Spam"
+msgstr "هرزنامه نیست"
+
+#: entry_detail.php:68 entry_detail.php:1281
+msgid "Subscription Details"
+msgstr "جزئیات اشتراک"
+
+#: entry_list.php:1465
+msgid "Delete All Spam"
+msgstr "حذف همه هرزنامه‌ها"
+
+#: entry_list.php:1060 entry_list.php:1239
+msgid "View entry number %s"
+msgstr "مشاهدهٔ ورودی شمارهٔ %s"
+
+#: entry_detail.php:1473 includes/addon/class-gf-addon.php:3203 includes/settings/fields/class-generic-map.php:542
+msgid "User IP"
+msgstr "آی پی کاربر"
+
+#: entry_detail.php:1492
+msgid "Edit Post"
+msgstr "ویرایش نوشته"
+
+#: entry_list.php:2345
+msgid "Close Window"
+msgstr "بستن پنجره"
+
+#: entry_detail.php:669
+msgid "Notifications were resent successfully."
+msgstr "اعلان‌ها دوباره با موفقیت ارسال شدند."
+
+#: entry_detail.php:1557 includes/webapi/webapi.php:464 includes/webapi/webapi.php:583 includes/webapi/webapi.php:669
+msgid "Update"
+msgstr "به‌روزرسانی"
+
+#: entry_list.php:1413
+msgid "Mark as Read"
+msgstr "علامت گذاری به عنوان خوانده شده"
+
+#: entry_list.php:1556
+msgid "%s deleted."
+msgstr "%s حذف شدند."
+
+#: entry_list.php:1604
+msgid "%s marked as spam."
+msgstr "%s به عنوان هرزنامه علامتگذاری شدند."
+
+#: entry_list.php:1646
+msgid "%s starred."
+msgstr "%s ستاره دار شدند."
+
+#: entry_list.php:1192
+msgid "This form does not have any starred entries matching the search criteria."
+msgstr "این فرم هیچ ورودی ستاره دار مطابق با جستجوی شما ندارد."
+
+#: entry_list.php:2075
+msgid "All %s{0}%s entries on this page are selected."
+msgstr "همه %s{0}%s ورودی این صفحه انتخاب شدند."
+
+#: entry_detail.php:289
+msgid "Oops! We couldn't find your form. Please try again."
+msgstr "متأسفانه فرم شما پیدا نشد. دوباره تلاش کنید."
+
+#: includes/locking/class-gf-locking.php:210
+msgid "Your request was rejected"
+msgstr "درخواست شما رد شده است"
+
+#: entry_list.php:1954
+msgid "Notifications for %s were resent successfully."
+msgstr "ایمیل اعلان برای %s. با موفقیت دوباره ارسال شد."
+
+#: entry_list.php:1240
+msgid "Restore entry number %s"
+msgstr "بازیابی ورودی شمارهٔ %s"
+
+#: entry_list.php:261
+msgid "Full Width"
+msgstr "عرض کامل"
+
+#: entry_list.php:1205
+msgid "This form does not have any entries matching the search criteria."
+msgstr "این فرم هیچ ورودی مطابق با جستجوی شما ندارد."
+
+#: entry_list.php:214
+msgid "Number of entries per page:"
+msgstr "تعداد ورودی‌ها در هر صفحه"
+
+#: entry_detail.php:1601 entry_list.php:2309
+msgid "Configure Notifications"
+msgstr "پیکربندی ایمیل اعلان"
+
+#: entry_detail.php:1424 entry_list.php:1420 entry_list.php:2372
+msgid "Print"
+msgstr "چاپ"
+
+#: entry_detail.php:1521 entry_detail.php:1532
+msgid "You are about to delete this entry. 'Cancel' to stop, 'OK' to delete."
+msgstr "در آستانهٔ حذف این ورودی هستید. برای توقف، عملیات را لغو کنید؛ برای حذف، آن را تأیید کنید."
+
+#: entry_list.php:79
+msgid "1 entry moved to the Trash. %sUndo%s"
+msgstr "۱ ورودی به زباله دان منتقل شد. %sبازگردانی%s"
+
+#: includes/locking/locking.php:61
+msgid "This entry is currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
+msgstr "این ورودی در حال حاضر قفل است. بر روی دکمهٔ درخواست کنترل کلیک نمایید تا بعدا %s به شما اجازه دهد."
+
+#: entry_detail.php:1463 entry_list.php:877
+msgid "Entry Id"
+msgstr "شماره ورودی"
+
+#: entry_list.php:1242
+msgid "Move entry number %s to trash"
+msgstr "انتقال ورودی شمارهٔ %s به زباله‌دان"
+
+#: entry_detail.php:568
+msgid "Would you like to delete this file? 'Cancel' to stop. 'OK' to delete"
+msgstr "آیا می‌خواهید این فایل را حذف کنید؟ برای توقف، عملیات را لغو کنید؛ برای حذف، آن را تأیید کنید."
+
+#: includes/locking/class-gf-locking.php:491
+msgid "Request Control"
+msgstr "درخواست کنترل"
+
+#: entry_detail.php:1571 form_detail.php:1678 form_detail.php:1690 includes/addon/class-gf-results.php:298 includes/blocks/config/class-gf-blocks-config.php:107 includes/locking/class-gf-locking.php:201
+msgid "Cancel"
+msgstr "انصراف"
+
+#: entry_detail.php:1625 entry_list.php:2336
+msgid "Resending..."
+msgstr "درحال ارسال...."
+
+#: entry_list.php:889
+msgid "Drag & drop to order and select which columns are displayed in the entries table."
+msgstr "برای مرتب‌سازی ستون‌ها آن‌ها را بکشید و رها کنید و مشخص کنید کدام ستون‌ها در جدول ورودی‌ها نمایش داده شوند."
+
+#: entry_list.php:1580
+msgid "You don't have adequate permissions to restore entries."
+msgstr "شما مجوز کافی برای بازگردانی ورودی‌ها را ندارید."
+
+#: entry_detail.php:416 entry_detail.php:466
+msgid "You don't have adequate permission to add notes."
+msgstr "مجوز کافی برای افزودن یادداشت ندارید."
+
+#: entry_detail.php:1420
+msgid "Include Notes"
+msgstr "شامل شدن یادداشت‌ها"
+
+#: entry_list.php:1956
+msgid "entries"
+msgstr "ورودی‌ها"
+
+#: entry_detail.php:713
+msgid "Entry Updated."
+msgstr "ورودی به‌روزرسانی شد."
+
+#: entry_detail.php:75
+msgid "Print entry"
+msgstr "چاپ ورودی"
+
+#: entry_list.php:1241
+msgid "Permanently delete entry number %s"
+msgstr "حذف دائمی ورودی شمارهٔ %s"
+
+#: includes/locking/class-gf-locking.php:205 includes/locking/class-gf-locking.php:285
+msgid "You now have control"
+msgstr "اکنون کنترل به دست شماست "
+
+#: entry_detail.php:1485
+msgid "Embed Url"
+msgstr "URL جاسازی"
+
+#: entry_detail.php:932 form_detail.php:1691 includes/addon/class-gf-feed-addon.php:2206 includes/addon/class-gf-feed-addon.php:2253 includes/settings/config/class-gf-settings-config-i18n.php:37 includes/settings/config/class-gf-settings-config-i18n.php:61
+msgid "Delete"
+msgstr "حذف"
+
+#: includes/locking/locking.php:63
+msgid "%s has taken over and is currently editing this entry."
+msgstr "%s کنترل را در دست گرفته و در حال ویرایش این ورودی است."
+
+#: entry_list.php:1776
+msgid "Star removed from entry."
+msgstr "ستاره از ورودی حذف شد."
+
+#: entry_list.php:1181
+msgid "You don't have any forms. Let's go %1$screate one%2$s!"
+msgstr "هنوز هیچ فرمی ندارید. بیایید %1$sیکی بسازیم%2$s!"
+
+#: includes/locking/class-gf-locking.php:209
+msgid "Error"
+msgid_plural "Errors"
+msgstr[0] "خطا"
+msgstr[1] "خطاها"
+
+#: entry_detail.php:1623
+msgid "Resend"
+msgstr "ریست"
+
+#: entry_detail.php:52
+msgid "Notifications"
+msgstr "اعلان‌ها"
+
+#: entry_list.php:1243
+msgid "Mark entry number %s as spam"
+msgstr "علامت‌گذاری ورودی شمارهٔ %s به‌عنوان هرزنامه"
+
+#: includes/locking/class-gf-locking.php:207
+msgid "No response"
+msgstr "بی پاسخ"
+
+#: entry_detail.php:298
+msgid "Oops! We couldn't find your entry. Please try again."
+msgstr "متأسفانه ورودی شما پیدا نشد. دوباره تلاش کنید."
+
+#: includes/locking/locking.php:22
+msgid "%s is currently editing this form"
+msgstr "%s در حال ویرایش این فرم است"
+
+#: includes/locking/class-gf-locking.php:206
+msgid "Pending"
+msgstr "منتظر"
+
+#: includes/locking/class-gf-locking.php:490
+msgid "Take Over"
+msgstr "بیش تر از"
+
+#: entry_list.php:213 form_list.php:392
+msgid "Pagination"
+msgstr "صفحه‌گذاری"
+
+#: entry_detail.php:935 entry_list.php:218 form_list.php:397 includes/settings/config/class-gf-settings-config-i18n.php:45
+msgid "Apply"
+msgstr "اعمال کردن"
+
+#: includes/locking/class-gf-locking.php:199
+msgid "This page is currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
+msgstr "این صفحه در حال حاضر قفل است. بر روی دکمهٔ درخواست کنترل کلیک نمایید تا بعدا %s به شما اجازه دهد."
+
+#: entry_list.php:2313
+msgid "Specify which notifications you would like to resend for the selected entries."
+msgstr "مشخص کنید که ایمیل اعلان این ورودی را برای کدام موردها می‌خواهید دوباره ارسال کنید."
+
+#: entry_list.php:2076
+msgid "Go to the first row of the table to "
+msgstr "رفتن به نخستین ردیف جدول برای "
+
+#: entry_detail.php:1075
+msgid "Entry # "
+msgstr "ورودی # "
+
+#: entry_list.php:1461
+msgid "WARNING! This operation cannot be undone. Permanently delete all spam? 'Ok' to delete. 'Cancel' to abort."
+msgstr "هشدار! این عملیات قابل بازگشت نیست. همهٔ هرزنامه‌ها برای همیشه حذف شوند؟ برای حذف، عملیات را تأیید کنید؛ برای انصراف، آن را لغو کنید."
+
+#: entry_list.php:1544
+msgid "%d entries"
+msgstr "%d ورودی"
+
+#: entry_list.php:2078
+msgid "All %s{0}%s entries have been selected."
+msgstr "همه %s{0}%s ورودی انتخاب شدند."
+
+#: entry_list.php:479
+msgctxt "Entry List"
+msgid "All"
+msgstr "همه"
+
+#: entry_list.php:888
+msgid "Click to select columns to display"
+msgstr "ستون‌های که می‌خواهید نمایش داده شود را با کلیک کردن انتخاب کنید."
+
+#: entry_detail.php:479
+msgid "You don't have adequate permission to delete notes."
+msgstr "شما مجوز کافی برای حذف یادداشت‌ها را ندارید."
+
+#: entry_detail.php:502
+msgid "You don't have adequate permission to restore entries."
+msgstr "شما مجوز کافی برای بازگردانی ورودی‌ها را ندارید."
+
+#: entry_list.php:1956
+msgid "entry"
+msgstr "ورودی"
+
+#: entry_detail.php:1541
+msgid "Move to Trash"
+msgstr "انتقال به زباله دان"
+
+#: entry_detail.php:1323
+msgid "Start Date"
+msgstr "تاریخ شروع"
+
+#: entry_detail.php:1045
+msgid "Subject:"
+msgstr "موضوع:"
+
+#: entry_detail.php:44 entry_detail.php:736
+msgid "Entry"
+msgstr "ورودی"
+
+#: entry_list.php:1200
+msgid "This form does not have any entries in the trash matching the search criteria."
+msgstr "این فرم هیچ ورودی هرزنامه مطابق با جستجوی شما ندارد."
+
+#: entry_list.php:2307
+msgid "You cannot resend notifications for these entries because this form does not currently have any notifications configured."
+msgstr "شما نمی‌توانید برای این ورودی ایمیل اعلان ارسال نمایید. زیرا برای این فرم،اعلان‌ها تنظیم نشده است."
+
+#: entry_list.php:1414
+msgid "Mark as Unread"
+msgstr "علامت گذاری به عنوان خوانده نشده"
+
+#: entry_list.php:964
+msgid "Starred entry"
+msgstr "ورودی ستاره‌دار"
+
+#: entry_list.php:1245
+msgid "Mark read"
+msgstr "علامت گذاری به عنوان خوانده شده"
+
+#: entry_list.php:977
+msgid "Toggle star for entry #%s"
+msgstr "تغییر وضعیت ستارهٔ ورودی شمارهٔ %s"
+
+#: entry_list.php:1244
+msgid "Mark entry number %s as not spam"
+msgstr "علامت‌گذاری ورودی شمارهٔ %s به‌عنوان غیرهرزنامه"
+
+#: entry_list.php:1245
+msgid "Mark entry number %s as unread"
+msgstr "علامت‌گذاری ورودی شمارهٔ %s به‌عنوان خوانده‌نشده"
+
+#: entry_list.php:1660
+msgid "%s unstarred."
+msgstr "%s بی ستاره شدند."
+
+#: entry_list.php:1464
+msgid "Empty Trash"
+msgstr "خالی کردن زباله دان"
+
+#: entry_detail.php:313 entry_detail.php:354 entry_detail.php:513 entry_detail.php:527 entry_list.php:1594 entry_list.php:1608 entry_list.php:1622 entry_list.php:1636 entry_list.php:1650 entry_list.php:1664
+msgid "You don't have adequate permission to edit entries."
+msgstr "شما مجوز کافی برای ویرایش ورودی‌ها را ندارید."
+
+#: entry_detail.php:1557 entry_list.php:1302 includes/addon/class-gf-feed-addon.php:2251 includes/webapi/includes/class-gf-api-keys-table.php:68
+msgid "Edit"
+msgstr "ویرایش"
+
+#: entry_list.php:1416
+msgid "Remove Star"
+msgstr "حذف ستاره"
+
+#: entry_list.php:1196
+msgid "This form does not have any spam."
+msgstr "این فرم هیچ هرزنامه‌ای ندارد."
+
+#: entry_list.php:215
+msgid "Display Mode"
+msgstr "نمایش نگه دارنده"
+
+#: entry_detail.php:1037
+msgid "Also email this note to"
+msgstr "همچنین این یادداشت را ایمیل کن به"
+
+#: entry_detail.php:931
+msgid " Bulk action "
+msgstr " اقدامات دسته جمعی "
+
+#: entry_detail.php:1468
+msgid "Updated"
+msgstr "به‌روزشده"
+
+#: entry_list.php:47 entry_list.php:1578
+msgid "%s restored from the Trash."
+msgstr "%s از زباله دان بازگردانی شدند."
+
+#: entry_list.php:2079
+msgid "Clear selection"
+msgstr "پاک کردن انتخاب‌ها"
+
+#: entry_detail.php:1340
+msgid "Transaction Id"
+msgstr "شماره تراکنش"
+
+#: entry_detail.php:400
+msgid "%s: Checked \"%s\""
+msgstr "%s: علامت «%s»"
+
+#: entry_list.php:2259
+msgid "Please select at least one entry..."
+msgstr "لطفاً دست‌کم یک ورودی انتخاب کنید..."
+
+#: entry_detail.php:1599
+msgid "You cannot resend notifications for this entry because this form does not currently have any notifications configured."
+msgstr "شما نمی‌توانید برای این ورودی دوباره اعلان ارسال نمایید. زیرا برای این فرم،اعلان تنظیم نشده است."
+
+#: entry_detail.php:1323 form_detail.php:865 form_detail.php:2019 form_detail.php:3193 form_detail.php:3194 includes/addon/class-gf-payment-addon.php:3300
+msgid "Date"
+msgstr "تاریخ"
+
+#: includes/locking/locking.php:110 includes/locking/locking.php:152
+msgid "%s has requested permission to take over control of these settings."
+msgstr "%s درخواست به دست گرفتن کنترل این تنظیمات را دارد."
+
+#: entry_list.php:1568
+msgid "%s moved to Trash."
+msgstr "%s به زبان دان منتقل شدند."

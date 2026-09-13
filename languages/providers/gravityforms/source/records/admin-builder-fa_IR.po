@@ -1,0 +1,3650 @@
+# Gravity Forms 3.1.1.1 Persian sparse admission record — admin builder surface.
+# Derived deterministically from accepted WU-001 classified authority; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms 3.1.1.1\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityforms\n"
+
+#: tooltips.php:29
+msgid "Validation Message Placement"
+msgstr "پیام اعتبارسنجی"
+
+#: form_detail.php:2623
+msgid "Amharic"
+msgstr "امهری"
+
+#: form_detail.php:491 form_detail.php:1879
+msgid "None"
+msgstr "هیچ"
+
+#: tooltips.php:86
+msgid "Enter the admin label of the form field.  Entering a value in this field will override the Field Label when displayed in the Gravity Forms administration tool."
+msgstr "برچسب مدیریتی فیلد فرم را وارد کنید. اگر در این فیلد مقداری وارد شود، هنگام نمایش در ابزار مدیریت Gravity Forms جایگزین برچسب فیلد خواهد شد."
+
+#: form_list.php:996
+msgid "%s form restored."
+msgid_plural "%s forms restored."
+msgstr[0] "%s فرم بازگردانی شد."
+msgstr[1] "%s فرم بازگردانی شدند."
+
+#: form_detail.php:2685
+msgid "Thai"
+msgstr "تایلندی"
+
+#: form_detail.php:871
+msgid "List"
+msgstr "لیست"
+
+#: tooltips.php:117
+msgid "Multiple Selection"
+msgstr "چند انتخابی"
+
+#: entry_detail.php:540 entry_list.php:1512 entry_list.php:1560 form_list.php:1023
+msgid "You don't have adequate permission to delete entries."
+msgstr "شما مجوز کافی برای حذف ورودی‌ها را ندارید."
+
+#: settings.php:704 tooltips.php:166
+msgid "Protect your form entries from spam using Akismet."
+msgstr "با استفاده از Akismet از ورودی‌های فرم در برابر هرزنامه محافظت کنید."
+
+#: form_detail.php:2837
+msgid "Enable Submit Button Conditional Logic"
+msgstr "فعال‌سازی منطق شرطی دکمه \"بعدی\""
+
+#: tooltips.php:119
+msgid "Require Login Message"
+msgstr "پیام ضروری بودن وارد شدن کاربر"
+
+#: form_detail.php:395 tooltips.php:175
+msgid "Field Settings"
+msgstr "تنظیمات فیلد"
+
+#: form_list.php:287
+msgid "Provide a title and a description for this form"
+msgstr "برای این فرم یک عنوان و توضیح وارد کنید"
+
+#: tooltips.php:158
+msgid "Settings License Key"
+msgstr "کلید مجوز تنظیمات"
+
+#: form_list.php:660
+msgid "Mark as Active"
+msgstr "علامت گذاری به عنوان فعال"
+
+#: form_detail.php:1715 tooltips.php:35
+msgid "Choice Layout"
+msgstr "چیدمان گزینه‌ها"
+
+#: form_list.php:661
+msgid "Mark as Inactive"
+msgstr "علامت گذاری به عنوان غیرفعال"
+
+#: tooltips.php:168
+msgid "Tab Index Start Value"
+msgstr "مقدار آغاز شاخص تب"
+
+#: tooltips.php:132
+msgid "Select the author that will be used for the post that is created by the form entry."
+msgstr "نویسنده ای را برای ارسال هایی که از ورودی این فرم ساخته می‌شود انتخاب کنید."
+
+#: form_list.php:988
+msgid "%s form moved to the trash."
+msgid_plural "%s forms moved to the trash."
+msgstr[0] "%s فرم به زباله‌دان منتقل شد."
+msgstr[1] "%s فرم به زباله‌دان منتقل شدند."
+
+#: tooltips.php:51
+msgid "Select the custom field name from available existing custom fields, or enter a new custom field name."
+msgstr "نام فیلد سفارشی را از فیلدهای سفارشی موجود انتخاب کنید یا یک نام جدید وارد کنید."
+
+#: form_detail.php:3197
+msgid "Embed URL"
+msgstr "URL جاسازی"
+
+#: tooltips.php:169
+msgid "Override Notifications"
+msgstr "پاک کردن ( نادیده گرفتن ) اعلان‌ها"
+
+#: form_detail.php:793 tooltips.php:124
+msgid "Next Button Text"
+msgstr "متن دکمه بعدی"
+
+#: tooltips.php:34
+msgid "Form CSS Class Name"
+msgstr "نام کلاس CSS فرم"
+
+#: tooltips.php:13
+msgid "From Name"
+msgstr "نام فرستنده"
+
+#: form_list.php:662
+msgid "Reset Views"
+msgstr "بازنشانی بازدید‌ها"
+
+#: form_detail.php:2001
+msgid "Custom Mask Instructions"
+msgstr "دستورالعمل الگوی دلخواه"
+
+#: form_list.php:226
+msgid "Please enter a unique form title."
+msgstr "لطفاً عنوان فرم منحصر به فردی وارد نمایید."
+
+#: form_detail.php:1637
+msgid "Definitely"
+msgstr "قطعا"
+
+#: tooltips.php:15
+msgid "Enter a comma separated list of email addresses you would like to receive a CC of the notification email."
+msgstr "لیست ایمیل هایی که برای دریافت یک CC از اعلان‌های ایمیلی مدنظر دارید را به صورت جداشده با کاما وارد کنید."
+
+#: form_detail.php:498 tooltips.php:122
+msgid "Progress Bar Style"
+msgstr "سبک نوار پیشرفت"
+
+#: form_list.php:127
+msgid "Ajax error while updating form"
+msgstr "خطای Ajax در حین به‌روزرسانی فرم رخ داده است"
+
+#: form_detail.php:2630
+msgid "Chinese (Hong Kong)"
+msgstr "چینی (هنگ کنگ)"
+
+#: tooltips.php:37
+msgid "Enter the URL of a custom image to replace the default 'add item' icon. A maximum size of 16px by 16px is recommended"
+msgstr "نشانی تصویر سفارشی را وارد کنید تا جایگزین آیکون پیش‌فرض بخش «افزودن مورد» شود. حداکثر اندازهٔ پیشنهادی ۱۶ در ۱۶ پیکسل است."
+
+#: form_detail.php:2001
+msgid "Help"
+msgstr "راهنما"
+
+#: form_detail.php:2446
+msgid "Learn more"
+msgstr "بیشتر بدانید"
+
+#: form_list.php:187
+msgid "Search Forms"
+msgstr "جستجو فرم‌ها"
+
+#: form_detail.php:2673
+msgid "Romanian"
+msgstr "رومانیایی"
+
+#: tooltips.php:177
+msgid "Use these settings to keep entries only as long as they are needed. Trash or delete entries automatically older than the specified number of days. The minimum number of days allowed is one. This is to ensure that all entry processing is complete before deleting/trashing. The number of days setting is a minimum, not an exact period of time. The trashing/deleting occurs during the daily cron task so some entries may appear to remain up to a day longer than expected."
+msgstr "از این تنظیمات استفاده کنید تا ورودی‌ها فقط تا زمانی که لازم‌اند نگه داشته شوند. ورودی‌های قدیمی‌تر از تعداد روزهای تعیین‌شده را به‌طور خودکار به زباله‌دان منتقل یا حذف کنید. حداقل تعداد روز مجاز یک روز است تا پردازش ورودی پیش از حذف یا انتقال به زباله‌دان کامل شود. تعداد روزها یک حداقل است، نه یک بازهٔ زمانی دقیق؛ عملیات انتقال به زباله‌دان یا حذف در وظیفهٔ روزانهٔ cron انجام می‌شود، بنابراین ممکن است برخی ورودی‌ها تا یک روز بیشتر از انتظار باقی بمانند."
+
+#: tooltips.php:156
+msgid "Click the file selection button to upload a Gravity Forms export file from your computer. Please make sure your file has the .json extension, and that it was generated by the Gravity Forms Export tool."
+msgstr "برای بارگذاری فایل برون‌بری Gravity Forms از رایانهٔ خود، دکمهٔ انتخاب فایل را بزنید. مطمئن شوید فایل پسوند .json دارد و با ابزار برون‌بری Gravity Forms ایجاد شده است."
+
+#: form_list.php:202 form_list.php:222
+msgid "There was an issue creating your form."
+msgstr "یک مشکل در حین ایجاد این فرم رخ داده است."
+
+#: form_detail.php:1677
+msgid "Insert Choices"
+msgstr "درون ریزی گزینه‌ها"
+
+#: tooltips.php:160
+msgid "Output HTML5"
+msgstr "خروجی HTML5 "
+
+#: form_detail.php:2011
+msgid "Use an asterisk '*' to indicate any alphanumeric character."
+msgstr "برای نشان دادن یک کاراکتر الفبایی یا عددی از '*' استفاده کنید."
+
+#: form_detail.php:2624
+msgid "Armenian"
+msgstr "ارمنی"
+
+#: entry_list.php:507 entry_list.php:1242 entry_list.php:1426 form_list.php:848
+msgid "Trash"
+msgstr "زباله دان"
+
+#: form_detail.php:267 form_detail.php:278
+msgid "Save Form"
+msgstr "فرم خود را ذخیره کنید."
+
+#: form_detail.php:1627
+msgid "QA/Quality Control"
+msgstr "QA / کنترل کیفیت"
+
+#: form_detail.php:1111
+msgid "All Categories"
+msgstr "همه دسته بندی‌ها"
+
+#: form_detail.php:503
+msgid "Gray"
+msgstr "خاکستری"
+
+#: form_detail.php:2759
+msgid "Allow field to be populated dynamically"
+msgstr "اجازه دادن به فیلدها برای ارزیابی پویا"
+
+#: form_detail.php:1358
+msgid "Image Path"
+msgstr "مسیر تصویر"
+
+#: form_detail.php:2644
+msgid "Galician"
+msgstr "گالیسیایی"
+
+#: tooltips.php:102
+msgid "Select the field to be used as the source for the values for this field."
+msgstr "فیلدی را انتخاب کنید که به‌عنوان منبع مقادیر این فیلد استفاده شود."
+
+#: form_detail.php:2641
+msgid "Finnish"
+msgstr "فنلاندی"
+
+#: tooltips.php:58
+msgid "Default Province"
+msgstr "شهر پیش‌فرض"
+
+#: tooltips.php:19
+msgid "Limit Number of Entries"
+msgstr "تعداد پبام‌های ورودی را محدود کنید."
+
+#: form_detail.php:2099
+msgid "Max"
+msgstr "حداکثر"
+
+#: form_detail.php:2662
+msgid "Lithuanian"
+msgstr "لیتوانیایی"
+
+#: tooltips.php:24
+msgid "Legacy Markup"
+msgstr "نشانه گذاری میراث"
+
+#: tooltips.php:155
+msgid "Select Entry Status"
+msgstr "انتخاب وضعیت ورودی"
+
+#: form_detail.php:1636
+msgid "About the Same"
+msgstr "یکسان"
+
+#: form_detail.php:2639
+msgid "Estonian"
+msgstr "استونیایی"
+
+#: form_detail.php:1568
+msgid "Clear Default Choices"
+msgstr "پاک‌کردن گزینه‌های پیش‌فرض"
+
+#: form_detail.php:1621
+msgid "North America"
+msgstr "آمریکای شمالی"
+
+#: tooltips.php:154
+msgid "Export Date Range"
+msgstr "بازهٔ تاریخ برون‌بری"
+
+#: form_detail.php:1627
+msgid "Sales"
+msgstr "فروش"
+
+#: form_detail.php:2649
+msgid "Greek"
+msgstr "یونانی"
+
+#: form_detail.php:2626
+msgid "Basque"
+msgstr "باسک"
+
+#: form_detail.php:2122 tooltips.php:84
+msgid "Formula"
+msgstr "فرمول محاسبه"
+
+#: tooltips.php:76
+msgid "Show Country Dial Code"
+msgstr "نمایش کد تماس کشور"
+
+#: form_detail.php:1010
+msgid "Published"
+msgstr "منتشرشده"
+
+#: tooltips.php:165
+msgid "Please select the currency for your location.  Currency is used for pricing fields and price calculations."
+msgstr "واحد پول را برای منطقه خود وارد کنید. واحد پول برای فیلد قیمت گذاری و محاسبات قیمت استفاده می‌شود."
+
+#: tooltips.php:66
+msgid "Select the format of numbers that are allowed in this field. You have the option to use a comma or a dot as the decimal separator."
+msgstr "قالب اعدادی که برای این فیلد مجاز است انتخاب کنید. می‌توانید از کاما یا دات برای جداکننده اعشاری استفاده کنید. "
+
+#: form_detail.php:1147
+msgid "Placeholder Label"
+msgstr "برچسب نگه دارنده"
+
+#: form_detail.php:1460
+msgid "Maximum allowed on this server: %sMB"
+msgstr "حداکثر مجاز بر روی این سرور: %sMB"
+
+#: form_detail.php:1761
+msgid "Select Exact Number"
+msgstr "یک برگه انتخاب نمایید"
+
+#: form_detail.php:1627
+msgid "Industry"
+msgstr "صنعت"
+
+#: form_list.php:656 form_list.php:821
+msgid "Delete permanently"
+msgstr "حذف دائمی"
+
+#: form_detail.php:341
+msgid "Manage pagination options"
+msgstr "مدیریت گزینه‌های صفحه بندی"
+
+#: form_detail.php:2009
+msgid "Use a '9' to indicate a numerical character."
+msgstr "برای نشان دادن کارکتر عددی از یک '9' استفاده کنید."
+
+#: tooltips.php:74
+msgid "Phone Number Format"
+msgstr "قالب شماره تلفن"
+
+#: form_detail.php:1629
+msgid "Friday"
+msgstr "جمعه"
+
+#: form_detail.php:1687
+msgid "enter name"
+msgstr "نام را وارد نمایید"
+
+#: form_detail.php:656
+msgid "Product Field Mapping"
+msgstr "قرار دادن فیلد محصول"
+
+#: form_detail.php:2658
+msgid "Kannada"
+msgstr "کونادا"
+
+#: form_detail.php:430
+msgid "No Matching Fields"
+msgstr "فیلد منطبق یافت نشد"
+
+#: form_detail.php:2428
+msgid "Enable enhanced user interface"
+msgstr "فعال‌سازی رابط کاربری پیشرفته"
+
+#: form_detail.php:2665
+msgid "Marathi"
+msgstr "مراتی"
+
+#: form_list.php:157
+msgid "WARNING: You are about to delete ALL entries associated with the selected forms. "
+msgstr "اخطار: شما قصد حذف تمام ورودی‌های وابسته به فرم‌های انتخاب شده را دارید. "
+
+#: form_detail.php:1595
+msgid "Add Bulk Choices"
+msgstr "افزودن گروهی گزینه‌ها"
+
+#: form_detail.php:1390 form_detail.php:2303 form_detail.php:2323 form_detail.php:2342 form_detail.php:2353
+msgid "Below inputs"
+msgstr "زیر فیلدهای ورودی"
+
+#: form_list.php:998
+msgid "You don't have adequate permissions to restore forms."
+msgstr "شما مجوز کافی برای بازگردانی فرم‌ها را ندارید."
+
+#: form_detail.php:1158 form_detail.php:1176 form_detail.php:1191
+msgid "Create content template"
+msgstr "ایجاد قالب محتوا"
+
+#: form_detail.php:1626
+msgid "Job Type"
+msgstr "نوع کسب و کار"
+
+#: form_detail.php:3548
+msgid "This form has legacy markup enabled, which may prevent some new features from functioning."
+msgstr "این فرم نشانه‌گذاری قدیمی را فعال کرده است، که ممکن است از عملکرد برخی ویژگی‌های جدید جلوگیری کند."
+
+#: tooltips.php:158
+msgid "Your Gravity Forms support license key is used to verify your support package, enable automatic updates and receive support."
+msgstr "کلید مجوز پشتیبانی Gravity Forms برای تأیید بستهٔ پشتیبانی، فعال‌سازی به‌روزرسانی‌های خودکار و دریافت پشتیبانی استفاده می‌شود."
+
+#: form_detail.php:612 includes/blocks/config/class-gf-blocks-config.php:159
+msgid "Text"
+msgstr "متن"
+
+#: form_detail.php:2678
+msgid "Slovenian"
+msgstr "اسلوونیایی"
+
+#: form_detail.php:1208
+msgid "Alternative Text"
+msgstr "متن جایگزین"
+
+#: form_detail.php:1627
+msgid "Science/Research"
+msgstr "علمی / پژوهش"
+
+#: tooltips.php:137
+msgid "Use Current User as Author"
+msgstr "استفاده از کاربر فعلی به عنوان نویسنده"
+
+#: form_detail.php:1631
+msgid "Every day"
+msgstr "هرروز"
+
+#: tooltips.php:115
+msgid "Check this option to add a \"Select All\" checkbox before the checkbox choices to allow users to check all the checkboxes with one click."
+msgstr "با فعالسازی این گزینه، یک چک باکس \"انتخاب همه\" به ابتدای گزینه‌های چک باکس اضافه می‌شود که به کاربر اجازه میدهد که با یک کلیک همه گزینه‌ها را انتخاب نماید."
+
+#: tooltips.php:89
+msgid "Select the description placement.  Descriptions can be placed above the field inputs or below the field inputs."
+msgstr "محل توضیحات را انتخاب کنید. توضیحات می‌توانند در بالا یا پایین فیلدهای ورودی قرار گیرد."
+
+#: form_detail.php:414
+msgid "Drag a field to the left to start building your form and then start configuring it."
+msgstr "یک فیلد را به سمت چپ بکشید تا فرم خود را شروع کنید و سپس پیکربندی آن را شروع کنید."
+
+#: form_list.php:918
+msgid "You don't have adequate permission to restore forms."
+msgstr "شما مجوز کافی برای بازگردانی فرم‌ها را ندارید."
+
+#: tooltips.php:138
+msgid "Select one or more image metadata field to be displayed along with the image upload field. They enable users to enter additional information about the uploaded image."
+msgstr "یک یا چند فیلد متا داده تصاویر برای نمایش با فیلد بارگذاری تصویر انتخاب کنید. این فیلدها به کاربران اجازه می‌هد اطلاعت بیشتری درباره تصاویر بارگذاری شده وارد کنند."
+
+#: tooltips.php:9
+msgid "Send To Email Address"
+msgstr "ارسال به نشانی ایمیل"
+
+#: tooltips.php:40
+msgid "When enabled, auto-formatting will insert paragraph breaks automatically. Disable auto-formatting when using HTML to create the confirmation content."
+msgstr "وقتی قالب خودکار فعال باشد جداکننده پاراگراف‌ها به صورت خودکار قرار داده می‌شود. وقتی که می‌خواهید از HTMLبرای ساخت محتوای تأییدیه‌ها استفاده کنید قالب خودکار را غیرفعال کنید."
+
+#: form_list.php:928
+msgid "You don't have adequate permission to delete forms."
+msgstr "شما مجوز کافی برای حذف فرم‌ها را ندارید."
+
+#: form_detail.php:2625
+msgid "Azerbaijani"
+msgstr "آذربایجانی"
+
+#: tooltips.php:85
+msgid "Specify how many decimal places the number should be rounded to."
+msgstr "مشخص کنید چند رقم اعشار باید گرد شود."
+
+#: form_detail.php:1628
+msgid "Some College"
+msgstr "دانشکده"
+
+#: tooltips.php:144
+msgid "Select which Product this field is tied to."
+msgstr "محصولاتی که به این فیلد ارتباط دارند را انتخاب کنید."
+
+#: form_detail.php:1266 includes/addon/class-gf-payment-addon.php:3006 includes/settings/fields/class-field-select.php:150 includes/settings/fields/class-generic-map.php:326
+msgid "State"
+msgstr "ایالت"
+
+#: form_detail.php:1077 tooltips.php:130 tooltips.php:136
+msgid "Post Category"
+msgstr "دسته بندی نوشته"
+
+#: tooltips.php:61
+msgid "Check this box to prevent the extra address input (Address Line 2) from being displayed in the form."
+msgstr "برای عدم نمایش فیلد اضافه آدرس این گزینه را انتخاب کنید."
+
+#: form_detail.php:2581
+msgid "To activate this option, please add a field to be used as the source."
+msgstr "برای فعال‌سازی این گزینه لطفاً یک فیلد برای منبع اضافه کنید."
+
+#: tooltips.php:95
+msgid "Select the fields you'd like to use in this Address Field and customize the Sub-Labels by entering new ones."
+msgstr "فیلدی که می‌خواهید برای استفاده آدرس استفاده کنید را انتخاب کنید و برچسب فرعی را با درون ریزی مقداری جدید سفارشی کنید."
+
+#: form_detail.php:1634
+msgid "Somewhat Important"
+msgstr "تا حدودی مهم"
+
+#: form_detail.php:341
+msgid "Pagination Options"
+msgstr "صفحه‌بندی: گزینه‌ها"
+
+#: form_detail.php:2307
+msgid "Field Label Visibility"
+msgstr "نمایش برچسب فیلد"
+
+#: form_list.php:432 form_list.php:676
+msgid "ID"
+msgstr "شناسه"
+
+#: form_detail.php:1562 form_detail.php:2535
+msgid "Label"
+msgstr "برچسب"
+
+#: form_detail.php:2026
+msgid "Social Security Number"
+msgstr "شماره تامین اجتماعی"
+
+#: form_detail.php:673
+msgid "Single Product"
+msgstr "محصول تکی"
+
+#: form_detail.php:810
+msgid "Previous Button Type"
+msgstr "نوع دکمهٔ قبلی"
+
+#: tooltips.php:57
+msgid "Default State"
+msgstr "حالت پیش‌فرض"
+
+#: tooltips.php:139
+msgid "Check this option to set this image as the post's Featured Image."
+msgstr "برای قرار دادن این تصویر به عنوان تصویر شاخص این گزینه را انتخاب کنید."
+
+#: form_detail.php:2686
+msgid "Turkish"
+msgstr "ترکی"
+
+#: form_detail.php:2726 tooltips.php:67
+msgid "Force SSL"
+msgstr "اجبار به SSL"
+
+#: form_detail.php:390
+msgid "Search for a field"
+msgstr "جستجوی فیلد"
+
+#: form_list.php:33 includes/addon/class-gf-addon.php:3205 includes/settings/fields/class-generic-map.php:550 tooltips.php:25
+msgid "Form Title"
+msgstr "عنوان فرم"
+
+#: tooltips.php:65
+msgid "Select the format you would like to use for the Name field.  There are 3 options, Normal which includes First and Last Name, Extended which adds Prefix and Suffix, or Simple which is a single input field."
+msgstr "قالبی که می‌خواهید برای فیلد نام استفاده شود را انتخاب کنید. سه انتخاب وجود دارد، حالت عادی که شامل نام و نام خانوادگی است، حالت پیشرفته که پیشوند وپسوند اضافه می‌کند، حالت ساده که یک فیلد است. "
+
+#: tooltips.php:118
+msgid "Check this option to require a user to be logged in to view this form."
+msgstr "برای اینکه فقط کاربران وارد شده بتوانند این فرم را ببینند این گزینه را انتخاب کنید."
+
+#: form_detail.php:1733
+msgid "1 Column"
+msgstr "۱ ستون"
+
+#: form_detail.php:1899 includes/system-status/class-gf-system-report.php:887 tooltips.php:165
+msgid "Currency"
+msgstr "واحد پول"
+
+#: form_detail.php:528 tooltips.php:123
+msgid "Page Names"
+msgstr "نام‌های صفحه‌ها"
+
+#: form_detail.php:1206
+msgid "Image Metadata"
+msgstr "متا داده تصویر"
+
+#: tooltips.php:178
+msgid "Password Visibility Toggle"
+msgstr "تغییر قابلیت مشاهده رمز عبور"
+
+#: form_list.php:394
+msgid "Sorting Options"
+msgstr "گزینه‌های مرتب‌سازی"
+
+#: form_detail.php:2661
+msgid "Latvian"
+msgstr "لتونی"
+
+#: form_detail.php:1627
+msgid "Law Enforcement/Security"
+msgstr "اجرای قانون / امنیت"
+
+#: form_detail.php:1633
+msgid "Very Satisfied"
+msgstr "بسیار راضی"
+
+#: tooltips.php:111
+msgid "Create rules to dynamically display or hide this field based on values from another field."
+msgstr "برای نمایش یا عدم نمایش این فیلد براساس مقادیر یک فیلد دیگر قوانین را ایجاد کنید."
+
+#: tooltips.php:174
+msgid "Identification"
+msgstr "شناسایی"
+
+#: form_list.php:338
+msgid "Saved! Redirecting..."
+msgstr "ذخیره شد. در حال انتقال..."
+
+#: form_detail.php:1502
+msgid "24 hour"
+msgstr "24 ساعته"
+
+#: tooltips.php:77
+msgid "Field Description"
+msgstr "توضیحات فیلد"
+
+#: form_detail.php:674 form_detail.php:692 form_detail.php:727 form_detail.php:742 form_detail.php:758 form_detail.php:857 form_detail.php:886 form_detail.php:1093
+msgid "Drop Down"
+msgstr "لیست بازشو"
+
+#: form_detail.php:1636
+msgid "Comparison"
+msgstr "مقایسه"
+
+#: entry_detail.php:1307 form_list.php:430 form_list.php:674
+msgid "Status"
+msgstr "وضعیت"
+
+#: tooltips.php:83
+msgid "Enabling calculations will allow the value of this field to be dynamically calculated based on a mathematical formula."
+msgstr "فعال‌سازی محاسبات به شما این اجازه را می‌دهد که مقدار این فیلد به صورت خودکار بر اساس فرمول‌های ریاضی محاسبه شود."
+
+#: form_detail.php:1634
+msgid "Not Important"
+msgstr "بدون اهمیت"
+
+#: form_detail.php:1741 tooltips.php:36
+msgid "Column Flow"
+msgstr "جهت جریان ستون‌ها"
+
+#: tooltips.php:135
+msgid "Post Title Template"
+msgstr "قالب عنوان نوشته"
+
+#: tooltips.php:137
+msgid "Selecting this option will set the post author to the WordPress user that submitted the form."
+msgstr "با انتخاب این گزینه، نویسندهٔ نوشته روی کاربر WordPress که فرم را ارسال کرده است تنظیم می‌شود."
+
+#: tooltips.php:74
+msgid "Select the format you would like to use for the phone input.  The International (formatted) format lets users pick their country and formats the phone number accordingly."
+msgstr "قالب موردنظر برای ورودی تلفن را انتخاب کنید. قالب بین‌المللی (قالب‌بندی‌شده) به کاربران اجازه می‌دهد کشور خود را انتخاب کنند و شمارهٔ تلفن متناسب با آن قالب‌بندی می‌شود."
+
+#: form_detail.php:1628
+msgid "Graduate or Professional Degree"
+msgstr "فارغ‌التحصیل یا مدرک حرفه‌ای"
+
+#: form_detail.php:1623
+msgid "Under 18"
+msgstr "زیر 18 سال"
+
+#: tooltips.php:21
+msgid "Detect spam using the Advanced Honeypot"
+msgstr "تشخیص هرزنامه با Honeypot پیشرفته"
+
+#: form_detail.php:1880
+msgid "Short"
+msgstr "کوتاه"
+
+#: form_detail.php:2622
+msgid "Afrikaans"
+msgstr "آفریکانس"
+
+#: form_detail.php:1634
+msgid "Very Important"
+msgstr "خیلی مهم"
+
+#: form_detail.php:3198
+msgid "HTTP User Agent"
+msgstr "عامل کاربری HTTP"
+
+#: form_detail.php:1453 tooltips.php:73
+msgid "Maximum File Size"
+msgstr "حداکثر اندازه فایل‌ها"
+
+#: form_detail.php:1812
+msgid "Enable \"other\" choice"
+msgstr "فعال‌سازی گزینه \"سایر\""
+
+#: form_detail.php:1627
+msgid "Energy/Utilities"
+msgstr "انرژی / ابزار‌ها"
+
+#: tooltips.php:164
+msgid "Select the type of reCAPTCHA you would like to use. This setting is disabled and will be removed from Gravity Forms core."
+msgstr "نوع reCAPTCHA موردنظر را انتخاب کنید. این تنظیم غیرفعال است و از هستهٔ Gravity Forms حذف خواهد شد."
+
+#: tooltips.php:126
+msgid "Enter the text you would like to appear on the page previous button."
+msgstr "متنی را وارد کنید که می‌خواهید روی دکمهٔ «قبلی» صفحه نمایش داده شود."
+
+#: form_list.php:442
+msgid "Descending"
+msgstr "درحال ارسال...."
+
+#: form_detail.php:2078 tooltips.php:53
+msgid "Maximum Characters"
+msgstr "حداکثر کاراکتر"
+
+#: form_detail.php:3555 form_detail.php:3652
+msgid "Learn More"
+msgstr "بیشتر بدانید"
+
+#: form_detail.php:1270
+msgid "Postal Code"
+msgstr "کد پستی"
+
+#: form_list.php:905 form_list.php:954
+msgid "Form moved to the trash."
+msgstr "فرم به زباله دان منتقل شد"
+
+#: tooltips.php:92
+msgid "Select the height of the textarea field.  This will set the number of lines that are visible in the field."
+msgstr "ارتفاع فیلد ناحیهٔ متن را انتخاب کنید. این گزینه تعداد خطوط قابل مشاهده در فیلد را تعیین می‌کند."
+
+#: tooltips.php:105
+msgid "If you would like to override the default error validation for a field, enter it here.  This message will be displayed if there is an error with this field when the user submits the form."
+msgstr "اگر می‌خواهید خطای پیش‌فرض اعتبارسنجی برای یک فیلد را بازنویسی کنید، اینجا وارد کنید. وقتی که خطایی در هنگام ارسال فیلد توسط کاربر وجود داشته باشد این پیام نمایش داده می‌شود. "
+
+#: form_detail.php:1627
+msgid "Consumer Goods"
+msgstr "محصولات قابل فروش"
+
+#: form_detail.php:1627
+msgid "Legal"
+msgstr "حقوقی"
+
+#: form_detail.php:1114 form_detail.php:1120
+msgid "Select Categories"
+msgstr "انتخاب دسته بندی"
+
+#: tooltips.php:71
+msgid "Select this option to enable multiple files to be uploaded for this field."
+msgstr "برای اینکه چند فایل از این فیلد بارگذاری شوند این گزینه را فعال کنید."
+
+#: form_list.php:935 form_list.php:966
+msgid "Form duplicated."
+msgstr "فرم کپی شد."
+
+#: tooltips.php:32
+msgid "Enter the text you would like to appear on the form submit button."
+msgstr "متنی را که می‌خواهید در دکمه ارسال فرم نمایش داده شود را وارد کنید."
+
+#: form_detail.php:599 tooltips.php:45 tooltips.php:46
+msgid "Field Label"
+msgstr "برچسب فیلد"
+
+#: form_list.php:137 form_list.php:747 includes/addon/class-gf-feed-addon.php:3021
+msgid "Active"
+msgstr "فعال"
+
+#: tooltips.php:127
+msgid "Enter the path to an image you would like to use as the page previous button."
+msgstr "آدرس تصویری که می‌خواهید برای دکمه قبلی استفاده شود را وارد کنید."
+
+#: tooltips.php:32
+msgid "Form Button Text"
+msgstr "متن دکمه فرم"
+
+#: form_list.php:925
+msgid "Form deleted."
+msgstr "فرم حذف شد."
+
+#: form_detail.php:1627 form_detail.php:1628
+msgid "Other"
+msgstr "سایر"
+
+#: form_list.php:564
+msgctxt "Form List"
+msgid "Inactive"
+msgstr "غیرفعال"
+
+#: tooltips.php:140
+msgid "Check this option to enable data to be passed to the form and pre-populate this field dynamically. Data can be passed via Query Strings, Shortcode and/or Hooks."
+msgstr "برای فعال‌کردن دریافت داده و پرکردن پویای این فیلد از پیش، این گزینه را انتخاب کنید. داده می‌تواند از طریق رشته‌های پرس‌وجو، شورت‌کد و/یا هوک‌ها ارسال شود."
+
+#: form_list.php:562
+msgctxt "Form List"
+msgid "All"
+msgstr "همه"
+
+#: form_detail.php:646 form_detail.php:1217 includes/system-status/class-gf-update.php:53 includes/webapi/includes/class-gf-api-keys-table.php:27 includes/webapi/webapi.php:391
+msgid "Description"
+msgstr "توضیحات"
+
+#: form_detail.php:1627
+msgid "Accounting/Finance"
+msgstr "حسابداری/امور مالی"
+
+#: form_detail.php:1634
+msgid "Important"
+msgstr "مهم"
+
+#: form_detail.php:1414
+msgid "Allowed file extensions"
+msgstr "پسوندهای مجاز فایل"
+
+#: tooltips.php:125
+msgid "Enter the path to an image you would like to use as the page next button."
+msgstr "آدرس تصویری که می‌خواهید برای دکمه بعدی استفاده شود را وارد کنید."
+
+#: form_detail.php:1512
+msgid "Phone Format"
+msgstr "قالب شماره تلفن"
+
+#: form_detail.php:1687
+msgid "Enter name"
+msgstr "نام را وارد نمایید"
+
+#: tooltips.php:17
+msgid "Attachments"
+msgstr "پیوست‌ها"
+
+#: tooltips.php:33
+msgid "Enter the path to an image you would like to use as the form submit button."
+msgstr "آدرس تصویری که می‌خواهید برای دکمه ارسال فرم استفاده شود را وارد کنید."
+
+#: tooltips.php:94
+msgid "Add Choices to this field. You can mark a choice as selected by default by using the radio buttons on the left."
+msgstr "گزینه‌های این فیلد را اضافه کنید. شما می‌توانید با استفاده از دکمه‌های رادیویی در سمت راست یک گزینه را به صورت پیش‌فرض انتخاب شده قرار دهید."
+
+#: tooltips.php:54
+msgid "Enter the maximum number of rows that users are allowed to add."
+msgstr "بیشترین تعداد سطر را که توسط کاربران می‌تواند اضافه شود را وارد کنید"
+
+#: form_detail.php:1629
+msgid "Thursday"
+msgstr "پنجشنبه"
+
+#: form_detail.php:3200
+msgid "User Display Name"
+msgstr "نام نمایشی کاربر"
+
+#: tooltips.php:60
+msgid "Hide Country"
+msgstr "مخفی کردن کشور"
+
+#: form_detail.php:506
+msgid "Red"
+msgstr "قرمز"
+
+#: form_detail.php:627
+msgid "Submit Button Image URL"
+msgstr "تصویر دکمه فرم"
+
+#: form_detail.php:2663
+msgid "Malay"
+msgstr "مالایی"
+
+#: form_detail.php:757 form_detail.php:859 form_detail.php:1765
+msgid "Number"
+msgstr "عددی"
+
+#: tooltips.php:96 tooltips.php:97
+msgid "If you would like to pre-populate the value of a field, enter it here."
+msgstr "اگر می‌خواهید مقدار فیلد را از قبل قرار دهید مقدار را اینجا وارد کنید."
+
+#: tooltips.php:33
+msgid "Form Button Image"
+msgstr "تصویر دکمه فرم"
+
+#: form_detail.php:1211 form_list.php:431 form_list.php:675
+msgid "Title"
+msgstr "عنوان"
+
+#: tooltips.php:10 tooltips.php:40
+msgid "Disable Auto-Formatting"
+msgstr "غیرفعال کردن قالب خودکار"
+
+#: form_detail.php:1621
+msgid "Europe"
+msgstr "اروپا"
+
+#: tooltips.php:150
+msgid "Export Selected Form"
+msgstr "فرم انتخاب شده برای برون ریزی"
+
+#: tooltips.php:27
+msgid "Form Label Placement"
+msgstr "محل قرارگیری برچسب فرم"
+
+#: form_detail.php:1627
+msgid "Professional Services"
+msgstr "خدمات حرفه ای"
+
+#: form_detail.php:1627
+msgid "Telecommunications"
+msgstr "ارتباطات"
+
+#: tooltips.php:133
+msgid "Select the post format that will be used for the post that is created by the form entry."
+msgstr "قالبی را برای ارسال هایی که از ورودی این فرم ساخته می‌شود انتخاب کنید."
+
+#: form_detail.php:1627
+msgid "Construction/Facilities"
+msgstr "ساخت و ساز / تسهیلات"
+
+#: tooltips.php:115
+msgid "\"Select All\" Choice"
+msgstr "گزینه \"انتخاب همه\""
+
+#: form_list.php:435 form_list.php:679
+msgid "Conversion"
+msgstr "درصد تبدیل"
+
+#: entry_detail.php:1486 form_detail.php:2446 form_detail.php:3510 form_detail.php:3512 form_detail.php:3557 form_detail.php:3653 includes/addon/class-gf-feed-addon.php:1481 includes/blocks/config/class-gf-blocks-config.php:167 includes/system-status/class-gf-system-report.php:1162 includes/webapi/webapi.php:614 includes/webapi/webapi.php:631 settings.php:612 settings.php:728 settings.php:762 settings.php:896 tooltips.php:44 tooltips.php:104 tooltips.php:113
+msgid "(opens in a new tab)"
+msgstr "(در یک برگه جدید باز می‌شود)"
+
+#: form_detail.php:1627
+msgid "Business Development"
+msgstr "توسعه کسب و کار"
+
+#: form_detail.php:1624
+msgid "Widowed"
+msgstr "بیوه"
+
+#: form_detail.php:1341
+msgid "Date Field"
+msgstr "فیلد تاریخ"
+
+#: tooltips.php:88
+msgid "Select the label visibility for this field.  Labels can either inherit the form setting or be hidden."
+msgstr "حالت نمایش برچسب این فیلد را انتخاب کنید. برچسب‌ها می‌توانند در فرم قرار گیرند یا به صورت مخفی باشند."
+
+#: form_detail.php:2602
+msgid "Activated by default"
+msgstr "به صورت پیش‌فرض فعال"
+
+#: form_detail.php:1636
+msgid "Much Worse"
+msgstr "خیلی بدتر"
+
+#: tooltips.php:176
+msgid "Check this box if you would like to prevent the IP address from being stored during form submission."
+msgstr "اگر می‌خواهید هنگام ارسال فرم، نشانی IP ذخیره نشود، این گزینه را علامت بزنید."
+
+#: form_list.php:874
+msgid "No forms were found for your search query. %sView all forms%s."
+msgstr "هیچ فرمی برای عبارت جستجوی شما یافت نشد. %sمشاهدهٔ همهٔ فرم‌ها%s."
+
+#: form_detail.php:2659
+msgid "Korean"
+msgstr "کره‌ای"
+
+#: tooltips.php:138
+msgid "Image Meta"
+msgstr "متای تصویر"
+
+#: form_detail.php:1622
+msgid "Gender"
+msgstr "جنسیت"
+
+#: form_detail.php:2652
+msgid "Hindi"
+msgstr "هندی"
+
+#: form_detail.php:1623
+msgid "55-64"
+msgstr "55-64"
+
+#: form_detail.php:2699 tooltips.php:37
+msgid "Add Icon URL"
+msgstr "افزودن URL آیکون"
+
+#: tooltips.php:120
+msgid "Page Conditional Logic"
+msgstr "صفحه منطق شرطی"
+
+#: form_detail.php:856
+msgid "Paragraph Text"
+msgstr "متن پاراگرافی"
+
+#: form_detail.php:927
+msgid "Font Color"
+msgstr "رنگ فونت"
+
+#: tooltips.php:70
+msgid "Allowed File Extensions"
+msgstr "پسوندهای مجاز فایل"
+
+#: form_detail.php:1630
+msgid "April"
+msgstr "آوریل"
+
+#: form_detail.php:2677
+msgid "Slovak"
+msgstr "اسلواکی"
+
+#: tooltips.php:113
+msgid "By selecting this option, the %s jQuery script will be applied to this field, enabling search capabilities to Drop Down fields and a more user-friendly interface for Multi Select fields."
+msgstr "با انتخاب این گزینه، اسکریپت %s jQuery روی این فیلد اعمال می‌شود تا امکان جست‌وجو در فیلدهای کشویی و رابط کاربرپسندتری برای فیلدهای چندانتخابی فراهم شود."
+
+#: form_detail.php:953
+msgid "Dark"
+msgstr "تیره"
+
+#: form_detail.php:868
+msgid "Website"
+msgstr "وب سایت"
+
+#: tooltips.php:171
+msgid "Enter text to display at the top of the progress bar."
+msgstr "متن را که می‌خواهید بالای نوار پیشرفت نمایش داده شود را وارد کنید."
+
+#: form_detail.php:2825
+msgid "Enable Page Conditional Logic"
+msgstr "فعال‌کردن منطق شرطی صفحه"
+
+#: form_detail.php:1627
+msgid "Human Resources"
+msgstr "منابع انسانی"
+
+#: form_detail.php:1621
+msgid "Antarctica"
+msgstr "قطب جنوب"
+
+#: form_detail.php:364
+msgid "End Paging"
+msgstr "پایان صفحه بندی"
+
+#: tooltips.php:148
+msgid "Post Fields allow you to add fields to your form that create Post Drafts in WordPress from the submitted data."
+msgstr "فیلدهای ارسال نوشته به شما این امکان را می‌دهد که با داده‌های ارسال شده یک پیش نویس در WordPress ایجاد کنید."
+
+#: form_detail.php:1625
+msgid "Employed Full-Time"
+msgstr "کارمند تمام وقت"
+
+#: form_detail.php:1627
+msgid "Business Opportunity"
+msgstr "فرصت‌های تجاری"
+
+#: form_detail.php:2346 tooltips.php:30 tooltips.php:90
+msgid "Sub-Label Placement"
+msgstr "محل قرار گیری برچسب فرعی"
+
+#: form_list.php:214
+msgid "Please enter a form title."
+msgstr "عنوان فرم را وارد نمایید."
+
+#: tooltips.php:50
+msgid "Select the position of the badge containing the links to Google's privacy policy and terms."
+msgstr "موقعیت نشان حاوی پیوندهایی به خط مشی رازداری و شرایط Google را انتخاب کنید."
+
+#: form_list.php:565
+msgctxt "Form List"
+msgid "Trash"
+msgstr "زباله دان"
+
+#: form_detail.php:1391 form_detail.php:2303 form_detail.php:2324 form_detail.php:2342 form_detail.php:2354
+msgid "Above inputs"
+msgstr "بالای فیلدهای ورودی"
+
+#: form_detail.php:728 form_detail.php:860 form_detail.php:887 form_detail.php:1094
+msgid "Checkboxes"
+msgstr "چک باکس"
+
+#: tooltips.php:109
+msgid "Field Choices"
+msgstr "گزینه‌های فیلد"
+
+#: form_detail.php:1628
+msgid "Bachelor's Degree"
+msgstr "کارشناسی ( لیسانس )"
+
+#: form_detail.php:1627
+msgid "Government/Military"
+msgstr "دولت / نظامی"
+
+#: form_detail.php:3644
+msgid "This form uses Ready Classes, which will be removed in Gravity Forms 4.0. You can now use settings or code snippets to achieve the same results."
+msgstr "این فرم از Ready Classes استفاده می‌کند که در Gravity Forms 4.0 حذف خواهند شد. اکنون می‌توانید با تنظیمات یا قطعه‌کدها به همان نتیجه برسید."
+
+#: tooltips.php:80
+msgid "Select this option to check the value for links or URLs. If any are found, the field will fail validation unless the Advanced Honeypot is enabled in the Form settings and configured to flag the submission as spam."
+msgstr "این گزینه را انتخاب کنید تا مقدار از نظر وجود پیوند یا URL بررسی شود. اگر موردی پیدا شود، اعتبارسنجی فیلد ناموفق خواهد بود؛ مگر اینکه Honeypot پیشرفته در تنظیمات فرم فعال و برای علامت‌گذاری ارسال به‌عنوان هرزنامه پیکربندی شده باشد."
+
+#: tooltips.php:64
+msgid "Hide State/Province/Region"
+msgstr "مخفی کردن استان / شهر / ناحیه"
+
+#: form_detail.php:1730
+msgid "Number of Columns"
+msgstr "تعداد ستون‌ها"
+
+#: form_detail.php:1629
+msgid "Monday"
+msgstr "دوشنبه"
+
+#: form_detail.php:1857
+msgid "Enable Password Visibility Toggle"
+msgstr "فعال‌کردن کلید نمایش رمز عبور"
+
+#: form_detail.php:1883 form_display.php:4052
+msgid "Strong"
+msgstr "قوی"
+
+#: tooltips.php:14
+msgid "Enter the email address you would like to be used as the reply to address for the notification email."
+msgstr "ایمیلی را که می‌خواهید برای آدرس پاسخ به برای ایمیل اعلان استفاده شود را وارد کنید."
+
+#: tooltips.php:24
+msgid "Check this option to enable Gravity Forms' legacy markup. This will hinder the accessibility of your form."
+msgstr "برای فعال کردن نشانه گذاری قدیمی Gravity Forms، این گزینه را علامت بزنید. این مانع دسترسی به فرم شما می‌شود."
+
+#: form_detail.php:1630
+msgid "January"
+msgstr "ژانویه"
+
+#: form_detail.php:988
+msgid "New"
+msgstr "جدید"
+
+#: tooltips.php:145
+msgid "Input masks provide a visual guide allowing users to more easily enter data in a specific format such as dates and phone numbers."
+msgstr "الگو‌های ورودی یک راهنمای تصویری ایجاد می‌کنند که به کاربران اجازه می‌دهد که داده‌ها را بسیار راحت تر در قالب‌های مشخص مانند تاریخ‌ها و شماره تلفن‌ها وارد کنند."
+
+#: form_detail.php:2671
+msgid "Portuguese (Brazil)"
+msgstr "پرتغالی (برزیل)"
+
+#: tooltips.php:68
+msgid "Field Date Format"
+msgstr "قالب فیلد تاریخ"
+
+#: form_detail.php:2667
+msgid "Norwegian"
+msgstr "نروژی"
+
+#: form_detail.php:1621
+msgid "Australia"
+msgstr "استرالیا"
+
+#: form_detail.php:1225
+msgid "Featured Image"
+msgstr "تصویر ویژه"
+
+#: form_detail.php:1627
+msgid "Internet"
+msgstr "اینترنت"
+
+#: tooltips.php:146
+msgid "Standard Fields provide basic form functionality."
+msgstr "فیلدهای استاندارد قابلیت‌های پایه ای فرم را فراهم می‌کنند. "
+
+#: tooltips.php:180
+msgid "Enter the maximum number of times this repeater can be added."
+msgstr "حداکثر تعداد دفعاتی را وارد کنید که این تکرارشونده می‌تواند افزوده شود."
+
+#: form_detail.php:1630
+msgid "October"
+msgstr "اکتبر"
+
+#: form_detail.php:712
+msgid "Disable quantity field"
+msgstr "غیرفعال‌سازی فیلد مقدار/تعداد"
+
+#: form_detail.php:569 form_detail.php:615 form_detail.php:787 form_detail.php:817
+msgid "Image"
+msgstr "تصویر"
+
+#: form_detail.php:1049 tooltips.php:133
+msgid "Post Format"
+msgstr "قالب نوشته"
+
+#: form_detail.php:1719
+msgid "Vertical"
+msgstr "عمودی"
+
+#: form_detail.php:546 form_detail.php:554
+msgid "Completion Text"
+msgstr "متن تکمیل"
+
+#: form_detail.php:1623
+msgid "18-24"
+msgstr "18-24"
+
+#: form_detail.php:918 form_detail.php:1638 form_display.php:4052 includes/blocks/config/class-gf-blocks-config.php:139
+msgid "Medium"
+msgstr "متوسط"
+
+#: form_detail.php:1632
+msgid "1-6 months"
+msgstr "1-6 ماه"
+
+#: tooltips.php:106
+msgid "Select the language you would like to use for the reCAPTCHA display from the available options."
+msgstr "زبانی را که می‌خواهید reCAPTCHA با آن نمایش داده شود از گزینه‌های موجود انتخاب کنید."
+
+#: form_detail.php:2709 tooltips.php:38
+msgid "Delete Icon URL"
+msgstr "حذف URL آیکون"
+
+#: form_detail.php:3549
+msgid "Legacy markup will be removed from Gravity Forms in version 4.0, and then all forms will use modern markup.  We recommend updating this form's settings to use modern markup."
+msgstr "نشانه‌گذاری قدیمی در Gravity Forms 4.0 حذف می‌شود و پس از آن همهٔ فرم‌ها از نشانه‌گذاری جدید استفاده خواهند کرد. توصیه می‌کنیم تنظیمات این فرم را برای استفاده از نشانه‌گذاری جدید به‌روزرسانی کنید."
+
+#: form_detail.php:1155 form_detail.php:1173
+msgid "Content Template"
+msgstr "قالب محتوا"
+
+#: form_detail.php:2575
+msgid "Display option to use the values submitted in different field"
+msgstr "نمایش گزینه استفاده از مقادیر ارسال شده در فیلد دیگر"
+
+#: form_detail.php:1686
+msgid "Save as"
+msgstr "ذخیره به عنوان"
+
+#: form_list.php:1004
+msgid "%s form deleted."
+msgid_plural "%s forms deleted."
+msgstr[0] "%s فرم حذف شد."
+msgstr[1] "%s فرم حذف شدند."
+
+#: tooltips.php:157
+msgid "Import Images"
+msgstr "درون‌ریزی تصاویر"
+
+#: form_detail.php:768 tooltips.php:141
+msgid "Content"
+msgstr "محتوا"
+
+#: form_detail.php:2316 tooltips.php:28 tooltips.php:89
+msgid "Description Placement"
+msgstr "محل قرار گیری توضیحات"
+
+#: form_detail.php:1630
+msgid "March"
+msgstr "مارس"
+
+#: form_detail.php:2627
+msgid "Bengali"
+msgstr "بنگالی"
+
+#: form_detail.php:1637
+msgid "Definitely Not"
+msgstr "قطعا نه"
+
+#: form_detail.php:1469 form_detail.php:1725
+msgid "Columns"
+msgstr "ستون‌ها"
+
+#: form_detail.php:281
+msgid "Saving"
+msgstr "در حال ذخیره..."
+
+#: form_detail.php:1627
+msgid "Banking/Mortgage"
+msgstr "بانکداری / رهن"
+
+#: form_detail.php:1629
+msgid "Tuesday"
+msgstr "سه شنبه"
+
+#: form_detail.php:1141
+msgid "Display placeholder"
+msgstr "نمایش نگه دارنده"
+
+#: form_detail.php:1309
+msgid "Name Format"
+msgstr "قالب نام"
+
+#: form_list.php:133 form_list.php:750 includes/addon/class-gf-feed-addon.php:3024
+msgid "Inactive"
+msgstr "غیرفعال"
+
+#: tooltips.php:76
+msgid "When enabled, the country dial code (e.g. +1, +44) will be displayed beside the country flag. Users can also type the dial code directly to select a country."
+msgstr "با فعال‌کردن این گزینه، کد تماس کشور (برای نمونه +1 یا +44) کنار پرچم کشور نمایش داده می‌شود. کاربران همچنین می‌توانند کد تماس را مستقیماً تایپ کنند تا کشور انتخاب شود."
+
+#: form_detail.php:1844
+msgid "Password Fields"
+msgstr "فیلدهای رمز عبور"
+
+#: form_detail.php:952
+msgid "Light"
+msgstr "روشن"
+
+#: form_detail.php:1635
+msgid "Strongly Agree"
+msgstr "خیلی موافق"
+
+#: tooltips.php:167
+msgid "Entries Conversion"
+msgstr "درصد تبدیل ورودی‌ها"
+
+#: form_detail.php:575
+msgid "Button Text"
+msgstr "متن دکمه"
+
+#: form_detail.php:1627
+msgid "Marketing"
+msgstr "بازاریابی"
+
+#: form_detail.php:2276 tooltips.php:99
+msgid "Placeholders"
+msgstr "نگه دارنده‌های متن"
+
+#: form_detail.php:1620
+msgid "Canadian Province/Territory"
+msgstr "استان/منطقه کانادا"
+
+#: form_detail.php:2152 tooltips.php:85
+msgid "Rounding"
+msgstr "گرد کردن"
+
+#: form_detail.php:2216
+msgid "Remove Button Text"
+msgstr "متن دکمهٔ حذف"
+
+#: entry_list.php:257 form_detail.php:1988
+msgid "Standard"
+msgstr "استاندارد"
+
+#: tooltips.php:150
+msgid "Select the form you would like to export entry data from. You may only export data from one form at a time."
+msgstr "فرمی که می‌خواهید ورودی‌ها آن برون ریزی شود انتخاب کنید. هر بار فقط از ورودی‌های یک فرم می‌توان برون ریزی کرد."
+
+#: form_detail.php:984
+msgid "Existing"
+msgstr "موجود"
+
+#: form_list.php:80
+msgid "Cancel to stop, OK to delete."
+msgstr "برای توقف، عملیات را لغو کنید؛ برای حذف، آن را تأیید کنید."
+
+#: form_detail.php:1624
+msgid "Married"
+msgstr "متاهل"
+
+#: tooltips.php:154
+msgid "Select a date range. Setting a range will limit the export to entries submitted during that date range. If no range is set, all entries will be exported."
+msgstr "یک بازه برای تاریخ را انتخاب کنید. انتخاب این بازه تاریخ،پردازش خروجی را در حیطه ورودی‌های ارسال‌شده در این بازه محدود خواهد نمود. اگر بازه تاریخ توسط شما انتخاب نگردد، تمام وروردی‌ها مورد پردازش قرار می‌گیرند."
+
+#: form_detail.php:1106
+msgid "Category"
+msgstr "دسته بندی"
+
+#: form_detail.php:2633
+msgid "Croatian"
+msgstr "کرواسیایی"
+
+#: tooltips.php:157
+msgid "If a form uses the Image Choice field, or has Conversational Mode enabled, the importer will import the images and save them in your media library."
+msgstr "اگر فرمی از فیلد انتخاب تصویر استفاده کند، یا حالت مکالمه فعال باشد، واردکننده تصاویر را وارد کرده و آنها را در کتابخانه رسانه شما ذخیره می‌کند."
+
+#: tooltips.php:88
+msgid "Label Visibility"
+msgstr "نمایش برچسب"
+
+#: form_detail.php:2636
+msgid "Dutch"
+msgstr "هلندی"
+
+#: form_detail.php:2629
+msgid "Catalan"
+msgstr "کاتالانی"
+
+#: tooltips.php:42
+msgid "Redirect Form to URL"
+msgstr "تغییر مسیر فرم به آدرس "
+
+#: form_detail.php:482 tooltips.php:121
+msgid "Progress Indicator"
+msgstr "نشانگر پیشرفت"
+
+#: form_detail.php:1757
+msgid "Selections"
+msgstr "جداکننده"
+
+#: tooltips.php:26
+msgid "Enter a description for your form. This may be used for user instructions."
+msgstr "توضیحات را برای فرمتان وارد کنید. این توضیح می‌تواند برای راهنمایی کاربر استفاده شود."
+
+#: includes/system-status/class-gf-system-report.php:881 tooltips.php:161
+msgid "No-Conflict Mode"
+msgstr "حالت بدون تداخل"
+
+#: form_detail.php:1550
+msgid "Choices"
+msgstr "گزینه‌ها"
+
+#: tooltips.php:84
+msgid "Specify a mathematical formula. The result of this formula will be dynamically populated as the value for this field."
+msgstr "فرمول ریاضی را مشخص کنید. جواب این فرمول به صورت دینامیک در مقدار این فیلد قرار می‌گیرد."
+
+#: form_detail.php:1633
+msgid "Unsatisfied"
+msgstr "ناراضی"
+
+#: form_detail.php:2089
+msgid "Range"
+msgstr "بازه"
+
+#: entry_detail.php:1530 entry_list.php:1240 entry_list.php:1398 form_list.php:655 form_list.php:813
+msgid "Restore"
+msgstr "بازگردانی"
+
+#: tooltips.php:58
+msgid "Select the province you would like to be selected by default when the form gets displayed."
+msgstr "شهری که می‌خواهید به صورت پیش‌فرض در هنگام نمایش فرم انتخاب شده باشد را انتخاب کنید."
+
+#: form_detail.php:1638
+msgid "Extra Small"
+msgstr "بسیار کوچک"
+
+#: tooltips.php:162
+msgid "Enter your reCAPTCHA Site Key, if you do not have a key you can register for one at the provided link.  reCAPTCHA is a free service."
+msgstr "کلید سایت reCAPTCHA را وارد کنید. اگر کلید ندارید، می‌توانید از طریق پیوند ارائه‌شده یک کلید ثبت کنید. reCAPTCHA یک سرویس رایگان است."
+
+#: tooltips.php:62
+msgid "Check this box to prevent the State field from being displayed in the form."
+msgstr "برای عدم نمایش فیلد استان این گزینه را انتخاب کنید."
+
+#: form_detail.php:1626
+msgid "Full-Time"
+msgstr "تمام وقت"
+
+#: form_detail.php:2496
+msgid "Admin Field Label"
+msgstr "برچسب فیلد مدیریت"
+
+#: form_detail.php:1630
+msgid "February"
+msgstr "فوریه"
+
+#: tooltips.php:105
+msgid "Validation Message"
+msgstr "پیام اعتبارسنجی"
+
+#: form_detail.php:1637
+msgid "Probably Not"
+msgstr "احتمالا نه"
+
+#: form_detail.php:489
+msgid "Steps"
+msgstr "مرحله‌ها"
+
+#: form_detail.php:1627
+msgid "Non-Profit/Volunteer"
+msgstr "بدون سود / داوطلب"
+
+#: form_detail.php:1635
+msgid "Agreement"
+msgstr "توافق"
+
+#: form_detail.php:1881
+msgid "Bad"
+msgstr "بد"
+
+#: form_detail.php:1631
+msgid "Less than once a month"
+msgstr "کمتر از یک بار در ماه"
+
+#: form_detail.php:389
+msgid "Search a form field by name"
+msgstr "جستجوی فیلد فرم بر اساس نام"
+
+#: tooltips.php:119
+msgid "Enter a message to be displayed to users who are not logged in (shortcodes and HTML are supported)."
+msgstr "پیامی را وارد کنید که به کاربران واردنشده نمایش داده شود (شورت‌کدها و HTML پشتیبانی می‌شوند)."
+
+#: form_detail.php:2033
+msgid "Course Code"
+msgstr "کد دوره"
+
+#: tooltips.php:12
+msgid "From Email Address"
+msgstr "نشانی ایمیل فرستنده"
+
+#: tooltips.php:127
+msgid "Previous Button Image"
+msgstr "تصویر دکمه قبلی"
+
+#: form_list.php:441
+msgid "Ascending"
+msgstr "منتظر"
+
+#: form_detail.php:1430 tooltips.php:71
+msgid "Enable Multi-File Upload"
+msgstr "فعال‌سازی بارگذاری چندگانه"
+
+#: form_detail.php:962
+msgid "Badge Position"
+msgstr "موقعیت نشان"
+
+#: form_detail.php:2375
+msgid "Submit Button Width"
+msgstr "عرض دکمه ارسال"
+
+#: tooltips.php:22
+msgid "What should happen if links or URLs are found in supported fields? Supported fields include fields with the \"No Links/URLs\" setting enabled, as well as Name, Address, and Phone fields set to the International (unformatted) format."
+msgstr "اگر در فیلدهای پشتیبانی‌شده پیوند یا URL پیدا شود چه اتفاقی بیفتد؟ فیلدهای پشتیبانی‌شده شامل فیلدهایی هستند که تنظیم «بدون پیوند/URL» برایشان فعال است، و نیز فیلدهای نام، نشانی و تلفن که روی قالب بین‌المللی (بدون قالب‌بندی) تنظیم شده‌اند."
+
+#: tooltips.php:134
+msgid "Check this option to format and insert merge tags into the Post Content."
+msgstr "برای قالب بندی و قرار دادن برچسب‌های ادغام در محتوای نوشته این گزینه را انتخاب کنید."
+
+#: form_detail.php:1631
+msgid "2 to 3 times a week"
+msgstr "2 الی 3 بار در هفته"
+
+#: tooltips.php:143
+msgid "Disables the quantity field.  A quantity of 1 will be assumed or you can add a Quantity field to your form from the Pricing Fields."
+msgstr "فیلد تعداد را غیرفعال کنید. اگر غیرفعال کنید تعداد 1 در نظر گرفته می‌شود یا می‌توانید از فیلدهای قیمت گذاری، فیلد تعداد را اضافه کنید."
+
+#: form_detail.php:2640
+msgid "Filipino"
+msgstr "فیلیپینی"
+
+#: tooltips.php:42
+msgid "Enter the URL of the webpage you would like the user to be redirected to after they have submitted the form."
+msgstr "آدرسی که می‌خواهید کاربر بعد از ارسال فرم به آن هدایت شود را وارد کنید."
+
+#: tooltips.php:109
+msgid "Define the choices for this field. If the field type supports it you will also be able to select the default choice(s) using a radio or checkbox located to the left of the choice."
+msgstr "انتخاب‌های این رشته را تعریف کنید. اگر نوع فیلد از آن پشتیبانی می‌کند، می‌توانید با استفاده از رادیو یا کادر انتخابی که در سمت چپ انتخاب قرار دارد، انتخاب(های) پیش‌فرض را انتخاب کنید."
+
+#: form_detail.php:1542
+msgid "Show country dial code"
+msgstr "نمایش پیش‌شمارهٔ کشور"
+
+#: tooltips.php:78
+msgid "Required Field"
+msgstr "فیلد‌ها ضروری"
+
+#: form_detail.php:2292
+msgid "Left aligned"
+msgstr "تراز چپ"
+
+#: form_detail.php:2530
+msgid "Prefix Choices"
+msgstr "گزینه‌های پیشوند"
+
+#: form_detail.php:1630
+msgid "July"
+msgstr "جولای"
+
+#: form_detail.php:394
+msgid "Add Fields"
+msgstr "افزودن فیلدها"
+
+#: form_list.php:303
+msgid "Creating Form..."
+msgstr "در حال ایجاد فرم..."
+
+#: form_detail.php:1631
+msgid "Once a week"
+msgstr "یک بار در هفته"
+
+#: tooltips.php:160
+msgid "Select yes or no to enable or disable HTML5 output. Setting this to no will disable the standard Gravity Forms HTML5 form field output."
+msgstr "برای فعال‌سازی یا غیرفعال‌سازی خروجی HTML5 بله یا خیر را انتخاب کنید.. اگر خیر را انتخاب کنید از خروجی استاندارد Gravity Forms HTML5 جلوگیری می‌شود. "
+
+#: form_detail.php:567 form_detail.php:785 form_detail.php:815
+msgid "Default"
+msgstr "پیش‌فرض"
+
+#: form_detail.php:2040
+msgid "License Key"
+msgstr "کد مجوز"
+
+#: form_detail.php:1630
+msgid "September"
+msgstr "سپتامبر"
+
+#: tooltips.php:41
+msgid "Redirect Form to Page"
+msgstr "تغییر مسیر فرم به برگه"
+
+#: form_detail.php:1008
+msgid "Draft"
+msgstr "پیش‌نویس"
+
+#: form_detail.php:2656
+msgid "Italian"
+msgstr "ایتالیایی"
+
+#: tooltips.php:163
+msgid "reCAPTCHA Secret Key"
+msgstr "کلید محرمانهٔ reCAPTCHA"
+
+#: form_detail.php:3508
+msgid "If you continue to encounter this error, you can %1$sexport your form%2$s to include in your support request. You can also disable AJAX saving for this form. %3$sLearn more%4$s."
+msgstr "اگر همچنان با این خطا روبه‌رو می‌شوید، می‌توانید %1$sاز فرم خود برون‌بری بگیرید%2$s و آن را به درخواست پشتیبانی پیوست کنید. همچنین می‌توانید ذخیره‌سازی AJAX را برای این فرم غیرفعال کنید. %3$sبیشتر بدانید%4$s."
+
+#: tooltips.php:143
+msgid "Disable Quantity"
+msgstr "غیرفعال کردن تعداد"
+
+#: form_detail.php:1426
+msgid "Multiple Files"
+msgstr "فایلهای ترکیبی"
+
+#: form_detail.php:1618
+msgid "Countries"
+msgstr "کشورها"
+
+#: tooltips.php:67
+msgid "Check this box to prevent this field from being displayed in a non-secure page (i.e. not https://). It will redirect the page to the same URL, but starting with https:// instead. This option requires a properly configured SSL certificate."
+msgstr "برای جلوگیری از نمایش این فیلد در صفحهٔ ناامن (یعنی بدون https://)، این گزینه را علامت بزنید. صفحه به همان URL هدایت می‌شود، اما نشانی با https:// آغاز خواهد شد. این گزینه به گواهی SSL با پیکربندی صحیح نیاز دارد."
+
+#: form_detail.php:1627
+msgid "Automotive"
+msgstr "خودرو"
+
+#: form_detail.php:2643
+msgid "French (Canadian)"
+msgstr "فرانسوی (کانادایی)"
+
+#: form_detail.php:1342
+msgid "Date Picker"
+msgstr "انتخابگر تاریخ"
+
+#: form_detail.php:691
+msgid "Single Method"
+msgstr "متد تکی"
+
+#: form_detail.php:3192
+msgid "User IP Address"
+msgstr "نشانی IP کاربر"
+
+#: form_detail.php:1625
+msgid "Retired"
+msgstr "باز نشسته"
+
+#: form_detail.php:1585
+msgid "Show Values"
+msgstr "نمایش مقدارها"
+
+#: form_detail.php:539
+msgid "Display completed progress bar on confirmation"
+msgstr "نمایش نوار پیشرفت کامل‌شده در تأییدیه"
+
+#: tooltips.php:35
+msgid "Choice Layout determines whether field choices are displayed in a single vertical column, inline horizontally, or in multiple equal-width columns."
+msgstr "«چیدمان گزینه‌ها» تعیین می‌کند گزینه‌های فیلد در یک ستون عمودی، به‌صورت افقی در یک خط، یا در چند ستون هم‌عرض نمایش داده شوند."
+
+#: tooltips.php:69
+msgid "Select the format you would like to use for the time field.  Available options are 12 hour (i.e. 8:30 pm) and 24 hour (i.e. 20:30)."
+msgstr "قالبی که می‌خواهید برای فیلد زمان استفاده شود را انتخاب کنید. گزینه‌های موجود 12 ساعته و 24 ساعته است."
+
+#: form_detail.php:507
+msgid "Gradient: Spring"
+msgstr "گرادیان: بهار"
+
+#: form_detail.php:1628
+msgid "Education"
+msgstr "تحصیلات"
+
+#: form_list.php:663
+msgid "Permanently Delete Entries"
+msgstr "حذف دائمی ورودی‌ها"
+
+#: form_detail.php:1930 includes/addon/class-gf-addon.php:3154 includes/settings/fields/class-field-map.php:35
+msgid "Field"
+msgstr "فیلد"
+
+#: form_detail.php:1983
+msgid "Mask Type"
+msgstr "نوع ماسک"
+
+#: form_detail.php:1485 tooltips.php:54
+msgid "Maximum Rows"
+msgstr "حداکثر ردیف‌ها"
+
+#: tooltips.php:167
+msgid "Conversion is the percentage of form views that generated an entry. If a form was viewed twice, and one entry was generated, the conversion will be 50%."
+msgstr "درصد تبدیل تعداد نمایش هایی است که ورودی ایجاد می‌کند. اگر یک فرم دوبار نمایش داده شود و یک ورودی ایجاد شود درصد تبدیل 50% خواهد بود "
+
+#: form_detail.php:1627
+msgid "Skilled Labor"
+msgstr "کارگر ماهر"
+
+#: form_detail.php:968
+msgid "Inline"
+msgstr "درون خطی"
+
+#: form_detail.php:2557 tooltips.php:97
+msgid "Default Values"
+msgstr "مقادیر پیش‌فرض"
+
+#: form_detail.php:1621
+msgid "South America"
+msgstr "آمریکای جنوبی"
+
+#: form_detail.php:2416
+msgid "Custom CSS Class"
+msgstr "کلاس CSS سفارشی"
+
+#: form_detail.php:2688
+msgid "Urdu"
+msgstr "اردویی"
+
+#: form_list.php:839 includes/addon/class-gf-feed-addon.php:2252
+msgid "Duplicate"
+msgstr "تکثیر"
+
+#: tooltips.php:169
+msgid "Enter a comma separated list of email addresses you would like to receive the selected notification emails."
+msgstr "ایمیل هایی که می‌خواهید به آن اعلان‌ها ارسال شود با کاما (،) جدا کنید."
+
+#: tooltips.php:129
+msgid "Create rules to dynamically display or hide the submit button based on values from another field."
+msgstr "برای نمایش یا عدم نمایش دکمه ارسال براساس مقادیر یک فیلد دیگر، قوانین را ایجاد کنید."
+
+#: form_detail.php:1626
+msgid "Per Diem"
+msgstr "روزانه"
+
+#: form_detail.php:2176
+msgid "Rules"
+msgstr "قوانین"
+
+#: form_detail.php:1255 tooltips.php:95
+msgid "Address Fields"
+msgstr "فیلدهای آدرس"
+
+#: form_detail.php:1627
+msgid "Technology"
+msgstr "فناوری"
+
+#: tooltips.php:176
+msgid "IP Address"
+msgstr "آدرس آی پی"
+
+#: tooltips.php:49
+msgid "CAPTCHA Type"
+msgstr "نوع CAPTCHA"
+
+#: tooltips.php:100
+msgid "Activate this option to allow users to skip this field and submit the values entered in the associated field. For example, this is useful for shipping and billing address fields."
+msgstr "فعال‌سازی این گزینه به کاربران اجازه می‌دهد که این فیلد را رد کنند و مقادیر وارد شده در فیلدهای مرتبط را ارسال کنند. برای مثال، برای فیلدهای حمل ونقل و آدرس فاکتور می‌تواند مفید باشد."
+
+#: form_detail.php:1627
+msgid "Manufacturing/Operations"
+msgstr "ساخت / عملیات"
+
+#: tooltips.php:99
+msgid "Placeholders will not be submitted along with the form. Use Placeholders to give a hint at the expected value or format."
+msgstr "نگهدارنده‌های متن همراه با فرم ارسال نمی‌شوند. از نگه دارنده‌ها برای راهنمایی درباره مقادیر و قالب‌ها استفاده کنید."
+
+#: tooltips.php:23
+msgid "Enable Animation"
+msgstr "فعال‌سازی حالت متحرک "
+
+#: tooltips.php:110
+msgid "Check this option to specify a value for each choice. Choice values are not displayed to the user viewing the form, but are accessible to administrators when viewing the entry."
+msgstr "برای مشخص کردن مقدار هر انتخاب این این گزینه را انتخاب کنید.. مقادیر انتخاب‌ها به کاربرانی که فرم را می‌بینند نمایش داده نمی‌شود اما مدیران می‌تواننند این مقادیر را ببینند."
+
+#: form_detail.php:1627
+msgid "Aerospace/Aviation"
+msgstr "هوا و فضا / حمل و نقل هوایی"
+
+#: form_detail.php:1629
+msgid "Days of the Week"
+msgstr "روزهای هفته"
+
+#: form_detail.php:858 form_detail.php:889 form_detail.php:1096
+msgid "Multi Select"
+msgstr "چند انتخابی"
+
+#: form_list.php:879
+msgid "There are no forms in the trash."
+msgstr "هیچ فرمی در زباله دان یافت نشد."
+
+#: form_detail.php:2654
+msgid "Icelandic"
+msgstr "ایسلندی"
+
+#: form_detail.php:2672
+msgid "Portuguese (Portugal)"
+msgstr "پرتغالی (پرتغال)"
+
+#: tooltips.php:75
+msgid "Select the default country that will be pre-selected when the phone field is displayed. If no country is selected, United States will be used as the default."
+msgstr "کشوری را انتخاب کنید که هنگام نمایش فیلد تلفن به‌طور پیش‌فرض انتخاب شود. اگر کشوری انتخاب نشود، ایالات متحده به‌عنوان پیش‌فرض استفاده خواهد شد."
+
+#: form_detail.php:2719
+msgid "Enable Password Input"
+msgstr "فعال‌کردن ورودی رمز عبور"
+
+#: settings.php:703 tooltips.php:166
+msgid "Akismet Integration"
+msgstr "یک پارچه سازی با Akismet"
+
+#: form_list.php:287
+msgid "Create a New Form"
+msgstr "یک فرم جدید بسازید"
+
+#: tooltips.php:132
+msgid "Post Author"
+msgstr "نویسنده "
+
+#: form_list.php:1014
+msgid "Views for %s form have been reset."
+msgid_plural "Views for %s forms have been reset."
+msgstr[0] "بازدیدهای %s فرم بازنشانی شد."
+msgstr[1] "بازدیدهای %s فرم بازنشانی شدند."
+
+#: tooltips.php:174
+msgid "Select the field which will be used to identify the owner of the personal data."
+msgstr "فیلدی را انتخاب کنید که برای شناسایی مالک داده‌های شخصی استفاده شود."
+
+#: form_detail.php:1632
+msgid "Over 3 years"
+msgstr "بیش از 3 سال"
+
+#: tooltips.php:48
+msgid "reCAPTCHA Theme"
+msgstr "پوسته reCAPTCHA"
+
+#: form_detail.php:1623
+msgid "35-44"
+msgstr "35-44"
+
+#: tooltips.php:134
+msgid "Post Content Template"
+msgstr "قالب محتوای نوشه"
+
+#: form_detail.php:1563 form_detail.php:2535 includes/settings/fields/class-generic-map.php:188 includes/system-status/class-gf-system-report.php:112
+msgid "Value"
+msgstr "مقدار"
+
+#: form_detail.php:1633
+msgid "Satisfaction"
+msgstr "رضایت"
+
+#: form_detail.php:1624
+msgid "Single"
+msgstr "مجرد"
+
+#: tooltips.php:77
+msgid "Enter the description for the form field.  This will be displayed to the user and provide some direction on how the field should be filled out or selected."
+msgstr "برای فیلد، توضیحات را وارد کنید. این توضیحات برای راهنمایی انتخاب‌ها و پر کردن فیلدها به کاربران نمایش داده می‌شود."
+
+#: form_detail.php:1627
+msgid "Real Estate"
+msgstr "مشاور املاک"
+
+#: tooltips.php:106
+msgid "reCAPTCHA Language"
+msgstr "زبان reCAPTCHA"
+
+#: form_detail.php:2059
+msgid "Select a Mask"
+msgstr "یک الگو انتخاب نمایید"
+
+#: tooltips.php:179
+msgid "Validation Summary"
+msgstr "خطای اعتبارسنجی"
+
+#: tooltips.php:110
+msgid "Enable Choice Values"
+msgstr "فعال‌کردن مقادیر گزینه‌ها"
+
+#: form_detail.php:188 form_detail.php:2227 includes/blocks/config/class-gf-blocks-config.php:102
+msgid "Appearance"
+msgstr "ظاهر"
+
+#: tooltips.php:144
+msgid "Product Field"
+msgstr "فیلد محصولات"
+
+#: form_detail.php:2679
+msgid "Spanish"
+msgstr "اسپانیایی"
+
+#: form_detail.php:799
+msgid "Next Button Image URL"
+msgstr "URL تصویر دکمهٔ بعدی"
+
+#: form_detail.php:1831
+msgid "Enable Email Confirmation"
+msgstr "فعال‌کردن تأیید ایمیل"
+
+#: form_detail.php:1633
+msgid "Neutral"
+msgstr "بی تفاوت"
+
+#: form_detail.php:1636
+msgid "Somewhat Worse"
+msgstr "تا حدودی بدتر"
+
+#: form_detail.php:487
+msgid "Progress Bar"
+msgstr "نوار پیشرفت"
+
+#: form_detail.php:2684
+msgid "Telugu"
+msgstr "تلوگو"
+
+#: form_detail.php:2813
+msgid "Enable Conditional Logic"
+msgstr "فعال‌سازی منطق شرطی"
+
+#: form_detail.php:2461
+msgid "Field Height"
+msgstr "ارتفاع فیلد"
+
+#: form_detail.php:2020 form_detail.php:2027 form_detail.php:2034 form_detail.php:2041 form_detail.php:2048
+msgid "Mask"
+msgstr "الگو"
+
+#: tooltips.php:140
+msgid "Incoming Field Data"
+msgstr "فیلد داده‌های پیش رو"
+
+#: form_detail.php:1630
+msgid "Months of the Year"
+msgstr "ماه‌های سال"
+
+#: tooltips.php:122
+msgid "Select which progress bar style you would like to use.  Select custom to choose your own text and background color."
+msgstr "سبک موردنظر برای نوار پیشرفت را انتخاب کنید. برای انتخاب رنگ‌های دلخواه متن و پس‌زمینه، گزینهٔ سفارشی را انتخاب کنید."
+
+#: form_detail.php:1950
+msgid "Supported Credit Cards"
+msgstr "پشتیبانی از کارت اعتباری"
+
+#: form_detail.php:1627
+msgid "Retail"
+msgstr "خرده فروشی"
+
+#: form_detail.php:1893 tooltips.php:66
+msgid "Number Format"
+msgstr "قالب اعداد"
+
+#: form_detail.php:1626
+msgid "Contract"
+msgstr "قراردادی"
+
+#: tooltips.php:91
+msgid "Select a form field size from the available options. This will set the width of the field. Please note: if using a paragraph field, the size applies only to the height of the field."
+msgstr "سایز فیلد فرم را از طریق گزینه‌های در دسترس انتخاب نمایید. این کار، باعث تنظیم پهنای هر فیلد می‌شود. نکته: اگر از فیلد پاراگراف استفاده می‌کنید، تغییر سایز فقط بر روی ارتفاع این فیلد اثرگذار است."
+
+#: form_detail.php:1623
+msgid "25-34"
+msgstr "25-34"
+
+#: form_detail.php:1626
+msgid "Employee"
+msgstr "کارمند"
+
+#: form_detail.php:1591
+msgid "Bulk Add / Predefined Choices"
+msgstr "افزودن گروهی / گزینه‌های ازپیش‌تعریف‌شده"
+
+#: form_detail.php:3274
+msgid "No form found."
+msgstr "فرم یافت نشد."
+
+#: form_detail.php:2192 tooltips.php:80
+msgid "No Links/URLs"
+msgstr "بدون پیوند/URL"
+
+#: form_detail.php:1637
+msgid "Not Sure"
+msgstr "عدم اطمینان"
+
+#: form_detail.php:2628
+msgid "Bulgarian"
+msgstr "بلغاری"
+
+#: form_detail.php:2687
+msgid "Ukrainian"
+msgstr "اوکراینی"
+
+#: includes/system-status/class-gf-system-report.php:870 tooltips.php:159
+msgid "Output CSS"
+msgstr "CSS خروجی"
+
+#: form_list.php:849
+msgid "Move this form to the trash"
+msgstr "انتقال فرم به زباله دان"
+
+#: form_detail.php:905
+msgid "Really Simple CAPTCHA"
+msgstr "CAPTCHA ساده"
+
+#: form_list.php:153
+msgid "WARNING: You are about to delete these forms and ALL entries associated with them. "
+msgstr "اخطار: شما قصد حذف این فرم و تمام ورودی‌ها وابسته به آن را دارید. "
+
+#: form_detail.php:363
+msgid "Last page options"
+msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+
+#: form_detail.php:342
+msgid "Start Paging"
+msgstr "شروع صفحه‌بندی"
+
+#: form_detail.php:3196
+msgid "Embed Post/Page Title"
+msgstr "عنوان نوشته/صفحهٔ جاسازی"
+
+#: tooltips.php:52
+msgid "Field type"
+msgstr "نوع فیلد"
+
+#: form_detail.php:3202
+msgid "User Login"
+msgstr "نام کاربری"
+
+#: form_list.php:1037
+msgid "%s form has been marked as inactive."
+msgid_plural "%s forms have been marked as inactive."
+msgstr[0] "%s فرم به‌عنوان غیرفعال علامت‌گذاری شد."
+msgstr[1] "%s فرم به‌عنوان غیرفعال علامت‌گذاری شدند."
+
+#: tooltips.php:173
+msgid "Check this box if you would like to include data from this form when exporting or erasing personal data on this site."
+msgstr "اگر می‌خواهید هنگام برون‌بری یا پاک‌کردن داده‌های شخصی در این سایت، داده‌های این فرم نیز لحاظ شود، این گزینه را علامت بزنید."
+
+#: form_detail.php:2690
+msgid "Zulu"
+msgstr "زولو"
+
+#: form_detail.php:386
+msgid "Form Options and Settings"
+msgstr "گزینه‌ها و تنظیمات فرم"
+
+#: form_detail.php:2681
+msgid "Swahili"
+msgstr "سواحلی"
+
+#: tooltips.php:9
+msgid "Enter the email address you would like the notification email sent to."
+msgstr "آدرس ایمیلی که می‌خواهید ایمیل اعلان‌ها به آن ارسال شود را وارد کنید."
+
+#: form_detail.php:1774
+msgid "Maximum"
+msgstr "حداکثر ردیف‌ها"
+
+#: form_detail.php:1759
+msgid "Select One"
+msgstr "انتخاب شده"
+
+#: tooltips.php:63
+msgid "Check this box to prevent Province field from being displayed in the form."
+msgstr "برای جلوگیری از نمایش فیلد استان در فرم، این گزینه را علامت بزنید."
+
+#: form_detail.php:1795
+msgid "Enable Select All"
+msgstr "فعالسازی گزینه \"انتخاب همه\""
+
+#: form_detail.php:1624
+msgid "Marital Status"
+msgstr "وضعیت تاهل"
+
+#: form_detail.php:1348
+msgid "Date Picker Icon"
+msgstr "انتخابگر تاریخ"
+
+#: form_detail.php:1621
+msgid "Asia"
+msgstr "آسیا"
+
+#: form_detail.php:2311
+msgid "Visible (%s)"
+msgstr "نمایش (%s)"
+
+#: form_detail.php:1630
+msgid "August"
+msgstr "اگوست"
+
+#: form_detail.php:2650
+msgid "Gujarati"
+msgstr "گجراتی"
+
+#: form_detail.php:521 form_detail.php:936
+msgid "Background Color"
+msgstr "رنگ پس‌زمینه"
+
+#: form_list.php:393
+msgid "Forms per page:"
+msgstr "فرمها در هر صفحه"
+
+#: form_detail.php:1632
+msgid "Never used"
+msgstr "بلا استفاده"
+
+#: form_detail.php:1631
+msgid "Once a month"
+msgstr "یکبار در ماه"
+
+#: form_list.php:908 form_list.php:957
+msgid "You don't have adequate permission to trash forms."
+msgstr "شما مجوز کافی برای انتقال فرم‌ها به زباله‌دان را ندارید."
+
+#: tooltips.php:104
+msgid "Select this setting to let browsers help a user fill in a field with autocomplete.  You can enter a single autocomplete attribute or multiple attributes separated with a space.  Only use valid attributes: invalid attributes will not be saved.  Learn more about autocomplete in the %s accessibility documentation %s."
+msgstr "این تنظیم را انتخاب کنید تا مرورگرها به کاربر کمک کنند تا فیلدی را با تکمیل خودکار پر کند. شما می‌توانید یک ویژگی تکمیل خودکار یا چندین ویژگی را که با یک فاصله از هم جدا شده اند وارد کنید. درباره تکمیل خودکار در اسناد دسترسی %s %s بیشتر بیاموزید."
+
+#: form_detail.php:2408
+msgid "End of the last row"
+msgstr "رفتن به آخرین صفحه"
+
+#: form_detail.php:1937 form_detail.php:1938
+msgid "Phone Number"
+msgstr "شماره تلفن"
+
+#: tooltips.php:90
+msgid "Select the sub-label placement.  Sub-labels can be placed above the field inputs or below the field inputs."
+msgstr "محل برچسب فرعی را انتخاب کنید. برچسب‌های فرعی می‌توانند بالا یا پایین فیلد ورودی قرار گیرند."
+
+#: form_detail.php:2621
+msgid "Arabic"
+msgstr "عربی"
+
+#: form_detail.php:2546
+msgid "Enable Autocomplete"
+msgstr "نصب به اتمام رسید."
+
+#: form_detail.php:1632
+msgid "Less than a month"
+msgstr "کمتر از یک ماه"
+
+#: form_detail.php:1419
+msgid "Separated with commas (i.e. jpg, gif, png, pdf)"
+msgstr "بوسیله کاما جدا کنید. مانند: (jpg, gif, png, pdf)"
+
+#: form_detail.php:2209
+msgid "Add Button Text"
+msgstr "متن دکمهٔ افزودن"
+
+#: tooltips.php:13
+msgid "Enter the name you would like the notification email sent from, or select the name from available name fields."
+msgstr "نامی را که می‌خواهید اعلان‌ها با این نام ارسال شوند را وارد کنید، یا از نام‌های موجود انتخاب کنید."
+
+#: form_detail.php:1734
+msgid "2 Columns"
+msgstr "۲ ستون"
+
+#: form_detail.php:2587 tooltips.php:101
+msgid "Option Label"
+msgstr "برچسب تنظیمات"
+
+#: form_detail.php:1439 tooltips.php:72
+msgid "Maximum Number of Files"
+msgstr "حداکثر تعداد فایل‌ها"
+
+#: tooltips.php:34
+msgid "Enter the CSS class name you would like to use in order to override the default styles for this form."
+msgstr "نام کلاس CSS که می‌خواهید به جای استایل پیش‌فرض این فرم استفاده شود را وارد کنید."
+
+#: form_detail.php:1637
+msgid "Would You"
+msgstr "تمایل"
+
+#: form_detail.php:1625
+msgid "Student"
+msgstr "دانشجو"
+
+#: tooltips.php:36
+msgid "Column Flow determines how choices are ordered when displayed in multiple columns: Across fills left to right, then moves to the next row; Down fills top to bottom, then moves to the next column."
+msgstr "«جریان ستون‌ها» تعیین می‌کند گزینه‌ها هنگام نمایش در چند ستون چگونه مرتب شوند: «افقی» از چپ به راست پر می‌کند و سپس به ردیف بعدی می‌رود؛ «عمودی» از بالا به پایین پر می‌کند و سپس به ستون بعدی می‌رود."
+
+#: tooltips.php:94
+msgid "Name Prefix Choices"
+msgstr "گزینه‌های پیشوند نام"
+
+#: form_detail.php:504 form_detail.php:1627
+msgid "Green"
+msgstr "سبز"
+
+#: form_detail.php:1592
+msgid "Select a category and customize the predefined choices or paste your own list to bulk add choices."
+msgstr "یک دسته بندی انتخاب نمایید و گزینه‌های از پیش تعریف شده را سفارشی نمایید یا اینکه لیست خود را برای افزودن دسته جمعی گزینه‌های وارد کنید."
+
+#: tooltips.php:18
+msgid "Limit the number of entries a form can generate and/or schedule a time period the form is active."
+msgstr "تعداد دفعاتی که ورودی‌ها یک فرم می‌تواند ایجاد شود را محدود کنید یا دوره زمانی فرم فعال بودن فرم را مدیریت کنید"
+
+#: form_detail.php:1638
+msgid "Extra Large"
+msgstr "بسیار بزرگ"
+
+#: tooltips.php:23
+msgid "Check this option to enable a sliding animation when displaying/hiding conditional logic fields."
+msgstr "برای فعال‌سازی نمایش متحرک در هنگام نمایش یا عدم نمایش منطق شرطی این گزینه را انتخاب کنید."
+
+#: form_detail.php:2295
+msgid "Right aligned"
+msgstr "تراز راست"
+
+#: form_detail.php:2333
+msgid "Visible"
+msgstr "نمایان"
+
+#: tooltips.php:103
+msgid "Activated by Default"
+msgstr "به صورت پیش‌فرض فعال"
+
+#: form_detail.php:1343
+msgid "Date Drop Down"
+msgstr "لیست بازشو تاریخ"
+
+#: form_detail.php:608
+msgid "Submit Input Type"
+msgstr "نوع تاریخ فیلد ورودی"
+
+#: form_detail.php:2634
+msgid "Czech"
+msgstr "چکوسلواکیایی"
+
+#: form_detail.php:2299
+msgid "Top aligned"
+msgstr "تراز بالا"
+
+#: form_detail.php:1933 form_detail.php:1934 includes/addon/class-gf-payment-addon.php:3008 includes/settings/fields/class-field-select.php:152 includes/settings/fields/class-generic-map.php:328
+msgid "Country"
+msgstr "کشور"
+
+#: form_detail.php:1627
+msgid "Clerical/Administrative"
+msgstr "دفتری / اداری"
+
+#: entry_detail.php:1571 form_detail.php:1678 form_detail.php:1690 includes/addon/class-gf-results.php:298 includes/blocks/config/class-gf-blocks-config.php:107 includes/locking/class-gf-locking.php:201
+msgid "Cancel"
+msgstr "انصراف"
+
+#: form_detail.php:2965 tooltips.php:148
+msgid "Post Fields"
+msgstr "فیلدهای ارسال نوشته"
+
+#: form_detail.php:2674
+msgid "Russian"
+msgstr "روسی"
+
+#: form_list.php:433 form_list.php:677
+msgid "Entries"
+msgstr "ورودی‌ها"
+
+#: tooltips.php:172
+msgid "Check this box if you would like to use the rich text editor for this field."
+msgstr "اگر علاقه‌مند به استفاده از یک ویرایشگر متن قوی برای فیلد مربوطه هستید این باکس را فعال نمایید."
+
+#: form_detail.php:1875
+msgid "Minimum Strength"
+msgstr "حداقل قدرت"
+
+#: form_list.php:40 tooltips.php:26
+msgid "Form Description"
+msgstr "توضیحات فرم "
+
+#: form_detail.php:1037
+msgid "Use logged in user as author"
+msgstr "استفاده از کاربر وارد شده به عنوان نویسنده"
+
+#: form_detail.php:1393 form_detail.php:2252 form_detail.php:2263 tooltips.php:98
+msgid "Placeholder"
+msgstr "نگه دارنده متن"
+
+#: form_detail.php:2978 tooltips.php:149
+msgid "Pricing Fields"
+msgstr "فیلدهای قیمت گذاری"
+
+#: form_detail.php:2201
+msgid "Maximum Number of Repeats"
+msgstr "حداکثر تعداد تکرارها"
+
+#: form_detail.php:1736
+msgid "4 Columns"
+msgstr "۴ ستون"
+
+#: form_detail.php:191 form_detail.php:1314 form_detail.php:2480 includes/blocks/config/class-gf-blocks-config.php:100
+msgid "Advanced"
+msgstr "پیشرفته"
+
+#: tooltips.php:45
+msgid "Enter the label of the form field.  This is the field title the user will see when filling out the form."
+msgstr "برچسب فیلد را وارد کنید. این عنوان فیلد است که کاربر در هنگام پر کردن فرم مشاهده می‌کند."
+
+#: tooltips.php:180
+msgid "Maximum Items"
+msgstr "حداکثر تعداد موارد"
+
+#: form_detail.php:1636
+msgid "Somewhat Better"
+msgstr "تا حدودی بهتر"
+
+#: tooltips.php:60
+msgid "For addresses that only apply to one country, you can choose to not display the country drop down. Entries will still be recorded with the selected country."
+msgstr "برای آدرس‌های که برای یک کشور وارد می‌کنید می‌توانید انتخاب کنید که کشورها به صورت کشویی نمایش داده نشوند. ورودی‌ها می‌توانند با انتخاب کشور ثبت شوند."
+
+#: form_list.php:938 form_list.php:969
+msgid "You don't have adequate permission to duplicate forms."
+msgstr "شما مجوز کافی برای تکثیر فرم‌ها را ندارید."
+
+#: tooltips.php:39
+msgid "Enter the text you would like the user to see on the confirmation page of this form."
+msgstr "متنی را وارد کنید که می‌خواهید کاربر در صفحهٔ تأییدیهٔ این فرم ببیند."
+
+#: form_detail.php:1909 form_detail.php:1923 tooltips.php:87
+msgid "Sub-Labels"
+msgstr "برچسب‌های فرعی"
+
+#: form_detail.php:966
+msgid "Bottom Right"
+msgstr "سمت راست پایین"
+
+#: form_detail.php:1632
+msgid "1-3 years"
+msgstr "1-3 سال"
+
+#: tooltips.php:31
+msgid "Required Indicator"
+msgstr "نشانگر الزامی"
+
+#: form_list.php:80
+msgid "WARNING: You are about to delete this form and ALL entries associated with it. "
+msgstr "اخطار: شما قصد حذف این فرم و تمام ورودی‌ها وابسته به آن را دارید. "
+
+#: tooltips.php:20
+msgid "Schedule a time period the form is active."
+msgstr "مدیریت زمان فعال بود فرم"
+
+#: form_detail.php:1627
+msgid "Pharmaceutical/Biotech"
+msgstr "دارویی / زیست فناوری"
+
+#: tooltips.php:101
+msgid "Enter the label to be displayed next to the check box. For example, &quot;same as shipping address&quot;."
+msgstr "برچسبی که در کنار چک باکس نمایش داده می‌شود را وارد کنید. برای مثال &quot; همان آدرس حمل و نقل &quot; ."
+
+#: form_detail.php:1239 tooltips.php:56
+msgid "Address Type"
+msgstr "نوع آدرس"
+
+#: form_detail.php:864 form_detail.php:2948 tooltips.php:147
+msgid "Advanced Fields"
+msgstr "فیلدهای پیشرفته"
+
+#: tooltips.php:175
+msgid "Select the fields which will be included when exporting or erasing personal data."
+msgstr "فیلدهای که می‌خواهید در برون ریز باشد را انتخاب کنید."
+
+#: form_detail.php:2631
+msgid "Chinese (Simplified)"
+msgstr "چینی (ساده‌شده)"
+
+#: tooltips.php:55
+msgid "Select the type of inputs you would like to use for the date field. Date Picker will let users select a date from a calendar. Date Field will let users free type the date."
+msgstr "نوع ورودی که می‌خواهید برای فیلد تاریخ استفاده شود را انتخاب کنید. انتخابگر تاریخ به کاربران امکان می‌دهد تاریخ را از تقویم انتخاب کنند. فیلد تاریخ به کاربران امکان می‌دهد یک تاریخ بنویسند."
+
+#: form_detail.php:676 form_detail.php:743
+msgid "User Defined Price"
+msgstr "تعریف شده توسط کاربر"
+
+#: tooltips.php:53
+msgid "Enter the maximum number of characters that this field is allowed to have."
+msgstr "بیشترین تعداد کاراکتر مجاز برای این فیلد را وارد کنید."
+
+#: tooltips.php:28
+msgid "Select the default description placement.  Descriptions can be placed above the field inputs or below the field inputs. This setting can be overridden in the appearance settings for each field."
+msgstr "محل پیش‌فرض توضیحات را انتخاب کنید. توضیحات می‌توانند بالا یا پایین فیلدهای ورودی قرار گیرند. این تنظیمات از قسمت تنظیمات پیشرفته هر فیلد قابل تغییر است."
+
+#: form_detail.php:2440 tooltips.php:91 tooltips.php:92
+msgid "Field Size"
+msgstr "اندازه فیلد"
+
+#: form_display.php:1837 form_display.php:1841 form_list.php:313 includes/settings/fields/class-button.php:50
+msgid "Submit"
+msgstr "ارسال"
+
+#: form_detail.php:1627
+msgid "Hospitality/Travel"
+msgstr "هتل / سفر"
+
+#: tooltips.php:49
+msgid "Select the type of CAPTCHA you would like to use."
+msgstr "نوع CAPTCHA را که می‌خواهید استفاده کنید انتخاب کنید."
+
+#: form_detail.php:1625
+msgid "Self-employed"
+msgstr "خود اشتغال"
+
+#: entry_detail.php:932 form_detail.php:1691 includes/addon/class-gf-feed-addon.php:2206 includes/addon/class-gf-feed-addon.php:2253 includes/settings/config/class-gf-settings-config-i18n.php:37 includes/settings/config/class-gf-settings-config-i18n.php:61
+msgid "Delete"
+msgstr "حذف"
+
+#: form_detail.php:1290 form_detail.php:1529 tooltips.php:59 tooltips.php:75
+msgid "Default Country"
+msgstr "کشور پیش‌فرض"
+
+#: form_detail.php:2647
+msgid "German (Austria)"
+msgstr "آلمانی (اتریش)"
+
+#: form_detail.php:581 form_detail.php:829
+msgid "Previous Button Image URL"
+msgstr "URL تصویر دکمهٔ قبلی"
+
+#: form_list.php:563
+msgctxt "Form List"
+msgid "Active"
+msgstr "فعال"
+
+#: form_detail.php:1573 form_detail.php:1787 includes/addon/class-gf-payment-addon.php:2807
+msgid "Options"
+msgstr "گزینه‌ها"
+
+#: form_detail.php:1619
+msgid "U.S. States"
+msgstr "ایالت‌های ایالات متحده"
+
+#: form_detail.php:2655
+msgid "Indonesian"
+msgstr "اندونزیایی"
+
+#: form_detail.php:2670
+msgid "Portuguese"
+msgstr "پرتغالی"
+
+#: tooltips.php:72
+msgid "Specify the maximum number of files that can be uploaded using this field. Leave blank for unlimited. Note that the actual number of files permitted may be limited by this server's specifications and configuration."
+msgstr "تعداد حداکثر فایل هایی که می‌خواهید با این فیلد بارگذاری شود را مشخص کنید. برای تعداد نامحدود فیلد را خالی بگذارید. توجه کنید که مقدار واقعی تعداد فایل‌ها مجاز توسط سرور یا پیکربندی محدود شده باشد."
+
+#: tooltips.php:12
+msgid "Enter an authorized email address you would like the notification email sent from. To avoid deliverability issues, always use your site domain in the from email."
+msgstr "آدرس ایمیلی که می‌خواهید اعلان‌ها از آن ارسال شوند را وارد کنید، یا از ایمیل‌های موجود انتخاب کنید. "
+
+#: form_detail.php:869 includes/addon/class-gf-payment-addon.php:3002
+msgid "Email"
+msgstr "ایمیل"
+
+#: tooltips.php:93
+msgid "Select the fields you'd like to use in this Name field and customize the Sub-Labels by entering new ones."
+msgstr "فیلدی که می‌خواهید برای این فیلد نام استفاده کنید را انتخاب کنید و برچسب فرعی را برای سفارشی کردن وارد کنید."
+
+#: form_detail.php:1737
+msgid "5 Columns"
+msgstr "۵ ستون"
+
+#: form_detail.php:2022 form_detail.php:2029 form_detail.php:2036 form_detail.php:2043 form_detail.php:2050
+msgid "Valid Input"
+msgstr "فیلد ورودی معتبر"
+
+#: tooltips.php:46
+msgid "Enter the label for this HTML block. It will help you identify your HTML blocks in the form editor, but it will not be displayed on the form."
+msgstr "برچسب بلاک HTML را وارد کنید. این کار به شما کمک می‌کند تا بلاک‌های HTML خود را در فرم تشخیص دهید، آنها در فرم نمایش داده نخواهند شد. "
+
+#: tooltips.php:19
+msgid "Enter a number in the input box below to limit the number of entries allowed for this form. The form will become inactive when that number is reached."
+msgstr "برای محدود کردن تعداد پبام‌های ورودی مجاز این فرم عدد مورد نظر را وارد کنید. وقتی تعداد به این عدد برسد فرم غیرفعال می‌شود."
+
+#: tooltips.php:164
+msgid "reCAPTCHA Type"
+msgstr "نوع reCAPTCHA"
+
+#: form_detail.php:1636
+msgid "Much Better"
+msgstr "خیلی بهتر"
+
+#: form_detail.php:1976 tooltips.php:145
+msgid "Input Mask"
+msgstr "درون ریزی الگو"
+
+#: tooltips.php:44
+msgid "Pass Data Via Query String"
+msgstr "ارسال داده از طریق رشتهٔ پرس‌وجو"
+
+#: form_detail.php:2379
+msgid "Auto"
+msgstr "خودکار"
+
+#: form_detail.php:1629
+msgid "Saturday"
+msgstr "شنبه"
+
+#: tooltips.php:86
+msgid "Admin Label"
+msgstr "برچسب مدیریت"
+
+#: form_detail.php:2161
+msgid "Do not round"
+msgstr "یکسان نمی‌باشند"
+
+#: form_detail.php:1627
+msgid "Education/Training"
+msgstr "آموزش و پرورش / آموزش"
+
+#: form_list.php:990
+msgid "You don't have adequate permissions to trash forms."
+msgstr "شما مجوز کافی برای انتقال فرم‌ها به زباله‌دان را ندارید."
+
+#: form_detail.php:401
+msgid "Custom settings"
+msgstr "تنظیمات سفارشی"
+
+#: tooltips.php:125
+msgid "Next Button Image"
+msgstr "تصویر دکمه بعدی"
+
+#: form_detail.php:363
+msgid "Manage last page options"
+msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+
+#: form_detail.php:2256 form_detail.php:2267
+msgid "Placeholder text is not supported when using the Rich Text Editor."
+msgstr "زمانی‌که از ویرایشگر متن قوی استفاده می‌شود، متن پیش‌نمایش پشتیبانی نخواهد شد."
+
+#: form_detail.php:1501
+msgid "12 hour"
+msgstr "12 ساعته"
+
+#: form_detail.php:948
+msgid "Theme"
+msgstr "پوسته"
+
+#: form_list.php:172 includes/addon/class-gf-feed-addon.php:1758 includes/addon/class-gf-feed-addon.php:3059
+msgid "Add New"
+msgstr "افزودن جدید"
+
+#: form_detail.php:1623
+msgid "45-54"
+msgstr "45-54"
+
+#: form_detail.php:3191
+msgid "Insert Merge Tag"
+msgstr "قرار دادن برچسب ادغام"
+
+#: form_detail.php:1621
+msgid "Africa"
+msgstr "آفریقا"
+
+#: tooltips.php:162
+msgid "reCAPTCHA Site Key"
+msgstr "کلید سایت reCAPTCHA"
+
+#: form_detail.php:2645
+msgid "Georgian"
+msgstr "گرجستانی"
+
+#: form_detail.php:2676
+msgid "Sinhalese"
+msgstr "سینهالی"
+
+#: form_detail.php:2637
+msgid "English (UK)"
+msgstr "انگلیسی (UK)"
+
+#: tooltips.php:44
+msgid "To pass field data to the confirmation page, build a Query String using the 'Insert Merge Tag' drop down. %s..more info on querystrings &raquo;%s"
+msgstr "برای فرستادن داده‌های فیلدها به صفحهٔ تأییدیه، با دکمهٔ «افزودن برچسب ادغام» یک رشتهٔ پرس‌وجو بسازید. %sاطلاعات بیشتر دربارهٔ رشته‌های پرس‌وجو &raquo;%s"
+
+#: form_detail.php:1635
+msgid "Strongly Disagree"
+msgstr "خیلی مخالف"
+
+#: form_detail.php:1627
+msgid "Engineering"
+msgstr "مهندسی"
+
+#: entry_list.php:213 form_list.php:392
+msgid "Pagination"
+msgstr "صفحه‌گذاری"
+
+#: tooltips.php:113
+msgid "Enable Enhanced UI"
+msgstr "فعال کردن رابط کاربری پیشرفته"
+
+#: tooltips.php:177
+msgid "Retention Policy"
+msgstr "سیاست حفظ"
+
+#: form_detail.php:906
+msgid "Math Challenge"
+msgstr "مسئله ریاضی"
+
+#: includes/addon/class-gf-payment-addon.php:2815 includes/addon/class-gf-payment-addon.php:2817 tooltips.php:111 tooltips.php:129 tooltips.php:152
+msgid "Conditional Logic"
+msgstr "منطق شرطی"
+
+#: entry_detail.php:935 entry_list.php:218 form_list.php:397 includes/settings/config/class-gf-settings-config-i18n.php:45
+msgid "Apply"
+msgstr "اعمال کردن"
+
+#: form_list.php:1006
+msgid "You don't have adequate permissions to delete forms."
+msgstr "شما مجوز کافی برای حذف فرم‌ها را ندارید."
+
+#: form_detail.php:2632
+msgid "Chinese (Traditional)"
+msgstr "چینی (مرسوم)"
+
+#: form_detail.php:360
+msgid "Simply drag and drop the fields or elements you want in this form."
+msgstr "به سادگی فیلدها یا عناصر مورد نظر خود را در این فرم بکشید و رها کنید."
+
+#: form_detail.php:2405
+msgid "End of the form"
+msgstr "انتهای فرم"
+
+#: form_detail.php:1626
+msgid "Seasonal"
+msgstr "فصلی"
+
+#: form_detail.php:1214
+msgid "Caption"
+msgstr "شرح عکس"
+
+#: form_detail.php:1313
+msgid "Extended"
+msgstr "پیشرفته"
+
+#: form_detail.php:840
+msgid "Disable default margins"
+msgstr "غیرفعال‌سازی حاشیه‌های پیش‌فرض"
+
+#: form_detail.php:1497 tooltips.php:69
+msgid "Time Format"
+msgstr "قالب زمان"
+
+#: form_detail.php:1278
+msgid "Default %s"
+msgstr "پیش‌فرض %s"
+
+#: tooltips.php:118
+msgid "Require user to be logged in"
+msgstr "نیاز به وارد شدن کاربر"
+
+#: form_detail.php:1628
+msgid "Associate Degree"
+msgstr "فوق دیپلم"
+
+#: form_detail.php:1629
+msgid "Sunday"
+msgstr "یکشنبه"
+
+#: form_detail.php:1627
+msgid "Management/Executive"
+msgstr "مدیریت / اجرایی"
+
+#: tooltips.php:22
+msgid "If Links/URLs are found in supported fields:"
+msgstr "اگر در فیلدهای پشتیبانی‌شده پیوند/URL پیدا شد:"
+
+#: form_detail.php:1613
+msgid "Male, Female, Non-binary, Agender, My gender is not listed, Prefer not to answer"
+msgstr "مذکر، مونث، غیر باینری، جنسیت من درج نشده است، ترجیح می‌دهم پاسخ ندهم"
+
+#: form_detail.php:2666
+msgid "Mongolian"
+msgstr "مغولی"
+
+#: tooltips.php:57
+msgid "Select the state you would like to be selected by default when the form gets displayed."
+msgstr "ایالتی که می‌خواهید به صورت پیش‌فرض در هنگام نمایش فرم انتخاب شده باشد را انتخاب کنید."
+
+#: tooltips.php:114
+msgid "Text of the consent checkbox."
+msgstr "متن کادر تأیید رضایت."
+
+#: tooltips.php:135
+msgid "Check this option to format and insert merge tags into the Post Title."
+msgstr "برای قالب بندی و قرار دادن برچسب‌های ادغام در عنوان نوشته این گزینه را انتخاب کنید."
+
+#: form_detail.php:1627
+msgid "Healthcare"
+msgstr "بهداشت و درمان"
+
+#: tooltips.php:52
+msgid "Select the type of field from the available form fields."
+msgstr "نوع فیلد را از فیلدهای موجود فرم انتخاب کنید."
+
+#: form_detail.php:668 form_detail.php:686 form_detail.php:722 form_detail.php:737 form_detail.php:752 form_detail.php:849 form_detail.php:880 form_detail.php:1089
+msgid "Field Type"
+msgstr "نوع فیلد"
+
+#: form_detail.php:1624
+msgid "Domestic Partnership"
+msgstr "مشارکت داخلی"
+
+#: form_detail.php:2181 includes/settings/class-settings.php:901
+msgid "Required"
+msgstr "ضروری"
+
+#: form_detail.php:1864
+msgid "Enable Password Strength"
+msgstr "فعال‌کردن سنجش قدرت رمز عبور"
+
+#: form_detail.php:2093
+msgid "Min"
+msgstr "حداقل"
+
+#: form_detail.php:1625
+msgid "Homemaker"
+msgstr "خانه دار"
+
+#: form_detail.php:1621
+msgid "Continents"
+msgstr "قاره‌ها"
+
+#: form_detail.php:2680
+msgid "Spanish (Latin America)"
+msgstr "اسپانیایی (آمریکای لاتین)"
+
+#: form_detail.php:3556
+msgid "about form legacy markup"
+msgstr "دربارهٔ نشانه‌گذاری قدیمی فرم"
+
+#: tooltips.php:103
+msgid "Select this setting to display the option as activated by default when the form first loads."
+msgstr "این تنظیمات را برای اینکه در اولین بارگذاری فرم این گزینه به صورت پیش‌فرض نمایش داده شود انتخاب کنید."
+
+#: form_detail.php:329
+msgid "The Form"
+msgstr "فرم"
+
+#: form_detail.php:1627
+msgid "Installation/Maintenance"
+msgstr "نصب و راه اندازی / نگهداری"
+
+#: form_detail.php:1635
+msgid "Disagree"
+msgstr "مخالف"
+
+#: form_detail.php:2682
+msgid "Swedish"
+msgstr "سوئدی"
+
+#: tooltips.php:173
+msgid "Enable Personal Data Tools"
+msgstr "ابزارهای داده‌های شخصی را فعال کنید"
+
+#: form_detail.php:1623 form_detail.php:1625 form_detail.php:1628
+msgid "Prefer Not to Answer"
+msgstr "ترجیح می‌دهم جواب ندهم"
+
+#: form_detail.php:1624
+msgid "Divorced"
+msgstr "مطلقه"
+
+#: tooltips.php:61
+msgid "Hide Address Line 2"
+msgstr "مخفی کردن اضافه آدرس"
+
+#: tooltips.php:29
+msgid "Select the default validation message placement.  Validation messages can be placed above the field inputs or below the field inputs."
+msgstr "محل توضیحات را انتخاب کنید. توضیحات می‌توانند در بالا یا پایین فیلدهای ورودی قرار گیرد."
+
+#: form_detail.php:1633
+msgid "Very Unsatisfied"
+msgstr "خیلی ناراضی"
+
+#: form_detail.php:914 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:154
+msgid "Size"
+msgstr "اندازه"
+
+#: tooltips.php:151
+msgid "Select the forms you would like to export."
+msgstr "فرمی را که می‌خواهید برون ریزی کنید انتخاب کنید."
+
+#: tooltips.php:130
+msgid "Select which categories are displayed. You can choose to display all of them or select individual ones."
+msgstr "دسته بندی هایی که نمایش داده می‌شوند را انتخاب کنید. می‌توانید همه یا فقط آنهایی که می‌خواهید را نمایش بدهید."
+
+#: tooltips.php:149
+msgid "Pricing fields allow you to add fields to your form that calculate pricing for selling goods and services."
+msgstr "فیلدهای قیمت گذاری به شما این امکان را می‌دهد که قیمت کالاها و خدمات خود را محاسبه کنید."
+
+#: form_detail.php:2013
+msgid "All other characters are literal values and will be displayed automatically."
+msgstr "تمام کاراکترهای دیگر ارزش‌های تحت اللفظی هستند و به طور خودکار نمایش داده می‌شود."
+
+#: form_detail.php:636
+msgid "Checkbox Label"
+msgstr "برچسب چک‌باکس"
+
+#: form_detail.php:510 form_detail.php:1992
+msgid "Custom"
+msgstr "سفارشی"
+
+#: form_list.php:881
+msgid "You don't have any forms. Let's go %screate one%s!"
+msgstr "شما هیچ فرمی ندارید. %s فرم جدید بسازید%s ."
+
+#: tooltips.php:38
+msgid "Enter the URL of a custom image to replace the default 'delete item' icon. A maximum size of 16px by 16px is recommended"
+msgstr "نشانی تصویر سفارشی را وارد کنید تا جایگزین آیکون پیش‌فرض بخش «حذف مورد» شود. حداکثر اندازهٔ پیشنهادی ۱۶ در ۱۶ پیکسل است."
+
+#: form_detail.php:2646
+msgid "German"
+msgstr "آلمانی"
+
+#: form_detail.php:1634
+msgid "Importance"
+msgstr "اهمیت"
+
+#: form_detail.php:678
+msgid "Calculation"
+msgstr "محاسباتی"
+
+#: form_detail.php:919 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:138
+msgid "Large"
+msgstr "بزرگ"
+
+#: tooltips.php:16
+msgid "Blind Carbon Copy Addresses"
+msgstr "BCC"
+
+#: form_detail.php:1627
+msgid "Advertising/Public Relations"
+msgstr "تبلیغات / روابط عمومی"
+
+#: form_detail.php:677 form_detail.php:759 form_detail.php:862 form_detail.php:1392 form_detail.php:2312 form_detail.php:2334 form_detail.php:2355
+msgid "Hidden"
+msgstr "مخفی"
+
+#: form_detail.php:823 tooltips.php:126
+msgid "Previous Button Text"
+msgstr "متن دکمه قبلی"
+
+#: form_detail.php:2668
+msgid "Persian"
+msgstr "ایرانی"
+
+#: tooltips.php:117
+msgid "Enable this option to allow the user to select multiple choices. Disabling this option after entries with multiple choices have been submitted will hide the values for those entries."
+msgstr "این گزینه را فعال کنید تا کاربر بتواند چندین گزینه را انتخاب کند. غیرفعال کردن این گزینه پس از ارسال ورودی‌هایی با چندین گزینه، مقادیر آن ورودی‌ها را پنهان می‌کند."
+
+#: form_list.php:664
+msgid "Move to trash"
+msgstr "انتقال به زباله دان"
+
+#: form_detail.php:1631
+msgid "How Often"
+msgstr "چند بار"
+
+#: tooltips.php:161
+msgid "Select On or Off to enable or disable no-conflict mode. Setting this to On will prevent extraneous scripts and styles from being printed on Gravity Forms admin pages, reducing conflicts with other plugins and themes."
+msgstr "برای فعال یا غیرفعال‌کردن حالت بدون تداخل، «روشن» یا «خاموش» را انتخاب کنید. با قرار دادن آن روی «روشن»، از بارگذاری اسکریپت‌ها و سبک‌های اضافی در صفحه‌های مدیریت Gravity Forms جلوگیری می‌شود و احتمال تداخل با افزونه‌ها و پوسته‌ها کاهش می‌یابد."
+
+#: tooltips.php:100
+msgid "Use Values Submitted in a Different Field"
+msgstr "استفاده از مقادیر ارسال شده در فیلد دیگر"
+
+#: form_list.php:434 form_list.php:678
+msgid "Views"
+msgstr "بازدیدها"
+
+#: tooltips.php:27
+msgid "Select the default label placement.  Labels can be top aligned above a field, left aligned to the left of a field, or right aligned to the right of a field. This is a global label placement setting."
+msgstr "محل پیش‌فرض قرارگیری برچسب را انتخاب نمایید. برچسب‌ها می‌توانند به صورت تراز‌شده از بالا و بالای فیلد، ترازشده از چپ و سمت چپ فیلد، یا ترازشده از راست و سمت راست فیلد قرار گیرند. این موارد، جزو تنظیمات عمومی برای قرارگیری محل برچسب‌ها هستند"
+
+#: form_detail.php:3519 form_detail.php:3520
+msgid "Dismiss notification"
+msgstr "بستن اعلان"
+
+#: form_detail.php:1623
+msgid "65 or Above"
+msgstr "بالای 65"
+
+#: form_detail.php:2669
+msgid "Polish"
+msgstr "لهستانی"
+
+#: tooltips.php:56
+msgid "Select the type of address you would like to use."
+msgstr "نوع آدرسی را که می‌خواهید استفاده کنید، انتخاب کنید."
+
+#: tooltips.php:170
+msgid "Check this box if you would like the progress bar to display with the confirmation text."
+msgstr "اگر می‌خواهید نوار پیشرفت همراه متن تأییدیه نمایش داده شود، این گزینه را علامت بزنید."
+
+#: form_detail.php:505
+msgid "Orange"
+msgstr "نارنجی"
+
+#: form_detail.php:855 form_detail.php:885
+msgid "Single line text"
+msgstr "متن تک خطی"
+
+#: form_detail.php:1472
+msgid "Enable multiple columns"
+msgstr "فعال‌سازی ستون‌های چندگانه"
+
+#: form_detail.php:675 form_detail.php:693 form_detail.php:729 form_detail.php:744 form_detail.php:861 form_detail.php:888 form_detail.php:1095
+msgid "Radio Buttons"
+msgstr "دکمه‌های رادیویی"
+
+#: form_detail.php:2000
+msgid "Enter a custom mask"
+msgstr "یک الگو دلخواه وارد نمایید"
+
+#: form_detail.php:2012
+msgid "Use a question mark '?' to indicate optional characters. Note: All characters after the question mark will be optional."
+msgstr "برای نشان دادن کاراکتر‌های دلخواه از '?' استفاده کنید. توجه: تمام کاراکترها بعد از علامت سوال اختیاری خواهند بود."
+
+#: form_detail.php:2653
+msgid "Hungarian"
+msgstr "مجارستانی"
+
+#: form_detail.php:1401
+msgid "Customize Fields"
+msgstr "فیلدهای سفارشی"
+
+#: form_detail.php:1770
+msgid "Minimum"
+msgstr "حداقل قدرت"
+
+#: form_detail.php:1682
+msgid "Save as new custom choice"
+msgstr "ذخیره کردن به عنوان گزینه سفارشی جدید"
+
+#: tooltips.php:41
+msgid "Select the page you would like the user to be redirected to after they have submitted the form."
+msgstr "برگه ای که می‌خواهید کاربر بعد از ارسال فرم به آن هدایت شود را انتخاب کنید."
+
+#: form_detail.php:1631
+msgid "2 to 3 times a month"
+msgstr "2 تا 3بار در ماه"
+
+#: tooltips.php:172
+msgid "Use Rich Text Editor"
+msgstr "استفاده از ویرایشگر متن قوی"
+
+#: form_detail.php:1350
+msgid "Calendar Icon"
+msgstr "آیکون تقویم"
+
+#: form_list.php:439
+msgid "Default Sort Order"
+msgstr "ترتیب مرتب‌سازی پیش‌فرض"
+
+#: tooltips.php:47
+msgid "Disable Default Margins"
+msgstr "غیرفعال کردن حاشیه پیش‌فرض"
+
+#: form_detail.php:509
+msgid "Gradient: Rainbow"
+msgstr "گرادیان: رنگین کمان"
+
+#: tooltips.php:39
+msgid "Confirmation Message Text"
+msgstr "متن پیام تأییدیه"
+
+#: form_detail.php:1625
+msgid "Not employed but looking for work"
+msgstr "استخدام نشده ام ولی دنبال کار می‌کردم."
+
+#: form_detail.php:2642
+msgid "French"
+msgstr "فرانسوی"
+
+#: form_detail.php:1353
+msgid "Custom Icon"
+msgstr "آیکون دلخواه"
+
+#: tooltips.php:62
+msgid "Hide State Field"
+msgstr "مخفی کردن فیلد ایالت"
+
+#: form_detail.php:1722
+msgid "Horizontal"
+msgstr "آریزونا"
+
+#: form_detail.php:2047
+msgid "Zip Code w/ Optional Plus Four"
+msgstr "کد پستی "
+
+#: form_detail.php:1930
+msgid "Custom Sub-Label"
+msgstr "برچسب فرعی سفارشی"
+
+#: tooltips.php:10
+msgid "When enabled, auto-formatting will insert paragraph breaks automatically. Disable auto-formatting when using HTML to create email notification content."
+msgstr "وقتی قالب خودکار فعال باشد جداکننده پاراگراف‌ها به صورت خودکار قرار داده می‌شوند. وقتی که می‌خواهید از HTML برای ساخت ایمیل اعلان استفاده کنید قالب خودکار را غیرفعال کنید."
+
+#: tooltips.php:152
+msgid "Filter the entries by adding conditions."
+msgstr "ورودی‌ها را با اضافه کردن شرط مرتب کنید."
+
+#: form_detail.php:1625
+msgid "Employed Part-Time"
+msgstr "کارمند پاره وقت"
+
+#: form_detail.php:2664
+msgid "Malayalam"
+msgstr "مالایالام"
+
+#: tooltips.php:21
+msgid "Enable the Advanced Honeypot to detect spam using multiple techniques."
+msgstr "برای شناسایی هرزنامه با استفاده از چند روش، Honeypot پیشرفته را فعال کنید."
+
+#: form_detail.php:1633
+msgid "Satisfied"
+msgstr "راضی"
+
+#: tooltips.php:11
+msgid "Allows notification to be sent to different email addresses depending on values selected in the form."
+msgstr "این امکان را می‌دهد که اعلان‌ها بر اساس مقادیری که در فرم انتخاب شده اند به ایمیل‌ها مختلف ارسال شوند."
+
+#: form_detail.php:1882
+msgid "Good"
+msgstr "خوب"
+
+#: form_list.php:170
+msgid "Forms"
+msgstr "فرم‌ها"
+
+#: form_detail.php:1632
+msgid "How Long"
+msgstr "چه مدت"
+
+#: tooltips.php:81
+msgid "Hide Field Label"
+msgstr "پنهان‌کردن برچسب فیلد"
+
+#: form_detail.php:1625
+msgid "Employment"
+msgstr "استخدام"
+
+#: form_detail.php:2233 tooltips.php:107
+msgid "CSS Class Name"
+msgstr "نام کلاس CSS"
+
+#: tooltips.php:65
+msgid "Field Name Format"
+msgstr "قالب نام فیلد"
+
+#: form_detail.php:1337 tooltips.php:55
+msgid "Date Input Type"
+msgstr "نوع تاریخ فیلد ورودی"
+
+#: form_detail.php:1760
+msgid "Select Multiple"
+msgstr "انتخاب فایل‌ها"
+
+#: form_detail.php:1324 tooltips.php:93
+msgid "Name Fields"
+msgstr "فیلدهای نام"
+
+#: form_detail.php:2689
+msgid "Vietnamese"
+msgstr "ویتنامی"
+
+#: form_list.php:1031
+msgid "%s form has been marked as active."
+msgid_plural "%s forms have been marked as active."
+msgstr[0] "%s فرم به‌عنوان فعال علامت‌گذاری شد."
+msgstr[1] "%s فرم به‌عنوان فعال علامت‌گذاری شدند."
+
+#: form_detail.php:2401
+msgid "Submit Button Location"
+msgstr "مکان دکمه ارسال"
+
+#: tooltips.php:151
+msgid "Export Selected Forms"
+msgstr "فرم‌های انتخاب شده برای برون ریزی"
+
+#: form_detail.php:917 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:155
+msgid "Small"
+msgstr "کوچک"
+
+#: form_detail.php:1624
+msgid "Separated"
+msgstr "جداشده"
+
+#: tooltips.php:171
+msgid "Progress Bar Completion Text"
+msgstr "متن تکمیل نوار پیشرفت"
+
+#: tooltips.php:178
+msgid "Check this box to add a toggle allowing the user to see the password they are entering in."
+msgstr "این کادر را علامت بزنید تا کلیدی اضافه کنید که به کاربر اجازه می‌دهد رمز عبوری را که وارد می‌کند ببیند."
+
+#: tooltips.php:30
+msgid "Select the default sub-label placement.  Sub-labels can be placed above the field inputs or below the field inputs. This setting can be overridden in the appearance settings for each field."
+msgstr "محل پیش‌فرض برچسب فرعی را انتخاب کنید. برچسب فرعی می‌توانند بالا یا پایین فیلدهای ورودی قرار گیرند. این تنظیمات از قسمت تنظیمات پیشرفته هر فیلد قابل تغییر است."
+
+#: tooltips.php:141
+msgid "Enter the content (Text or HTML) to be displayed on the form."
+msgstr "محتوایی که می‌خواهید (متن یا HTML ) در فرم نمایش داده شود را وارد کنید."
+
+#: form_detail.php:2635
+msgid "Danish"
+msgstr "دانمارکی"
+
+#: form_detail.php:218
+msgid "Return to form list"
+msgstr "بازگشت به لیست فرم‌ها"
+
+#: form_detail.php:1746
+msgid "Across"
+msgstr "افقی"
+
+#: tooltips.php:116
+msgid "\"Other\" Choice"
+msgstr "گزینهٔ «سایر»"
+
+#: form_detail.php:1630
+msgid "December"
+msgstr "دسامبر"
+
+#: form_detail.php:1625
+msgid "Not employed and not looking for work"
+msgstr "بیکارم و دنبال کار نیستم"
+
+#: form_detail.php:866
+msgid "Time"
+msgstr "زمان"
+
+#: tooltips.php:131
+msgid "Select the post status that will be used for the post that is created by the form entry."
+msgstr "وضعیت نوشته رابرای ارسال هایی که از ورودی این فرم ساخته می‌شود انتخاب کنید."
+
+#: form_detail.php:1627
+msgid "Restaurant/Food Service"
+msgstr "رستوران / خدمات غذایی"
+
+#: form_detail.php:2657
+msgid "Japanese"
+msgstr "ژاپنی"
+
+#: tooltips.php:179
+msgid "Enable to show a summary that lists validation errors on top of the form."
+msgstr "برای نمایش خلاصه‌ای که خطاهای اعتبارسنجی را در بالای فرم فهرست می‌کند، فعال کنید."
+
+#: tooltips.php:121
+msgid "Select which type of visual progress indicator you would like to display.  Progress Bar, Steps, None."
+msgstr "نوع نشانگر بصری پیشرفت را برای نمایش انتخاب کنید: نوار پیشرفت، مراحل یا هیچ‌کدام."
+
+#: tooltips.php:48
+msgid "Select the visual theme for the reCAPTCHA field from the available options to better match your site design."
+msgstr "برای هماهنگی بهتر با طراحی سایت، پوستهٔ بصری فیلد reCAPTCHA را از گزینه‌های موجود انتخاب کنید."
+
+#: tooltips.php:63
+msgid "Hide Province Field"
+msgstr "مخفی کردن فیلد شهر"
+
+#: tooltips.php:123
+msgid "Name each of the pages on your form.  Page names are displayed with the selected progress indicator."
+msgstr "هر صفحه را در فرمتان نام گذاری کنید. نام صفحات با انتخاب نمایشگر پیشرفت نمایش داده می‌شود."
+
+#: form_detail.php:1024
+msgid "Default Post Author"
+msgstr "نویسنده پیش‌فرض نوشته"
+
+#: tooltips.php:147
+msgid "Advanced Fields are for specific uses.  They enable advanced formatting of regularly used fields such as Name, Email, Address, etc."
+msgstr "فیلدهای پیشرفته برای استفاده‌های خاص است.آنها قالب‌های پیشرفته را برای فیلدهایی مانند نام، ایمیل، آدرس و... فعال می‌کنند."
+
+#: tooltips.php:116
+msgid "Check this option to add a text input as the final choice of your radio button field. This allows the user to specify a value that is not a predefined choice."
+msgstr "برای اضافه کردن یک گزینه نوشتاری به فیلد دکمه‌های رادیویی این گزینه را انتخاب کنید. این کار به کاربران امکان می‌دهد اگر گزینه مورد نظر کاربر تعریف نشده باشد خودشان مقداری را وارد کنند. "
+
+#: form_detail.php:3080
+msgid "Add a %s field to your form."
+msgstr "لطفاً یک فیلد %s به فرم خود اضافه کنید."
+
+#: tooltips.php:170
+msgid "Progress Bar Confirmation Display"
+msgstr "نمایش تأییدیهٔ نوار پیشرفت"
+
+#: tooltips.php:156
+msgid "Select Files"
+msgstr "انتخاب فایل‌ها"
+
+#: form_detail.php:1689
+msgid "Save"
+msgstr "ذخیره"
+
+#: form_detail.php:967
+msgid "Bottom Left"
+msgstr "پایین سمت چپ"
+
+#: form_detail.php:867
+msgid "Phone"
+msgstr "تلفن"
+
+#: tooltips.php:107
+msgid "Enter the CSS class name you would like to use in order to override the default styles for this field."
+msgstr "کلاس CSS که می‌خواهید برای بازنویسی استایل پیش‌فرض این فیلد استفاده کنید را وارد کنید."
+
+#: tooltips.php:68
+msgid "Select the format you would like to use for the date input."
+msgstr "فرمتی که در نظر دارید برای ورودی تاریخ استفاده شود، انتخاب نمایید."
+
+#: form_detail.php:621
+msgid "Submit Button Text"
+msgstr "متن دکمه بعدی"
+
+#: tooltips.php:73
+msgid "Specify the maximum file size in megabytes allowed for each of the files."
+msgstr "حداکثر اندازه مجاز فایل‌ها را بر حسب مگابایت مشخص کنید."
+
+#: form_detail.php:1557
+msgid "Edit Choices"
+msgstr "ویرایش گزینه‌ها"
+
+#: form_detail.php:1762
+msgid "Select a Range"
+msgstr "یک بازه زمانی انتخاب نمایید"
+
+#: tooltips.php:159
+msgid "Select yes or no to enable or disable CSS output.  Setting this to no will disable the standard Gravity Forms CSS from being included in your theme."
+msgstr "برای فعال‌سازی یا غیرفعال‌سازی خروجیCSS بله یا خیر را انتخاب کنید.. اگر خیر را انتخاب کنید Gravity Forms CSS در قالب فراخوانی نمی‌شود "
+
+#: tooltips.php:98
+msgid "The Placeholder will not be submitted along with the form. Use the Placeholder to give a hint at the expected value or format."
+msgstr "نگهدارنده‌های متن همراه با فرم ارسال نمی‌شوند. از نگه دارنده‌ها برای راهنمایی درباره مقادیر و قالب‌ها استفاده کنید."
+
+#: form_detail.php:854 form_detail.php:2930 tooltips.php:146
+msgid "Standard Fields"
+msgstr "فیلدهای استاندارد"
+
+#: form_list.php:153 form_list.php:157 includes/addon/class-gf-feed-addon.php:2253
+msgid "'Cancel' to stop, 'OK' to delete."
+msgstr "برای توقف، عملیات را لغو کنید؛ برای حذف، آن را تأیید کنید."
+
+#: form_detail.php:508
+msgid "Gradient: Blues"
+msgstr "گرادیان: بلوز"
+
+#: form_detail.php:2683
+msgid "Tamil"
+msgstr "تامیل"
+
+#: tooltips.php:114
+msgid "Checkbox Text"
+msgstr "متن چک‌باکس"
+
+#: form_detail.php:515
+msgid "Text Color"
+msgstr "رنگ متن"
+
+#: tooltips.php:70
+msgid "Enter the allowed file extensions for file uploads.  This will limit the type of files a user may upload."
+msgstr "پسوندهای مجاز برای بارگذاری فایل را وارد کنید. این کار نوع فایل‌های که کاربر می‌تواند بارگذاری کند را محدود کند."
+
+#: form_detail.php:185 form_detail.php:476
+msgid "General"
+msgstr "عمومی"
+
+#: tooltips.php:168
+msgid "If you have other forms on the page (i.e. Comments Form), specify a higher tabindex start value so that your Gravity Form does not end up with the same tabindices as your other forms. To disable the tabindex, enter 0 (zero)."
+msgstr "اگر فرم‌های دیگری در این صفحه دارید (برای مثال فرم دیدگاه‌ها)، مقدار آغاز شاخص تب را بالاتر تنظیم کنید تا فیلدهای Gravity Forms با همان شاخص تبِ فرم‌های دیگر تداخل نداشته باشند. برای غیرفعال‌کردن شاخص تب، مقدار ۰ (صفر) را وارد کنید."
+
+#: tooltips.php:153
+msgid "Select the fields you would like to include in the export."
+msgstr "فیلدهای که می‌خواهید در برون ریز باشد را انتخاب کنید."
+
+#: tooltips.php:25
+msgid "Enter the title of your form."
+msgstr "عنوان فرم را وارد کنید."
+
+#: form_detail.php:1627
+msgid "Customer Service"
+msgstr "خدمات مشتریان"
+
+#: form_detail.php:1369
+msgid "Date Format"
+msgstr "قالب تاریخ"
+
+#: form_detail.php:2592 tooltips.php:102
+msgid "Source Field"
+msgstr "فیلد منبع"
+
+#: form_detail.php:1626
+msgid "Temporary"
+msgstr "موقت"
+
+#: form_detail.php:2733
+msgid "Visibility"
+msgstr "حالت نمایش"
+
+#: form_detail.php:701 form_detail.php:1564
+msgid "Price"
+msgstr "قیمت"
+
+#: form_detail.php:1623
+msgid "Age"
+msgstr "سن"
+
+#: tooltips.php:82
+msgid "Number Range"
+msgstr "بازه عدد"
+
+#: tooltips.php:18
+msgid "Limit Form Activity"
+msgstr "فعالیت فرم را محدود کنید"
+
+#: form_detail.php:1627
+msgid "Transportation/Logistics"
+msgstr "حمل و نقل / تدارکات"
+
+#: form_detail.php:1630
+msgctxt "Full month name"
+msgid "May"
+msgstr "مه"
+
+#: form_detail.php:2114 tooltips.php:83
+msgid "Enable Calculation"
+msgstr "فعال‌سازی محاسبات"
+
+#: form_detail.php:1637
+msgid "Probably"
+msgstr "احتمالا"
+
+#: form_list.php:155
+msgid "Are you sure you would like to reset the Views for the selected forms? "
+msgstr "آیا برای بازنشانی بازدید‌های این فرم مطمئن هستید؟ "
+
+#: tooltips.php:82
+msgid "Enter the minimum and maximum values for this form field.  This will require that the value entered by the user must fall within this range."
+msgstr "حداقل و حداکثر مقدار این فیلد را وارد کنید. این کار باعث می‌شود که مقدار وارد شده در این بازه باشد."
+
+#: tooltips.php:136
+msgid "Select the category that will be used for the post that is created by the form entry."
+msgstr "دسته بندی برای نوشته هایی که از ورودی‌های این فرم ایجاد می‌شود را انتخاب کنید."
+
+#: form_detail.php:3195
+msgid "Embed Post/Page Id"
+msgstr "شناسهٔ نوشته/صفحهٔ جاسازی"
+
+#: tooltips.php:81
+msgid "Select this option to hide the field label in the form."
+msgstr "برای پنهان‌کردن برچسب فیلد در فرم، این گزینه را انتخاب کنید."
+
+#: tooltips.php:11
+msgid "Routing"
+msgstr "مسیریابی"
+
+#: form_detail.php:502
+msgid "Blue"
+msgstr "آبی"
+
+#: form_detail.php:2638
+msgid "English (US)"
+msgstr "انگلیسی (US)"
+
+#: form_list.php:1021
+msgid "Entries for %s form have been deleted."
+msgid_plural "Entries for %s forms have been deleted."
+msgstr[0] "ورودی‌های %s فرم حذف شدند."
+msgstr[1] "ورودی‌های %s فرم حذف شدند."
+
+#: tooltips.php:14
+msgid "Reply To"
+msgstr "پاسخ به"
+
+#: tooltips.php:120
+msgid "Create rules to dynamically display or hide this page based on values from another field."
+msgstr "برای نمایش یا عدم نمایش این فیلد براساس مقادیر یک فیلد دیگر قوانین را ایجاد کنید."
+
+#: tooltips.php:59
+msgid "Select the country you would like to be selected by default when the form gets displayed."
+msgstr "کشوری که می‌خواهید به صورت پیش‌فرض در هنگام نمایش فرم انتخاب شده باشد را انتخاب کنید."
+
+#: tooltips.php:142
+msgid "Enter the base price for this product."
+msgstr "قیمت پایه را برای این محصول وارد کنید."
+
+#: form_detail.php:2752
+msgid "Use the Rich Text Editor"
+msgstr "استفاده از ویرایشگر متن قوی"
+
+#: tooltips.php:47
+msgid "When enabled, margins are added to properly align the HTML content with other form fields."
+msgstr "وقتی فعال است، حاشیه‌ها به محتوای HTML در کنار سایر فیلدها اضافه می‌شود."
+
+#: tooltips.php:142
+msgid "Base Price"
+msgstr "قیمت پایه"
+
+#: tooltips.php:15
+msgid "Carbon Copy Addresses"
+msgstr "کاربن کپی کننده آدرس‌ها"
+
+#: form_detail.php:562
+msgid "Previous Button"
+msgstr "دکمه قبلی"
+
+#: tooltips.php:64
+msgid "Check this box to prevent the State/Province/Region from being displayed in the form."
+msgstr "برای عدم نمایش استان / شهر / ناحیه این گزینه را انتخاب کنید."
+
+#: form_detail.php:1627
+msgid "Job Search Aids"
+msgstr "کاریابی"
+
+#: form_detail.php:1800
+msgid "\"Select All\" text"
+msgstr "گزینه \"انتخاب همه\""
+
+#: form_detail.php:1626
+msgid "Intern"
+msgstr "کارآموز"
+
+#: form_detail.php:2675
+msgid "Serbian"
+msgstr "صربستان"
+
+#: form_detail.php:2382
+msgid "Fill Container"
+msgstr "ظرف را پر کنید"
+
+#: form_detail.php:2660
+msgid "Laothian"
+msgstr "لاتین"
+
+#: form_detail.php:870
+msgid "File Upload"
+msgstr "بارگذاری فایل"
+
+#: form_detail.php:1629
+msgid "Wednesday"
+msgstr "چهارشنبه"
+
+#: tooltips.php:17
+msgid "When enabled, any files uploaded to File Upload fields will be attached to the notification email."
+msgstr "وقتی فعال باشد، هر فایلی که در فیلدهای بارگذاری فایل بارگذاری شده است به ایمیل اعلان پیوست می‌شود."
+
+#: form_detail.php:781
+msgid "Next Button Type"
+msgstr "نوع دکمهٔ بعدی"
+
+#: form_detail.php:1227 tooltips.php:139
+msgid "Set as Featured Image"
+msgstr "انتخاب به عنوان تصویر شاخص"
+
+#: form_detail.php:2446
+msgid "Use the drag handle to change the field's size. This setting is not supported in the default Orbital Theme."
+msgstr "برای تغییر اندازهٔ فیلد از دستگیرهٔ کشیدن استفاده کنید. این تنظیم در پوستهٔ پیش‌فرض Orbital پشتیبانی نمی‌شود."
+
+#: form_detail.php:2186 tooltips.php:79
+msgid "No Duplicates"
+msgstr "بدون تکرار"
+
+#: form_detail.php:2510 form_detail.php:2520 tooltips.php:96
+msgid "Default Value"
+msgstr "مقدار پیش‌فرض"
+
+#: tooltips.php:163
+msgid "Enter your reCAPTCHA Secret Key, if you do not have a key you can register for one at the provided link.  reCAPTCHA is a free service."
+msgstr "کلید محرمانهٔ reCAPTCHA را وارد کنید. اگر کلید ندارید، می‌توانید از طریق پیوند ارائه‌شده یک کلید ثبت کنید. reCAPTCHA یک سرویس رایگان است."
+
+#: form_detail.php:978 tooltips.php:51
+msgid "Custom Field Name"
+msgstr "نام فیلد سفارشی"
+
+#: form_detail.php:1003 tooltips.php:131
+msgid "Post Status"
+msgstr "وضعیت نوشته"
+
+#: form_detail.php:1630
+msgid "June"
+msgstr "ژوئن"
+
+#: form_detail.php:1630
+msgid "November"
+msgstr "نوامبر"
+
+#: entry_detail.php:1323 form_detail.php:865 form_detail.php:2019 form_detail.php:3193 form_detail.php:3194 includes/addon/class-gf-payment-addon.php:3300
+msgid "Date"
+msgstr "تاریخ"
+
+#: form_detail.php:3199
+msgid "HTTP Referer URL"
+msgstr "URL HTTP ارجاع دهنده"
+
+#: form_list.php:51
+msgid "Create Form"
+msgstr "ایجاد فرم"
+
+#: tooltips.php:79
+msgid "Select this option to limit user input to unique values only.  This will require that a value entered in a field does not currently exist in the entry database for that field."
+msgstr "برای محدود کردن کاربران برای درون ریزی داده‌های منحصر به فرد این گزینه را انتخاب کنید. این کار باعث می‌شود مقداری که در این فیلد وارد می‌شود از قبل در دیتابیس برای این فیلد وارد نشده باشد."
+
+#: form_detail.php:1626
+msgid "Part-Time"
+msgstr "پاره وقت"
+
+#: form_detail.php:2016
+msgid "Examples"
+msgstr "مثال‌ها"
+
+#: form_detail.php:2845
+msgid "Enable Next Button Conditional Logic"
+msgstr "فعال‌سازی منطق شرطی دکمه \"بعدی\""
+
+#: form_detail.php:901 settings.php:1344
+msgid "Type"
+msgstr "نوع"
+
+#: tooltips.php:155
+msgid "Select the status for the entries to export."
+msgstr "وضعیت ورودی‌هایی را که می‌خواهید برون‌بری شوند انتخاب کنید."
+
+#: tooltips.php:128
+msgid "Create rules to dynamically display or hide the page's Next Button based on values from another field."
+msgstr "برای نمایش یا عدم نمایش دکمه بعدی صفحه براساس مقادیر یک فیلد دیگر، قوانین را ایجاد کنید."
+
+#: form_detail.php:1627
+msgid "Arts/Entertainment/Publishing"
+msgstr "هنر / سرگرمی / انتشارات"
+
+#: tooltips.php:153
+msgid "Export Selected Fields"
+msgstr "فیلدهای انتخاب شده برای برون ریزی"
+
+#: form_detail.php:2148
+msgid "Validate Formula"
+msgstr "معتبرسازی فرمول"
+
+#: form_detail.php:2648
+msgid "German (Switzerland)"
+msgstr "آلمانی (سوئیس)"
+
+#: form_detail.php:2446
+msgid "Field Size setting replaced by column resizing"
+msgstr "تنظیم اندازهٔ فیلد با تغییر اندازهٔ ستون‌ها جایگزین شده است"
+
+#: form_detail.php:2322 form_detail.php:2352
+msgid "Use Form Setting (%s)"
+msgstr "استفاده از تنظیمات فرم (%s)"
+
+#: form_detail.php:2007
+msgid "Usage"
+msgstr "کارکرد"
+
+#: form_detail.php:2330
+msgid "Choice Label Visibility"
+msgstr "نمایش‌پذیری برچسب گزینه"
+
+#: form_detail.php:1628
+msgid "High School"
+msgstr "دبیرستان"
+
+#: tooltips.php:78
+msgid "Select this option to make the form field required.  A required field will prevent the form from being submitted if it is not filled out or selected."
+msgstr "برای ضروری کردن فیلد این گزینه را انتخاب کنید. فیلدهای ضروری از ارسال فرم‌هایی که این فیلد‌ها پر یا انتخاب نشده است جلوگیری می‌کنند."
+
+#: form_detail.php:2362
+msgid "Custom Validation Message"
+msgstr "پیام تأیید سفارشی"
+
+#: form_detail.php:1635
+msgid "Agree"
+msgstr "موافق"
+
+#: form_detail.php:1735
+msgid "3 Columns"
+msgstr "۳ ستون"
+
+#: form_detail.php:2651
+msgid "Hebrew"
+msgstr "عبری"
+
+#: form_list.php:155
+msgid "'Cancel' to stop, 'OK' to reset."
+msgstr "برای توقف، عملیات را لغو کنید؛ برای بازنشانی، آن را تأیید کنید."
+
+#: tooltips.php:124
+msgid "Enter the text you would like to appear on the page next button."
+msgstr "متنی را وارد کنید که می‌خواهید روی دکمهٔ «بعدی» صفحه نمایش داده شود."
+
+#: form_detail.php:3201
+msgid "User Email"
+msgstr "ایمیل کاربر"
+
+#: form_detail.php:2010
+msgid "Use a lower case 'a' to indicate an alphabetical character."
+msgstr "برای نشان دادن کاراکتر الفبایی از یک 'a' استفاده کنید."
+
+#: form_detail.php:1627
+msgid "Insurance"
+msgstr "بیمه"
+
+#: form_detail.php:1009
+msgid "Pending Review"
+msgstr "در انتظار بررسی"
+
+#: form_detail.php:3650
+msgid "Deprecation of Ready Classes in Gravity Forms 4.0"
+msgstr "منسوخ‌شدن Ready Classes در Gravity Forms 4.0"
+
+#: form_detail.php:1749
+msgid "Down"
+msgstr "پایین"
+
+#: tooltips.php:50
+msgid "CAPTCHA Badge Position"
+msgstr "موقعیت نشان CAPTCHA"
+
+#: tooltips.php:87
+msgid "Enter values in this setting to override the Sub-Label for each field."
+msgstr "در این تنظیمات مقادیر را برای تغییر برچسب فرعی هر فیلد وارد کنید."
+
+#: form_list.php:915
+msgid "Form restored."
+msgstr "فرم بازگردانی شد."
+
+#: tooltips.php:104
+msgid "Autocomplete Attribute"
+msgstr "ویژگی تکمیل خودکار"
+
+#: form_detail.php:454
+msgid "No field selected"
+msgstr "فیلدی انتخاب نشده است"
+
+#: tooltips.php:128
+msgid "Next Button Conditional Logic"
+msgstr "دکمه بعدی شرط منطقی"
+
+#: form_detail.php:2616
+msgid "Language"
+msgstr "زبان"
+
+#: form_detail.php:1387
+msgid "Date Format Placement"
+msgstr "محل قرارگیری قالب تاریخ"
+
+#: tooltips.php:16
+msgid "Enter a comma separated list of email addresses you would like to receive a BCC of the notification email."
+msgstr "ایمیلی‌های که می‌خواهید BCC اعلان‌ها را دریافت کنند وارد کنید ( برای جدا کردن ایمیل‌ها از کاما استفاده کنید )"
+
+#: form_detail.php:207 includes/blocks/config/class-gf-blocks-config.php:118
+msgid "Edit Form"
+msgstr "ویرایش فرم"
+
+#: form_list.php:428
+msgid "Default Sort Column"
+msgstr "ستون مرتب‌سازی پیش‌فرض"
+
+#: tooltips.php:20
+msgid "Schedule Form"
+msgstr "مدیریت فرم"

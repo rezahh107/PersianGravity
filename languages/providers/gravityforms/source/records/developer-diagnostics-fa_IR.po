@@ -1,0 +1,495 @@
+# Gravity Forms 3.1.1.1 Persian sparse admission record — developer diagnostics surface.
+# Derived deterministically from accepted WU-001 classified authority; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms 3.1.1.1\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityforms\n"
+
+#: includes/system-status/class-gf-system-report.php:892 settings.php:547
+msgid "Background Notifications"
+msgstr "اعلان‌های پس‌زمینه"
+
+#: includes/system-status/class-gf-system-report.php:1059
+msgid "Your database version is out of date."
+msgstr "نسخهٔ پایگاه دادهٔ شما به‌روز نیست."
+
+#: includes/system-status/class-gf-system-report.php:557
+msgid "Maximum Execution Time"
+msgstr "حداکثر زمان اجرا"
+
+#: includes/system-status/class-gf-system-report.php:864
+msgid "Not writable"
+msgstr "غیرقابل نوشتن"
+
+#: includes/system-status/class-gf-system-report.php:857
+msgid "Upload folder"
+msgstr "پوشهٔ بارگذاری"
+
+#: includes/system-status/class-gf-system-report.php:421
+msgid "WordPress Version"
+msgstr "نسخه WordPress"
+
+#: includes/system-status/class-gf-system-report.php:447 includes/system-status/class-gf-system-report.php:458 includes/system-status/class-gf-system-report.php:464 includes/system-status/class-gf-system-report.php:470 includes/system-status/class-gf-system-report.php:476 includes/system-status/class-gf-system-report.php:482 includes/system-status/class-gf-system-report.php:489 includes/system-status/class-gf-system-report.php:584 includes/system-status/class-gf-system-report.php:596 includes/system-status/class-gf-system-report.php:602 includes/system-status/class-gf-system-report.php:872 includes/system-status/class-gf-system-report.php:883 includes/system-status/class-gf-system-report.php:894 includes/system-status/class-gf-system-report.php:900 includes/system-status/class-gf-system-report.php:906
+msgid "Yes"
+msgstr "بله"
+
+#: includes/system-status/class-gf-system-report.php:1028
+msgid "The database is currently being upgraded to version %s. %s"
+msgstr "دیتابیس در حال حاضر به نسخه %s ارتقا پیدا خواهد کرد. %s"
+
+#: includes/system-status/class-gf-system-report.php:614
+msgid "Database Server"
+msgstr "نسخه دیتابیس"
+
+#: includes/system-status/class-gf-system-report.php:669
+msgid "PHP - Local time"
+msgstr "PHP - به وقت محلی"
+
+#: includes/system-status/class-gf-system-report.php:502
+msgid "Active Plugins"
+msgstr "افزونه‌های فعال"
+
+#: includes/system-status/class-gf-system-report.php:1030
+msgid "As this site doesn't support background tasks the upgrade process will take longer than usual and the status will change infrequently."
+msgstr "از آنجا که این سایت از وظایف پس‌زمینه پشتیبانی نمی‌کند، فرایند ارتقا بیش از معمول طول می‌کشد و وضعیت با فاصلهٔ بیشتری به‌روزرسانی می‌شود."
+
+#: includes/system-status/class-gf-system-report.php:349
+msgid "Unexpected content in the response."
+msgstr "محتوای غیر منتظره در پاسخ وجود دارد."
+
+#: includes/system-status/class-gf-system-report.php:726 includes/system-status/class-gf-system-report.php:748 includes/system-status/class-gf-system-report.php:772
+msgid "Passes"
+msgstr "پاس‌ها"
+
+#: includes/system-status/class-gf-update.php:30
+msgid "You don't have permissions to view this page"
+msgstr "شما دسترسی لازم برای مشاهده این برگه را ندارید"
+
+#: includes/system-status/class-gf-system-report.php:904
+msgid "REST API v2"
+msgstr "REST API نسخه 2"
+
+#: includes/system-status/class-gf-system-report.php:391
+msgid "Scheduled (Cron) Events Log"
+msgstr "گزارش رویدادهای برنامه ریزی شده (Cron)."
+
+#: includes/system-status/class-gf-update.php:90
+msgid "Visit plugin page"
+msgstr "مشاهده صفحه افزونه"
+
+#: includes/system-status/class-gf-system-report.php:1025
+msgid "Automatic background migration is disabled but the database needs to be upgraded to version %s. %s"
+msgstr "انتقال خودکار در پس‌زمینه غیرفعال است، اما پایگاه داده باید به نسخهٔ %s ارتقا یابد. %s"
+
+#: form_detail.php:1899 includes/system-status/class-gf-system-report.php:887 tooltips.php:165
+msgid "Currency"
+msgstr "واحد پول"
+
+#: includes/system-status/class-gf-system-report.php:69
+msgid "The following is a system report containing useful technical information for troubleshooting issues. If you need further help after viewing the report, click on the \"Copy System Report\" button below to copy the report and paste it in your message to support."
+msgstr "این‌ها شامل اطلاعات تکنیکی مفید برای حل مشکل هستند. در صورتی که نیاز به کمک برای حل این مشکلات دارید. روی گزینه \"کپی از گزارش سیستم\" کلیک کنید و لاگها رو کپی و برای ما ارسال نمایید."
+
+#: includes/system-status/class-gf-system-report.php:532
+msgid "Document Root"
+msgstr "ریشهٔ سند"
+
+#: includes/system-status/class-gf-system-report.php:654
+msgid "MySQL - Universal time (UTC)"
+msgstr "MySQL - زمان جهانی (UTC)"
+
+#: includes/system-status/class-gf-system-report.php:1076
+msgid "Database upgrade failed."
+msgstr "ارتقای پایگاه داده ناموفق بود."
+
+#: includes/system-status/class-gf-update.php:145
+msgid "Your version of Gravity Forms is up to date."
+msgstr "نسخه Gravity Forms شما به‌روز است."
+
+#: includes/system-status/class-gf-system-report.php:876
+msgid "Default Theme"
+msgstr "پوستهٔ پیش‌فرض"
+
+#: includes/system-status/class-gf-system-report.php:112
+msgid "Setting"
+msgstr "تنظیمات"
+
+#: includes/system-status/class-gf-system-report.php:734 includes/system-status/class-gf-system-report.php:760 includes/system-status/class-gf-system-report.php:779
+msgid "Fails"
+msgstr "ناموفق"
+
+#: includes/system-status/class-gf-system-report.php:1092
+msgid "Your database is up-to-date."
+msgstr "دیتابیس شما به‌روز است."
+
+#: includes/system-status/class-gf-system-report.php:1684
+msgid "Site Locale"
+msgstr "محلی"
+
+#: includes/system-status/class-gf-system-report.php:606
+msgid "Loaded Extensions"
+msgstr "اکستنشن‌های لود شده"
+
+#: form_detail.php:646 form_detail.php:1217 includes/system-status/class-gf-update.php:53 includes/webapi/includes/class-gf-api-keys-table.php:27 includes/webapi/webapi.php:391
+msgid "Description"
+msgstr "توضیحات"
+
+#: includes/system-status/class-gf-system-report.php:451
+msgid "WordPress Memory Limit"
+msgstr "محدودیت حافظه WordPress"
+
+#: includes/system-status/class-gf-update.php:51
+msgid "Plugin"
+msgstr "افزونه"
+
+#: entry_detail.php:1486 form_detail.php:2446 form_detail.php:3510 form_detail.php:3512 form_detail.php:3557 form_detail.php:3653 includes/addon/class-gf-feed-addon.php:1481 includes/blocks/config/class-gf-blocks-config.php:167 includes/system-status/class-gf-system-report.php:1162 includes/webapi/webapi.php:614 includes/webapi/webapi.php:631 settings.php:612 settings.php:728 settings.php:762 settings.php:896 tooltips.php:44 tooltips.php:104 tooltips.php:113
+msgid "(opens in a new tab)"
+msgstr "(در یک برگه جدید باز می‌شود)"
+
+#: includes/system-status/class-gf-system-report.php:664
+msgid "PHP - Universal time (UTC)"
+msgstr "PHP - زمان جهانی (UTC)"
+
+#: includes/system-status/class-gf-system-report.php:468
+msgid "WordPress Script Debug Mode"
+msgstr "حالت اشکال‌زدایی (عیب یابی) اسکریپت WordPress"
+
+#: includes/system-status/class-gf-system-report.php:249
+msgid "Current status: %s"
+msgstr "وضعیت فعلی: %s"
+
+#: includes/system-status/class-gf-system-report.php:1092
+msgid "Warning: downgrading Gravity Forms is not recommended."
+msgstr "هشدار: تنزل نسخه کردن Gravity Forms اصلا توصیه نمی‌شود."
+
+#: includes/system-status/class-gf-system-report.php:577
+msgid "Maximum Input Variables"
+msgstr "حداکثر متغیرهای ورودی"
+
+#: includes/system-status/class-gf-system-report.php:381
+msgid "Translations"
+msgstr "ترجمه‌ها"
+
+#: includes/system-status/class-gf-system-report.php:1268 includes/system-status/class-gf-system-report.php:1275 includes/system-status/class-gf-system-report.php:1288 includes/system-status/class-gf-system-report.php:1351 includes/system-status/class-gf-system-report.php:1359 includes/system-status/class-gf-system-report.php:1533 includes/system-status/class-gf-system-report.php:1534 includes/system-status/class-gf-system-report.php:1549 includes/system-status/class-gf-system-report.php:1550
+msgid "by"
+msgstr "توسط"
+
+#: includes/blocks/config/class-gf-blocks-config.php:127 includes/system-status/class-gf-system-report.php:366 includes/system-status/class-gf-update.php:178
+msgid "Gravity Forms"
+msgstr "Gravity Forms"
+
+#: includes/system-status/class-gf-system-report.php:456
+msgid "WordPress Debug Mode"
+msgstr "حالت اشکال‌زدایی WordPress"
+
+#: includes/addon/class-gf-addon.php:4698 includes/addon/class-gf-addon.php:4977 includes/addon/class-gf-addon.php:5168 includes/addon/class-gf-addon.php:5617 includes/system-status/class-gf-update.php:81 settings.php:1516
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: includes/system-status/class-gf-update.php:154 includes/system-status/class-gf-update.php:163
+msgid "There is a new version of Gravity Forms available."
+msgstr "نسخه جدید Gravity Forms موجود است."
+
+#: includes/system-status/class-gf-system-report.php:376
+msgid "Database"
+msgstr "بانک اطلاعاتی (دیتابیس)"
+
+#: includes/system-status/class-gf-system-report.php:514
+msgid "Server Environment"
+msgstr "محیط سرور"
+
+#: includes/system-status/class-gf-system-report.php:881 tooltips.php:161
+msgid "No-Conflict Mode"
+msgstr "حالت بدون تداخل"
+
+#: includes/system-status/class-gf-system-report.php:362
+msgid "Gravity Forms Environment"
+msgstr "محیط Gravity Forms"
+
+#: includes/system-status/class-gf-system-report.php:1076
+msgid "There are issues with your database."
+msgstr "مشکلاتی در دیتابیس شما وجود دارد."
+
+#: includes/system-status/class-gf-system-report.php:398
+msgid "WordPress Environment"
+msgstr "محیط WordPress"
+
+#: includes/system-status/class-gf-system-report.php:480
+msgid "WordPress Alternate Cron"
+msgstr "کران جایگزین WordPress"
+
+#: includes/system-status/class-gf-system-report.php:985
+msgid "Table does not exist"
+msgstr "جدول موجود نیست"
+
+#: includes/system-status/class-gf-system-report.php:584 includes/system-status/class-gf-system-report.php:585
+msgid "version"
+msgstr "نسخه"
+
+#: includes/system-status/class-gf-system-report.php:430
+msgid "The Gravity Forms support agreement requires WordPress %s or greater. This site must be upgraded in order to be eligible for support."
+msgstr "شرایط مورد نیاز پشتیبانی Gravity Forms، WordPress %s و بالاتر است. این سایت باید ارتقا شود تا شامل پشتیبانی شود."
+
+#: includes/system-status/class-gf-system-report.php:1054
+msgid "Upgrade database"
+msgstr "ارتقای پایگاه داده"
+
+#: includes/system-status/class-gf-system-report.php:1248
+msgid "Your system does not meet the minimum requirements for this Add-On (%d errors)."
+msgstr "سیستم شما حداقل شرایط لازم برای این افزونه را برآورده نمی‌کند (%d خطا)."
+
+#: includes/system-status/class-gf-system-report.php:445
+msgid "WordPress Multisite"
+msgstr "WordPress چندکاربره"
+
+#: includes/system-status/class-gf-system-report.php:527
+msgid "Port"
+msgstr "پورت"
+
+#: includes/system-status/class-gf-system-report.php:1026
+msgid "Force the migration manually"
+msgstr "اجبار به انتقال به صورت دستی"
+
+#: includes/system-status/class-gf-system-report.php:645
+msgid "Date and Time"
+msgstr "تاریخ و زمان"
+
+#: includes/system-status/class-gf-system-report.php:245
+msgid "complete."
+msgstr "تکمیل."
+
+#: includes/system-status/class-gf-system-report.php:518
+msgid "Web Server"
+msgstr "وب سرور"
+
+#: includes/system-status/class-gf-system-report.php:582
+msgid "cURL Enabled"
+msgstr "cURL فعال است"
+
+#: includes/system-status/class-gf-system-report.php:438
+msgid "Gravity Forms requires WordPress %s or greater. You must upgrade WordPress in order to use Gravity Forms."
+msgstr "Gravity Forms به WordPress نسخهٔ %s یا بالاتر نیاز دارد. برای استفاده از Gravity Forms باید WordPress را ارتقا دهید."
+
+#: form_detail.php:1563 form_detail.php:2535 includes/settings/fields/class-generic-map.php:188 includes/system-status/class-gf-system-report.php:112
+msgid "Value"
+msgstr "مقدار"
+
+#: includes/system-status/class-gf-system-report.php:539
+msgid "PHP"
+msgstr "PHP"
+
+#: includes/system-status/class-gf-system-status.php:62
+msgid "System Report"
+msgstr "گزارش سیستم"
+
+#: includes/system-status/class-gf-system-report.php:870 tooltips.php:159
+msgid "Output CSS"
+msgstr "CSS خروجی"
+
+#: includes/system-status/class-gf-system-report.php:543 includes/system-status/class-gf-system-report.php:623 includes/system-status/class-gf-system-report.php:845
+msgid "Version"
+msgstr "نسخه"
+
+#: includes/system-status/class-gf-system-report.php:549
+msgid "Recommended: PHP %s or higher."
+msgstr "پیشنهادشده: PHP %s یا بالاتر."
+
+#: includes/system-status/class-gf-system-report.php:447 includes/system-status/class-gf-system-report.php:458 includes/system-status/class-gf-system-report.php:464 includes/system-status/class-gf-system-report.php:470 includes/system-status/class-gf-system-report.php:476 includes/system-status/class-gf-system-report.php:482 includes/system-status/class-gf-system-report.php:489 includes/system-status/class-gf-system-report.php:584 includes/system-status/class-gf-system-report.php:590 includes/system-status/class-gf-system-report.php:596 includes/system-status/class-gf-system-report.php:602 includes/system-status/class-gf-system-report.php:872 includes/system-status/class-gf-system-report.php:883 includes/system-status/class-gf-system-report.php:894 includes/system-status/class-gf-system-report.php:900 includes/system-status/class-gf-system-report.php:906
+msgid "No"
+msgstr "خیر"
+
+#: includes/system-status/class-gf-system-status.php:70 includes/system-status/class-gf-update.php:47
+msgid "Updates"
+msgstr "به‌روزرسانی‌ها"
+
+#: includes/system-status/class-gf-system-report.php:402
+msgid "WordPress"
+msgstr "WordPress"
+
+#: includes/system-status/class-gf-system-report.php:264
+msgid "Do not close or navigate away from this page until the upgrade is 100% complete."
+msgstr "تا زمانی که ارتقا ۱۰۰٪ کامل نشده است، این صفحه را نبندید و از آن خارج نشوید."
+
+#: includes/system-status/class-gf-system-report.php:1693
+msgid "User (ID: %d) Locale"
+msgstr "کاربر (ID: %d) محلی"
+
+#: includes/system-status/class-gf-system-report.php:552
+msgid "Memory Limit"
+msgstr "محدودیت حافظه"
+
+#: includes/system-status/class-gf-system-report.php:406
+msgid "Home URL"
+msgstr "URL خانه"
+
+#: includes/system-status/class-gf-system-report.php:562
+msgid "Maximum File Upload Size"
+msgstr "حداکثر اندازهٔ بارگذاری فایل"
+
+#: includes/system-status/class-gf-system-report.php:462
+msgid "WordPress Debug Log"
+msgstr "لاگ اشکال‌زدایی WordPress"
+
+#: includes/addon/class-gf-auto-upgrade.php:327 includes/system-status/class-gf-update.php:165
+msgid "%sRegister%s your copy of Gravity Forms to receive access to automatic updates and support. Need a license key? %sPurchase one now%s."
+msgstr "برای دریافت خودکار به‌روزرسانی و پشتیبانی نسخه کپی Gravity Forms را%s ثبت%s کنید..نیاز به کد مجوز دارید؟ %s خرید %s"
+
+#: includes/system-status/class-gf-system-report.php:659
+msgid "MySQL - Local time"
+msgstr "MySQL - به وقت محلی"
+
+#: includes/system-status/class-gf-system-report.php:649
+msgid "WordPress (Local) Timezone"
+msgstr "نسخه WordPress"
+
+#: includes/system-status/class-gf-system-report.php:507
+msgid "Network Active Plugins"
+msgstr "افزونه‌های فعال شبکه"
+
+#: includes/system-status/class-gf-system-report.php:1547
+msgid "Parent"
+msgstr "والدین"
+
+#: includes/system-status/class-gf-system-report.php:1092
+msgid "Database upgraded successfully."
+msgstr "به‌روزرسانی دیتابیس با موفقیت انجام شد."
+
+#: includes/system-status/class-gf-system-report.php:630
+msgid "Gravity Forms requires %s or above."
+msgstr "Gravity Forms به %s یا بالاتر نیاز دارد."
+
+#: includes/system-status/class-gf-system-report.php:997
+msgid "Table has not been upgraded successfully."
+msgstr "جدول به درستی به‌روز نشد."
+
+#: includes/system-status/class-gf-system-report.php:1022
+msgid "%s%% complete."
+msgstr "%s%% تکمیل شده است."
+
+#: includes/system-status/class-gf-system-report.php:600
+msgid "Mbstring Enabled"
+msgstr "Mbstring فعال است"
+
+#: includes/system-status/class-gf-system-report.php:638
+msgid "Database Collation"
+msgstr "قواعد مرتب‌سازی پایگاه داده"
+
+#: includes/system-status/class-gf-system-report.php:262
+msgid "Upgrading Gravity Forms"
+msgstr "ارتقای Gravity Forms"
+
+#: includes/system-status/class-gf-system-report.php:1020
+msgid "Current Status: %s"
+msgstr "وضعیت فعلی:‌%s"
+
+#: includes/system-status/class-gf-system-report.php:991
+msgid "Table has incorrect auto-increment settings."
+msgstr "جدول دارای تنظیمات افزایش خودکار نادرست است."
+
+#: includes/system-status/class-gf-system-report.php:1013
+msgid "WARNING! Re-running the upgrade process is only recommended if you are currently experiencing issues with your database. This process may take several minutes to complete. 'OK' to upgrade. 'Cancel' to abort."
+msgstr "هشدار! اجرای دوبارهٔ فرایند ارتقا فقط زمانی توصیه می‌شود که در پایگاه داده مشکل دارید. تکمیل این فرایند ممکن است چند دقیقه طول بکشد. برای ارتقا، عملیات را تأیید کنید؛ برای انصراف، آن را لغو کنید."
+
+#: includes/system-status/class-gf-system-report.php:416
+msgid "REST API Base URL"
+msgstr "URL پایه REST API"
+
+#: includes/system-status/class-gf-system-report.php:351
+msgid "Response code: %s"
+msgstr "کد پاسخ: %s"
+
+#: includes/system-status/class-gf-system-report.php:474
+msgid "WordPress Cron"
+msgstr "کران WordPress"
+
+#: includes/system-status/class-gf-system-report.php:386
+msgid "Log Files"
+msgstr "فایلهای لاگ"
+
+#: includes/system-status/class-gf-system-report.php:867
+msgid "File uploads, entry exports, and logging will not function properly."
+msgstr "بارگذاری فایل، برون‌بری ورودی‌ها و گزارش‌گیری به‌درستی کار نخواهند کرد."
+
+#: includes/system-status/class-gf-system-report.php:567
+msgid "Maximum File Uploads"
+msgstr "حداکثر بارگذاری فایلها"
+
+#: includes/system-status/class-gf-system-report.php:633
+msgid "Database Character Set"
+msgstr "کاراکتر ست دیتابیس"
+
+#: includes/system-status/class-gf-system-report.php:941 includes/system-status/class-gf-system-report.php:1038
+msgid "Database Version"
+msgstr "نسخه دیتابیس"
+
+#: includes/system-status/class-gf-system-report.php:588
+msgid "OpenSSL"
+msgstr "OpenSSL"
+
+#: includes/system-status/class-gf-system-report.php:862
+msgid "Upload folder permissions"
+msgstr "مجوزهای پوشهٔ بارگذاری"
+
+#: includes/system-status/class-gf-system-report.php:411
+msgid "Site URL"
+msgstr "URL سایت"
+
+#: includes/system-status/class-gf-system-report.php:522
+msgid "Software"
+msgstr "نرم افزار"
+
+#: includes/system-status/class-gf-system-report.php:497
+msgid "Active Theme"
+msgstr "پوستهٔ فعال"
+
+#: includes/system-status/class-gf-system-report.php:898
+msgid "Background updates"
+msgstr "به‌روزرسانی خودکار"
+
+#: includes/system-status/class-gf-system-report.php:852 includes/system-status/class-gf-system-report.php:1242
+msgid "New version %s available."
+msgstr "نسخه جدید %s در دسترس است."
+
+#: includes/system-status/class-gf-system-report.php:371
+msgid "Add-Ons"
+msgstr "افزونه‌ها"
+
+#: includes/system-status/class-gf-system-report.php:910
+msgid "Orbital Style Filter"
+msgstr "فیلتر سبک Orbital"
+
+#: includes/system-status/class-gf-system-report.php:486
+msgid "Background tasks"
+msgstr "وظایف پس‌زمینه"
+
+#: includes/system-status/class-gf-system-report.php:1071 includes/system-status/class-gf-system-report.php:1087
+msgid "Re-run database upgrade"
+msgstr "اجرای دوبارهٔ ارتقای پایگاه داده"
+
+#: includes/system-status/class-gf-system-report.php:594
+msgid "Mcrypt Enabled"
+msgstr "Mcrypt فعال است"
+
+#: includes/system-status/class-gf-system-report.php:864
+msgid "Writable"
+msgstr "قابل نوشتن"
+
+#: includes/system-status/class-gf-update.php:155
+msgid "You can update to the latest version automatically or download the update and install it manually."
+msgstr "شما می‌توانید به صورت خودکار به آخرین نسخه به‌روزرسانی کنید یا آپدیت را دانلود کنید و دستی نصب نمایید."
+
+#: includes/system-status/class-gf-system-report.php:1032
+msgid "Force the upgrade"
+msgstr "اجبار به ارتقا"
+
+#: includes/system-status/class-gf-system-report.php:618
+msgid "Database Management System"
+msgstr "کاراکتر ست دیتابیس"
+
+#: includes/system-status/class-gf-system-report.php:572
+msgid "Maximum Post Size"
+msgstr "حداکثر اندازهٔ POST"
