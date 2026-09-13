@@ -28,7 +28,8 @@ if (runtimeOrigins.length !== 1) {
 }
 
 const results = [];
-const diagnostics = { console: [], pageErrors: [], requestFailures: [] };
+const diagnostics = { console: [], pageErrors: [], requestFailures: [], requestsStarted: 0 };
+const requestSequences = new WeakMap();
 
 function record(id, name, status, details = null) {
   results.push({ id, name, status, details });
@@ -99,10 +100,15 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 page.on('console', (msg) => diagnostics.console.push({ type: msg.type(), text: msg.text().slice(0, 1200) }));
 page.on('pageerror', (error) => diagnostics.pageErrors.push(String(error?.stack || error).slice(0, 3000)));
+page.on('request', (request) => {
+  diagnostics.requestsStarted += 1;
+  requestSequences.set(request, diagnostics.requestsStarted);
+});
 page.on('requestfailed', (request) => diagnostics.requestFailures.push({
   url: request.url().slice(0, 1000),
   method: request.method(),
   error: request.failure()?.errorText || 'unknown',
+  requestSequence: requestSequences.get(request) ?? null,
 }));
 
 try {
@@ -178,7 +184,10 @@ try {
             const url = new URL(item.href);
             return url.origin === boundary.origin
               && url.pathname.startsWith(boundary.pathname)
-              && url.searchParams.get('post_type') === 'gravityview';
+              && (
+                url.searchParams.get('post_type') === 'gravityview'
+                || url.searchParams.get('page') === 'gravityview_all_views'
+              );
           } catch {
             return false;
           }

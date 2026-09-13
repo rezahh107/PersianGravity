@@ -2,6 +2,7 @@ export function snapshotDiagnostics(diagnostics) {
   return {
     pageErrors: diagnostics.pageErrors.length,
     requestFailures: diagnostics.requestFailures.length,
+    requestsStarted: diagnostics.requestsStarted ?? 0,
   };
 }
 
@@ -22,7 +23,8 @@ export function evaluateOperationDiagnostics(operationId, diagnostics, baseline,
   const newPageErrors = diagnostics.pageErrors.slice(baseline.pageErrors);
   const newRequestFailures = diagnostics.requestFailures
     .slice(baseline.requestFailures)
-    .filter((failure) => isMaterialRuntimeRequestFailure(failure, runtimeOrigins));
+    .filter((failure) => isMaterialRuntimeRequestFailure(failure, runtimeOrigins))
+    .filter((failure) => failure.requestSequence == null || failure.requestSequence > baseline.requestsStarted);
 
   return {
     operationId,

@@ -9,7 +9,7 @@ import {
 const runtimeOrigins = ['http://127.0.0.1:8080'];
 
 function diagnostics() {
-  return { pageErrors: [], requestFailures: [] };
+  return { pageErrors: [], requestFailures: [], requestsStarted: 0 };
 }
 
 test('clean diagnostics delta allows the same operation to pass', () => {
@@ -34,10 +34,12 @@ test('one new pageError fails the same operation', () => {
 test('one new material runtime request failure fails the same operation', () => {
   const state = diagnostics();
   const baseline = snapshotDiagnostics(state);
+  state.requestsStarted = 1;
   state.requestFailures.push({
     url: 'http://127.0.0.1:8080/wp-includes/js/wp-util.min.js',
     method: 'GET',
     error: 'net::ERR_FAILED',
+    requestSequence: 1,
   });
 
   const gate = evaluateOperationDiagnostics('op-request', state, baseline, runtimeOrigins);
@@ -63,13 +65,31 @@ test('diagnostics that predate the baseline do not retroactively fail the next o
 test('external request failures are retained globally but are not material runtime blockers', () => {
   const state = diagnostics();
   const baseline = snapshotDiagnostics(state);
+  state.requestsStarted = 1;
   state.requestFailures.push({
     url: 'https://example.invalid/telemetry',
     method: 'POST',
     error: 'net::ERR_NAME_NOT_RESOLVED',
+    requestSequence: 1,
   });
 
   const gate = evaluateOperationDiagnostics('op-external', state, baseline, runtimeOrigins);
+  assert.equal(gate.ok, true);
+  assert.equal(state.requestFailures.length, 1);
+});
+
+test('a request started before the baseline is retained but not attributed to the next operation when navigation aborts it', () => {
+  const state = diagnostics();
+  state.requestsStarted = 1;
+  const baseline = snapshotDiagnostics(state);
+  state.requestFailures.push({
+    url: 'http://127.0.0.1:8080/wp-admin/admin-ajax.php?action=background-probe',
+    method: 'GET',
+    error: 'net::ERR_ABORTED',
+    requestSequence: 1,
+  });
+
+  const gate = evaluateOperationDiagnostics('op-navigation', state, baseline, runtimeOrigins);
   assert.equal(gate.ok, true);
   assert.equal(state.requestFailures.length, 1);
 });
