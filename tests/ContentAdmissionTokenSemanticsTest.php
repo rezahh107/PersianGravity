@@ -8,7 +8,7 @@ final class ContentAdmissionTokenSemanticsTest extends TestCase {
 	public function test_literal_percent_prose_is_not_treated_as_printf(): void {
 		$this->assertSame( array(), pgr_content_tokens( 'Do not close this page until the upgrade is 100% complete.' ) );
 		$this->assertSame( array( '%s' ), pgr_content_tokens( '%s%% complete.' ) );
-		$this->assertSame( array( '%1$s', '%02d' ), pgr_content_tokens( '%1$s / %02d' ) );
+		$this->assertSame( array( '%02d', '%1$s' ), pgr_content_tokens( '%1$s / %02d' ) );
 	}
 
 	public function test_url_sentence_punctuation_is_not_part_of_the_protected_token(): void {
