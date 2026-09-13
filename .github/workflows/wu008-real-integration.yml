@@ -1,0 +1,235 @@
+name: WU008 Licensed Real Integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/wu008-real-integration.yml'
+      - 'tests/real-integration/**'
+      - 'docs/WU008_REAL_INTEGRATION.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-integration:
+    name: Exact GF 3.1.1.1 + Flow 3.1.0 + View 3.3.4
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: wu008-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -pwu008-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      WU008_WP_PATH: /tmp/wu008-wordpress
+      WU008_PACKAGE_DIR: /tmp/wu008-packages
+      WU008_ARTIFACT_DIR: /tmp/wu008-artifacts
+      WU008_MANIFEST_PATH: /tmp/wu008-artifacts/runtime-manifest.json
+      WU008_BASE_URL: http://127.0.0.1:8080
+      WU008_WP_CLI: /tmp/wp-cli.phar
+      WU008_PGR_SHA: a92a09cd5ef21456c56d95726e325b545d893592
+
+      WU008_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
+      WU008_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      WU008_GF_SIZE: '5300290'
+      WU008_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
+      WU008_GF_VERSION: 3.1.1.1
+
+      WU008_FLOW_FILE_ID: 1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf
+      WU008_FLOW_FILE: gravityflow-3.1.0-owner-supplied-source-package.zip
+      WU008_FLOW_SIZE: '2603034'
+      WU008_FLOW_SHA256: ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404
+      WU008_FLOW_VERSION: 3.1.0
+
+      WU008_VIEW_FILE_ID: 16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1
+      WU008_VIEW_FILE: gravityview-3.3.4-source-package.zip
+      WU008_VIEW_SIZE: '7569755'
+      WU008_VIEW_SHA256: af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829
+      WU008_VIEW_VERSION: 3.3.4
+
+    steps:
+      - name: Checkout harness branch exactly
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Assert harness identity and prepare isolated paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "rezahh107/PersianGravity"
+          actual="$(git rev-parse HEAD)"
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$actual" = "$expected"
+          mkdir -p "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR"
+          : > "$WU008_ARTIFACT_DIR/package-verification.jsonl"
+
+      - name: Set up exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.2.33'
+          coverage: none
+          extensions: mysqli
+          tools: composer:2.8.12
+
+      - name: Validate harness and repository invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          composer validate --strict
+          bash -n tests/real-integration/verify-package.sh
+          php -l tests/real-integration/setup-runtime.php
+          node --check tests/real-integration/browser-tests.mjs
+          if git ls-files '*.zip' | grep -q .; then
+            echo "Licensed ZIP archives must never be committed." >&2
+            exit 1
+          fi
+
+      - name: Install exact WP-CLI and disposable WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$WU008_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $WU008_WP_CLI" | sha256sum -c -
+          php "$WU008_WP_CLI" core download --path="$WU008_WP_PATH" --version=6.8.3 --force --skip-content
+          php "$WU008_WP_CLI" config create --path="$WU008_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=wu008-root --dbhost=127.0.0.1:3306 --skip-check
+          php "$WU008_WP_CLI" core install --path="$WU008_WP_PATH" --url="$WU008_BASE_URL" --title='WU008 Real Integration' --admin_user=runtime_admin --admin_password='wu008-runtime-pass-2026' --admin_email='runtime@example.invalid' --skip-email
+          test "$(php "$WU008_WP_CLI" core version --path="$WU008_WP_PATH")" = "6.8.3"
+          php "$WU008_WP_CLI" language core install fa_IR --activate --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "fa_IR"
+
+      - name: Install deterministic test theme
+        shell: bash
+        run: |
+          set -euo pipefail
+          theme="$WU008_WP_PATH/wp-content/themes/wu008-runtime"
+          mkdir -p "$theme"
+          cat > "$theme/style.css" <<'CSS'
+          /*
+          Theme Name: WU008 Runtime
+          Version: 1.0.0
+          */
+          CSS
+          cat > "$theme/index.php" <<'PHP'
+          <?php
+          ?><!doctype html>
+          <html <?php language_attributes(); ?>>
+          <head>
+            <meta charset="<?php bloginfo( 'charset' ); ?>">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <?php wp_head(); ?>
+          </head>
+          <body <?php body_class(); ?>>
+          <main><?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?></main>
+          <?php wp_footer(); ?>
+          </body>
+          </html>
+          PHP
+          php "$WU008_WP_CLI" theme activate wu008-runtime --path="$WU008_WP_PATH"
+
+      - name: Download exact public Drive packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          download() {
+            local file_id="$1" output="$2"
+            curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --retry-connrefused --connect-timeout 20 --max-time 180 \
+              -o "$output" "https://drive.usercontent.google.com/download?id=${file_id}&export=download&confirm=t"
+          }
+          download "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE"
+          download "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE"
+          download "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE"
+
+      - name: Fail-closed verify all packages before installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$WU008_ARTIFACT_DIR/package-verification.jsonl"
+          tests/real-integration/verify-package.sh "Gravity Forms" "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE" "$WU008_GF_FILE" "$WU008_GF_SIZE" "$WU008_GF_SHA256" "gravityforms/gravityforms.php" "$WU008_GF_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "gravityflow/gravityflow.php" "$WU008_FLOW_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 3
+
+      - name: Install verified packages and exact PersianGravity tested commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_GF_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+
+          pgr="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms"
+          git init "$pgr"
+          git -C "$pgr" remote add origin https://github.com/rezahh107/PersianGravity.git
+          git -C "$pgr" fetch --depth=1 origin "$WU008_PGR_SHA"
+          git -C "$pgr" checkout --detach FETCH_HEAD
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$WU008_PGR_SHA"
+
+          php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "4.2.0"
+
+      - name: Create deterministic runtime fixtures and assert provider/fallback semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime.php
+          test -s "$WU008_MANIFEST_PATH"
+
+      - name: Set up exact browser runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.19.0'
+
+      - name: Install exact Playwright and Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22.19.0"
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node -e "const p=require('playwright/package.json'); if(p.version!=='1.55.0') process.exit(1);"
+
+      - name: Start disposable WordPress HTTP server
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" server --path="$WU008_WP_PATH" --host=127.0.0.1 --port=8080 >/tmp/wu008-wp-server.log 2>&1 &
+          echo $! >/tmp/wu008-wp-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS "$WU008_BASE_URL/wp-login.php" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/wu008-wp-server.log >&2
+          exit 1
+
+      - name: Execute real Chromium integration checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/browser-tests.mjs
+
+      - name: Upload bounded runtime evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/wu008-artifacts
+            /tmp/wu008-wp-server.log
+          if-no-files-found: ignore
+          retention-days: 30
