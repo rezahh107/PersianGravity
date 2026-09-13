@@ -24,7 +24,7 @@ msgstr "سال"
 
 #: includes/webapi/webapi.php:2470
 msgid "Not implemented"
-msgstr "انجام نشد"
+msgstr "پیاده‌سازی نشده"
 
 #: includes/webapi/v2/includes/controllers/class-controller-notes.php:78 includes/webapi/v2/includes/controllers/class-controller-notes.php:225
 msgid "Invalid note id."
@@ -76,7 +76,7 @@ msgstr "هفته"
 
 #: includes/settings/config/class-gf-settings-config-i18n.php:56
 msgid "Click to upload"
-msgstr "انصراف از بارگذاری"
+msgstr "برای بارگذاری کلیک کنید"
 
 #: includes/addon/class-gf-addon.php:2146 includes/addon/class-gf-addon.php:2220
 msgid "Field could not be rendered."
@@ -136,7 +136,7 @@ msgstr "افزونه \"%s\" ضروری Gravity Forms نیاز مند حداقل 
 
 #: includes/addon/class-gf-payment-addon.php:2216
 msgid "Authorization has been voided. Transaction Id: %s"
-msgstr "مجوز صادر شد. شماره تراکنش: %s ."
+msgstr "مجوز باطل شد. شماره تراکنش: %s"
 
 #: includes/addon/class-gf-results.php:648
 msgid "Item"
@@ -156,7 +156,7 @@ msgstr "پرداخت مجاز شده‌است. مبلغ: %s. شناسه تراک
 
 #: includes/webapi/v2/includes/controllers/class-controller-form-entries.php:310
 msgid "The Form ID for the entry."
-msgstr "فرمی برای این ورودی وجود ندارد"
+msgstr "شناسهٔ فرم برای ورودی."
 
 #: includes/addon/class-gf-feed-addon.php:1437
 msgid "Copy %d"
@@ -208,7 +208,7 @@ msgstr "بازه زمانی اختیاری است. اگر بازه زمانی م
 
 #: includes/webapi/webapi.php:621
 msgid "API Keys"
-msgstr "کلید API عمومی"
+msgstr "کلیدهای API"
 
 #: includes/addon/class-gf-payment-addon.php:3038
 msgid "Select a product field"
@@ -293,7 +293,7 @@ msgstr "مبلغ تمدید"
 
 #: settings.php:736
 msgid "Enable Data Collection"
-msgstr "فعال‌سازی محاسبات"
+msgstr "فعال‌سازی گردآوری داده"
 
 #: settings.php:848 settings.php:874
 msgid "License Activations"
@@ -373,7 +373,7 @@ msgstr "لطفاً یک ایمیل معتبر برای تمامی دستورات
 
 #: settings.php:1356
 msgid "Invisible"
-msgstr "نمایان"
+msgstr "نامرئی"
 
 #: settings.php:443
 msgid "Paste Your License Key Here"
@@ -526,7 +526,7 @@ msgstr "آدرس 2"
 
 #: includes/webapi/webapi.php:424
 msgid "Consumer Key"
-msgstr "محصولات قابل فروش"
+msgstr "کلید مصرف‌کننده"
 
 #: includes/addon/class-gf-payment-addon.php:4269
 msgid "sales"
@@ -578,7 +578,7 @@ msgstr "شناسه کاربری ارسال کننده ورودی."
 
 #: includes/addon/class-gf-addon.php:4484
 msgid "Unable to render form settings."
-msgstr "به‌روزرسانی تنظیمات فرم"
+msgstr "نمایش تنظیمات فرم ممکن نیست."
 
 #: entry_detail.php:1486 form_detail.php:2446 form_detail.php:3510 form_detail.php:3512 form_detail.php:3557 form_detail.php:3653 includes/addon/class-gf-feed-addon.php:1481 includes/blocks/config/class-gf-blocks-config.php:167 includes/system-status/class-gf-system-report.php:1162 includes/webapi/webapi.php:614 includes/webapi/webapi.php:631 settings.php:612 settings.php:728 settings.php:762 settings.php:896 tooltips.php:44 tooltips.php:104 tooltips.php:113
 msgid "(opens in a new tab)"
@@ -586,7 +586,7 @@ msgstr "(در یک برگه جدید باز می‌شود)"
 
 #: settings.php:428
 msgid "A valid license key is required for access to automatic plugin upgrades and product support."
-msgstr "کد مجوز که برای دسترسی خودکار به به‌روزرسانی و پشتیبانی استفاده شده است."
+msgstr "برای دسترسی به ارتقای خودکار افزونه و پشتیبانی محصول، کلید مجوز معتبر لازم است."
 
 #: includes/addon/class-gf-addon.php:3093 includes/settings/config/class-gf-settings-config-i18n.php:36 includes/settings/fields/class-select-custom.php:94
 msgid "Add Custom Value"
@@ -646,7 +646,7 @@ msgstr "حذف افزونه‌ها"
 
 #: includes/addon/class-gf-payment-addon.php:2607 includes/addon/class-gf-payment-addon.php:2708
 msgid "Subscription"
-msgstr "پرداخت هزینه عضویت"
+msgstr "اشتراک"
 
 #: includes/webapi/webapi.php:1364
 msgid "Feeds deleted successfully: %d"
@@ -811,7 +811,7 @@ msgstr "مجموع"
 
 #: includes/settings/config/class-gf-settings-config-i18n.php:51
 msgid "swatch"
-msgstr "عدم تطابق"
+msgstr "نمونهٔ رنگ"
 
 #: includes/addon/class-gf-payment-addon.php:2701
 msgid "Select a transaction type"
@@ -1019,7 +1019,7 @@ msgstr "مقدار"
 
 #: includes/addon/class-gf-payment-addon.php:2610 includes/addon/class-gf-payment-addon.php:2705
 msgid "Products and Services"
-msgstr "پرداخت معمولی"
+msgstr "محصولات و خدمات"
 
 #: includes/webapi/v2/includes/controllers/class-controller-form-entries.php:346
 msgid "The user agent string for the browser used to submit the entry."
@@ -1083,7 +1083,7 @@ msgstr "CSS خروجی"
 
 #: includes/settings/fields/class-date-time.php:172
 msgid "You must select a valid minute."
-msgstr "باید برگه تأییدیه را انتخاب نمایید."
+msgstr "باید یک دقیقهٔ معتبر انتخاب کنید."
 
 #: includes/webapi/v2/class-gf-rest-authentication.php:669
 msgid "Invalid timestamp."
@@ -1381,7 +1381,7 @@ msgstr "افزودن جدید"
 
 #: includes/settings/fields/class-generic-map.php:407
 msgid "Select a Value"
-msgstr "یک الگو انتخاب نمایید"
+msgstr "یک مقدار انتخاب کنید"
 
 #: settings.php:1291
 msgid "The built-in reCAPTCHA integration in Gravity Forms Core is being deprecated. To continue using and managing reCAPTCHA, %1$s. Your existing keys are shown below for reference but can no longer be edited from this page."
@@ -1482,7 +1482,7 @@ msgstr "تاریخ پایان"
 
 #: settings.php:847 settings.php:871
 msgid "Purchase Date"
-msgstr "تاریخ پرداخت"
+msgstr "تاریخ خرید"
 
 #: includes/addon/class-gf-payment-addon.php:2796 includes/addon/class-gf-payment-addon.php:2799
 msgid "Billing Information"
@@ -1582,7 +1582,7 @@ msgstr "استفاده به‌جای حساب"
 
 #: includes/settings/fields/class-field-select.php:150 includes/settings/fields/class-generic-map.php:326
 msgid "Address (State / Province)"
-msgstr "آدرس (کشور / استان)"
+msgstr "آدرس (ایالت / استان)"
 
 #: includes/addon/class-gf-results.php:913
 msgid "Form Not Found"
@@ -1614,7 +1614,7 @@ msgstr "پرداخت مجاز شد"
 
 #: includes/settings/fields/class-date-time.php:178
 msgid "You must select either am or pm."
-msgstr "باید برگه تأییدیه را انتخاب نمایید."
+msgstr "باید یکی از گزینه‌های قبل‌ازظهر یا بعدازظهر را انتخاب کنید."
 
 #: includes/addon/class-gf-addon.php:1814
 msgid "Results Page"
@@ -1622,7 +1622,7 @@ msgstr "صفحهٔ نتایج"
 
 #: includes/webapi/v2/includes/controllers/class-controller-form-entries.php:331
 msgid "Whether the entry has been read."
-msgstr "علامت گذاری این ورودی به عنوان خوانده نشده"
+msgstr "آیا ورودی خوانده شده است."
 
 #: includes/addon/class-gf-results.php:692
 msgid "Show more"
@@ -1686,7 +1686,7 @@ msgstr "مطمئن شوید که کلید مصرف کننده و راز زیر �
 
 #: includes/webapi/v2/includes/controllers/class-controller-entry-notes.php:86 includes/webapi/v2/includes/controllers/class-controller-notes.php:122
 msgid "Error retrieving notes."
-msgstr "خطا در به‌روزرسانی عنوان"
+msgstr "خطا در دریافت یادداشت‌ها."
 
 #: includes/addon/class-gf-addon.php:3202 includes/settings/fields/class-generic-map.php:538 includes/settings/fields/class-generic-map.php:582
 msgid "Entry Date"
@@ -1823,7 +1823,7 @@ msgstr "%s با موفق انجام شد. مبلغ: %s . شماره تراکنش
 #: includes/addon/class-gf-payment-addon.php:3600
 msgctxt "regarding a payment method"
 msgid "Any"
-msgstr "حداقل یکی"
+msgstr "هرکدام"
 
 #: includes/settings/class-settings.php:991
 msgid "Settings updated."
@@ -1935,7 +1935,7 @@ msgstr "نوع تراکنش نامعتبر"
 
 #: settings.php:263
 msgid "Gravity Forms has been successfully uninstalled. It can be re-activated from the %splugins page%s."
-msgstr "Gravity Forms با موفقیت غیرفعال شد. می‌توان دوباره آن را از %s صفحه افزونه‌ها %s فعال کرد."
+msgstr "Gravity Forms با موفقیت حذف شد. می‌توان دوباره آن را از %sصفحهٔ افزونه‌ها%s فعال کرد."
 
 #: includes/addon/class-gf-results.php:331
 msgid "The average (mean) score for each row: the sum of all the scores for each row divided by the total number of entries."
@@ -1987,7 +1987,7 @@ msgstr "روش پرداخت برای پرداخت، در صورت وجود."
 
 #: includes/addon/class-gf-feed-addon.php:2530
 msgid "Select which actions should only occur after payment has been received."
-msgstr "انتخاب نمایید که کدام عملیات باید بعد از دریافت پرداخت دریافت شوند."
+msgstr "انتخاب کنید کدام اقدامات فقط پس از دریافت پرداخت انجام شوند."
 
 #: includes/webapi/v2/class-gf-rest-authentication.php:474
 msgid "Missing OAuth parameter %s"
@@ -2057,7 +2057,7 @@ msgstr "%s این عمل همه %s تنظیمات %s را حذف می‌کند. 
 
 #: includes/addon/class-gf-feed-addon.php:2527 includes/addon/class-gf-feed-addon.php:2530
 msgid "Post Payment Actions"
-msgstr "عملیات ارسال پرداخت"
+msgstr "اقدامات پس از پرداخت"
 
 #: includes/addon/class-gf-payment-addon.php:2745
 msgid "Select how many times the recurring payment should be made.  The default is to bill the customer until the subscription is canceled."

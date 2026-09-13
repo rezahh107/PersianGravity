@@ -69,7 +69,7 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$this->assertSame( 67, $occurrences - count( $membership ) );
 		$this->assertSame( 1759, $aggregate['admitted_message_count'] );
 		$this->assertSame( 'e15f8e80cc711ea7b862be66d3a8a5827f85e0312caae391fcdecbf1a34fdec7', $aggregate['admitted_keyset_sha256'] );
-		$this->assertSame( '3054209761a3513fd34f3f038ccc9e07b2167661820c4a7c31cde300c1d7ea44', $aggregate['admitted_translation_content_sha256'] );
+		$this->assertSame( 'a0b631dfcb88eb497be26086799a8816b7f85f99fd42c62afe6488ee508f9c27', $aggregate['admitted_translation_content_sha256'] );
 		$this->assertSame( 2448, 4207 - $aggregate['admitted_message_count'] );
 		$this->assertSame( array(), $products['gravityforms']['scripts'] );
 		$this->assertSame( 0, $aggregate['native_js_handles_activated'] );

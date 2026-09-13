@@ -250,7 +250,7 @@ msgstr "لیست ورودی‌ها"
 
 #: includes/locking/class-gf-locking.php:203
 msgid "%s has taken over and is currently editing."
-msgstr "%s کنترل را به دست گرفته و در حال ویرایش اشت."
+msgstr "%s کنترل را به دست گرفته و در حال ویرایش است."
 
 #: entry_list.php:924
 msgid "Select entry %s"
@@ -290,7 +290,7 @@ msgstr "چاپ ورودی‌ها"
 
 #: entry_list.php:1417 entry_list.php:1886 entry_list.php:2267 entry_list.php:2334
 msgid "Resend Notifications"
-msgstr "ارسال اعلان"
+msgstr "ارسال مجدد اعلان‌ها"
 
 #: includes/locking/locking.php:20
 msgid "This form is currently locked. Click on the \"Request Control\" button to let %s know you'd like to take over."
@@ -442,7 +442,7 @@ msgstr "انصراف"
 
 #: entry_detail.php:1625 entry_list.php:2336
 msgid "Resending..."
-msgstr "درحال ارسال...."
+msgstr "در حال ارسال مجدد..."
 
 #: entry_list.php:889
 msgid "Drag & drop to order and select which columns are displayed in the entries table."
@@ -508,7 +508,7 @@ msgstr[1] "خطاها"
 
 #: entry_detail.php:1623
 msgid "Resend"
-msgstr "ریست"
+msgstr "ارسال مجدد"
 
 #: entry_detail.php:52
 msgid "Notifications"
@@ -536,7 +536,7 @@ msgstr "منتظر"
 
 #: includes/locking/class-gf-locking.php:490
 msgid "Take Over"
-msgstr "بیش تر از"
+msgstr "به دست گرفتن کنترل"
 
 #: entry_list.php:213 form_list.php:392
 msgid "Pagination"
@@ -613,7 +613,7 @@ msgstr "ورودی"
 
 #: entry_list.php:1200
 msgid "This form does not have any entries in the trash matching the search criteria."
-msgstr "این فرم هیچ ورودی هرزنامه مطابق با جستجوی شما ندارد."
+msgstr "این فرم هیچ ورودی در زباله‌دان مطابق با معیارهای جستجو ندارد."
 
 #: entry_list.php:2307
 msgid "You cannot resend notifications for these entries because this form does not currently have any notifications configured."
@@ -669,7 +669,7 @@ msgstr "این فرم هیچ هرزنامه‌ای ندارد."
 
 #: entry_list.php:215
 msgid "Display Mode"
-msgstr "نمایش نگه دارنده"
+msgstr "حالت نمایش"
 
 #: entry_detail.php:1037
 msgid "Also email this note to"
@@ -717,4 +717,4 @@ msgstr "%s درخواست به دست گرفتن کنترل این تنظیما�
 
 #: entry_list.php:1568
 msgid "%s moved to Trash."
-msgstr "%s به زبان دان منتقل شدند."
+msgstr "%s به زباله‌دان منتقل شدند."

@@ -50,7 +50,7 @@ msgstr[1] "%s فرم بازگردانی شدند."
 
 #: includes/webapi/webapi.php:2470
 msgid "Not implemented"
-msgstr "انجام نشد"
+msgstr "پیاده‌سازی نشده"
 
 #: includes/system-status/class-gf-system-report.php:1059
 msgid "Your database version is out of date."
@@ -106,7 +106,7 @@ msgstr "این فرم هیچ فیلدی که بتواند برای نتایج ب
 
 #: form_detail.php:2837
 msgid "Enable Submit Button Conditional Logic"
-msgstr "فعال‌سازی منطق شرطی دکمه \"بعدی\""
+msgstr "فعال‌سازی منطق شرطی دکمهٔ ارسال"
 
 #: tooltips.php:119
 msgid "Require Login Message"
@@ -190,7 +190,7 @@ msgstr "نویسنده ای را برای ارسال هایی که از ورود
 
 #: includes/settings/config/class-gf-settings-config-i18n.php:56
 msgid "Click to upload"
-msgstr "انصراف از بارگذاری"
+msgstr "برای بارگذاری کلیک کنید"
 
 #: form_list.php:988
 msgid "%s form moved to the trash."
@@ -360,7 +360,7 @@ msgstr "یک مشکل در حین ایجاد این فرم رخ داده است.
 
 #: form_detail.php:1677
 msgid "Insert Choices"
-msgstr "درون ریزی گزینه‌ها"
+msgstr "درج گزینه‌ها"
 
 #: includes/addon/class-gf-addon.php:782
 msgid "Required Gravity Forms Add-On \"%s\" does not meet minimum version requirement: %s."
@@ -372,7 +372,7 @@ msgstr "خروجی HTML5 "
 
 #: includes/addon/class-gf-payment-addon.php:2216
 msgid "Authorization has been voided. Transaction Id: %s"
-msgstr "مجوز صادر شد. شماره تراکنش: %s ."
+msgstr "مجوز باطل شد. شماره تراکنش: %s"
 
 #: form_detail.php:2011
 msgid "Use an asterisk '*' to indicate any alphanumeric character."
@@ -428,7 +428,7 @@ msgstr "همه دسته بندی‌ها"
 
 #: includes/webapi/v2/includes/controllers/class-controller-form-entries.php:310
 msgid "The Form ID for the entry."
-msgstr "فرمی برای این ورودی وجود ندارد"
+msgstr "شناسهٔ فرم برای ورودی."
 
 #: form_detail.php:503
 msgid "Gray"
@@ -448,7 +448,7 @@ msgstr "ناموفق در %s. دلیل: %s."
 
 #: form_detail.php:2759
 msgid "Allow field to be populated dynamically"
-msgstr "اجازه دادن به فیلدها برای ارزیابی پویا"
+msgstr "اجازه دهید فیلد به‌صورت پویا مقداردهی شود"
 
 #: form_detail.php:1358
 msgid "Image Path"
@@ -484,11 +484,11 @@ msgstr "فنلاندی"
 
 #: tooltips.php:58
 msgid "Default Province"
-msgstr "شهر پیش‌فرض"
+msgstr "استان پیش‌فرض"
 
 #: tooltips.php:19
 msgid "Limit Number of Entries"
-msgstr "تعداد پبام‌های ورودی را محدود کنید."
+msgstr "محدود کردن تعداد ورودی‌ها"
 
 #: includes/webapi/v2/includes/controllers/class-controller-entries.php:199
 msgid "The entry has already been deleted."
@@ -580,7 +580,7 @@ msgstr "نمایش کد تماس کشور"
 
 #: includes/webapi/webapi.php:621
 msgid "API Keys"
-msgstr "کلید API عمومی"
+msgstr "کلیدهای API"
 
 #: includes/locking/locking.php:62
 msgid "%s is currently editing this entry"
@@ -616,7 +616,7 @@ msgstr "بله"
 
 #: form_detail.php:1761
 msgid "Select Exact Number"
-msgstr "یک برگه انتخاب نمایید"
+msgstr "انتخاب تعداد دقیق"
 
 #: form_detail.php:1627
 msgid "Industry"
@@ -677,7 +677,7 @@ msgstr "نام را وارد نمایید"
 
 #: form_detail.php:656
 msgid "Product Field Mapping"
-msgstr "قرار دادن فیلد محصول"
+msgstr "نگاشت فیلد محصول"
 
 #: form_detail.php:2658
 msgid "Kannada"
@@ -737,7 +737,7 @@ msgstr "ایجاد قالب محتوا"
 
 #: form_detail.php:1626
 msgid "Job Type"
-msgstr "نوع کسب و کار"
+msgstr "نوع شغل"
 
 #: includes/settings/fields/class-generic-map.php:572
 msgid "Entry Meta"
@@ -753,7 +753,7 @@ msgstr "چرخه صدور صورت حساب خود را انتخاب نمایی�
 
 #: includes/system-status/class-gf-system-report.php:1028
 msgid "The database is currently being upgraded to version %s. %s"
-msgstr "دیتابیس در حال حاضر به نسخه %s ارتقا پیدا خواهد کرد. %s"
+msgstr "پایگاه داده در حال ارتقا به نسخهٔ %s است. %s"
 
 #: form_detail.php:3548
 msgid "This form has legacy markup enabled, which may prevent some new features from functioning."
@@ -797,7 +797,7 @@ msgstr "استفاده از کاربر فعلی به عنوان نویسنده"
 
 #: includes/system-status/class-gf-system-report.php:614
 msgid "Database Server"
-msgstr "نسخه دیتابیس"
+msgstr "سرور پایگاه داده"
 
 #: settings.php:1167
 msgid "The Gravity Forms reCAPTCHA Add-On could not be installed. reCAPTCHA support in Gravity Forms is being deprecated, and the reCAPTCHA Add-On will be required in the future."
@@ -861,7 +861,7 @@ msgstr "مبلغ تمدید"
 
 #: settings.php:736
 msgid "Enable Data Collection"
-msgstr "فعال‌سازی محاسبات"
+msgstr "فعال‌سازی گردآوری داده"
 
 #: form_list.php:918
 msgid "You don't have adequate permission to restore forms."
@@ -1073,7 +1073,7 @@ msgstr "نوع دکمهٔ قبلی"
 
 #: tooltips.php:57
 msgid "Default State"
-msgstr "حالت پیش‌فرض"
+msgstr "ایالت پیش‌فرض"
 
 #: includes/system-status/class-gf-system-report.php:726 includes/system-status/class-gf-system-report.php:748 includes/system-status/class-gf-system-report.php:772
 msgid "Passes"
@@ -1197,7 +1197,7 @@ msgstr "لطفاً یک ایمیل معتبر برای تمامی دستورات
 
 #: settings.php:1356
 msgid "Invisible"
-msgstr "نمایان"
+msgstr "نامرئی"
 
 #: tooltips.php:178
 msgid "Password Visibility Toggle"
@@ -1418,7 +1418,7 @@ msgstr "متنی را وارد کنید که می‌خواهید روی دکمه
 
 #: form_list.php:442
 msgid "Descending"
-msgstr "درحال ارسال...."
+msgstr "نزولی"
 
 #: includes/webapi/webapi.php:410
 msgid "Read/Write"
@@ -1582,7 +1582,7 @@ msgstr "پیوندهای یکتا ساختار درستی ندارند."
 
 #: includes/system-status/class-gf-system-report.php:1684
 msgid "Site Locale"
-msgstr "محلی"
+msgstr "زبان سایت"
 
 #: form_list.php:564
 msgctxt "Form List"
@@ -1734,7 +1734,7 @@ msgstr "قرمز"
 
 #: includes/webapi/webapi.php:424
 msgid "Consumer Key"
-msgstr "محصولات قابل فروش"
+msgstr "کلید مصرف‌کننده"
 
 #: includes/addon/class-gf-payment-addon.php:4269
 msgid "sales"
@@ -1750,7 +1750,7 @@ msgstr "نشانی کامل"
 
 #: form_detail.php:627
 msgid "Submit Button Image URL"
-msgstr "تصویر دکمه فرم"
+msgstr "URL تصویر دکمهٔ ارسال"
 
 #: includes/addon/class-gf-payment-addon.php:3231 includes/addon/class-gf-payment-addon.php:3240
 msgid "Revenue"
@@ -1846,7 +1846,7 @@ msgstr "شناسه کاربری ارسال کننده ورودی."
 
 #: includes/addon/class-gf-addon.php:4484
 msgid "Unable to render form settings."
-msgstr "به‌روزرسانی تنظیمات فرم"
+msgstr "نمایش تنظیمات فرم ممکن نیست."
 
 #: tooltips.php:133
 msgid "Select the post format that will be used for the post that is created by the form entry."
@@ -1918,7 +1918,7 @@ msgstr "هیچ فرمی برای عبارت جستجوی شما یافت نشد.
 
 #: settings.php:428
 msgid "A valid license key is required for access to automatic plugin upgrades and product support."
-msgstr "کد مجوز که برای دسترسی خودکار به به‌روزرسانی و پشتیبانی استفاده شده است."
+msgstr "برای دسترسی به ارتقای خودکار افزونه و پشتیبانی محصول، کلید مجوز معتبر لازم است."
 
 #: includes/addon/class-gf-addon.php:3093 includes/settings/config/class-gf-settings-config-i18n.php:36 includes/settings/fields/class-select-custom.php:94
 msgid "Add Custom Value"
@@ -2098,7 +2098,7 @@ msgstr "عنوان فرم را وارد نمایید."
 
 #: includes/addon/class-gf-payment-addon.php:2607 includes/addon/class-gf-payment-addon.php:2708
 msgid "Subscription"
-msgstr "پرداخت هزینه عضویت"
+msgstr "اشتراک"
 
 #: includes/blocks/config/class-gf-blocks-config.php:151
 msgid "Select and display one of your forms."
@@ -2159,7 +2159,7 @@ msgstr "دایره"
 
 #: tooltips.php:64
 msgid "Hide State/Province/Region"
-msgstr "مخفی کردن استان / شهر / ناحیه"
+msgstr "پنهان‌کردن ایالت/استان/منطقه"
 
 #: form_detail.php:1730
 msgid "Number of Columns"
@@ -2328,7 +2328,7 @@ msgstr "توسط"
 
 #: includes/locking/class-gf-locking.php:203
 msgid "%s has taken over and is currently editing."
-msgstr "%s کنترل را به دست گرفته و در حال ویرایش اشت."
+msgstr "%s کنترل را به دست گرفته و در حال ویرایش است."
 
 #: entry_list.php:924
 msgid "Select entry %s"
@@ -2630,7 +2630,7 @@ msgstr "فرمی که می‌خواهید ورودی‌ها آن برون ریز
 
 #: includes/settings/config/class-gf-settings-config-i18n.php:51
 msgid "swatch"
-msgstr "عدم تطابق"
+msgstr "نمونهٔ رنگ"
 
 #: includes/addon/class-gf-payment-addon.php:2701
 msgid "Select a transaction type"
@@ -2718,7 +2718,7 @@ msgstr "لطفاً یک آدرس ایمیل معتبر وارد نمایید."
 
 #: form_detail.php:1757
 msgid "Selections"
-msgstr "جداکننده"
+msgstr "انتخاب‌ها"
 
 #: tooltips.php:26
 msgid "Enter a description for your form. This may be used for user instructions."
@@ -2734,7 +2734,7 @@ msgstr "محیط سرور"
 
 #: entry_list.php:1417 entry_list.php:1886 entry_list.php:2267 entry_list.php:2334
 msgid "Resend Notifications"
-msgstr "ارسال اعلان"
+msgstr "ارسال مجدد اعلان‌ها"
 
 #: includes/settings/fields/class-checkbox.php:330 includes/settings/fields/class-checkbox.php:367 includes/settings/fields/class-checkbox.php:387 includes/settings/fields/class-radio.php:204 includes/settings/fields/class-select-custom.php:220 includes/settings/fields/class-select.php:276 includes/settings/fields/class-select.php:304
 msgid "Invalid selection."
@@ -2790,7 +2790,7 @@ msgstr "برای ادامه حذف نصب این افزونه، روی دکمه 
 
 #: tooltips.php:58
 msgid "Select the province you would like to be selected by default when the form gets displayed."
-msgstr "شهری که می‌خواهید به صورت پیش‌فرض در هنگام نمایش فرم انتخاب شده باشد را انتخاب کنید."
+msgstr "استانی را که می‌خواهید هنگام نمایش فرم به‌طور پیش‌فرض انتخاب شود، انتخاب کنید."
 
 #: form_detail.php:1638
 msgid "Extra Small"
@@ -2910,7 +2910,7 @@ msgstr "کران جایگزین WordPress"
 
 #: form_list.php:441
 msgid "Ascending"
-msgstr "منتظر"
+msgstr "صعودی"
 
 #: includes/system-status/class-gf-system-report.php:985
 msgid "Table does not exist"
@@ -3110,7 +3110,7 @@ msgstr "فیلد فرم"
 
 #: form_detail.php:1426
 msgid "Multiple Files"
-msgstr "فایلهای ترکیبی"
+msgstr "چند فایل"
 
 #: entry_list.php:1465
 msgid "Delete All Spam"
@@ -3544,7 +3544,7 @@ msgstr "برای فیلد، توضیحات را وارد کنید. این توض
 
 #: includes/addon/class-gf-payment-addon.php:2610 includes/addon/class-gf-payment-addon.php:2705
 msgid "Products and Services"
-msgstr "پرداخت معمولی"
+msgstr "محصولات و خدمات"
 
 #: form_detail.php:1627
 msgid "Real Estate"
@@ -3588,7 +3588,7 @@ msgstr "افزودن کلید سفارشی"
 
 #: tooltips.php:179
 msgid "Validation Summary"
-msgstr "خطای اعتبارسنجی"
+msgstr "خلاصهٔ اعتبارسنجی"
 
 #: tooltips.php:110
 msgid "Enable Choice Values"
@@ -3816,7 +3816,7 @@ msgstr "اخطار: شما قصد حذف این فرم و تمام ورودی‌
 
 #: form_detail.php:363
 msgid "Last page options"
-msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+msgstr "گزینه‌های صفحهٔ آخر"
 
 #: form_detail.php:342
 msgid "Start Paging"
@@ -3862,7 +3862,7 @@ msgstr "CSS خروجی"
 
 #: includes/settings/fields/class-date-time.php:172
 msgid "You must select a valid minute."
-msgstr "باید برگه تأییدیه را انتخاب نمایید."
+msgstr "باید یک دقیقهٔ معتبر انتخاب کنید."
 
 #: includes/webapi/v2/class-gf-rest-authentication.php:669
 msgid "Invalid timestamp."
@@ -3890,11 +3890,11 @@ msgstr "هیچ فیلد نقشه برداری موجود نیست."
 
 #: form_detail.php:1774
 msgid "Maximum"
-msgstr "حداکثر ردیف‌ها"
+msgstr "حداکثر"
 
 #: form_detail.php:1759
 msgid "Select One"
-msgstr "انتخاب شده"
+msgstr "انتخاب یکی"
 
 #: tooltips.php:63
 msgid "Check this box to prevent Province field from being displayed in the form."
@@ -3914,7 +3914,7 @@ msgstr "وضعیت تاهل"
 
 #: form_detail.php:1348
 msgid "Date Picker Icon"
-msgstr "انتخابگر تاریخ"
+msgstr "آیکون انتخابگر تاریخ"
 
 #: form_detail.php:1621
 msgid "Asia"
@@ -3978,7 +3978,7 @@ msgstr "این تنظیم را انتخاب کنید تا مرورگرها به 
 
 #: form_detail.php:2408
 msgid "End of the last row"
-msgstr "رفتن به آخرین صفحه"
+msgstr "پایان آخرین ردیف"
 
 #: entry_list.php:79
 msgid "1 entry moved to the Trash. %sUndo%s"
@@ -4006,7 +4006,7 @@ msgstr "برای شروع لطفاً %s خود را پیکربندی کنید."
 
 #: form_detail.php:2546
 msgid "Enable Autocomplete"
-msgstr "نصب به اتمام رسید."
+msgstr "فعال‌سازی تکمیل خودکار"
 
 #: includes/system-status/class-gf-system-status.php:70 includes/system-status/class-gf-update.php:47
 msgid "Updates"
@@ -4062,7 +4062,7 @@ msgstr "۲ ستون"
 
 #: form_detail.php:2587 tooltips.php:101
 msgid "Option Label"
-msgstr "برچسب تنظیمات"
+msgstr "برچسب گزینه"
 
 #: form_detail.php:1439 tooltips.php:72
 msgid "Maximum Number of Files"
@@ -4166,7 +4166,7 @@ msgstr "درخواست کنترل"
 
 #: includes/system-status/class-gf-system-report.php:1693
 msgid "User (ID: %d) Locale"
-msgstr "کاربر (ID: %d) محلی"
+msgstr "زبان کاربر (ID: %d)"
 
 #: form_detail.php:1343
 msgid "Date Drop Down"
@@ -4178,7 +4178,7 @@ msgstr "محدودیت حافظه"
 
 #: form_detail.php:608
 msgid "Submit Input Type"
-msgstr "نوع تاریخ فیلد ورودی"
+msgstr "نوع ورودی دکمهٔ ارسال"
 
 #: includes/addon/class-gf-payment-addon.php:3082
 msgid "Yesterday"
@@ -4186,7 +4186,7 @@ msgstr "دیروز"
 
 #: form_detail.php:2634
 msgid "Czech"
-msgstr "چکوسلواکیایی"
+msgstr "چکی"
 
 #: form_detail.php:2299
 msgid "Top aligned"
@@ -4232,7 +4232,7 @@ msgstr "URL خانه"
 
 #: entry_detail.php:1625 entry_list.php:2336
 msgid "Resending..."
-msgstr "درحال ارسال...."
+msgstr "در حال ارسال مجدد..."
 
 #: includes/addon/class-gf-addon.php:1809
 msgid "Add-On Settings"
@@ -4500,7 +4500,7 @@ msgstr "هتل / سفر"
 
 #: includes/system-status/class-gf-system-report.php:649
 msgid "WordPress (Local) Timezone"
-msgstr "نسخه WordPress"
+msgstr "منطقهٔ زمانی محلی WordPress"
 
 #: tooltips.php:49
 msgid "Select the type of CAPTCHA you would like to use."
@@ -4631,11 +4631,11 @@ msgstr "تعداد حداکثر فایل هایی که می‌خواهید با 
 
 #: entry_detail.php:1623
 msgid "Resend"
-msgstr "ریست"
+msgstr "ارسال مجدد"
 
 #: includes/system-status/class-gf-system-report.php:1547
 msgid "Parent"
-msgstr "والدین"
+msgstr "والد"
 
 #: includes/webapi/webapi.php:408
 msgid "Read"
@@ -4723,7 +4723,7 @@ msgstr "خیلی بهتر"
 
 #: form_detail.php:1976 tooltips.php:145
 msgid "Input Mask"
-msgstr "درون ریزی الگو"
+msgstr "الگوی ورودی"
 
 #: tooltips.php:44
 msgid "Pass Data Via Query String"
@@ -4779,7 +4779,7 @@ msgstr "جدول به درستی به‌روز نشد."
 
 #: form_detail.php:2161
 msgid "Do not round"
-msgstr "یکسان نمی‌باشند"
+msgstr "گرد نکن"
 
 #: form_detail.php:1627
 msgid "Education/Training"
@@ -4819,7 +4819,7 @@ msgstr "ایجاد عضویت انجام شد. شماره اشتراک: %s ."
 
 #: form_detail.php:363
 msgid "Manage last page options"
-msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+msgstr "مدیریت گزینه‌های صفحهٔ آخر"
 
 #: settings.php:1246
 msgid "Install and activate the Gravity Forms reCAPTCHA Add-On"
@@ -4827,7 +4827,7 @@ msgstr "نصب و فعال‌سازی افزونهٔ reCAPTCHA مربوط به G
 
 #: form_detail.php:2256 form_detail.php:2267
 msgid "Placeholder text is not supported when using the Rich Text Editor."
-msgstr "زمانی‌که از ویرایشگر متن قوی استفاده می‌شود، متن پیش‌نمایش پشتیبانی نخواهد شد."
+msgstr "هنگام استفاده از ویرایشگر متن غنی، متن نگه‌دارنده پشتیبانی نمی‌شود."
 
 #: form_detail.php:1501
 msgid "12 hour"
@@ -4875,7 +4875,7 @@ msgstr "گرجستانی"
 
 #: includes/settings/fields/class-generic-map.php:407
 msgid "Select a Value"
-msgstr "یک الگو انتخاب نمایید"
+msgstr "یک مقدار انتخاب کنید"
 
 #: settings.php:1291
 msgid "The built-in reCAPTCHA integration in Gravity Forms Core is being deprecated. To continue using and managing reCAPTCHA, %1$s. Your existing keys are shown below for reference but can no longer be edited from this page."
@@ -4907,7 +4907,7 @@ msgstr "پیش‌نمایش"
 
 #: includes/locking/class-gf-locking.php:490
 msgid "Take Over"
-msgstr "بیش تر از"
+msgstr "به دست گرفتن کنترل"
 
 #: includes/blocks/config/class-gf-blocks-config.php:141
 msgid "OK"
@@ -5116,7 +5116,7 @@ msgstr "آخرین مقادیر:"
 
 #: form_detail.php:1613
 msgid "Male, Female, Non-binary, Agender, My gender is not listed, Prefer not to answer"
-msgstr "مذکر، مونث، غیر باینری، جنسیت من درج نشده است، ترجیح می‌دهم پاسخ ندهم"
+msgstr "مرد، زن، غیردودویی، بی‌جنسیت، جنسیت من در فهرست نیست، ترجیح می‌دهم پاسخ ندهم"
 
 #: includes/settings/fields/class-user-select.php:90
 msgid "Search users"
@@ -5149,7 +5149,7 @@ msgstr "تاریخ پایان"
 
 #: settings.php:847 settings.php:871
 msgid "Purchase Date"
-msgstr "تاریخ پرداخت"
+msgstr "تاریخ خرید"
 
 #: tooltips.php:57
 msgid "Select the state you would like to be selected by default when the form gets displayed."
@@ -5345,7 +5345,7 @@ msgstr "مخفی کردن اضافه آدرس"
 
 #: tooltips.php:29
 msgid "Select the default validation message placement.  Validation messages can be placed above the field inputs or below the field inputs."
-msgstr "محل توضیحات را انتخاب کنید. توضیحات می‌توانند در بالا یا پایین فیلدهای ورودی قرار گیرد."
+msgstr "محل پیش‌فرض پیام اعتبارسنجی را انتخاب کنید. پیام‌های اعتبارسنجی می‌توانند بالای ورودی‌های فیلد یا پایین آن‌ها قرار گیرند."
 
 #: includes/webapi/webapi.php:1613 includes/webapi/webapi.php:1644
 msgid "Success"
@@ -5469,7 +5469,7 @@ msgstr "مخفی"
 
 #: entry_list.php:1200
 msgid "This form does not have any entries in the trash matching the search criteria."
-msgstr "این فرم هیچ ورودی هرزنامه مطابق با جستجوی شما ندارد."
+msgstr "این فرم هیچ ورودی در زباله‌دان مطابق با معیارهای جستجو ندارد."
 
 #: form_detail.php:823 tooltips.php:126
 msgid "Previous Button Text"
@@ -5477,7 +5477,7 @@ msgstr "متن دکمه قبلی"
 
 #: form_detail.php:2668
 msgid "Persian"
-msgstr "ایرانی"
+msgstr "فارسی"
 
 #: includes/webapi/user-select/class-gf-user-select-config.php:54
 msgid "Search for users"
@@ -5549,7 +5549,7 @@ msgstr "نوع آدرسی را که می‌خواهید استفاده کنید�
 
 #: includes/settings/fields/class-field-select.php:150 includes/settings/fields/class-generic-map.php:326
 msgid "Address (State / Province)"
-msgstr "آدرس (کشور / استان)"
+msgstr "آدرس (ایالت / استان)"
 
 #: tooltips.php:170
 msgid "Check this box if you would like the progress bar to display with the confirmation text."
@@ -5625,7 +5625,7 @@ msgstr "فیلدهای سفارشی"
 
 #: form_detail.php:1770
 msgid "Minimum"
-msgstr "حداقل قدرت"
+msgstr "حداقل"
 
 #: includes/addon/class-gf-addon.php:3605
 msgid "Update Settings"
@@ -5657,7 +5657,7 @@ msgstr "2 تا 3بار در ماه"
 
 #: includes/settings/fields/class-date-time.php:178
 msgid "You must select either am or pm."
-msgstr "باید برگه تأییدیه را انتخاب نمایید."
+msgstr "باید یکی از گزینه‌های قبل‌ازظهر یا بعدازظهر را انتخاب کنید."
 
 #: includes/addon/class-gf-addon.php:1814
 msgid "Results Page"
@@ -5681,7 +5681,7 @@ msgstr "ترتیب مرتب‌سازی پیش‌فرض"
 
 #: includes/webapi/v2/includes/controllers/class-controller-form-entries.php:331
 msgid "Whether the entry has been read."
-msgstr "علامت گذاری این ورودی به عنوان خوانده نشده"
+msgstr "آیا ورودی خوانده شده است."
 
 #: entry_list.php:1245
 msgid "Mark read"
@@ -5737,7 +5737,7 @@ msgstr "بازهٔ تاریخی"
 
 #: form_detail.php:1625
 msgid "Not employed but looking for work"
-msgstr "استخدام نشده ام ولی دنبال کار می‌کردم."
+msgstr "شاغل نیستم و دنبال کار می‌گردم"
 
 #: includes/webapi/v2/includes/controllers/class-controller-feed-properties.php:55
 msgid "Feed updated successfully"
@@ -5769,7 +5769,7 @@ msgstr "تغییر وضعیت ستارهٔ ورودی شمارهٔ %s"
 
 #: form_detail.php:1722
 msgid "Horizontal"
-msgstr "آریزونا"
+msgstr "افقی"
 
 #: includes/system-status/class-gf-system-report.php:474
 msgid "WordPress Cron"
@@ -5789,7 +5789,7 @@ msgstr "وقتی قالب خودکار فعال باشد جداکننده پار
 
 #: tooltips.php:152
 msgid "Filter the entries by adding conditions."
-msgstr "ورودی‌ها را با اضافه کردن شرط مرتب کنید."
+msgstr "با افزودن شرط‌ها، ورودی‌ها را فیلتر کنید."
 
 #: includes/addon/class-gf-payment-addon.php:2731 includes/addon/class-gf-payment-addon.php:2733
 msgid "Billing Cycle"
@@ -5857,7 +5857,7 @@ msgstr "فرم‌ها"
 
 #: includes/webapi/v2/includes/controllers/class-controller-entry-notes.php:86 includes/webapi/v2/includes/controllers/class-controller-notes.php:122
 msgid "Error retrieving notes."
-msgstr "خطا در به‌روزرسانی عنوان"
+msgstr "خطا در دریافت یادداشت‌ها."
 
 #: includes/addon/class-gf-addon.php:3202 includes/settings/fields/class-generic-map.php:538 includes/settings/fields/class-generic-map.php:582
 msgid "Entry Date"
@@ -5909,7 +5909,7 @@ msgstr "نوع تراکنش را انتخاب کنید."
 
 #: form_detail.php:1337 tooltips.php:55
 msgid "Date Input Type"
-msgstr "نوع تاریخ فیلد ورودی"
+msgstr "نوع ورودی تاریخ"
 
 #: includes/system-status/class-gf-system-report.php:567
 msgid "Maximum File Uploads"
@@ -5917,7 +5917,7 @@ msgstr "حداکثر بارگذاری فایلها"
 
 #: form_detail.php:1760
 msgid "Select Multiple"
-msgstr "انتخاب فایل‌ها"
+msgstr "انتخاب چند مورد"
 
 #: includes/webapi/webapi.php:1210
 msgid "Unable to process request."
@@ -6091,7 +6091,7 @@ msgstr "برای هماهنگی بهتر با طراحی سایت، پوستهٔ
 
 #: tooltips.php:63
 msgid "Hide Province Field"
-msgstr "مخفی کردن فیلد شهر"
+msgstr "پنهان‌کردن فیلد استان"
 
 #: includes/webapi/webapi.php:748
 msgid "Show/hide QR Code"
@@ -6207,7 +6207,7 @@ msgstr "تنظیمات reCAPTCHA"
 
 #: form_detail.php:621
 msgid "Submit Button Text"
-msgstr "متن دکمه بعدی"
+msgstr "متن دکمهٔ ارسال"
 
 #: tooltips.php:73
 msgid "Specify the maximum file size in megabytes allowed for each of the files."
@@ -6243,7 +6243,7 @@ msgstr "برای توقف، عملیات را لغو کنید؛ برای حذف�
 
 #: form_detail.php:508
 msgid "Gradient: Blues"
-msgstr "گرادیان: بلوز"
+msgstr "گرادیان: آبی‌ها"
 
 #: includes/addon/class-gf-addon.php:3114 includes/settings/fields/class-select-custom.php:150
 msgid "Reset"
@@ -6255,7 +6255,7 @@ msgstr "این فرم هیچ هرزنامه‌ای ندارد."
 
 #: entry_list.php:215
 msgid "Display Mode"
-msgstr "نمایش نگه دارنده"
+msgstr "حالت نمایش"
 
 #: includes/addon/class-gf-addon.php:3186 includes/settings/config/class-gf-settings-config-i18n.php:39 includes/settings/fields/class-field-select.php:71
 msgid "Select a Field"
@@ -6284,7 +6284,7 @@ msgstr "جای‌گذاری در دسترس نیست"
 #: includes/addon/class-gf-payment-addon.php:3600
 msgctxt "regarding a payment method"
 msgid "Any"
-msgstr "حداقل یکی"
+msgstr "هرکدام"
 
 #: includes/system-status/class-gf-system-report.php:411
 msgid "Site URL"
@@ -6523,7 +6523,7 @@ msgstr "به‌روزشده"
 
 #: tooltips.php:120
 msgid "Create rules to dynamically display or hide this page based on values from another field."
-msgstr "برای نمایش یا عدم نمایش این فیلد براساس مقادیر یک فیلد دیگر قوانین را ایجاد کنید."
+msgstr "برای نمایش یا پنهان‌کردن پویای این صفحه بر اساس مقادیر فیلدی دیگر، قانون ایجاد کنید."
 
 #: tooltips.php:59
 msgid "Select the country you would like to be selected by default when the form gets displayed."
@@ -6579,7 +6579,7 @@ msgstr "پاک کردن انتخاب‌ها"
 
 #: tooltips.php:64
 msgid "Check this box to prevent the State/Province/Region from being displayed in the form."
-msgstr "برای عدم نمایش استان / شهر / ناحیه این گزینه را انتخاب کنید."
+msgstr "برای جلوگیری از نمایش ایالت/استان/منطقه در فرم، این گزینه را علامت بزنید."
 
 #: settings.php:1285
 msgid "please install the Gravity Forms reCAPTCHA Add-On"
@@ -6603,7 +6603,7 @@ msgstr "کارآموز"
 
 #: form_detail.php:2675
 msgid "Serbian"
-msgstr "صربستان"
+msgstr "صربی"
 
 #: includes/addon/class-gf-addon.php:5657
 msgid "You don't have adequate permission to uninstall this add-on: "
@@ -6627,7 +6627,7 @@ msgstr "افزودن قانون دیگر"
 
 #: form_detail.php:2660
 msgid "Laothian"
-msgstr "لاتین"
+msgstr "لائوسی"
 
 #: form_detail.php:870
 msgid "File Upload"
@@ -6659,7 +6659,7 @@ msgstr "وقتی فعال باشد، هر فایلی که در فیلدهای ب
 
 #: settings.php:263
 msgid "Gravity Forms has been successfully uninstalled. It can be re-activated from the %splugins page%s."
-msgstr "Gravity Forms با موفقیت غیرفعال شد. می‌توان دوباره آن را از %s صفحه افزونه‌ها %s فعال کرد."
+msgstr "Gravity Forms با موفقیت حذف شد. می‌توان دوباره آن را از %sصفحهٔ افزونه‌ها%s فعال کرد."
 
 #: entry_detail.php:400
 msgid "%s: Checked \"%s\""
@@ -6799,7 +6799,7 @@ msgstr "روش پرداخت برای پرداخت، در صورت وجود."
 
 #: includes/addon/class-gf-feed-addon.php:2530
 msgid "Select which actions should only occur after payment has been received."
-msgstr "انتخاب نمایید که کدام عملیات باید بعد از دریافت پرداخت دریافت شوند."
+msgstr "انتخاب کنید کدام اقدامات فقط پس از دریافت پرداخت انجام شوند."
 
 #: form_detail.php:1627
 msgid "Arts/Entertainment/Publishing"
@@ -6897,7 +6897,7 @@ msgstr "اجرای دوبارهٔ ارتقای پایگاه داده"
 
 #: form_detail.php:2362
 msgid "Custom Validation Message"
-msgstr "پیام تأیید سفارشی"
+msgstr "پیام اعتبارسنجی سفارشی"
 
 #: form_detail.php:1635
 msgid "Agree"
@@ -6997,7 +6997,7 @@ msgstr "اجبار به ارتقا"
 
 #: includes/addon/class-gf-feed-addon.php:2527 includes/addon/class-gf-feed-addon.php:2530
 msgid "Post Payment Actions"
-msgstr "عملیات ارسال پرداخت"
+msgstr "اقدامات پس از پرداخت"
 
 #: includes/addon/class-gf-payment-addon.php:2745
 msgid "Select how many times the recurring payment should be made.  The default is to bill the customer until the subscription is canceled."
@@ -7049,7 +7049,7 @@ msgstr "محل قرارگیری قالب تاریخ"
 
 #: includes/system-status/class-gf-system-report.php:618
 msgid "Database Management System"
-msgstr "کاراکتر ست دیتابیس"
+msgstr "سامانهٔ مدیریت پایگاه داده"
 
 #: tooltips.php:16
 msgid "Enter a comma separated list of email addresses you would like to receive a BCC of the notification email."
@@ -7073,8 +7073,8 @@ msgstr "حداکثر اندازهٔ POST"
 
 #: tooltips.php:20
 msgid "Schedule Form"
-msgstr "مدیریت فرم"
+msgstr "زمان‌بندی فرم"
 
 #: entry_list.php:1568
 msgid "%s moved to Trash."
-msgstr "%s به زبان دان منتقل شدند."
+msgstr "%s به زباله‌دان منتقل شدند."

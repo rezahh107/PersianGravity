@@ -40,11 +40,11 @@ msgstr "بله"
 
 #: includes/system-status/class-gf-system-report.php:1028
 msgid "The database is currently being upgraded to version %s. %s"
-msgstr "دیتابیس در حال حاضر به نسخه %s ارتقا پیدا خواهد کرد. %s"
+msgstr "پایگاه داده در حال ارتقا به نسخهٔ %s است. %s"
 
 #: includes/system-status/class-gf-system-report.php:614
 msgid "Database Server"
-msgstr "نسخه دیتابیس"
+msgstr "سرور پایگاه داده"
 
 #: includes/system-status/class-gf-system-report.php:669
 msgid "PHP - Local time"
@@ -128,7 +128,7 @@ msgstr "دیتابیس شما به‌روز است."
 
 #: includes/system-status/class-gf-system-report.php:1684
 msgid "Site Locale"
-msgstr "محلی"
+msgstr "زبان سایت"
 
 #: includes/system-status/class-gf-system-report.php:606
 msgid "Loaded Extensions"
@@ -316,7 +316,7 @@ msgstr "تا زمانی که ارتقا ۱۰۰٪ کامل نشده است، ای
 
 #: includes/system-status/class-gf-system-report.php:1693
 msgid "User (ID: %d) Locale"
-msgstr "کاربر (ID: %d) محلی"
+msgstr "زبان کاربر (ID: %d)"
 
 #: includes/system-status/class-gf-system-report.php:552
 msgid "Memory Limit"
@@ -344,7 +344,7 @@ msgstr "MySQL - به وقت محلی"
 
 #: includes/system-status/class-gf-system-report.php:649
 msgid "WordPress (Local) Timezone"
-msgstr "نسخه WordPress"
+msgstr "منطقهٔ زمانی محلی WordPress"
 
 #: includes/system-status/class-gf-system-report.php:507
 msgid "Network Active Plugins"
@@ -352,7 +352,7 @@ msgstr "افزونه‌های فعال شبکه"
 
 #: includes/system-status/class-gf-system-report.php:1547
 msgid "Parent"
-msgstr "والدین"
+msgstr "والد"
 
 #: includes/system-status/class-gf-system-report.php:1092
 msgid "Database upgraded successfully."
@@ -488,7 +488,7 @@ msgstr "اجبار به ارتقا"
 
 #: includes/system-status/class-gf-system-report.php:618
 msgid "Database Management System"
-msgstr "کاراکتر ست دیتابیس"
+msgstr "سامانهٔ مدیریت پایگاه داده"
 
 #: includes/system-status/class-gf-system-report.php:572
 msgid "Maximum Post Size"

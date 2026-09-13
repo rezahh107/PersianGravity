@@ -98,6 +98,7 @@ function pgr_content_surface_path_matches( $path, array $rules ) {
 function pgr_content_tokens( $value ) {
 	$patterns = array(
 		'printf' => '/%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/',
+		'printf_space' => '/%(?:\d+\$)?[-+0#\']* +[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX](?![A-Za-z])/',
 		'literal' => '/\$\{[^{}\r\n]+\}/',
 		'brace'   => '/\{[A-Za-z0-9_.:-]+\}/',
 		'markup'  => '/<\/?[A-Za-z][^>]*>/',

@@ -54,7 +54,7 @@ msgstr "با استفاده از Akismet از ورودی‌های فرم در ب
 
 #: form_detail.php:2837
 msgid "Enable Submit Button Conditional Logic"
-msgstr "فعال‌سازی منطق شرطی دکمه \"بعدی\""
+msgstr "فعال‌سازی منطق شرطی دکمهٔ ارسال"
 
 #: tooltips.php:119
 msgid "Require Login Message"
@@ -188,7 +188,7 @@ msgstr "یک مشکل در حین ایجاد این فرم رخ داده است.
 
 #: form_detail.php:1677
 msgid "Insert Choices"
-msgstr "درون ریزی گزینه‌ها"
+msgstr "درج گزینه‌ها"
 
 #: tooltips.php:160
 msgid "Output HTML5"
@@ -224,7 +224,7 @@ msgstr "خاکستری"
 
 #: form_detail.php:2759
 msgid "Allow field to be populated dynamically"
-msgstr "اجازه دادن به فیلدها برای ارزیابی پویا"
+msgstr "اجازه دهید فیلد به‌صورت پویا مقداردهی شود"
 
 #: form_detail.php:1358
 msgid "Image Path"
@@ -244,11 +244,11 @@ msgstr "فنلاندی"
 
 #: tooltips.php:58
 msgid "Default Province"
-msgstr "شهر پیش‌فرض"
+msgstr "استان پیش‌فرض"
 
 #: tooltips.php:19
 msgid "Limit Number of Entries"
-msgstr "تعداد پبام‌های ورودی را محدود کنید."
+msgstr "محدود کردن تعداد ورودی‌ها"
 
 #: form_detail.php:2099
 msgid "Max"
@@ -328,7 +328,7 @@ msgstr "حداکثر مجاز بر روی این سرور: %sMB"
 
 #: form_detail.php:1761
 msgid "Select Exact Number"
-msgstr "یک برگه انتخاب نمایید"
+msgstr "انتخاب تعداد دقیق"
 
 #: form_detail.php:1627
 msgid "Industry"
@@ -360,7 +360,7 @@ msgstr "نام را وارد نمایید"
 
 #: form_detail.php:656
 msgid "Product Field Mapping"
-msgstr "قرار دادن فیلد محصول"
+msgstr "نگاشت فیلد محصول"
 
 #: form_detail.php:2658
 msgid "Kannada"
@@ -400,7 +400,7 @@ msgstr "ایجاد قالب محتوا"
 
 #: form_detail.php:1626
 msgid "Job Type"
-msgstr "نوع کسب و کار"
+msgstr "نوع شغل"
 
 #: form_detail.php:3548
 msgid "This form has legacy markup enabled, which may prevent some new features from functioning."
@@ -536,7 +536,7 @@ msgstr "نوع دکمهٔ قبلی"
 
 #: tooltips.php:57
 msgid "Default State"
-msgstr "حالت پیش‌فرض"
+msgstr "ایالت پیش‌فرض"
 
 #: tooltips.php:139
 msgid "Check this option to set this image as the post's Featured Image."
@@ -708,7 +708,7 @@ msgstr "متنی را وارد کنید که می‌خواهید روی دکمه
 
 #: form_list.php:442
 msgid "Descending"
-msgstr "درحال ارسال...."
+msgstr "نزولی"
 
 #: form_detail.php:2078 tooltips.php:53
 msgid "Maximum Characters"
@@ -858,7 +858,7 @@ msgstr "قرمز"
 
 #: form_detail.php:627
 msgid "Submit Button Image URL"
-msgstr "تصویر دکمه فرم"
+msgstr "URL تصویر دکمهٔ ارسال"
 
 #: form_detail.php:2663
 msgid "Malay"
@@ -1095,7 +1095,7 @@ msgstr "این گزینه را انتخاب کنید تا مقدار از نظر
 
 #: tooltips.php:64
 msgid "Hide State/Province/Region"
-msgstr "مخفی کردن استان / شهر / ناحیه"
+msgstr "پنهان‌کردن ایالت/استان/منطقه"
 
 #: form_detail.php:1730
 msgid "Number of Columns"
@@ -1385,7 +1385,7 @@ msgstr "نشانگر پیشرفت"
 
 #: form_detail.php:1757
 msgid "Selections"
-msgstr "جداکننده"
+msgstr "انتخاب‌ها"
 
 #: tooltips.php:26
 msgid "Enter a description for your form. This may be used for user instructions."
@@ -1417,7 +1417,7 @@ msgstr "بازگردانی"
 
 #: tooltips.php:58
 msgid "Select the province you would like to be selected by default when the form gets displayed."
-msgstr "شهری که می‌خواهید به صورت پیش‌فرض در هنگام نمایش فرم انتخاب شده باشد را انتخاب کنید."
+msgstr "استانی را که می‌خواهید هنگام نمایش فرم به‌طور پیش‌فرض انتخاب شود، انتخاب کنید."
 
 #: form_detail.php:1638
 msgid "Extra Small"
@@ -1493,7 +1493,7 @@ msgstr "تصویر دکمه قبلی"
 
 #: form_list.php:441
 msgid "Ascending"
-msgstr "منتظر"
+msgstr "صعودی"
 
 #: form_detail.php:1430 tooltips.php:71
 msgid "Enable Multi-File Upload"
@@ -1609,7 +1609,7 @@ msgstr "غیرفعال کردن تعداد"
 
 #: form_detail.php:1426
 msgid "Multiple Files"
-msgstr "فایلهای ترکیبی"
+msgstr "چند فایل"
 
 #: form_detail.php:1618
 msgid "Countries"
@@ -1867,7 +1867,7 @@ msgstr "یک الگو انتخاب نمایید"
 
 #: tooltips.php:179
 msgid "Validation Summary"
-msgstr "خطای اعتبارسنجی"
+msgstr "خلاصهٔ اعتبارسنجی"
 
 #: tooltips.php:110
 msgid "Enable Choice Values"
@@ -2003,7 +2003,7 @@ msgstr "اخطار: شما قصد حذف این فرم و تمام ورودی‌
 
 #: form_detail.php:363
 msgid "Last page options"
-msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+msgstr "گزینه‌های صفحهٔ آخر"
 
 #: form_detail.php:342
 msgid "Start Paging"
@@ -2049,11 +2049,11 @@ msgstr "آدرس ایمیلی که می‌خواهید ایمیل اعلان‌�
 
 #: form_detail.php:1774
 msgid "Maximum"
-msgstr "حداکثر ردیف‌ها"
+msgstr "حداکثر"
 
 #: form_detail.php:1759
 msgid "Select One"
-msgstr "انتخاب شده"
+msgstr "انتخاب یکی"
 
 #: tooltips.php:63
 msgid "Check this box to prevent Province field from being displayed in the form."
@@ -2069,7 +2069,7 @@ msgstr "وضعیت تاهل"
 
 #: form_detail.php:1348
 msgid "Date Picker Icon"
-msgstr "انتخابگر تاریخ"
+msgstr "آیکون انتخابگر تاریخ"
 
 #: form_detail.php:1621
 msgid "Asia"
@@ -2113,7 +2113,7 @@ msgstr "این تنظیم را انتخاب کنید تا مرورگرها به 
 
 #: form_detail.php:2408
 msgid "End of the last row"
-msgstr "رفتن به آخرین صفحه"
+msgstr "پایان آخرین ردیف"
 
 #: form_detail.php:1937 form_detail.php:1938
 msgid "Phone Number"
@@ -2129,7 +2129,7 @@ msgstr "عربی"
 
 #: form_detail.php:2546
 msgid "Enable Autocomplete"
-msgstr "نصب به اتمام رسید."
+msgstr "فعال‌سازی تکمیل خودکار"
 
 #: form_detail.php:1632
 msgid "Less than a month"
@@ -2153,7 +2153,7 @@ msgstr "۲ ستون"
 
 #: form_detail.php:2587 tooltips.php:101
 msgid "Option Label"
-msgstr "برچسب تنظیمات"
+msgstr "برچسب گزینه"
 
 #: form_detail.php:1439 tooltips.php:72
 msgid "Maximum Number of Files"
@@ -2217,11 +2217,11 @@ msgstr "لیست بازشو تاریخ"
 
 #: form_detail.php:608
 msgid "Submit Input Type"
-msgstr "نوع تاریخ فیلد ورودی"
+msgstr "نوع ورودی دکمهٔ ارسال"
 
 #: form_detail.php:2634
 msgid "Czech"
-msgstr "چکوسلواکیایی"
+msgstr "چکی"
 
 #: form_detail.php:2299
 msgid "Top aligned"
@@ -2474,7 +2474,7 @@ msgstr "خیلی بهتر"
 
 #: form_detail.php:1976 tooltips.php:145
 msgid "Input Mask"
-msgstr "درون ریزی الگو"
+msgstr "الگوی ورودی"
 
 #: tooltips.php:44
 msgid "Pass Data Via Query String"
@@ -2494,7 +2494,7 @@ msgstr "برچسب مدیریت"
 
 #: form_detail.php:2161
 msgid "Do not round"
-msgstr "یکسان نمی‌باشند"
+msgstr "گرد نکن"
 
 #: form_detail.php:1627
 msgid "Education/Training"
@@ -2514,11 +2514,11 @@ msgstr "تصویر دکمه بعدی"
 
 #: form_detail.php:363
 msgid "Manage last page options"
-msgstr "برای ویرایش تنظیمات صفحه کلیک نمایید"
+msgstr "مدیریت گزینه‌های صفحهٔ آخر"
 
 #: form_detail.php:2256 form_detail.php:2267
 msgid "Placeholder text is not supported when using the Rich Text Editor."
-msgstr "زمانی‌که از ویرایشگر متن قوی استفاده می‌شود، متن پیش‌نمایش پشتیبانی نخواهد شد."
+msgstr "هنگام استفاده از ویرایشگر متن غنی، متن نگه‌دارنده پشتیبانی نمی‌شود."
 
 #: form_detail.php:1501
 msgid "12 hour"
@@ -2658,7 +2658,7 @@ msgstr "اگر در فیلدهای پشتیبانی‌شده پیوند/URL پی
 
 #: form_detail.php:1613
 msgid "Male, Female, Non-binary, Agender, My gender is not listed, Prefer not to answer"
-msgstr "مذکر، مونث، غیر باینری، جنسیت من درج نشده است، ترجیح می‌دهم پاسخ ندهم"
+msgstr "مرد، زن، غیردودویی، بی‌جنسیت، جنسیت من در فهرست نیست، ترجیح می‌دهم پاسخ ندهم"
 
 #: form_detail.php:2666
 msgid "Mongolian"
@@ -2758,7 +2758,7 @@ msgstr "مخفی کردن اضافه آدرس"
 
 #: tooltips.php:29
 msgid "Select the default validation message placement.  Validation messages can be placed above the field inputs or below the field inputs."
-msgstr "محل توضیحات را انتخاب کنید. توضیحات می‌توانند در بالا یا پایین فیلدهای ورودی قرار گیرد."
+msgstr "محل پیش‌فرض پیام اعتبارسنجی را انتخاب کنید. پیام‌های اعتبارسنجی می‌توانند بالای ورودی‌های فیلد یا پایین آن‌ها قرار گیرند."
 
 #: form_detail.php:1633
 msgid "Very Unsatisfied"
@@ -2834,7 +2834,7 @@ msgstr "متن دکمه قبلی"
 
 #: form_detail.php:2668
 msgid "Persian"
-msgstr "ایرانی"
+msgstr "فارسی"
 
 #: tooltips.php:117
 msgid "Enable this option to allow the user to select multiple choices. Disabling this option after entries with multiple choices have been submitted will hide the values for those entries."
@@ -2918,7 +2918,7 @@ msgstr "فیلدهای سفارشی"
 
 #: form_detail.php:1770
 msgid "Minimum"
-msgstr "حداقل قدرت"
+msgstr "حداقل"
 
 #: form_detail.php:1682
 msgid "Save as new custom choice"
@@ -2958,7 +2958,7 @@ msgstr "متن پیام تأییدیه"
 
 #: form_detail.php:1625
 msgid "Not employed but looking for work"
-msgstr "استخدام نشده ام ولی دنبال کار می‌کردم."
+msgstr "شاغل نیستم و دنبال کار می‌گردم"
 
 #: form_detail.php:2642
 msgid "French"
@@ -2974,7 +2974,7 @@ msgstr "مخفی کردن فیلد ایالت"
 
 #: form_detail.php:1722
 msgid "Horizontal"
-msgstr "آریزونا"
+msgstr "افقی"
 
 #: form_detail.php:2047
 msgid "Zip Code w/ Optional Plus Four"
@@ -2990,7 +2990,7 @@ msgstr "وقتی قالب خودکار فعال باشد جداکننده پار
 
 #: tooltips.php:152
 msgid "Filter the entries by adding conditions."
-msgstr "ورودی‌ها را با اضافه کردن شرط مرتب کنید."
+msgstr "با افزودن شرط‌ها، ورودی‌ها را فیلتر کنید."
 
 #: form_detail.php:1625
 msgid "Employed Part-Time"
@@ -3042,11 +3042,11 @@ msgstr "قالب نام فیلد"
 
 #: form_detail.php:1337 tooltips.php:55
 msgid "Date Input Type"
-msgstr "نوع تاریخ فیلد ورودی"
+msgstr "نوع ورودی تاریخ"
 
 #: form_detail.php:1760
 msgid "Select Multiple"
-msgstr "انتخاب فایل‌ها"
+msgstr "انتخاب چند مورد"
 
 #: form_detail.php:1324 tooltips.php:93
 msgid "Name Fields"
@@ -3148,7 +3148,7 @@ msgstr "برای هماهنگی بهتر با طراحی سایت، پوستهٔ
 
 #: tooltips.php:63
 msgid "Hide Province Field"
-msgstr "مخفی کردن فیلد شهر"
+msgstr "پنهان‌کردن فیلد استان"
 
 #: tooltips.php:123
 msgid "Name each of the pages on your form.  Page names are displayed with the selected progress indicator."
@@ -3200,7 +3200,7 @@ msgstr "فرمتی که در نظر دارید برای ورودی تاریخ ا
 
 #: form_detail.php:621
 msgid "Submit Button Text"
-msgstr "متن دکمه بعدی"
+msgstr "متن دکمهٔ ارسال"
 
 #: tooltips.php:73
 msgid "Specify the maximum file size in megabytes allowed for each of the files."
@@ -3232,7 +3232,7 @@ msgstr "برای توقف، عملیات را لغو کنید؛ برای حذف�
 
 #: form_detail.php:508
 msgid "Gradient: Blues"
-msgstr "گرادیان: بلوز"
+msgstr "گرادیان: آبی‌ها"
 
 #: form_detail.php:2683
 msgid "Tamil"
@@ -3363,7 +3363,7 @@ msgstr "پاسخ به"
 
 #: tooltips.php:120
 msgid "Create rules to dynamically display or hide this page based on values from another field."
-msgstr "برای نمایش یا عدم نمایش این فیلد براساس مقادیر یک فیلد دیگر قوانین را ایجاد کنید."
+msgstr "برای نمایش یا پنهان‌کردن پویای این صفحه بر اساس مقادیر فیلدی دیگر، قانون ایجاد کنید."
 
 #: tooltips.php:59
 msgid "Select the country you would like to be selected by default when the form gets displayed."
@@ -3395,7 +3395,7 @@ msgstr "دکمه قبلی"
 
 #: tooltips.php:64
 msgid "Check this box to prevent the State/Province/Region from being displayed in the form."
-msgstr "برای عدم نمایش استان / شهر / ناحیه این گزینه را انتخاب کنید."
+msgstr "برای جلوگیری از نمایش ایالت/استان/منطقه در فرم، این گزینه را علامت بزنید."
 
 #: form_detail.php:1627
 msgid "Job Search Aids"
@@ -3411,7 +3411,7 @@ msgstr "کارآموز"
 
 #: form_detail.php:2675
 msgid "Serbian"
-msgstr "صربستان"
+msgstr "صربی"
 
 #: form_detail.php:2382
 msgid "Fill Container"
@@ -3419,7 +3419,7 @@ msgstr "ظرف را پر کنید"
 
 #: form_detail.php:2660
 msgid "Laothian"
-msgstr "لاتین"
+msgstr "لائوسی"
 
 #: form_detail.php:870
 msgid "File Upload"
@@ -3555,7 +3555,7 @@ msgstr "برای ضروری کردن فیلد این گزینه را انتخا�
 
 #: form_detail.php:2362
 msgid "Custom Validation Message"
-msgstr "پیام تأیید سفارشی"
+msgstr "پیام اعتبارسنجی سفارشی"
 
 #: form_detail.php:1635
 msgid "Agree"
@@ -3647,4 +3647,4 @@ msgstr "ستون مرتب‌سازی پیش‌فرض"
 
 #: tooltips.php:20
 msgid "Schedule Form"
-msgstr "مدیریت فرم"
+msgstr "زمان‌بندی فرم"
