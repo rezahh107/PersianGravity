@@ -1,0 +1,287 @@
+# Gravity Forms 3.1.1.1 Persian sparse admission record — frontend block surface.
+# Derived deterministically from accepted WU-001 classified authority; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms 3.1.1.1\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityforms\n"
+
+#: includes/blocks/config/class-gf-blocks-config.php:150
+msgid "Select a Form"
+msgstr "یک فرم انتخاب نمایید"
+
+#: includes/blocks/config/class-gf-blocks-config.php:112
+msgid "Copy / Paste Not Available"
+msgstr "کپی/جای‌گذاری در دسترس نیست"
+
+#: includes/blocks/config/class-gf-blocks-config.php:145
+msgid "Please ensure the form styles you are trying to paste are in the correct format."
+msgstr "مطمئن شوید سبک‌های فرمی که می‌خواهید جای‌گذاری کنید در قالب صحیح هستند."
+
+#: form_detail.php:612 includes/blocks/config/class-gf-blocks-config.php:159
+msgid "Text"
+msgstr "متن"
+
+#: includes/blocks/config/class-gf-blocks-config.php:136
+msgid "Learn more about configuring your form to use Orbital."
+msgstr "درباره پیکربندی فرم خود برای استفاده از Orbital بیشتر بدانید."
+
+#: includes/blocks/config/class-gf-blocks-config.php:125
+msgid "Form Theme"
+msgstr "پوستهٔ فرم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:121
+msgid "Form"
+msgstr "فرم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:115
+msgid "Custom Colors"
+msgstr "رنگ‌های سفارشی"
+
+#: includes/blocks/config/class-gf-blocks-config.php:158
+msgid "Tabindex"
+msgstr "شاخص تب"
+
+#: includes/blocks/config/class-gf-blocks-config.php:142
+msgid "Orbital Theme"
+msgstr "پوستهٔ Orbital"
+
+#: includes/blocks/config/class-gf-blocks-config.php:164
+msgid "This will restore your form styles back to their default values and cannot be undone. Are you sure you want to continue?"
+msgstr "این کار استایل‌های فرم شما را به مقادیر پیش‌فرضشان برمی‌گرداند و قابل بازگشت نیست. آیا مطمئنید که می‌خواهید ادامه دهید؟"
+
+#: includes/blocks/config/class-gf-blocks-config.php:111
+msgid "Colors"
+msgstr "کلرادو"
+
+#: includes/blocks/config/class-gf-blocks-config.php:124
+msgid "Form Styles"
+msgstr "سبک‌های فرم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:152
+msgid "Show Form Description"
+msgstr "توضیحات فرم "
+
+#: includes/blocks/config/class-gf-blocks-config.php:113
+msgid "Copy and paste functionality requires a secure connection. Reload this page using an HTTPS URL and try again."
+msgstr "قابلیت کپی و چسباندن نیاز به اتصال امن دارد. این صفحه را با استفاده از URL HTTPS بارگیری مجدد کنید و دوباره امتحان کنید."
+
+#: entry_detail.php:1486 form_detail.php:2446 form_detail.php:3510 form_detail.php:3512 form_detail.php:3557 form_detail.php:3653 includes/addon/class-gf-feed-addon.php:1481 includes/blocks/config/class-gf-blocks-config.php:167 includes/system-status/class-gf-system-report.php:1162 includes/webapi/webapi.php:614 includes/webapi/webapi.php:631 settings.php:612 settings.php:728 settings.php:762 settings.php:896 tooltips.php:44 tooltips.php:104 tooltips.php:113
+msgid "(opens in a new tab)"
+msgstr "(در یک برگه جدید باز می‌شود)"
+
+#: includes/blocks/config/class-gf-blocks-config.php:151
+msgid "Select and display one of your forms."
+msgstr "یکی از فرم‌های خود را انتخاب و نمایش دهید."
+
+#: includes/blocks/config/class-gf-blocks-config.php:109
+msgid "Circle"
+msgstr "دایره"
+
+#: includes/addon/class-gf-addon.php:1800 includes/blocks/config/class-gf-blocks-config.php:123
+msgid "Form Settings"
+msgstr "تنظیمات فرم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:114
+msgid "Copy Form Styles"
+msgstr "کپی سبک‌های فرم"
+
+#: form_detail.php:918 form_detail.php:1638 form_display.php:4052 includes/blocks/config/class-gf-blocks-config.php:139
+msgid "Medium"
+msgstr "متوسط"
+
+#: includes/blocks/config/class-gf-blocks-config.php:119
+msgid "Field Values"
+msgstr "مقادیر فیلد"
+
+#: includes/blocks/config/class-gf-blocks-config.php:127 includes/system-status/class-gf-system-report.php:366 includes/system-status/class-gf-update.php:178
+msgid "Gravity Forms"
+msgstr "Gravity Forms"
+
+#: includes/blocks/config/class-gf-blocks-config.php:163
+msgid "The selected form has been deleted or trashed. Please select a new form."
+msgstr "فرم انتخاب‌شده حذف شده یا به زباله‌دان منتقل شده است. لطفاً فرم دیگری انتخاب کنید."
+
+#: includes/blocks/config/class-gf-blocks-config.php:166
+msgid "Your browser does not have permission to paste from the clipboard. <p>Please navigate to <strong>about:config</strong> and change the preference <strong>dom.events.asyncClipboard.readText</strong> to <strong>true</strong>."
+msgstr "مرورگر شما مجوز چسباندن از کلیپ‌بورد را ندارد. <p>به <strong>about:config</strong> بروید و مقدار تنظیم <strong>dom.events.asyncClipboard.readText</strong> را به <strong>true</strong> تغییر دهید."
+
+#: includes/blocks/config/class-gf-blocks-config.php:160
+msgid "Theme Colors"
+msgstr "رنگ‌های پوسته"
+
+#: includes/blocks/config/class-gf-blocks-config.php:153
+msgid "Show Form Title"
+msgstr "نمایش عنوان فرم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:103
+msgid "Background"
+msgstr "پس‌زمینه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:129
+msgid "Image Choice Styles"
+msgstr "سبک‌های گزینهٔ تصویری"
+
+#: includes/blocks/config/class-gf-blocks-config.php:140
+msgid "No Card"
+msgstr "بدون کارت"
+
+#: form_detail.php:188 form_detail.php:2227 includes/blocks/config/class-gf-blocks-config.php:102
+msgid "Appearance"
+msgstr "ظاهر"
+
+#: includes/blocks/config/class-gf-blocks-config.php:128 settings.php:597
+msgid "Gravity Forms 2.5 Theme"
+msgstr "پوستهٔ Gravity Forms 2.5"
+
+#: includes/blocks/config/class-gf-blocks-config.php:105
+msgid "Border Radius"
+msgstr "شعاع گوشهٔ حاشیه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:122
+msgid "Form ID: %s"
+msgstr "شناسه فرم: %s"
+
+#: includes/blocks/config/class-gf-blocks-config.php:143
+msgid "Paste Form Styles"
+msgstr "جای‌گذاری سبک‌های فرم"
+
+#: entry_detail.php:1571 form_detail.php:1678 form_detail.php:1690 includes/addon/class-gf-results.php:298 includes/blocks/config/class-gf-blocks-config.php:107 includes/locking/class-gf-locking.php:201
+msgid "Cancel"
+msgstr "انصراف"
+
+#: form_detail.php:191 form_detail.php:1314 form_detail.php:2480 includes/blocks/config/class-gf-blocks-config.php:100
+msgid "Advanced"
+msgstr "پیشرفته"
+
+#: includes/blocks/config/class-gf-blocks-config.php:99
+msgid "Accent"
+msgstr "پذیرفتن"
+
+#: includes/blocks/config/class-gf-blocks-config.php:133
+msgid "Click or drag the Gravity Forms Block into the page to insert the form you selected. %1$sLearn More.%2$s"
+msgstr "برای درج فرم انتخاب‌شده، بلوک Gravity Forms را کلیک کنید یا آن را روی صفحه بکشید. %1$sبیشتر بدانید.%2$s"
+
+#: includes/blocks/config/class-gf-blocks-config.php:137
+msgid "Label Styles"
+msgstr "سبک‌های برچسب"
+
+#: includes/blocks/config/class-gf-blocks-config.php:135
+msgid "Invalid Form Styles"
+msgstr "سبک‌های فرم نامعتبر هستند"
+
+#: includes/blocks/config/class-gf-blocks-config.php:101
+msgid "AJAX"
+msgstr "آژاکس"
+
+#: includes/blocks/config/class-gf-blocks-config.php:146
+msgid "Preview"
+msgstr "پیش‌نمایش"
+
+#: includes/blocks/config/class-gf-blocks-config.php:141
+msgid "OK"
+msgstr "باشه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:126
+msgid "Form style options are not available for forms that use %1$slegacy mode%2$s."
+msgstr "گزینه‌های سبک فرم برای فرم‌هایی که از %1$sحالت قدیمی%2$s استفاده می‌کنند در دسترس نیستند."
+
+#: includes/blocks/config/class-gf-blocks-config.php:161
+msgid "The accent color is used for aspects such as checkmarks and dropdown choices."
+msgstr "رنگ تاکیدی برای جنبه‌هایی مانند علامت‌های تیک و گزینه‌های منوی کشویی استفاده می‌شود."
+
+#: includes/blocks/config/class-gf-blocks-config.php:117
+msgid "Description Styles"
+msgstr "سبک‌های توضیحات"
+
+#: includes/blocks/config/class-gf-blocks-config.php:162
+msgid "The background color is used for various form elements, such as buttons and progress bars."
+msgstr "رنگ پس‌زمینه برای عناصر مختلف فرم، مانند دکمه‌ها و نوارهای پیشرفت، استفاده می‌شود."
+
+#: includes/blocks/config/class-gf-blocks-config.php:148
+msgid "Restore Defaults"
+msgstr "بازیابی پیش‌فرض‌ها"
+
+#: includes/blocks/config/class-gf-blocks-config.php:156
+msgid "Style"
+msgstr "سبک"
+
+#: includes/blocks/config/class-gf-blocks-config.php:116
+msgid "Default Colors"
+msgstr "رنگ‌های پیش‌فرض"
+
+#: form_detail.php:914 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:154
+msgid "Size"
+msgstr "اندازه"
+
+#: form_detail.php:919 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:138
+msgid "Large"
+msgstr "بزرگ"
+
+#: includes/blocks/config/class-gf-blocks-config.php:104
+msgid "Border"
+msgstr "حاشیه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:134
+msgid "In pixels."
+msgstr "در پیکسل‌ها."
+
+#: includes/blocks/config/class-gf-blocks-config.php:120
+msgid "Font Size"
+msgstr "اندازهٔ قلم"
+
+#: includes/blocks/config/class-gf-blocks-config.php:132
+msgid "Add Block To Page"
+msgstr "اضافه کردن بلوک به صفحه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:106
+msgid "Button Styles"
+msgstr "سبک‌های دکمه"
+
+#: includes/blocks/config/class-gf-blocks-config.php:110
+msgid "Close"
+msgstr "بستن"
+
+#: form_detail.php:917 form_detail.php:1638 includes/blocks/config/class-gf-blocks-config.php:155
+msgid "Small"
+msgstr "کوچک"
+
+#: includes/blocks/config/class-gf-blocks-config.php:149
+msgid "Restore Default Styles"
+msgstr "بازگردانی سبک‌های پیش‌فرض"
+
+#: includes/blocks/config/class-gf-blocks-config.php:131
+msgid "Input Styles"
+msgstr "سبک‌های ورودی"
+
+#: includes/blocks/config/class-gf-blocks-config.php:144
+msgid "Paste Not Available"
+msgstr "جای‌گذاری در دسترس نیست"
+
+#: includes/blocks/config/class-gf-blocks-config.php:147
+msgid "Reset Defaults"
+msgstr "بازنشانی پیش‌فرض‌ها"
+
+#: includes/blocks/config/class-gf-blocks-config.php:108
+msgid "Card"
+msgstr "کارت"
+
+#: includes/blocks/config/class-gf-blocks-config.php:157
+msgid "Square"
+msgstr "مربع"
+
+#: includes/blocks/config/class-gf-blocks-config.php:130
+msgid "Inherit from default (%s)"
+msgstr "ارث بری از پیش‌فرض (%s)"
+
+#: includes/blocks/config/class-gf-blocks-config.php:165
+msgid "You must have at least one form to use the block."
+msgstr "برای استفاده از بلوک باید دست‌کم یک فرم داشته باشید."
+
+#: form_detail.php:207 includes/blocks/config/class-gf-blocks-config.php:118
+msgid "Edit Form"
+msgstr "ویرایش فرم"
