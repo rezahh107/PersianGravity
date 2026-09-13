@@ -1,0 +1,176 @@
+name: WU004 complete repair materializer
+
+on:
+  push:
+    branches:
+      - feat/wu004-gravityforms-classified-admission
+    paths:
+      - '.github/workflows/wu004-complete-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact repair branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: feat/wu004-gravityforms-classified-admission
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+
+      - name: Recover and verify WU001 authority payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/recovery.payload.b64
+          fetch_blob_text() {
+            curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'Accept: application/vnd.github+json' \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/blobs/$1" \
+              | jq -r '.content' | tr -d '\n' | base64 --decode >> /tmp/recovery.payload.b64
+          }
+          for sha in \
+            79d7c60a1d3707f481b833aa3e5dbe4ebaa749bf \
+            c0010752bb6f02185bc9bb0d6df85323f648de66 \
+            5c44f0c76a2f251890aa9cd4dbaba57fa8c62ca2 \
+            6d6b95965b16c952e2b01beb0307c7e6b494a5e5 \
+            63a4f9545fd14f136ee8ad956b08149964488023 \
+            4108a7d46d712b0e7a5b67c5f30766e0b7aa1bcb \
+            ed3039bec0cf39808243f99a3476d3b4249da58f \
+            00b296e050563e3ebad9dbd16d734cfe74f872dc \
+            049b64f4cd6249ab44d4a75c83cf38fdbee77923 \
+            0ef3a2f35a312f8f2eaf8a82f6b3c8afd748e915 \
+            aa1460e2bceb387ea95bb3cba78efbbc839538c5 \
+            fec5ac735ee8b5244a747667df9780b0de1a4314 \
+            311b504bde70c8c454bc63547c0a86fa126120b0 \
+            7ad1708ce9505175c2ed758721f4233ffc6f4600 \
+            21e917d1ece8d2ae0af88dbc0446f7faefa51085 \
+            fa050ee51ff6c103fb7f08b4c8d29dfcc46d7d43 \
+            bb7e8f82d7e985df8044670453397fab97ec66cd \
+            f0dc9f76d4fa280d03be0a3a9b368acd309f101d \
+            595e671c2023338856ca29892f1ceaed9ca20054 \
+            bb8e04b5f43823b44682282f7b668877ded74fe6 \
+            12effd4136928c3970fdf3974a2c5500c11b7d28 \
+            9cf97b034c3af0960293caffd6b17a627cbc136d \
+            eaef15b51cca5e5c74d64cbbb384c9663765aafb \
+            86e78d6f7c76d2e9759bd6e55ced0dadef970307 \
+            b31b3999bab08c512af3fe7199abcd5ad8bdeceb \
+            3868c46c4265d1f086b4f1aa45b78ff306ede824 \
+            f5c61f14d5cdc89441f6ce9eb6c514891da2d69b \
+            752d8bcaac6c3868a5d20553d0ee102fb9e46241
+          do
+            fetch_blob_text "$sha"
+          done
+          echo '0f89fc2102c170a88ff6e8eb60564960181d29445b55bafaf474477e5772f403  /tmp/recovery.payload.b64' | sha256sum --check --strict
+          base64 --decode /tmp/recovery.payload.b64 > /tmp/recovery.payload.xz
+          echo '25aa00fa37dab5cb8c8f2da82e54ecc24e60ec944a5d2d8727aca5595492d738  /tmp/recovery.payload.xz' | sha256sum --check --strict
+          xz --decompress --stdout /tmp/recovery.payload.xz > /tmp/recovery.payload.tar
+          echo '7800b5ae9f86b3aac7fe1bbc6cf8e955b8ad67beac3f0f30d08d2d6e4f4d4f23  /tmp/recovery.payload.tar' | sha256sum --check --strict
+          rm -rf /tmp/wu004-recovery
+          mkdir -p /tmp/wu004-recovery
+          tar -xf /tmp/recovery.payload.tar -C /tmp/wu004-recovery
+          echo 'f7046cb9866d626dbeb453cdd9db1b14a30b37ff412fa83cb832a71e4c1ce41f  /tmp/wu004-recovery/authority.po' | sha256sum --check --strict
+          echo '9ca13257e6a9f817a9f5b4300cd0f3acd9ec498bca14b9650674b5261e99af85  /tmp/wu004-recovery/gravityforms-admin-builder-index.json' | sha256sum --check --strict
+          echo '0d53269c808fc379e2edf0b4bf7375bde16c4f5e0bf41c24d1cabb06f287657e  /tmp/wu004-recovery/gravityforms-settings-integrations-index.json' | sha256sum --check --strict
+
+      - name: Materialize exact six-surface authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'Babel==2.18.0'
+          cp /tmp/wu004-recovery/authority.po /tmp/wu001-authority.po
+          cp /tmp/wu004-recovery/gravityforms-admin-builder-index.json tools/i18n/admission/gravityforms-admin-builder-index.json
+          cp /tmp/wu004-recovery/gravityforms-settings-integrations-index.json tools/i18n/admission/gravityforms-settings-integrations-index.json
+          python /tmp/wu004-recovery/generate.py | tee /tmp/wu004-materialization.json
+          test "$(find languages/providers/gravityforms/source/records -maxdepth 1 -type f -name '*-fa_IR.po' | wc -l)" -eq 6
+          for index in \
+            gravityforms-frontend-shortcode-index.json \
+            gravityforms-frontend-block-index.json \
+            gravityforms-admin-builder-index.json \
+            gravityforms-entry-management-index.json \
+            gravityforms-settings-integrations-index.json \
+            gravityforms-developer-diagnostics-index.json
+          do
+            test -f "tools/i18n/admission/${index}"
+          done
+          grep -A1 'msgid "Colors"' languages/providers/gravityforms/source/records/frontend-block-fa_IR.po | grep -F 'msgstr "رنگ‌ها"'
+          grep -A1 'msgid "Accent"' languages/providers/gravityforms/source/records/frontend-block-fa_IR.po | grep -F 'msgstr "رنگ تاکیدی"'
+
+      - name: Install repository dependencies
+        run: |
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Build and verify canonical generated catalogs
+        run: |
+          composer i18n:build
+          composer i18n:check
+          sha256sum \
+            languages/providers/gravityforms/source/fa_IR.po \
+            languages/providers/gravityforms/gravityforms-fa_IR.mo \
+            languages/providers/gravityforms/gravityforms-fa_IR.l10n.php \
+            languages/providers/gravityforms/metadata.json
+
+      - name: Run focused and regression suites
+        run: |
+          composer test
+          composer cs
+          composer compat
+          node --test tests/js/structured-scanner.test.js
+          composer i18n:check
+          git diff --check
+
+      - name: Check out pinned WordPress Core 7.1
+        uses: actions/checkout@v7
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Run production localization contract on pinned Core
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
+        run: composer i18n:test
+
+      - name: Verify authority boundary and WU008 preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(find languages/providers/gravityforms -maxdepth 1 -type f -name 'gravityforms-fa_IR-*.json' -print -quit)"
+          git diff --exit-code 670fd25d1081f80b9df5e5648f7c34675e9f24cf -- \
+            .github/workflows/wu008-real-integration.yml \
+            docs/WU008_REAL_INTEGRATION.md
+          git diff --check
+
+      - name: Remove staging transport and commit verified repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .wu004-transfer
+          rm -f .github/workflows/wu004-complete-repair.yml
+          rm -rf .wordpress-core
+          git diff --check
+          test -z "$(find . -path './.git' -prune -o -path './.wu004-transfer/part-*' -print -quit)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git ls-files --stage | grep -q '\.wu004-transfer/part-'; then
+            echo 'staging transport still tracked' >&2
+            exit 1
+          fi
+          git commit -m 'fix(i18n): complete Gravity Forms content admission v2'
+          echo "RESULTING_HEAD=$(git rev-parse HEAD)"
+          git push origin HEAD:feat/wu004-gravityforms-classified-admission
