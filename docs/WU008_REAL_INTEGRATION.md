@@ -22,7 +22,7 @@ The uploaded evidence is intentionally bounded to verification metadata, runtime
 
 WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, and `gravityflow_inbox_url`; the Playwright browser must consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`. `WU008_BASE_URL` remains only the disposable server/site-origin input used while provisioning the runtime.
 
-The login step is a first-class diagnostics-gated browser operation. After manifest-derived login, the harness explicitly loads the manifest-derived admin URL and proves the authenticated WordPress admin shell before Flow or GravityView assertions run. Each product admin check repeats that authenticated-admin predicate after navigation. GravityView's product URL is discovered from the authenticated admin navigation and then verified as the `post_type=gravityview` surface.
+The login step is a first-class diagnostics-gated browser operation. The manifest-derived login URL carries the manifest admin URL as its redirect target. After login, the harness proves that the browser landed inside that authenticated WordPress admin boundary before Flow or GravityView assertions run, without issuing a redundant second navigation that could abort in-flight admin requests. Each product admin check repeats that authenticated-admin predicate after navigation. GravityView's product URL is discovered from the authenticated admin navigation and then verified as the `post_type=gravityview` surface.
 
 ## Diagnostics fail-closed contract
 

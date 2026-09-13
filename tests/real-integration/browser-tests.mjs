@@ -136,8 +136,11 @@ try {
       page.click('#wp-submit'),
     ]);
 
-    const adminResponse = await page.goto(manifest.admin_url, { waitUntil: 'domcontentloaded' });
-    if (!adminResponse || !adminResponse.ok()) throw new Error(`Admin response failed after login: ${adminResponse?.status()}`);
+    const loginRedirect = new URL(manifest.login_url).searchParams.get('redirect_to');
+    if (loginRedirect !== manifest.admin_url) {
+      throw new Error(`Manifest login URL does not target the manifest admin URL: ${loginRedirect}`);
+    }
+    await page.waitForLoadState('load');
     return assertAuthenticatedAdminSurface(page);
   });
 
