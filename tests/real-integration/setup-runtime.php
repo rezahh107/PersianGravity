@@ -27,7 +27,7 @@ function wu008_plugin_version( $relative_main_file ) {
 }
 
 /**
- * Reset a domain without leaving Core's explicit-unload sentinel behind.
+ * Reset translation and registry state without Core's explicit-unload sentinel.
  *
  * This mirrors the repository's WordPress Core contract tests so the next
  * gettext call exercises the real JIT registry path rather than a direct
@@ -36,6 +36,7 @@ function wu008_plugin_version( $relative_main_file ) {
 function wu008_reset_domain( $domain ) {
 	WP_Translation_Controller::get_instance()->unload_textdomain( $domain );
 	unset( $GLOBALS['l10n'][ $domain ], $GLOBALS['l10n_unloaded'][ $domain ] );
+	$GLOBALS['wp_textdomain_registry'] = new WP_Textdomain_Registry();
 }
 
 wu008_assert( 'fa_IR' === get_locale(), 'WordPress site locale must be fa_IR.' );
