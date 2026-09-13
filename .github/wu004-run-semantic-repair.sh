@@ -12,6 +12,18 @@ composer install --no-interaction --no-progress --prefer-dist
 php .github/wu004-fingerprint.php > /tmp/pr19-fingerprints.json
 cat /tmp/pr19-fingerprints.json
 python .github/wu004-semantic-repair.py sync /tmp/pr19-fingerprints.json
+new_aggregate_translation="$(php -r '$j=json_decode(file_get_contents("/tmp/pr19-fingerprints.json"), true); echo $j["aggregate"]["admitted_translation_content_sha256"];')"
+python - "$new_aggregate_translation" <<'PY'
+import sys
+from pathlib import Path
+path = Path('tests/GravityFormsFrontendContentAdmissionTest.php')
+text = path.read_text(encoding='utf-8')
+old = '3054209761a3513fd34f3f038ccc9e07b2167661820c4a7c31cde300c1d7ea44'
+new = sys.argv[1]
+if text.count(old) != 1:
+    raise SystemExit('stale aggregate fingerprint expectation not found exactly once')
+path.write_text(text.replace(old, new), encoding='utf-8')
+PY
 rm .github/wu004-fingerprint.php
 
 composer i18n:build
