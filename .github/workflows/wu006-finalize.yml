@@ -92,6 +92,7 @@ jobs:
         run: |
           set -euo pipefail
           git rm .github/workflows/wu006-finalize.yml .github/scripts/wu006-finalize.py .github/scripts/wu006-extract-source.php .github/scripts/wu006-inspect-po.php .github/wu006-authority.po.gz
+          git rm -r .github/wu006-authority-b64
           base=8a95be7507a944e4683ae15842d521eab2a89d37
           git diff --exit-code "$base" -- includes/localization/products.php .github/workflows/wu008-real-integration.yml tests/real-integration
           git diff --check
