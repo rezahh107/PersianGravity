@@ -28,6 +28,19 @@ async function readJsonEventually(file, attempts = 30) {
   throw new Error(`Evidence file not produced: ${file}`);
 }
 
+function isKnownWordPressCompressionProbeAbort(item) {
+  try {
+    const url = new URL(item.url);
+    return url.hostname === '127.0.0.1'
+      && url.pathname === '/wp-admin/admin-ajax.php'
+      && url.searchParams.get('action') === 'wp-compression-test'
+      && url.searchParams.get('test') === 'yes'
+      && item.error === 'net::ERR_ABORTED';
+  } catch {
+    return false;
+  }
+}
+
 let evidence;
 let failure = null;
 try {
@@ -134,10 +147,16 @@ try {
   const productPageErrors = pageErrors.filter((item) => /SyntaxError|PGRScannerEditor|pgr_structured_scanner|persian[- ]gravity/i.test(`${item.message}\n${item.stack}`));
   if (productPageErrors.length > 0) throw new Error(`PersianGravity-caused page error observed: ${JSON.stringify(productPageErrors)}`);
 
-  const localRequestFailures = requestFailures.filter((item) => {
-    try { return new URL(item.url).hostname === '127.0.0.1'; } catch { return false; }
+  const upstreamRequestFailures = requestFailures.filter(isKnownWordPressCompressionProbeAbort);
+  const materialLocalRequestFailures = requestFailures.filter((item) => {
+    try {
+      const url = new URL(item.url);
+      return url.hostname === '127.0.0.1' && !isKnownWordPressCompressionProbeAbort(item);
+    } catch {
+      return false;
+    }
   });
-  if (localRequestFailures.length > 0) throw new Error(`Local WordPress request failures observed: ${JSON.stringify(localRequestFailures)}`);
+  if (materialLocalRequestFailures.length > 0) throw new Error(`Material local WordPress request failures observed: ${JSON.stringify(materialLocalRequestFailures)}`);
 
   evidence = {
     result: 'PASS',
@@ -155,6 +174,8 @@ try {
     product_page_errors: productPageErrors,
     console_messages: consoleMessages,
     request_failures: requestFailures,
+    upstream_request_failures: upstreamRequestFailures,
+    material_local_request_failures: materialLocalRequestFailures,
     browser: { name: 'Chromium', version: browser.version() },
   };
 } catch (error) {
