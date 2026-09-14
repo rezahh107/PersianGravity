@@ -45,9 +45,9 @@ replaceOnce(
   'scanner diagnostics instrumentation',
 );
 const scannerSource = fs.readFileSync(scannerFile, 'utf8');
-const scannerNeedle = `    request_failures: requestFailures,\n    browser: { name: 'Chromium', version: browser.version() },`;
+const scannerNeedle = `    request_failures: requestFailures,`;
 const scannerMatches = scannerSource.split(scannerNeedle).length - 1;
 if (scannerMatches !== 2) throw new Error(`scanner evidence diagnostics: expected 2 insertion points, got ${scannerMatches}`);
-fs.writeFileSync(scannerFile, scannerSource.replaceAll(scannerNeedle, `    request_failures: requestFailures,\n    http_failures: httpFailures,\n    browser: { name: 'Chromium', version: browser.version() },`));
+fs.writeFileSync(scannerFile, scannerSource.replaceAll(scannerNeedle, `    request_failures: requestFailures,\n    http_failures: httpFailures,`));
 
 console.log('Final revalidation harness diagnostics instrumentation applied fail-closed.');
