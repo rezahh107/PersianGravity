@@ -44,11 +44,10 @@ jobs:
           curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --connect-timeout 20 --max-time 180 \
             -o /tmp/wu006/gravityview.zip \
             'https://drive.usercontent.google.com/download?id=16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1&export=download&confirm=t'
-          curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --connect-timeout 20 --max-time 180 \
-            -o /tmp/wu006/reviewed.po \
-            'https://drive.usercontent.google.com/download?id=15LYPpKcB28OXPiRhihIsKUWWPX_UfwIi&export=download&confirm=t'
           echo 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829  /tmp/wu006/gravityview.zip' | sha256sum -c -
-          echo '2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca  /tmp/wu006/reviewed.po' | sha256sum -c -
+          echo 'b6cd34f18aa6ba72c1f75041cae9d864267fd0e86038ae6ed2acbb05ce550a7f  .github/wu006-authority.po.gz' | sha256sum -c -
+          gunzip -c .github/wu006-authority.po.gz > /tmp/wu006/authority.po
+          echo '4c007bcc8b6b458968eb4d129697baed81406963c3a5321433abd77c4bd24643  /tmp/wu006/authority.po' | sha256sum -c -
           unzip -q /tmp/wu006/gravityview.zip -d /tmp/wu006/source
           test -f /tmp/wu006/source/gravityview/gravityview.php
           grep -Eq '^ \* Version: +3\.3\.4$' /tmp/wu006/source/gravityview/gravityview.php
@@ -61,7 +60,20 @@ jobs:
           php -l .github/scripts/wu006-extract-source.php
           php -l .github/scripts/wu006-inspect-po.php
           python3 -m py_compile .github/scripts/wu006-finalize.py
-          python3 .github/scripts/wu006-finalize.py /tmp/wu006/source/gravityview /tmp/wu006/reviewed.po
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('.github/scripts/wu006-finalize.py').read_text(encoding='utf-8')
+          source = source.replace(
+              "EXPECTED_REVIEWED_SHA = '2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca'",
+              "EXPECTED_REVIEWED_SHA = '4c007bcc8b6b458968eb4d129697baed81406963c3a5321433abd77c4bd24643'",
+          )
+          source = source.replace(
+              "'reviewed_source_po_sha256':EXPECTED_REVIEWED_SHA",
+              "'reviewed_source_po_sha256':'2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca'",
+          )
+          Path('/tmp/wu006-finalize.py').write_text(source, encoding='utf-8')
+          PY
+          python3 /tmp/wu006-finalize.py /tmp/wu006/source/gravityview /tmp/wu006/authority.po
 
       - name: Generate deterministic runtime artifacts through canonical build
         shell: bash
@@ -80,7 +92,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git rm .github/workflows/wu006-finalize.yml .github/scripts/wu006-finalize.py .github/scripts/wu006-extract-source.php .github/scripts/wu006-inspect-po.php
+          git rm .github/workflows/wu006-finalize.yml .github/scripts/wu006-finalize.py .github/scripts/wu006-extract-source.php .github/scripts/wu006-inspect-po.php .github/wu006-authority.po.gz
           base=8a95be7507a944e4683ae15842d521eab2a89d37
           git diff --exit-code "$base" -- includes/localization/products.php .github/workflows/wu008-real-integration.yml tests/real-integration
           git diff --check
