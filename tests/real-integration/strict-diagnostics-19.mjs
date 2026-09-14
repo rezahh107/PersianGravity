@@ -74,6 +74,22 @@ function extractAction(request) {
       } catch {
         keys = [];
       }
+    } else if (/multipart\/form-data/i.test(contentType)) {
+      const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+      const boundary = (boundaryMatch?.[1] || boundaryMatch?.[2] || '').trim();
+      if (boundary) {
+        for (const part of postData.split(`--${boundary}`)) {
+          const nameMatch = part.match(/Content-Disposition:\s*form-data;[^\r\n]*name="([^"]+)"/i);
+          if (!nameMatch) continue;
+          const name = nameMatch[1];
+          keys.push(name);
+          const separator = part.indexOf('\r\n\r\n');
+          if (!action && name === 'action' && separator !== -1) {
+            action = part.slice(separator + 4).replace(/\r\n--?$/, '').replace(/\r\n$/, '').trim();
+          }
+        }
+        keys = [...new Set(keys)].sort();
+      }
     } else {
       try {
         const params = new URLSearchParams(postData);
