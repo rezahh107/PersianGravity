@@ -88,22 +88,40 @@ function pgr_content_surface_path_matches( $path, array $rules ) {
 /**
  * Extract functional placeholders/markup/literals which translations must retain.
  *
+ * Natural-language percent signs, sentence punctuation around URLs, and named
+ * HTML entities such as &amp; are not functional gettext tokens. Numeric entities
+ * remain protected, while complete markup tags protect any entities inside them.
+ *
  * @param string $value Source or translation text.
  * @return array
  */
 function pgr_content_tokens( $value ) {
 	$patterns = array(
-		'/%(?:\d+\$)?[-+0 #\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/',
-		'/\$\{[^{}\r\n]+\}/',
-		'/\{[A-Za-z0-9_.:-]+\}/',
-		'/<\/?[A-Za-z][^>]*>/',
-		'~https?://[^\s<>"\']+~',
-		'/&(?:#\d+|#x[0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]+);/',
+		'printf' => '/%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/',
+		'printf_space' => '/%(?:\d+\$)?[-+0#\']* +[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX](?![A-Za-z])/',
+		'literal' => '/\$\{[^{}\r\n]+\}/',
+		'brace'   => '/\{[A-Za-z0-9_.:-]+\}/',
+		'markup'  => '/<\/?[A-Za-z][^>]*>/',
+		'url'     => '~https?://[^\s<>"\']+~u',
+		'entity'  => '/&#(?:\d+|x[0-9A-Fa-f]+);/',
 	);
 	$tokens = array();
-	foreach ( $patterns as $pattern ) {
-		if ( preg_match_all( $pattern, $value, $matches ) ) {
-			$tokens = array_merge( $tokens, $matches[0] );
+	foreach ( $patterns as $kind => $pattern ) {
+		if ( ! preg_match_all( $pattern, $value, $matches ) ) {
+			continue;
+		}
+		foreach ( $matches[0] as $token ) {
+			if ( 'url' === $kind ) {
+				$token = preg_replace( '/[.,;:!?،؛؟]+$/u', '', $token );
+				foreach ( array( array( '(', ')' ), array( '[', ']' ), array( '{', '}' ) ) as $pair ) {
+					while ( str_ends_with( $token, $pair[1] ) && substr_count( $token, $pair[0] ) < substr_count( $token, $pair[1] ) ) {
+						$token = substr( $token, 0, -1 );
+					}
+				}
+			}
+			if ( '' !== $token ) {
+				$tokens[] = $token;
+			}
 		}
 	}
 	sort( $tokens, SORT_STRING );
