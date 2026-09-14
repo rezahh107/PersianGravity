@@ -1,0 +1,194 @@
+name: Scanner Editor Remediation Browser
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'includes/fields/class-gf-field-structured-scanner.php'
+      - 'tests/ScannerFieldCompatibilityTest.php'
+      - 'tests/real-integration/scanner-editor-remediation*'
+      - '.github/workflows/scanner-editor-remediation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scanner-editor-browser:
+    name: GF 3.1.1.1 Form Builder remediation proof
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: scanner-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -pscanner-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      PGR_SCANNER_WP_PATH: /tmp/pgr-scanner-wordpress
+      PGR_SCANNER_PACKAGE_DIR: /tmp/pgr-scanner-packages
+      PGR_SCANNER_ARTIFACT_DIR: /tmp/pgr-scanner-artifacts
+      PGR_SCANNER_BASE_URL: http://127.0.0.1:8080
+      PGR_SCANNER_WP_CLI: /tmp/wp-cli.phar
+      PGR_REMEDIATION_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      PGR_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
+      PGR_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      PGR_GF_SIZE: '5300290'
+      PGR_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
+      PGR_GF_VERSION: 3.1.1.1
+
+    steps:
+      - name: Checkout remediation harness head exactly
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Assert harness identity and prepare isolated paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "rezahh107/PersianGravity"
+          test "$(git rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          rm -rf "$PGR_SCANNER_WP_PATH" "$PGR_SCANNER_PACKAGE_DIR" "$PGR_SCANNER_ARTIFACT_DIR"
+          mkdir -p "$PGR_SCANNER_WP_PATH" "$PGR_SCANNER_PACKAGE_DIR" "$PGR_SCANNER_ARTIFACT_DIR"
+          admin_password="$(openssl rand -hex 24)"
+          echo "::add-mask::$admin_password"
+          printf 'PGR_SCANNER_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
+
+      - name: Set up PHP 8.2 runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.2.33'
+          coverage: none
+          extensions: mysqli
+
+      - name: Validate focused browser harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          php -l tests/real-integration/scanner-editor-remediation-setup.php
+          php -l tests/real-integration/scanner-editor-remediation-observer.php
+          node --check tests/real-integration/scanner-editor-remediation.mjs
+          bash -n tests/real-integration/verify-package.sh
+
+      - name: Install exact WP-CLI and disposable WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$PGR_SCANNER_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $PGR_SCANNER_WP_CLI" | sha256sum -c -
+          php "$PGR_SCANNER_WP_CLI" core download --path="$PGR_SCANNER_WP_PATH" --version=6.8.3 --force --skip-content
+          php "$PGR_SCANNER_WP_CLI" config create --path="$PGR_SCANNER_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=scanner-root --dbhost=127.0.0.1:3306 --skip-check
+          php "$PGR_SCANNER_WP_CLI" core install --path="$PGR_SCANNER_WP_PATH" --url="$PGR_SCANNER_BASE_URL" --title='Scanner Remediation' --admin_user=runtime_admin --admin_password="$PGR_SCANNER_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          test "$(php "$PGR_SCANNER_WP_CLI" core version --path="$PGR_SCANNER_WP_PATH")" = "6.8.3"
+          php "$PGR_SCANNER_WP_CLI" language core install fa_IR --activate --path="$PGR_SCANNER_WP_PATH"
+          test "$(php "$PGR_SCANNER_WP_CLI" option get WPLANG --path="$PGR_SCANNER_WP_PATH")" = "fa_IR"
+
+      - name: Download and fail-closed verify Gravity Forms 3.1.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip="$PGR_SCANNER_PACKAGE_DIR/$PGR_GF_FILE"
+          curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --retry-connrefused --connect-timeout 20 --max-time 180 \
+            -o "$zip" "https://drive.usercontent.google.com/download?id=${PGR_GF_FILE_ID}&export=download&confirm=t"
+          tests/real-integration/verify-package.sh \
+            "Gravity Forms" "$PGR_GF_FILE_ID" "$zip" "$PGR_GF_FILE" "$PGR_GF_SIZE" "$PGR_GF_SHA256" \
+            "gravityforms/gravityforms.php" "$PGR_GF_VERSION" "$PGR_SCANNER_ARTIFACT_DIR/package-verification.jsonl"
+
+      - name: Install exact Gravity Forms and exact remediation Head
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q "$PGR_SCANNER_PACKAGE_DIR/$PGR_GF_FILE" -d "$PGR_SCANNER_WP_PATH/wp-content/plugins"
+          pgr="$PGR_SCANNER_WP_PATH/wp-content/plugins/persian-gravityforms"
+          git init "$pgr"
+          git -C "$pgr" remote add origin https://github.com/rezahh107/PersianGravity.git
+          git -C "$pgr" fetch --depth=1 origin "$PGR_REMEDIATION_SHA"
+          git -C "$pgr" checkout --detach FETCH_HEAD
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          printf '%s\n' "$PGR_REMEDIATION_SHA" > "$PGR_SCANNER_ARTIFACT_DIR/installed-persiangravity-sha.txt"
+          mkdir -p "$PGR_SCANNER_WP_PATH/wp-content/mu-plugins"
+          cp tests/real-integration/scanner-editor-remediation-observer.php "$PGR_SCANNER_WP_PATH/wp-content/mu-plugins/pgr-scanner-remediation-observer.php"
+          php "$PGR_SCANNER_WP_CLI" plugin activate gravityforms persian-gravityforms --path="$PGR_SCANNER_WP_PATH"
+          test "$(php "$PGR_SCANNER_WP_CLI" plugin get gravityforms --field=version --path="$PGR_SCANNER_WP_PATH")" = "$PGR_GF_VERSION"
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+
+      - name: Create deterministic Structured Scanner Form Builder fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval-file tests/real-integration/scanner-editor-remediation-setup.php
+          test -s "$PGR_SCANNER_ARTIFACT_DIR/runtime-manifest.json"
+          php -r '$m=json_decode(file_get_contents(getenv("PGR_SCANNER_ARTIFACT_DIR")."/runtime-manifest.json"),true); if(($m["remediation_sha_installed"]??"")!==getenv("PGR_REMEDIATION_SHA") || ($m["gravityforms_version"]??"")!=="3.1.1.1" || ($m["locale"]??"")!=="fa_IR") exit(1);'
+
+      - name: Set up exact Node and Chromium runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.19.0'
+
+      - name: Install exact Playwright Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22.19.0"
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node -e "const p=require('playwright/package.json'); if(p.version!=='1.55.0') process.exit(1);"
+
+      - name: Start disposable WordPress server
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$PGR_SCANNER_WP_CLI" server --path="$PGR_SCANNER_WP_PATH" --host=127.0.0.1 --port=8080 >/tmp/pgr-scanner-wp-server.log 2>&1 &
+          echo $! >/tmp/pgr-scanner-wp-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS "$PGR_SCANNER_BASE_URL/" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/pgr-scanner-wp-server.log >&2
+          exit 1
+
+      - name: Execute real Gravity Forms Form Builder Chromium proof
+        id: browser
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/scanner-editor-remediation.mjs
+
+      - name: Hash remediation evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$PGR_SCANNER_ARTIFACT_DIR"
+          find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          sha256sum -c SHA256SUMS
+
+      - name: Upload remediation browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: scanner-editor-remediation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/pgr-scanner-artifacts
+            /tmp/pgr-scanner-wp-server.log
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce browser proof after artifact upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "browser outcome: ${{ steps.browser.outcome }}"
+          test "${{ steps.browser.outcome }}" = "success"
