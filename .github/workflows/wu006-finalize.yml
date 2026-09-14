@@ -99,7 +99,11 @@ jobs:
                   continue
               patched.append(line)
               if line.strip().startswith("prov_path.write_text(") and not inserted_validator:
-                  patched.append("    gv=json.loads(run('php',str(check_file),capture=True))")
+                  patched.append("    validation=subprocess.run(['php',str(check_file)],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)")
+                  patched.append("    if validation.returncode != 0:")
+                  patched.append("        print(validation.stderr,file=sys.stderr)")
+                  patched.append("        fail('repository-native content admission validator failed after provenance materialization')")
+                  patched.append("    gv=json.loads(validation.stdout)")
                   patched.append("    if len(gv['admissions'])!=6 or gv['aggregate']['admitted_message_count']!=461 or gv['aggregate']['admitted_keyset_sha256']!=EXPECTED_AUTHORITY_KEYSET or gv['aggregate']['admitted_translation_content_sha256']!=EXPECTED_AUTHORITY_TRANSLATION:")
                   patched.append("        fail('repository-native content admission aggregate mismatch after provenance materialization')")
                   inserted_validator = True
