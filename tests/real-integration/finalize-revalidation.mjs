@@ -33,7 +33,10 @@ const required = [
 const missing = required.filter((name) => !fs.existsSync(path.join(artifactDir, name)));
 
 const matrix = readJson('surface-evidence-matrix.json', []);
-const packages = readJson('package-verification.json', []);
+const packageDocument = readJson('package-verification.json', []);
+const packageRows = Array.isArray(packageDocument)
+  ? packageDocument
+  : (Array.isArray(packageDocument?.packages) ? packageDocument.packages : []);
 const rtl = readJson('rtl-bidi-evidence.json', []);
 const js = readJson('js-runtime-evidence.json', { result: 'NOT_EXECUTED' });
 const diagnostics = readJson('browser-diagnostics.json', { summary: { result: 'MISSING', blocking_diagnostics: 1 } });
@@ -48,7 +51,9 @@ const providerPassed = matrix.filter((r) => r.admitted_message_count > 0 && r.pr
 const zeroNa = matrix.filter((r) => r.provider_proof_status === 'NOT_APPLICABLE_ZERO_ADMISSION').length;
 const rtlPass = matrix.filter((r) => r.rtl_bidi_result === 'PASS').length;
 const blockingFindings = findings.filter((f) => f.blocks_wu008 === true || f.blocks_acceptance === true).length;
-const packagePass = Array.isArray(packages) && packages.length === 3 && packages.every((row) => row.result === 'PASS' || row.status === 'PASS' || row.verified === true);
+const packagePass = packageRows.length === 3 && packageRows.every((row) => (
+  row.result === 'PASS' || row.status === 'PASS' || row.verified === true || row.verification === 'PASS'
+));
 const diagPass = diagnostics?.summary?.result === 'PASS'
   && diagnostics?.summary?.strict_surfaces_total === 19
   && diagnostics?.summary?.strict_surfaces_passed === 19
@@ -90,13 +95,13 @@ fs.writeFileSync(path.join(artifactDir, 'README.md'), readme);
 
 const beforeIndex = walk(artifactDir).filter((file) => !file.endsWith('/evidence-index.json') && !file.endsWith('/SHA256SUMS'));
 const index = {
-  schema_version: '2.0.0',
+  schema_version: '2.1.0',
   overall_result: overall,
   exact_persiangravity_commit: expectedSha || null,
   installed_persiangravity_commit: installedSha || null,
   gates,
   summary: {
-    packages_verified: packagePass ? 3 : packages.filter?.((row) => row.result === 'PASS' || row.status === 'PASS' || row.verified === true).length || 0,
+    packages_verified: packageRows.filter((row) => row.result === 'PASS' || row.status === 'PASS' || row.verified === true || row.verification === 'PASS').length,
     surfaces_executed: executed,
     surfaces_total: 19,
     positive_provider_proofs_passed: providerPassed,
