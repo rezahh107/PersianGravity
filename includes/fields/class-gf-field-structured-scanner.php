@@ -175,10 +175,13 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 			'unavailableSuffix'  => esc_html__( 'unavailable', 'persian-gravityforms' ),
 		);
 
-		$title    = wp_json_encode( $this->get_form_editor_field_title() );
-		$default  = wp_json_encode( PGR_Scanner_Profile_Registry::SAYAD_V01 );
-		$profiles = wp_json_encode( $profiles );
-		$messages = wp_json_encode( $messages );
+		$title           = wp_json_encode( $this->get_form_editor_field_title() );
+		$default         = wp_json_encode( PGR_Scanner_Profile_Registry::SAYAD_V01 );
+		$profiles        = wp_json_encode( $profiles );
+		$messages        = wp_json_encode( $messages );
+		$format_function = <<<'JS'
+function format(template, first, second) { return String(template).replace('%1$s', first).replace('%2$s', second).replace('%s', first); }
+JS;
 
 		return "
 			function SetDefaultValues_pgr_structured_scanner(field) { field.label = {$title}; field.scanner_profile = {$default}; field.scanner_mappings = {}; }
@@ -195,7 +198,7 @@ final class PGR_GF_Field_Structured_Scanner extends GF_Field {
 				}
 				function fieldMap() { var map = {}; var fields = form && Array.isArray(form.fields) ? form.fields : []; fields.forEach(function(item) { if (item && item.id) { map[String(item.id)] = item; } }); return map; }
 				function supported(item) { return item && (item.type === 'text' || item.type === 'hidden') && item.displayOnly !== true; }
-				function format(template, first, second) { return String(template).replace('%1\\$s', first).replace('%2\\$s', second).replace('%s', first); }
+				{$format_function}
 				function addWarning(warnings, message) { if (warnings.indexOf(message) === -1) { warnings.push(message); } }
 				function optionExists(select, value) { var exists = false; select.find('option').each(function() { if (String($(this).val()) === String(value)) { exists = true; } }); return exists; }
 				function fillSelect(select, selected, fields) { select.empty().append($('<option>', { value: '', text: messages.notMapped })); Object.keys(fields).forEach(function(id) { if (supported(fields[id])) { select.append($('<option>', { value: id, text: format(messages.fieldOption, id, fields[id].label || fields[id].adminLabel || fields[id].type) })); } }); if (selected && !optionExists(select, selected)) { select.append($('<option>', { value: selected, text: format(messages.invalidTarget, selected), selected: true })); } select.val(selected || ''); }
