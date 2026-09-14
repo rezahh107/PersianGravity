@@ -45,7 +45,16 @@ jobs:
             -o /tmp/wu006/gravityview.zip \
             'https://drive.usercontent.google.com/download?id=16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1&export=download&confirm=t'
           echo 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829  /tmp/wu006/gravityview.zip' | sha256sum -c -
-          gunzip -c .github/wu006-authority.po.gz > /tmp/wu006/authority.po
+          cat \
+            .github/wu006-authority-b64/part00 \
+            .github/wu006-authority-b64/part01 \
+            .github/wu006-authority-b64/part02a \
+            .github/wu006-authority-b64/part02b \
+            .github/wu006-authority-b64/part02c \
+            .github/wu006-authority-b64/part03 \
+            > /tmp/wu006/authority.po.gz.b64
+          echo '008fbba76b4dcc618a35584c6704b774ccc1f63747e2919193b6155d0d9decbd  /tmp/wu006/authority.po.gz.b64' | sha256sum -c -
+          base64 -d /tmp/wu006/authority.po.gz.b64 | gunzip -c > /tmp/wu006/authority.po
           echo '4c007bcc8b6b458968eb4d129697baed81406963c3a5321433abd77c4bd24643  /tmp/wu006/authority.po' | sha256sum -c -
           unzip -q /tmp/wu006/gravityview.zip -d /tmp/wu006/source
           test -f /tmp/wu006/source/gravityview/gravityview.php
