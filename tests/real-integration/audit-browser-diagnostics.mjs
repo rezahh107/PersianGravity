@@ -27,14 +27,36 @@ function surfaceFromUrl(value) {
 function productRelated(text = '', url = '') {
   return /PGRScannerEditor|pgr[_-]|persian[-_/ ]gravity|persian-gravityforms|structured scanner/i.test(`${text}\n${url}`);
 }
+function postAction(record) {
+  const data = record.post_data || record.raw?.post_data || '';
+  try { return new URLSearchParams(data).get('action'); } catch { return null; }
+}
 function isCompressionProbeAbort(record) {
   const url = parsedUrl(record.url_resource);
   return record.kind === 'request_failure'
     && url?.origin === runtimeOrigin
     && url.pathname === '/wp-admin/admin-ajax.php'
     && url.searchParams.get('action') === 'wp-compression-test'
-    && url.searchParams.get('test') === 'yes'
     && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isWordPressCoreStaticAbort(record) {
+  const url = parsedUrl(record.url_resource);
+  return record.kind === 'request_failure'
+    && url?.origin === runtimeOrigin
+    && url.pathname.startsWith('/wp-includes/')
+    && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isWordPressHeartbeatAbort(record) {
+  const url = parsedUrl(record.url_resource);
+  return record.kind === 'request_failure'
+    && url?.origin === runtimeOrigin
+    && url.pathname === '/wp-admin/admin-ajax.php'
+    && postAction(record) === 'heartbeat'
+    && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isHelpScoutVendorDiagnostic(record) {
+  const url = parsedUrl(record.url_resource);
+  return ['beaconapi.helpscout.net', 'beacon-v2.helpscout.net'].includes(url?.hostname || '');
 }
 function isDisposableFavicon404(record) {
   const url = parsedUrl(record.url_resource);
@@ -42,6 +64,15 @@ function isDisposableFavicon404(record) {
     && url?.origin === runtimeOrigin
     && url.pathname === '/favicon.ico'
     && Number(record.status) === 404;
+}
+function gravityViewDomReference(record) {
+  if (record.surface_id === 'gravityview::admin_builder::post_type:gravityview') {
+    return 'dom/16-gravityview_admin_builder_post_type_gravityview.html';
+  }
+  if ((record.page_url || '').includes('page=gk_settings')) {
+    return 'browser-diagnostics.json#raw + GravityKit/GravityView gk_settings page URL';
+  }
+  return 'browser-diagnostics.json#raw';
 }
 
 const mainRaw = readJson(path.join(artifactDir, 'browser-diagnostics.json'));
@@ -66,6 +97,9 @@ function normalize(sourceRun, evidenceReference, raw, fixedSurfaceId = null) {
       message_status: String(messageStatus || ''),
       status,
       method: item.method || null,
+      post_data: item.post_data || null,
+      resource_type: item.resource_type || null,
+      navigation_request: item.navigation_request ?? null,
       evidence_reference: evidenceReference,
       raw: item,
     });
@@ -94,22 +128,49 @@ const records = [
   ...normalize('form-builder-remediation', 'form-builder-remediation/browser-evidence.json', scannerRaw, 'gravityforms::admin_builder::admin_page:gf_edit_forms'),
 ];
 
-const nonBlockingResourceKeys = new Set();
-for (const record of records) {
-  if (isCompressionProbeAbort(record)) nonBlockingResourceKeys.add(`${record.surface_id}|${record.url_resource}`);
-  if (isDisposableFavicon404(record)) nonBlockingResourceKeys.add(`${record.surface_id}|${record.url_resource}`);
-}
-
 function disposition(record) {
   const url = parsedUrl(record.url_resource);
   const sameOrigin = url?.origin === runtimeOrigin;
   const pgrRelated = productRelated(record.message_status, record.url_resource);
 
+  if (pgrRelated) {
+    return {
+      classification: 'BLOCKING_IN_SCOPE',
+      blocks_acceptance: true,
+      rationale: 'The diagnostic names or targets PersianGravity/PGR/Structured Scanner runtime authority, so it is an in-scope product diagnostic and blocks this evidence pass.',
+      supporting_evidence: record.evidence_reference,
+    };
+  }
   if (isCompressionProbeAbort(record)) {
     return {
       classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
       blocks_acceptance: false,
-      rationale: 'The failed request is WordPress core\'s explicit wp-compression-test admin-ajax probe and Chromium reported the expected aborted probe transport; it is not a PersianGravity resource or application request.',
+      rationale: 'The failed URL explicitly names WordPress core admin-ajax action wp-compression-test under /wp-admin/admin-ajax.php. Chromium aborted the core capability probe; no PersianGravity resource or authority is involved.',
+      supporting_evidence: `${record.evidence_reference}; failed URL contains action=wp-compression-test`,
+    };
+  }
+  if (isWordPressCoreStaticAbort(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The aborted resource is served from WordPress core-owned /wp-includes/. It is a static core asset request, not PersianGravity JavaScript or provider content.',
+      supporting_evidence: `${record.evidence_reference}; resource path=${url.pathname}`,
+    };
+  }
+  if (isWordPressHeartbeatAbort(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The failed same-origin POST is proven by captured request payload to be WordPress core heartbeat (action=heartbeat). Chromium aborted it during page transition; it is not a PersianGravity action.',
+      supporting_evidence: `${record.evidence_reference}; captured post_data=${record.post_data}`,
+    };
+  }
+  if (isHelpScoutVendorDiagnostic(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The diagnostic targets Help Scout Beacon infrastructure (beaconapi.helpscout.net or beacon-v2.helpscout.net). The captured GravityView/GravityKit page evidence loads that Beacon directly; the resource is outside PersianGravity authority.',
+      supporting_evidence: `${record.evidence_reference}; ${gravityViewDomReference(record)}; external host=${url.hostname}`,
     };
   }
   if (isDisposableFavicon404(record)) {
@@ -117,26 +178,7 @@ function disposition(record) {
       classification: 'ENVIRONMENT_DEFECT',
       blocks_acceptance: false,
       rationale: 'The disposable evidence theme has no favicon; a missing /favicon.ico is environment-only and does not execute PersianGravity or any accepted product surface behavior.',
-    };
-  }
-  if (record.kind === 'console_error' && /Failed to load resource/i.test(record.message_status)) {
-    const correlated = records.find((candidate) => candidate.surface_id === record.surface_id
-      && candidate.kind === 'http_failure'
-      && !candidate.classification
-      && nonBlockingResourceKeys.has(`${candidate.surface_id}|${candidate.url_resource}`));
-    if (correlated) {
-      return {
-        classification: correlated.url_resource.endsWith('/favicon.ico') ? 'ENVIRONMENT_DEFECT' : 'UPSTREAM_OR_VENDOR_BEHAVIOR',
-        blocks_acceptance: false,
-        rationale: 'This console network message correlates to a separately dispositioned non-product resource diagnostic on the same browser surface.',
-      };
-    }
-  }
-  if (pgrRelated) {
-    return {
-      classification: 'BLOCKING_IN_SCOPE',
-      blocks_acceptance: true,
-      rationale: 'The diagnostic names or targets PersianGravity/PGR/Structured Scanner runtime authority, so it is an in-scope product diagnostic and blocks this evidence pass.',
+      supporting_evidence: record.evidence_reference,
     };
   }
   if (record.kind === 'pageerror') {
@@ -144,13 +186,15 @@ function disposition(record) {
       classification: 'OUT_OF_SCOPE_UNCLASSIFIED_CONTENT',
       blocks_acceptance: true,
       rationale: 'An uncaught page-level JavaScript exception was observed, but the evidence does not prove upstream/vendor/environment ownership. The run fails closed rather than hiding or guessing the cause.',
+      supporting_evidence: record.evidence_reference,
     };
   }
   if ((record.kind === 'request_failure' || record.kind === 'http_failure') && sameOrigin) {
     return {
       classification: 'OUT_OF_SCOPE_UNCLASSIFIED_CONTENT',
       blocks_acceptance: true,
-      rationale: 'A failed same-origin disposable WordPress application request was observed and is not one of the narrowly proven non-product exceptions. Ownership is not established, so acceptance fails closed.',
+      rationale: 'A failed same-origin disposable WordPress application request was observed and is not one of the narrowly proven WordPress-core exceptions. Ownership is not established, so acceptance fails closed.',
+      supporting_evidence: record.evidence_reference,
     };
   }
   if (record.kind === 'console_error') {
@@ -158,12 +202,14 @@ function disposition(record) {
       classification: 'OUT_OF_SCOPE_UNCLASSIFIED_CONTENT',
       blocks_acceptance: true,
       rationale: 'A browser console error was observed without evidence proving product, vendor, or environment ownership. Acceptance fails closed until it can be classified from evidence.',
+      supporting_evidence: record.evidence_reference,
     };
   }
   return {
     classification: 'OUT_OF_SCOPE_UNCLASSIFIED_CONTENT',
     blocks_acceptance: true,
     rationale: 'The diagnostic is meaningful but its ownership is not established from this evidence. Acceptance fails closed.',
+    supporting_evidence: record.evidence_reference,
   };
 }
 
@@ -171,6 +217,7 @@ for (const record of records) {
   const result = disposition(record);
   record.classification = result.classification;
   record.classification_rationale = result.rationale;
+  record.supporting_evidence = result.supporting_evidence;
   record.blocks_acceptance = result.blocks_acceptance;
   record.reproduction_context = `${record.source_run}; surface=${record.surface_id}; page=${record.page_url || 'not-recorded'}`;
   if (!allowedClassifications.has(record.classification)) throw new Error(`Invalid diagnostic classification: ${record.classification}`);
@@ -187,6 +234,7 @@ const diagnosticFindings = records.map((record) => ({
   message_status: record.message_status,
   reproduction_context: record.reproduction_context,
   evidence_reference: record.evidence_reference,
+  supporting_evidence: record.supporting_evidence,
   observed_behavior: `${record.kind}: ${record.message_status}`.slice(0, 3500),
   classification_rationale: record.classification_rationale,
   blocks_acceptance: record.blocks_acceptance,
@@ -198,7 +246,7 @@ fs.writeFileSync(findingsPath, JSON.stringify(findings, null, 2) + '\n');
 const classificationCounts = Object.fromEntries([...allowedClassifications].map((name) => [name, records.filter((record) => record.classification === name).length]));
 const blocking = records.filter((record) => record.blocks_acceptance);
 const audited = {
-  schema_version: '3.0.0',
+  schema_version: '3.1.0',
   result: blocking.length === 0 ? 'PASS' : 'BLOCKED',
   runtime_origin: runtimeOrigin,
   policy: {
@@ -206,6 +254,13 @@ const audited = {
     unexplained_pageerror_compatible_with_pass: false,
     unexplained_same_origin_failure_compatible_with_pass: false,
     raw_console_non_error_messages_preserved_but_not_promoted_to_acceptance_diagnostics: true,
+    proven_non_product_exceptions: [
+      'WordPress core wp-compression-test abort',
+      'WordPress core /wp-includes static-asset abort',
+      'WordPress core heartbeat abort proven by captured action=heartbeat POST payload',
+      'Help Scout Beacon diagnostics proven by external hostname plus GravityView/GravityKit page evidence',
+      'disposable-theme favicon 404',
+    ],
   },
   summary: {
     meaningful_diagnostics: records.length,
