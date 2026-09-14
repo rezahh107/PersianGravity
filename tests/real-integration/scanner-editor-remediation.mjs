@@ -57,6 +57,8 @@ try {
     return true;
   }, manifest.scanner_field_id);
   if (!editorControlActivated) throw new Error('Structured Scanner Form Builder edit control was not found.');
+  await page.locator('#advanced_tab_toggle').click();
+  await page.locator('#advanced_tab').waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('#pgr_scanner_profile').waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('[data-pgr-scanner-mapping="qr_version"]').waitFor({ state: 'visible', timeout: 15000 });
 
