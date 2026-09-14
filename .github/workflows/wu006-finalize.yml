@@ -1,0 +1,110 @@
+name: WU006 Finalize
+
+on:
+  push:
+    branches:
+      - feat/wu006-gravityview-classified-content-admission
+    paths:
+      - '.github/workflows/wu006-finalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+
+      - name: Install locked development dependencies and GNU gettext
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+          sudo apt-get update
+          sudo apt-get install --yes gettext
+
+      - name: Download and fail-closed verify exact WU006 source inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wu006/source
+          curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --connect-timeout 20 --max-time 180 \
+            -o /tmp/wu006/gravityview.zip \
+            'https://drive.usercontent.google.com/download?id=16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1&export=download&confirm=t'
+          curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --connect-timeout 20 --max-time 180 \
+            -o /tmp/wu006/reviewed.po \
+            'https://drive.usercontent.google.com/download?id=15LYPpKcB28OXPiRhihIsKUWWPX_UfwIi&export=download&confirm=t'
+          echo 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829  /tmp/wu006/gravityview.zip' | sha256sum -c -
+          echo '2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca  /tmp/wu006/reviewed.po' | sha256sum -c -
+          unzip -q /tmp/wu006/gravityview.zip -d /tmp/wu006/source
+          test -f /tmp/wu006/source/gravityview/gravityview.php
+          grep -Eq '^ \* Version: +3\.3\.4$' /tmp/wu006/source/gravityview/gravityview.php
+          test -z "$(find /tmp/wu006/source/gravityview -type f \( -iname '*.pot' -o -iname '*.pot.txt' \) -print -quit)"
+
+      - name: Materialize six bounded GravityView admission records
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l .github/scripts/wu006-extract-source.php
+          php -l .github/scripts/wu006-inspect-po.php
+          python3 -m py_compile .github/scripts/wu006-finalize.py
+          python3 .github/scripts/wu006-finalize.py /tmp/wu006/source/gravityview /tmp/wu006/reviewed.po
+
+      - name: Generate deterministic runtime artifacts through canonical build
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer i18n:build
+          composer i18n:check
+          test -f languages/providers/gravityview/gravityview-fa_IR.mo
+          test -f languages/providers/gravityview/gravityview-fa_IR.l10n.php
+          if find languages/providers/gravityview -maxdepth 1 -type f -name 'gk-gravityview-fa_IR-*.json' -print -quit | grep -q .; then
+            echo 'Unexpected GravityView provider JSON artifact.' >&2
+            exit 1
+          fi
+
+      - name: Remove finalizer-only files and enforce preserved boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/wu006-finalize.yml .github/scripts/wu006-finalize.py .github/scripts/wu006-extract-source.php .github/scripts/wu006-inspect-po.php
+          base=8a95be7507a944e4683ae15842d521eab2a89d37
+          git diff --exit-code "$base" -- includes/localization/products.php .github/workflows/wu008-real-integration.yml tests/real-integration
+          git diff --check
+
+      - name: Validate generated candidate before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          composer test
+          composer cs
+          composer compat
+          node --test tests/js/structured-scanner.test.js
+          test ! -d src
+          test ! -d assets/fonts
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
+
+      - name: Commit exact validated production state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'rezahh107'
+          git config user.email '84147076+rezahh107@users.noreply.github.com'
+          git add -A
+          git status --short
+          git commit -m 'feat: admit GravityView classified content authority'
+          git push origin HEAD:feat/wu006-gravityview-classified-content-admission
