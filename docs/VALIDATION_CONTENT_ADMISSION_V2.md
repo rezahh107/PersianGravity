@@ -31,22 +31,20 @@ This record distinguishes repository/source evidence from licensed browser integ
 - record-order and permitted evidence-order fingerprint stability; and
 - valid source admission with zero content records yielding zero content authority.
 
-Production-focused Gravity Flow tests are product-scoped against the global manifest. They verify that production may also contain Gravity Forms records while the Gravity Flow subset remains exactly Inbox plus Status. A third Gravity Flow record makes the exact-subset assertion fail. Dedicated Status fixtures filter to Gravity Flow before copying/validating product-specific evidence, so removing Status restores Inbox-only authority without requiring unrelated Gravity Forms fixture files. Existing validator-level fail-closed coverage for duplicate tuples, unknown/unowned surfaces, out-of-surface evidence and fingerprint drift remains unchanged.
+Production-focused Gravity Flow tests are product-scoped against the global manifest and now assert the exact seven-record production subset while allowing unrelated product records. They preserve the locked Inbox and Status fingerprints, independently validate the accepted zero-identity Entry Detail Sidebar record, and keep historical two-surface behavior as local checkpoint evidence rather than current aggregate authority. Existing validator-level fail-closed coverage for duplicate tuples, unknown/unowned surfaces, out-of-surface evidence, negative counts and fingerprint drift remains active.
 
-The Gravity Flow tests additionally verify:
+The current Gravity Flow coverage additionally verifies:
 
-- Status source evidence is exactly within `includes/pages/class-status.php`;
-- Status contains exactly 43 canonical identities from reviewed baseline SHA-256 `c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9`;
-- Inbox locked count/keyset/path/content fingerprints remain unchanged;
-- the two records share exactly 10 identities with identical translation rows;
-- the aggregate is the deterministic 288-identity set union and remains distinct from the 1098-message source census;
-- tampered Status keyset/path/content/evidence/provider fingerprints fail closed;
-- a repaired Status PO parses the required `Language`, `X-Domain`, and `Plural-Forms` headers;
-- a temporary Status fixture whose valid header `\n` escapes are changed back to literal double-escaped `\\n` is rejected with `Invalid sparse provider PO headers`;
-- out-of-surface Status evidence fails even if its raw file hash is recomputed;
-- removing Status authority restores Inbox-only 255-message content authority rather than relying on product identity;
+- exact seven-surface counts `15 / 255 / 43 / 20 / 391 / 44 / 0`;
+- 768 surface occurrences, 732 unique admitted identities, 30 multi-surface identities, 36 duplicate overlap occurrences, and 366 non-admitted source identities;
+- every multi-surface overlap has identical translation content, so union order cannot select a winner;
+- Inbox and Status retain their exact locked count/keyset/path/content/provider/evidence fingerprints and their local 10-identity overlap / 288-identity two-record union;
+- Entry Detail Sidebar is represented by an explicit empty evidence set and sparse PO, while negative admitted counts remain invalid;
+- a known non-admitted source identity remains absent from production provider content;
+- Gravity Forms remains exactly six records / 1759 unique identities;
 - every Gravity Flow product script map remains empty and no Gravity Flow translation JSON exists; and
-- generated MO/`.l10n.php` hashes match the deterministic aggregate.
+- generated Gravity Flow PO/MO/`.l10n.php`/metadata bytes are reproduced deterministically by `composer i18n:build` / `composer i18n:check`.
+
 
 Historical WU-005 Gravity Flow values at the two-surface checkpoint:
 
