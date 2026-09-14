@@ -1,0 +1,225 @@
+# GravityView 3.3.4 Persian classified-surface authority — evidence artifact only.
+# Contains exactly the 461 canonical gk-gravityview identities proven by the six accepted Surface Registry path rules.
+# Not a PersianGravity runtime/content-admission artifact; no repository mutation or JS JSON generation is implied.
+msgid ""
+msgstr ""
+"Project-Id-Version: GravityView 3.3.4 classified authority\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gk-gravityview\n"
+
+#: src/Widget/Types/SearchWidget.php:337
+msgid "Add Search Field"
+msgstr "افزودن فیلد جستجو"
+
+#: src/Widget/Types/SearchWidget.php:360
+msgid "Matches Any"
+msgstr "تطبیق با هرکدام"
+
+#: src/Widget/Types/SearchWidget.php:1721
+msgid "7 Columns"
+msgstr "7 ستون"
+
+#: src/Widget/Types/SearchWidget.php:279
+msgid "Text"
+msgstr "متن"
+
+#: src/Widget/Types/SearchWidget.php:362
+msgctxt "Separator between search bar summary items"
+msgid " • "
+msgstr " • "
+
+#: src/Widget/Types/SearchWidget.php:336
+msgid "No search fields configured yet."
+msgstr "هنوز هیچ فیلد جستجویی پیکربندی نشده است."
+
+#: src/Widget/Types/SearchWidget.php:1765
+msgid "Column Settings"
+msgstr "تنظیمات ستون"
+
+#: src/Widget/Types/SearchWidget.php:338
+msgid "Label"
+msgstr "برچسب"
+
+#: src/Widget/Types/SearchWidget.php:289
+msgid "Submit Button"
+msgstr "دکمهٔ ارسال"
+
+#: src/Widget/Types/SearchWidget.php:1715
+msgid "1 Column"
+msgstr "1 ستون"
+
+#: src/Widget/Types/SearchWidget.php:290
+msgid "Hidden Field"
+msgstr "فیلد پنهان"
+
+#: src/Widget/Types/SearchWidget.php:1122
+msgid "This Week"
+msgstr "این هفته"
+
+#: src/Widget/Types/SearchWidget.php:340
+msgid "Input Type"
+msgstr "نوع ورودی"
+
+#: src/Widget/Types/SearchWidget.php:283
+msgid "Radio"
+msgstr "دکمهٔ رادیویی"
+
+#: src/Widget/Types/SearchWidget.php:1702
+msgid "Arrange Fields:"
+msgstr "چیدمان فیلدها:"
+
+#: src/Widget/Types/SearchWidget.php:1163
+msgid "Q%1$d (%2$d)"
+msgstr "Q%1$d (%2$d)"
+
+#: src/Widget/Types/SearchWidget.php:287
+msgid "Date range"
+msgstr "بازهٔ تاریخ"
+
+#: src/Widget/Types/SearchWidget.php:355
+msgid "Global search +%d fields"
+msgstr "جستجوی سراسری +%d فیلد"
+
+#: src/Widget/Types/SearchWidget.php:1136
+msgid "Last Year"
+msgstr "سال گذشته"
+
+#: src/Widget/Types/SearchWidget.php:1714
+msgid "Auto (flexible)"
+msgstr "خودکار (انعطاف‌پذیر)"
+
+#: src/Widget/Types/SearchWidget.php:284 src/Widget/Types/SearchWidget.php:285
+msgid "Checkbox"
+msgstr "کادر انتخاب"
+
+#: src/Widget/Types/SearchWidget.php:96
+msgid "Search form for searching entries."
+msgstr "فرم جستجو برای جستجوی ورودی‌ها."
+
+#: src/Widget/Types/SearchWidget.php:1758
+msgid "Column"
+msgstr "ستون"
+
+#: src/Widget/Types/SearchWidget.php:282
+msgid "Select (multiple values)"
+msgstr "انتخاب (چند مقدار)"
+
+#: src/Widget/Types/SearchWidget.php:1716
+msgid "2 Columns"
+msgstr "2 ستون"
+
+#: src/Widget/Types/SearchWidget.php:356
+msgid "1 field"
+msgstr "1 فیلد"
+
+#: src/Widget/Types/SearchWidget.php:339
+msgid "Search Field"
+msgstr "فیلد جستجو"
+
+#: src/Widget/Types/SearchWidget.php:353
+msgid "Global search +1 field"
+msgstr "جستجوی سراسری +1 فیلد"
+
+#: src/Widget/Types/SearchWidget.php:1718
+msgid "4 Columns"
+msgstr "4 ستون"
+
+#: src/Widget/Types/SearchWidget.php:361
+msgid "Advanced"
+msgstr "پیشرفته"
+
+#: src/Widget/Types/SearchWidget.php:281
+msgid "Select"
+msgstr "انتخاب"
+
+#: src/Widget/Types/SearchWidget.php:366
+msgid "⚠️ Needs configuration"
+msgstr "⚠️ نیازمند پیکربندی"
+
+#: src/Widget/Types/SearchWidget.php:1704
+msgid "Stacked (vertical)"
+msgstr "روی‌هم (عمودی)"
+
+#: src/Widget/Types/SearchWidget.php:1487
+msgid "If any Advanced Search fields exist, a link will show to toggle them."
+msgstr "اگر فیلد جستجوی پیشرفته‌ای وجود داشته باشد، پیوندی برای نمایش/پنهان‌کردن آن‌ها نشان داده می‌شود."
+
+#: src/Widget/Types/SearchWidget.php:1719
+msgid "5 Columns"
+msgstr "5 ستون"
+
+#: src/Widget/Types/SearchWidget.php:358
+msgid "%d fields"
+msgstr "%d فیلد"
+
+#: src/Widget/Types/SearchWidget.php:288
+msgid "Number range"
+msgstr "بازهٔ عددی"
+
+#: src/Widget/Types/SearchWidget.php:286
+msgid "Links"
+msgstr "پیوندها"
+
+#: src/Widget/Types/SearchWidget.php:1676
+msgid "Configure Area Settings"
+msgstr "پیکربندی تنظیمات ناحیه"
+
+#: src/Widget/Types/SearchWidget.php:1712
+msgid "Number of Columns:"
+msgstr "تعداد ستون‌ها:"
+
+#: src/Widget/Types/SearchWidget.php:1470
+msgid "Search fields shown"
+msgstr "فیلدهای جستجوی نمایش‌داده‌شده"
+
+#: src/Widget/Types/SearchWidget.php:359
+msgid "Matches All"
+msgstr "تطبیق با همه"
+
+#: src/Widget/Types/SearchWidget.php:1705
+msgid "Side by side (horizontal)"
+msgstr "کنار هم (افقی)"
+
+#: src/Widget/Types/SearchWidget.php:1720
+msgid "6 Columns"
+msgstr "6 ستون"
+
+#: src/Widget/Types/SearchWidget.php:365
+msgid "Search Bar configuration: %s"
+msgstr "پیکربندی نوار جستجو: %s"
+
+#: src/Widget/Types/SearchWidget.php:1722
+msgid "8 Columns"
+msgstr "8 ستون"
+
+#: src/Widget/Types/SearchWidget.php:1484
+msgid "Advanced Search fields shown"
+msgstr "فیلدهای جستجوی پیشرفتهٔ نمایش‌داده‌شده"
+
+#: src/Widget/Types/SearchWidget.php:1129
+msgid "This Year"
+msgstr "امسال"
+
+#: src/Widget/Types/SearchWidget.php:341
+msgid "There was an error loading searchable fields. Save the View or refresh the page to fix this issue."
+msgstr "هنگام بارگذاری فیلدهای قابل جستجو خطایی رخ داد. برای رفع مشکل، نما را ذخیره کنید یا صفحه را تازه‌سازی کنید."
+
+#: src/Widget/Types/SearchWidget.php:280
+msgid "Date"
+msgstr "تاریخ"
+
+#: src/Widget/Types/SearchWidget.php:352
+msgid "Global search"
+msgstr "جستجوی سراسری"
+
+#: src/Widget/Types/SearchWidget.php:1717
+msgid "3 Columns"
+msgstr "3 ستون"
+
+#: src/Widget/Types/SearchWidget.php:146
+msgid "Search Bar"
+msgstr "نوار جستجو"

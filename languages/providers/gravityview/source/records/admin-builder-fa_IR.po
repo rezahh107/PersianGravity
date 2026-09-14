@@ -23,10 +23,6 @@ msgstr "فقط ورودی‌های تأییدشده را نشان بده"
 msgid "Sort by field"
 msgstr "مرتب‌سازی بر اساس فیلد"
 
-#: src/Entry/Approval/Approval.php:823
-msgid "Entry was automatically unapproved after editing."
-msgstr "تأیید ورودی پس از ویرایش به‌طور خودکار برداشته شد."
-
 #: src/Settings/ViewSettings.php:675
 msgid "Change the title shown when editing an entry. Supports merge tags."
 msgstr "عنوانی را که هنگام ویرایش یک ورودی نمایش داده می‌شود تغییر دهید. از برچسب‌های ادغام پشتیبانی می‌کند."
@@ -34,10 +30,6 @@ msgstr "عنوانی را که هنگام ویرایش یک ورودی نمای�
 #: src/Admin/Metaboxes/views/data-source.php:47
 msgid "Use a Form Preset"
 msgstr "استفاده از پیش‌تنظیم فرم"
-
-#: src/Settings/PluginSettings.php:554
-msgid "What plugin you are using, and why?"
-msgstr "از چه افزونه‌ای استفاده می‌کنید و چرا؟"
 
 #: src/Admin/Metaboxes/views/custom-code.php:29
 msgid "A CSS selector targeting this View (e.g., %s)"
@@ -60,13 +52,9 @@ msgstr "هیچ فیلدی مطابق جستجو پیدا نشد."
 msgid "Not connected."
 msgstr "متصل نیست."
 
-#: src/Settings/PluginSettings.php:376 src/Settings/ViewSettings.php:171
+#: src/Settings/ViewSettings.php:171
 msgid "Entry Cache Duration"
 msgstr "مدت کش ورودی"
-
-#: src/Settings/PluginSettings.php:444
-msgid "The theme applied to new Views. Vantage uses a refreshed, consistent stylesheet with modern typography, spacing, and visual design. Legacy is the prior default GravityView theme."
-msgstr "پوسته‌ای که روی نماهای جدید اعمال می‌شود. Vantage با تایپوگرافی، فاصله‌گذاری و طراحی بصری مدرن، شیوه‌نامه‌ای تازه و یکپارچه ارائه می‌کند. Legacy پوستهٔ پیش‌فرض قبلی GravityView است."
 
 #: src/Settings/ViewSettings.php:95
 msgid "View ID"
@@ -82,7 +70,6 @@ msgstr "هر کاربر واردشده"
 
 #: src/Admin/Metaboxes/views/view-configuration.php:171
 #: src/Admin/Metaboxes/views/view-configuration.php:219
-#: src/Renderer/Renderer.php:312
 msgid "Note: %s"
 msgstr "یادداشت: %s"
 
@@ -90,9 +77,7 @@ msgstr "یادداشت: %s"
 msgid "Card Grid"
 msgstr "شبکه کارت"
 
-#: src/Abilities/SearchFields/AddSearchField.php:45
 #: src/Admin/AdminViews.php:1518 src/Admin/AdminViews.php:2554
-#: src/Widget/Types/SearchWidget.php:337
 msgid "Add Search Field"
 msgstr "افزودن فیلد جستجو"
 
@@ -116,17 +101,9 @@ msgstr "انتقال ردیف به بالا"
 msgid "The start and end date settings will only filter the default results. The Entry Date search field can search outside this range."
 msgstr "تنظیمات تاریخ شروع و پایان فقط نتایج پیش‌فرض را فیلتر می‌کنند. فیلد جستجوی تاریخ ورودی می‌تواند خارج از این بازه نیز جستجو کند."
 
-#: src/Widget/Types/SearchWidget.php:360
-msgid "Matches Any"
-msgstr "تطبیق با هرکدام"
-
 #: src/Admin/AdminViews.php:2318
 msgid "Add [type] row"
 msgstr "افزودن ردیف [type]"
-
-#: src/Settings/PluginSettings.php:551
-msgid "I no longer need GravityView"
-msgstr "دیگر به GravityView نیاز ندارم"
 
 #: src/Settings/ViewSettings.php:146
 msgid "Search in visible fields only"
@@ -140,26 +117,9 @@ msgstr "تغییر نوع نما"
 msgid "Allow logged-in users to delete entries they created."
 msgstr "به کاربران واردشده اجازه دهید ورودی‌هایی را که ایجاد کرده‌اند حذف کنند."
 
-#: src/Settings/PluginSettings.php:402
-msgid "Use Dynamic Widget Placement"
-msgstr "استفاده از جای‌گذاری پویای ابزارک"
-
-#: src/Widget/Types/SearchWidget.php:1721
-msgid "7 Columns"
-msgstr "7 ستون"
-
-#: src/Entry/Approval/Approval.php:156
-msgctxt "The title for an event in a notifications drop down list."
-msgid "Entry is approved"
-msgstr "ورودی تأیید می‌شود"
-
 #: src/Settings/ViewSettings.php:104
 msgid "Enter the number of entries to display per page. Set to negative one (-1) to display all entries."
 msgstr "تعداد ورودی‌هایی را که در هر صفحه نمایش داده می‌شوند وارد کنید. برای نمایش همهٔ ورودی‌ها، مقدار منفی یک (-1) را وارد کنید."
-
-#: src/Widget/Types/SearchWidget.php:279
-msgid "Text"
-msgstr "متن"
 
 #: src/Admin/Metaboxes/views/data-source.php:88
 msgid "Using a preset will reset your field configuration. Changes will be permanent once you save the View."
@@ -176,11 +136,6 @@ msgstr "لغو تأیید ورودی‌ها پس از ویرایش"
 #: src/Admin/AdminViews.php:360
 msgid "All layouts"
 msgstr "همهٔ چیدمان‌ها"
-
-#: src/Widget/Types/SearchWidget.php:362
-msgctxt "Separator between search bar summary items"
-msgid " • "
-msgstr " • "
 
 #: src/Admin/Metaboxes/views/data-source.php:50
 msgid "or use an existing form"
@@ -206,23 +161,15 @@ msgstr "فرم"
 msgid "Available Placeholders"
 msgstr "جای‌نگهدارهای موجود"
 
-#: src/Widget/Types/SearchWidget.php:336
-msgid "No search fields configured yet."
-msgstr "هنوز هیچ فیلد جستجویی پیکربندی نشده است."
-
 #: src/Settings/ViewSettings.php:506
 msgid "Grid Columns"
 msgstr "ستون‌های شبکه"
-
-#: src/Widget/Types/SearchWidget.php:1765
-msgid "Column Settings"
-msgstr "تنظیمات ستون"
 
 #: src/Admin/AdminViews.php:871
 msgid "Shortcode"
 msgstr "کد کوتاه"
 
-#: src/Admin/AddShortcode.php:195 src/Admin/AdminViews.php:2568
+#: src/Admin/AdminViews.php:2568
 msgid "Loading&hellip;"
 msgstr "در حال بارگذاری&hellip;"
 
@@ -242,22 +189,9 @@ msgstr "می‌توانید از این جای‌نگهدارها برای نو�
 msgid "Update Button Text"
 msgstr "متن دکمهٔ به‌روزرسانی"
 
-#: src/Widget/Types/ExportLink.php:71 src/Widget/Types/SearchWidget.php:338
-msgid "Label"
-msgstr "برچسب"
-
-#: src/Search/Fields/SearchFieldSubmit.php:38
-#: src/Widget/Types/SearchWidget.php:289
-msgid "Submit Button"
-msgstr "دکمهٔ ارسال"
-
 #: src/Settings/ViewSettings.php:236
 msgid "If there are no entries to show, the user will be taken to this URL."
 msgstr "اگر ورودی‌ای برای نمایش وجود نداشته باشد، کاربر به این URL هدایت می‌شود."
-
-#: src/Entry/Approval/EntriesList.php:315
-msgid "Approved? (Admin-only)"
-msgstr "تأییدشده؟ (فقط مدیر)"
 
 #: src/Admin/Metaboxes/views/direct-access-status.php:91
 msgid "Embedded-Only"
@@ -267,7 +201,7 @@ msgstr "فقط جاسازی‌شده"
 msgid "Move field to %s Area"
 msgstr "انتقال فیلد به ناحیهٔ %s"
 
-#: src/PageBuilder/PageBuilder.php:200 src/Settings/ViewSettings.php:398
+#: src/Settings/ViewSettings.php:398
 msgid "Random"
 msgstr "تصادفی"
 
@@ -275,17 +209,9 @@ msgstr "تصادفی"
 msgid "Form Title"
 msgstr "عنوان فرم"
 
-#: src/Widget/Types/SearchWidget.php:1715
-msgid "1 Column"
-msgstr "1 ستون"
-
 #: src/Settings/ViewSettings.php:626
 msgid "Redirect After Editing"
 msgstr "هدایت پس از ویرایش"
-
-#: src/Settings/PluginSettings.php:541
-msgid "There was an error sharing your feedback. Sorry! Please email us at support@gravitykit.com"
-msgstr "هنگام ارسال بازخورد شما خطایی رخ داد. متأسفیم! لطفاً به support@gravitykit.com ایمیل بزنید."
 
 #: src/Admin/AdminViews.php:805
 msgid "Preview Form"
@@ -299,49 +225,17 @@ msgstr "فیلتر فیلدها بر اساس نام یا برچسب"
 msgid "Bulk Actions Selection Checkbox"
 msgstr "کادر انتخاب عملیات گروهی"
 
-#: src/Entry/Approval/GFEntriesPageBulkActions.php:174
-msgid "1 entry"
-msgstr "۱ ورودی"
-
-#: src/Settings/PluginSettings.php:546
-msgid "Thank you for using GravityView!"
-msgstr "از اینکه از GravityView استفاده می‌کنید سپاسگزاریم!"
-
-#: src/Widget/Types/SearchWidget.php:290
-msgid "Hidden Field"
-msgstr "فیلد پنهان"
-
-#: src/Settings/PluginSettings.php:396
-msgid "If you are unsure, disable this setting."
-msgstr "اگر مطمئن نیستید، این تنظیم را غیرفعال کنید."
-
 #: src/Admin/Metaboxes/views/data-source.php:40
 msgid "Where would you like the data to come from for this View?"
 msgstr "می‌خواهید داده‌های این نما از کجا تأمین شوند؟"
-
-#: src/Settings/PluginSettings.php:544
-msgid "How likely are you to recommend GravityView?"
-msgstr "چقدر احتمال دارد GravityView را به دیگران پیشنهاد کنید؟"
 
 #: src/Admin/AdminViews.php:791
 msgid "Edit settings for this form"
 msgstr "ویرایش تنظیمات این فرم"
 
-#: src/Widget/Types/SearchWidget.php:1122
-msgid "This Week"
-msgstr "این هفته"
-
-#: src/Settings/PluginSettings.php:545
-msgid "Send Us Your Feedback"
-msgstr "ارسال بازخورد"
-
 #: src/Settings/ViewSettings.php:326
 msgid "When an entry is edited by a non-administrator, reset the approval status to \"Unapproved\"."
 msgstr "وقتی ورودی توسط کاربر غیرمدیر ویرایش می‌شود، وضعیت تأیید را به «بررسی‌نشده» بازنشانی کنید."
-
-#: src/Widget/Types/SearchWidget.php:340
-msgid "Input Type"
-msgstr "نوع ورودی"
 
 #: src/Admin/Rendering/RenderSettings.php:740
 msgid "Form Preset"
@@ -355,7 +249,7 @@ msgstr "Vantage"
 msgid "Allow User Edit"
 msgstr "اجازهٔ ویرایش به کاربر"
 
-#: src/Admin/AdminViews.php:1945 src/Widget/Types/PaginationInfo.php:43
+#: src/Admin/AdminViews.php:1945
 msgid "Show Pagination Info"
 msgstr "نمایش اطلاعات صفحه‌بندی"
 
@@ -367,27 +261,9 @@ msgstr "دسترسی REST به این نما را فعال کنید."
 msgid "Single Entry Title"
 msgstr "عنوان ورودی تکی"
 
-#: src/Settings/PluginSettings.php:555
-#: vendor_prefixed/gravitykit/foundation/src/Abilities/SettingsUI.php:186
-msgid "Other"
-msgstr "سایر"
-
-#: src/Widget/Types/SearchWidget.php:283
-msgid "Radio"
-msgstr "دکمهٔ رادیویی"
-
 #: src/Admin/AdminViews.php:2564
 msgid "Error while creating the View for you. Check the settings or contact GravityView support."
 msgstr "هنگام ایجاد نما خطایی رخ داد. تنظیمات را بررسی کنید یا با پشتیبانی GravityView تماس بگیرید."
-
-#: src/Settings/PluginSettings.php:532
-msgid "You don't have the ability to edit plugin settings."
-msgstr "اجازهٔ ویرایش تنظیمات افزونه را ندارید."
-
-#: src/Entry/Approval/Approval.php:158
-msgctxt "The title for an event in a notifications drop down list."
-msgid "Entry approval is reset"
-msgstr "تأیید ورودی بازنشانی می‌شود"
 
 #: src/Settings/ViewSettings.php:709
 msgid "Next Page Button Text"
@@ -421,14 +297,6 @@ msgstr "به کاربران واردشده اجازه دهید ورودی‌ها
 msgid "Edit Entry Title"
 msgstr "عنوان ویرایش ورودی"
 
-#: src/Widget/Types/SearchWidget.php:1702
-msgid "Arrange Fields:"
-msgstr "چیدمان فیلدها:"
-
-#: src/Shortcode/GravityViewShortcode.php:198
-msgid "Are you sure you want to restore this View? It will immediately be removed from the trash and set to draft status."
-msgstr "آیا مطمئنید می‌خواهید این نما را بازیابی کنید؟ بلافاصله از زباله‌دان خارج و روی وضعیت draft قرار می‌گیرد."
-
 #: src/Settings/ViewSettings.php:781
 msgid "This will require a <code>secret</code> attribute on all shortcodes and blocks connected to this View, including <code>[gravityview]</code>, <code>[gvfield]</code> and <code>[gventry]</code>."
 msgstr "با این کار، همهٔ کدهای کوتاه و بلوک‌های متصل به این نما، از جمله <code>[gravityview]</code>، <code>[gvfield]</code> و <code>[gventry]</code> باید دارای ویژگی <code>secret</code> باشند."
@@ -449,15 +317,10 @@ msgstr "پنهان‌کردن فیلدهای خالی"
 msgid "Editing Returns To&hellip;"
 msgstr "پس از ویرایش بازگشت به&hellip;"
 
-#: src/Extension/EditEntry/EditEntryRender.php:3396
 #: src/Settings/ViewSettings.php:721
 msgctxt "Show the previous page in a multi-page form"
 msgid "Previous"
 msgstr "قبلی"
-
-#: src/Widget/Types/SearchWidget.php:1163
-msgid "Q%1$d (%2$d)"
-msgstr "Q%1$d (%2$d)"
 
 #: src/Admin/AdminViews.php:865
 msgctxt "Column title that shows what template is being used for Views"
@@ -467,10 +330,6 @@ msgstr "قالب"
 #: src/Admin/Metaboxes/views/select-template.php:110
 msgid "View a live demo of this layout"
 msgstr "مشاهدهٔ دموی زندهٔ این چیدمان"
-
-#: src/Entry/Approval/Approval.php:522
-msgid "Reset Entry approval for GravityView"
-msgstr "بازنشانی تأیید ورودی برای GravityView"
 
 #: src/Admin/Metaboxes/views/select-template.php:128
 msgid "View a live demo of this preset"
@@ -497,7 +356,6 @@ msgstr "هدایت به ورودی تکی"
 #: src/Admin/Metaboxes/views/view-configuration.php:173
 #: src/Admin/Metaboxes/views/view-configuration.php:191
 #: src/Admin/Metaboxes/views/view-configuration.php:96
-#: src/Frontend/Frontend.php:827 src/Renderer/Renderer.php:350
 #: src/Settings/ViewSettings.php:650
 msgid "Single Entry"
 msgstr "ورودی تکی"
@@ -526,11 +384,6 @@ msgstr "پیام نبود ورودی"
 msgid "These fields will be shown for each entry."
 msgstr "این فیلدها برای هر ورودی نمایش داده می‌شوند."
 
-#: src/Admin/Welcome.php:359 src/Field/Types/GravityViewView.php:37
-#: src/PageBuilder/Gutenberg/blocks/view/block.php:27
-msgid "GravityView View"
-msgstr "نمای GravityView"
-
 #: src/Settings/ViewSettings.php:337
 msgid "Allow User Delete"
 msgstr "اجازهٔ حذف به کاربر"
@@ -540,34 +393,18 @@ msgid "Reorder Search Fields"
 msgstr "تغییر ترتیب فیلدهای جستجو"
 
 #: src/Admin/Metaboxes/AdminMetaboxes.php:189
-#: src/Entry/BulkActions/Actions/DeleteEntriesAction.php:53
-#: src/Extension/DeleteEntry/DeleteEntryAdmin.php:80
-#: src/Field/Types/DeleteLink.php:116 src/Field/Types/DeleteLink.php:40
-#: src/PageBuilder/PageBuilder.php:829
-#: src/Shortcode/GVEntryLinkShortcode.php:284
-#: templates/fields/field-delete_link-html.php:38
 msgid "Delete Entry"
 msgstr "حذف ورودی"
 
-#: src/Entry/ApprovalMergeTags.php:103 src/Settings/PluginSettings.php:418
-msgid "Enable Public Entry Moderation"
-msgstr "فعال‌سازی مدیریت عمومی ورودی"
-
 #: src/Admin/Metaboxes/views/custom-code.php:58
 #: src/Admin/Metaboxes/views/placeholder.php:39
-#: src/Admin/Metaboxes/views/placeholder.php:64 src/Admin/Welcome.php:244
-#: src/Admin/Welcome.php:480 src/Field/Types/GravityViewView.php:85
-#: src/Renderer/Renderer.php:299 src/Search/Fields/SearchFieldChoices.php:139
+#: src/Admin/Metaboxes/views/placeholder.php:64
 msgid "This link opens in a new window."
 msgstr "این پیوند در پنجرهٔ جدید باز می‌شود."
 
 #: src/Admin/AdminViews.php:806
 msgid "Preview this form"
 msgstr "پیش‌نمایش این فرم"
-
-#: src/Entry/Approval/EntriesList.php:284
-msgid "Approve/Reject"
-msgstr "تأیید/رد"
 
 #: src/Admin/Metaboxes/AdminMetaboxes.php:453
 msgid "Customize design"
@@ -579,20 +416,12 @@ msgstr "به‌طور پیش‌فرض فقط ورودی‌های تأییدشد�
 
 #: src/Admin/AdminViews.php:790 src/Admin/Metaboxes/AdminMetaboxes.php:104
 #: src/Admin/Metaboxes/views/view-configuration.php:90
-#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/PluginsPage.php:516
-#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/PluginsPage.php:615
-#: vendor_prefixed/gravitykit/foundation/src/Settings/Framework.php:401
 msgid "Settings"
 msgstr "تنظیمات"
 
 #: src/Settings/ViewSettings.php:801
 msgid "Custom CSS"
 msgstr "CSS سفارشی"
-
-#: src/Settings/PluginSettings.php:311
-msgctxt "Placeholders inside [] are not to be translated."
-msgid "The following active filters could be overriding cache settings: [filters]."
-msgstr "فیلترهای فعال زیر ممکن است تنظیمات کش را بازنویسی کنند: [filters]."
 
 #: src/Admin/Rendering/RenderSettings.php:277
 msgid "Renders the cell as a row header that screen readers announce as context for the other cells in the row. Enable for one field per row."
@@ -601,10 +430,6 @@ msgstr "سلول را به‌صورت سرستون ردیف رندر می‌کن
 #: src/Settings/ViewSettings.php:770
 msgid "After deleting an entry, the user will be taken to this URL."
 msgstr "پس از حذف یک ورودی، کاربر به این URL هدایت می‌شود."
-
-#: src/Settings/PluginSettings.php:549
-msgid "Delete all Views, GravityView entry approval status, GravityView-generated entry notes (including approval and entry creator changes), and GravityView plugin settings."
-msgstr "همهٔ نماها، وضعیت تأیید ورودی GravityView، یادداشت‌های ورودی ایجادشده توسط GravityView (از جمله تغییرات تأیید و ایجادکنندهٔ ورودی) و تنظیمات افزونهٔ GravityView را حذف کنید."
 
 #: src/Admin/Rendering/RenderSettings.php:228
 msgid "This class will be added to the field container"
@@ -645,41 +470,17 @@ msgstr "ورودی‌ها را ویرایش کنند"
 msgid "If enabled, images will open full-size in a \"lightbox\". A lightbox displays images and videos by filling the screen and dimming out the rest of the web page."
 msgstr "اگر فعال باشد، تصاویر در اندازهٔ کامل در یک «لایت‌باکس» باز می‌شوند. لایت‌باکس با پوشاندن صفحه و تیره‌کردن بقیهٔ صفحهٔ وب، تصاویر و ویدئوها را نمایش می‌دهد."
 
-#: src/Widget/Types/SearchWidget.php:287
-msgid "Date range"
-msgstr "بازهٔ تاریخ"
-
-#: src/Core/Plugin.php:618 src/Entry/Approval/Approval.php:525
-msgid "Disapproved the Entry for GravityView"
-msgstr "ورودی برای GravityView رد تأیید شد"
-
 #: src/Admin/Rendering/RenderSettings.php:206
 msgid "Show Label"
 msgstr "نمایش برچسب"
-
-#: src/Settings/PluginSettings.php:377
-msgid "Specify the duration in seconds that entry data should remain cached before being refreshed. A shorter duration ensures more up-to-date data, while a longer duration improves performance."
-msgstr "مدت‌زمانی را بر حسب ثانیه تعیین کنید که دادهٔ ورودی پیش از تازه‌سازی در کش بماند. مدت کوتاه‌تر داده را به‌روزتر نگه می‌دارد و مدت طولانی‌تر کارایی را بهتر می‌کند."
 
 #: src/Admin/Rendering/RenderSettings.php:473
 msgid "Multisite Super Admin"
 msgstr "مدیر ارشد چندسایته"
 
-#: src/Widget/Types/SearchWidget.php:355
-msgid "Global search +%d fields"
-msgstr "جستجوی سراسری +%d فیلد"
-
 #: src/Settings/ViewSettings.php:711 src/Settings/ViewSettings.php:719
 msgid "Only shown when multi-page forms are enabled."
 msgstr "فقط زمانی نمایش داده می‌شود که فرم‌های چندصفحه‌ای فعال باشند."
-
-#: src/Widget/Types/SearchWidget.php:1136
-msgid "Last Year"
-msgstr "سال گذشته"
-
-#: src/Entry/Approval/EntriesList.php:347
-msgid "Yes, display my entry on the website"
-msgstr "بله، ورودی من را در وب‌سایت نمایش دهید"
 
 #: src/Settings/ViewSettings.php:267
 msgid "Hide View data until search is performed"
@@ -694,13 +495,8 @@ msgid "Make visible only to logged-in users?"
 msgstr "فقط برای کاربران واردشده قابل مشاهده باشد؟"
 
 #: src/Admin/Metaboxes/AdminMetaboxes.php:205
-#: src/Settings/PluginSettings.php:413
 msgid "Permissions"
 msgstr "مجوزها"
-
-#: src/Settings/PluginSettings.php:352
-msgid "Enable Caching"
-msgstr "فعال‌کردن کش"
 
 #: src/Settings/ViewSettings.php:158
 msgctxt "Placeholders inside [] are not to be translated."
@@ -709,7 +505,6 @@ msgstr "برای بهبود کارایی، کش را روشن یا خاموش ک
 
 #: src/Admin/Metaboxes/views/view-configuration.php:115
 #: src/Admin/Metaboxes/views/view-configuration.php:188
-#: src/Integration/FeatureUpgrade.php:66
 msgid "Upgrade"
 msgstr "ارتقا"
 
@@ -722,7 +517,7 @@ msgstr "متن دکمهٔ صفحهٔ قبل"
 msgid "Styles"
 msgstr "سبک‌ها"
 
-#: src/Admin/AdminViews.php:1521 src/Admin/ViewItem.php:250
+#: src/Admin/AdminViews.php:1521
 msgid "Add Field"
 msgstr "افزودن فیلد"
 
@@ -734,20 +529,10 @@ msgstr "فقط جاسازی‌شده: نما فقط زمانی دیده می‌�
 msgid "Filter Fields:"
 msgstr "فیلتر فیلدها:"
 
-#: src/Settings/PluginSettings.php:354
-msgctxt "Placeholders inside [] are not to be translated."
-msgid "[url]Enabling caching[/url] improves performance by reducing the number of queries during page loads. When enabled, you can also specify cache duration for entries."
-msgstr "[url]فعال‌کردن کش[/url] با کاهش تعداد پرس‌وجوها هنگام بارگذاری صفحه، کارایی را بهبود می‌دهد. در صورت فعال‌بودن، می‌توانید مدت کش ورودی‌ها را نیز تعیین کنید."
-
 #: src/Admin/Rendering/RenderSettings.php:170
 msgctxt "Denotes the name under which certain field settings are grouped"
 msgid "Field"
 msgstr "فیلد"
-
-#: src/Settings/PluginSettings.php:310
-msgctxt "Placeholders inside [] are not to be translated."
-msgid "The [filter] active filter could be overriding cache settings."
-msgstr "[filter] فعال ممکن است تنظیمات کش را بازنویسی کند."
 
 #: src/Admin/AdminViews.php:2334
 msgid "Add Row"
@@ -761,12 +546,7 @@ msgstr "فقط زمانی به این نما اجازهٔ دسترسی دهید 
 msgid "Hide the View"
 msgstr "پنهان‌کردن نما"
 
-#: src/PageBuilder/BeaverBuilder/BasicModule.php:165
-#: src/PageBuilder/BeaverBuilder/BeaverBuilder.php:108
-#: src/PageBuilder/Divi/BasicModule.php:244
-#: src/PageBuilder/Elementor/BasicWidget.php:369
-#: src/PageBuilder/PageBuilder.php:224 src/Settings/ViewSettings.php:381
-#: src/Settings/ViewSettings.php:412
+#: src/Settings/ViewSettings.php:381 src/Settings/ViewSettings.php:412
 msgid "Default"
 msgstr "پیش‌فرض"
 
@@ -782,15 +562,10 @@ msgstr "این ابزارک‌ها بالای ورودی‌ها نمایش دا�
 msgid "Can Edit Gravity Forms Entries"
 msgstr "دارای مجوز ویرایش ورودی‌های Gravity Forms"
 
-#: src/Extension/EditEntry/EditEntryRender.php:3395
 #: src/Settings/ViewSettings.php:713
 msgctxt "Show the next page in a multi-page form"
 msgid "Next"
 msgstr "بعدی"
-
-#: src/Widget/Types/SearchWidget.php:1714
-msgid "Auto (flexible)"
-msgstr "خودکار (انعطاف‌پذیر)"
 
 #: src/Admin/Metaboxes/views/custom-code.php:37
 msgid "The View ID number"
@@ -803,10 +578,6 @@ msgstr "تعداد ورودی‌های خروجی در فایل را محدود 
 #: src/Settings/ViewSettings.php:186
 msgid "Show a Message"
 msgstr "نمایش پیام"
-
-#: src/Abilities/Bootstrap.php:112 src/Entry/Approval/EntriesList.php:262
-msgid "GravityView Fields"
-msgstr "فیلدهای GravityView"
 
 #: src/Settings/ViewSettings.php:397 src/Settings/ViewSettings.php:429
 msgid "DESC"
@@ -833,7 +604,6 @@ msgid "Custom CSS Class"
 msgstr "کلاس CSS سفارشی"
 
 #: src/Admin/AdminViews.php:1951 src/Admin/AdminViews.php:1958
-#: src/Widget/Types/PageLinks.php:107
 msgid "Page Links"
 msgstr "پیوندهای صفحه"
 
@@ -845,11 +615,6 @@ msgstr "یک نوع انتخاب کنید"
 msgid "Example: %1$s becomes %2$s"
 msgstr "نمونه: %1$s به %2$s تبدیل می‌شود"
 
-#: src/Field/Types/Checkbox.php:43 src/Widget/Types/SearchWidget.php:284
-#: src/Widget/Types/SearchWidget.php:285
-msgid "Checkbox"
-msgstr "کادر انتخاب"
-
 #: src/Settings/ViewSettings.php:561
 msgid "Allow searching beyond the start and end date range"
 msgstr "اجازهٔ جستجو خارج از بازهٔ تاریخ شروع و پایان"
@@ -859,17 +624,8 @@ msgid "Secondary sort direction"
 msgstr "جهت مرتب‌سازی ثانویه"
 
 #: src/Admin/AdminViews.php:2560
-#: vendor_prefixed/trustedlogin/client/src/Form.php:1596
 msgid "Ok"
 msgstr "تأیید"
-
-#: src/Widget/Types/SearchWidget.php:96
-msgid "Search form for searching entries."
-msgstr "فرم جستجو برای جستجوی ورودی‌ها."
-
-#: src/Settings/PluginSettings.php:438
-msgid "Appearance"
-msgstr "ظاهر"
 
 #: src/Settings/ViewSettings.php:258
 msgid "Administrators will be able to see entries with any approval status."
@@ -891,30 +647,13 @@ msgstr "برگه‌ای که پس از ویرایش یک ورودی باید ب�
 msgid "Select %s"
 msgstr "انتخاب %s"
 
-#: src/Settings/PluginSettings.php:395
-msgid "REST API"
-msgstr "REST API"
-
 #: src/Settings/ViewSettings.php:356
 msgid "Allow User Duplicate"
 msgstr "اجازهٔ تکثیر به کاربر"
 
-#: src/Search/SearchFieldCollection.php:359
-#: src/Widget/Types/SearchWidget.php:1758
-msgid "Column"
-msgstr "ستون"
-
 #: src/Settings/ViewSettings.php:603
 msgid "When viewing a single entry, change the title of the page to this setting. Otherwise, the title will not change between the Multiple Entries and Single Entry views."
 msgstr "هنگام مشاهدهٔ یک ورودی تکی، عنوان صفحه را به این مقدار تغییر دهید. در غیر این صورت، عنوان میان حالت «فهرست ورودی‌ها» و حالت «ورودی تکی» تغییر نمی‌کند."
-
-#: src/Settings/PluginSettings.php:540
-msgid "Uninstall GravityView"
-msgstr "حذف GravityView"
-
-#: src/Widget/Types/SearchWidget.php:282
-msgid "Select (multiple values)"
-msgstr "انتخاب (چند مقدار)"
 
 #: src/Admin/AdminViews.php:315
 msgid "Filter Views by form"
@@ -924,7 +663,7 @@ msgstr "فیلتر نماها بر اساس فرم"
 msgid "Create a View using this form as a data source"
 msgstr "ایجاد نما با استفاده از این فرم به‌عنوان منبع داده"
 
-#: src/API/class-api.php:406 src/Settings/ViewSettings.php:619
+#: src/Settings/ViewSettings.php:619
 msgid "&larr; Go back"
 msgstr "&larr; بازگشت"
 
@@ -935,10 +674,6 @@ msgstr "عملیات ردیف"
 #: src/Admin/Metaboxes/views/custom-code.php:34
 msgid "A CSS selector targeting the View&rsquo;s outer wrapper, including widget areas (e.g., %s)"
 msgstr "یک گزینشگر CSS برای هدف‌گیری پوشانندهٔ بیرونی نما، شامل ناحیه‌های ابزارک (برای نمونه، %s)"
-
-#: src/Entry/Approval/GFEntriesPageBulkActions.php:185
-msgid "%s unapproved."
-msgstr "تأیید %s برداشته شد."
 
 #: src/Admin/AdminViews.php:324
 msgid "All forms"
@@ -960,70 +695,33 @@ msgstr "اگر در نما هیچ ورودی‌ای برای نمایش وجود
 msgid "Row is already at the bottom."
 msgstr "ردیف از قبل در پایین‌ترین موقعیت است."
 
-#: src/Widget/Types/SearchWidget.php:1716
-msgid "2 Columns"
-msgstr "2 ستون"
-
 #: src/Admin/AdminViews.php:1327
 msgid "Insert all the form fields at once."
 msgstr "همهٔ فیلدهای فرم را یک‌جا درج کنید."
-
-#: src/Widget/Types/SearchWidget.php:356
-msgid "1 field"
-msgstr "1 فیلد"
 
 #: src/Settings/ViewSettings.php:594
 msgid "Search Operator"
 msgstr "عملگر جستجو"
 
-#: src/Shortcode/GravityViewShortcode.php:194
-msgid "This View is in the Trash. %1$sClick to restore the View%2$s."
-msgstr "این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s."
-
-#: src/Settings/PluginSettings.php:443
-msgid "Default theme"
-msgstr "پوستهٔ پیش‌فرض"
-
 #: src/Settings/ViewSettings.php:181
 msgid "No Entries Behavior"
 msgstr "رفتار هنگام نبود ورودی"
 
-#: src/Settings/ViewSettings.php:586 src/Widget/Types/SearchWidget.php:339
+#: src/Settings/ViewSettings.php:586
 msgid "Search Field"
 msgstr "فیلد جستجو"
-
-#: src/Settings/PluginSettings.php:543
-msgid "Please follow up with me about my feedback"
-msgstr "لطفاً دربارهٔ بازخوردم با من پیگیری کنید"
 
 #: src/Settings/ViewSettings.php:632
 msgid "Stay on Edit Entry"
 msgstr "ماندن در ویرایش ورودی"
 
-#: src/Settings/PluginSettings.php:548
-msgid "If you delete then re-install GravityView, it will be like installing GravityView for the first time."
-msgstr "اگر GravityView را حذف و سپس دوباره نصب کنید، مانند این است که آن را برای اولین بار نصب کرده باشید."
-
 #: src/Admin/AdminViews.php:2722
 msgid "Clear all fields"
 msgstr "پاک‌کردن همهٔ فیلدها"
 
-#: src/Entry/Approval/Approval.php:159
-msgctxt "The title for an event in a notifications drop down list."
-msgid "Entry approval is changed"
-msgstr "وضعیت تأیید ورودی تغییر می‌کند"
-
 #: src/Admin/AdminViews.php:2556
 msgid "Remove"
 msgstr "حذف"
-
-#: src/Widget/Types/SearchWidget.php:353
-msgid "Global search +1 field"
-msgstr "جستجوی سراسری +1 فیلد"
-
-#: src/Settings/PluginSettings.php:396
-msgid "Enable View and Entry access via the REST API? Regular per-View restrictions apply (private, password protected, etc.)."
-msgstr "دسترسی به نما و ورودی از طریق REST API فعال شود؟ محدودیت‌های عادی هر نما (خصوصی، محافظت‌شده با رمز عبور و غیره) همچنان اعمال می‌شوند."
 
 #: src/Admin/AdminViews.php:726 src/Admin/Metaboxes/views/shortcode-hint.php:19
 msgid "Click to copy"
@@ -1042,30 +740,16 @@ msgctxt "Denotes the name under which certain field settings are grouped"
 msgid "Display"
 msgstr "نمایش"
 
-#: src/Entry/Approval/EntriesList.php:337
-msgid "Show Entry on Website"
-msgstr "نمایش ورودی در وب‌سایت"
-
-#: src/Settings/PluginSettings.php:550
-msgid "I am going to continue using GravityView"
-msgstr "به استفاده از GravityView ادامه می‌دهم"
-
 #: src/Admin/Metaboxes/views/view-configuration.php:112
 msgid "Activate"
 msgstr "فعال‌سازی"
 
-#: src/Admin/AddShortcode.php:155 src/Admin/AdminViews.php:2558
+#: src/Admin/AdminViews.php:2558
 #: src/Admin/Metaboxes/views/direct-access-status.php:97
-#: src/Entry/BulkActions/BackgroundStatus.php:1581
-#: src/Extension/EditEntry/EditEntryLocking.php:550
-#: src/Extension/EditEntry/EditEntryRender.php:1845
-#: src/Frontend/Frontend.php:1881
-#: vendor_prefixed/trustedlogin/client/src/Form.php:1600
 msgid "Cancel"
 msgstr "انصراف"
 
 #: src/Admin/AdminViews.php:777 src/Admin/AdminViews.php:862
-#: templates/views/table/table-header.php:17
 msgid "Entries"
 msgstr "ورودی‌ها"
 
@@ -1093,7 +777,6 @@ msgstr "حداقل عرض کارت"
 msgid "Allow logged-in users to duplicate entries they created."
 msgstr "به کاربران واردشده اجازه دهید ورودی‌هایی را که ایجاد کرده‌اند تکثیر کنند."
 
-#: src/Abilities/SearchFields/RemoveSearchField.php:26
 #: src/Admin/AdminViews.php:2555
 msgid "Remove Search Field"
 msgstr "حذف فیلد جستجو"
@@ -1102,37 +785,13 @@ msgstr "حذف فیلد جستجو"
 msgid "The page to redirect to after deleting an entry."
 msgstr "برگه‌ای که پس از حذف یک ورودی باید به آن هدایت شود."
 
-#: src/Entry/Approval/EntriesList.php:291
-msgid "User Opt-In"
-msgstr "انتخاب کاربر برای نمایش"
-
 #: src/Admin/AdminViews.php:2569
 msgid "There was an error loading dynamic content."
 msgstr "هنگام بارگذاری محتوای پویا خطایی رخ داد."
 
-#: src/Entry/Approval/Approval.php:102 src/Field/Types/IsApproved.php:139
-#: src/Field/Types/IsApproved.php:56
-#: src/Search/Fields/SearchFieldIsApproved.php:52
-msgid "Approval Status"
-msgstr "وضعیت تأیید"
-
 #: src/Admin/Metaboxes/AdminMetaboxes.php:213
 msgid "Custom Code"
 msgstr "کد سفارشی"
-
-#: src/Widget/Types/SearchWidget.php:1718
-msgid "4 Columns"
-msgstr "4 ستون"
-
-#: src/PageBuilder/BeaverBuilder/BasicModule.php:238
-#: src/PageBuilder/BeaverBuilder/EntryLinkModule.php:143
-#: src/PageBuilder/Divi/BasicModule.php:113
-#: src/PageBuilder/Divi/EntryLinkModule.php:89
-#: src/PageBuilder/Elementor/BasicWidget.php:520
-#: src/PageBuilder/Elementor/EntryLinkWidget.php:221
-#: src/PageBuilder/PageBuilder.php:569 src/Widget/Types/SearchWidget.php:361
-msgid "Advanced"
-msgstr "پیشرفته"
 
 #: src/Admin/Metaboxes/views/view-configuration.php:111
 msgid "Install now"
@@ -1151,51 +810,20 @@ msgid "Top Widgets"
 msgstr "ابزارک‌های بالا"
 
 #: src/Admin/Metaboxes/views/select-template.php:126
-#: src/Field/Types/Select.php:36 src/Widget/Types/SearchWidget.php:281
 msgid "Select"
 msgstr "انتخاب"
-
-#: src/Widget/Types/SearchWidget.php:366
-msgid "⚠️ Needs configuration"
-msgstr "⚠️ نیازمند پیکربندی"
-
-#: src/Widget/Types/SearchWidget.php:1704
-msgid "Stacked (vertical)"
-msgstr "روی‌هم (عمودی)"
 
 #: src/Admin/Metaboxes/views/select-template.php:69
 msgid "Activate & Select"
 msgstr "فعال‌سازی و انتخاب"
 
 #: src/Admin/Rendering/RenderSettings.php:227
-#: src/Widget/Types/ExportLink.php:91 src/Widget/Widget.php:208
 msgid "Custom CSS Class:"
 msgstr "کلاس CSS سفارشی:"
-
-#: src/Entry/Approval/EntriesList.php:339
-msgid "Opt-In"
-msgstr "موافقت با نمایش"
-
-#: src/Entry/Approval/Approval.php:254
-#: src/Extension/EditEntry/EditEntryRender.php:3252
-msgid "You do not have permission to edit this entry."
-msgstr "اجازهٔ ویرایش این ورودی را ندارید."
-
-#: src/Widget/Types/SearchWidget.php:1487
-msgid "If any Advanced Search fields exist, a link will show to toggle them."
-msgstr "اگر فیلد جستجوی پیشرفته‌ای وجود داشته باشد، پیوندی برای نمایش/پنهان‌کردن آن‌ها نشان داده می‌شود."
-
-#: src/Settings/PluginSettings.php:553
-msgid "I found a better plugin"
-msgstr "افزونهٔ بهتری پیدا کرده‌ام"
 
 #: src/Settings/ViewSettings.php:314
 msgid "Display \"Edit Entry\" fields to non-administrator users if they created the entry. Edit Entry fields will always be displayed to site administrators."
 msgstr "اگر کاربر غیرمدیر ورودی را ایجاد کرده باشد، فیلدهای «ویرایش ورودی» را به او نشان دهید. فیلدهای ویرایش ورودی همیشه برای مدیران سایت نمایش داده می‌شوند."
-
-#: src/Widget/Types/SearchWidget.php:1719
-msgid "5 Columns"
-msgstr "5 ستون"
 
 #: src/Settings/ViewSettings.php:860
 msgid "Prevent REST Access"
@@ -1205,7 +833,7 @@ msgstr "جلوگیری از دسترسی REST"
 msgid "This ID is already used by another row."
 msgstr "این ID قبلاً توسط ردیف دیگری استفاده شده است."
 
-#: src/Field/Types/DeleteLink.php:114 src/Settings/ViewSettings.php:725
+#: src/Settings/ViewSettings.php:725
 msgid "Delete Link Text"
 msgstr "متن پیوند حذف"
 
@@ -1214,17 +842,9 @@ msgstr "متن پیوند حذف"
 msgid "This layout is included in the %s license."
 msgstr "این چیدمان در مجوز %s ارائه شده است."
 
-#: src/Entry/ApprovalMergeTags.php:106 src/Settings/PluginSettings.php:421
-msgid "If enabled, adding {public} to {link}entry moderation merge tags{/link} will allow logged-out users to approve or reject entries. If disabled, all entry moderation actions require the user to be logged-in and have the ability to edit the entry."
-msgstr "اگر فعال باشد، افزودن {public} به {link}برچسب‌های ادغام مدیریت ورودی{/link} به کاربران واردنشده اجازه می‌دهد ورودی‌ها را تأیید یا رد کنند. اگر غیرفعال باشد، همهٔ عملیات مدیریت ورودی نیازمند ورود کاربر و داشتن مجوز ویرایش ورودی است."
-
 #: src/Admin/Metaboxes/views/direct-access-status.php:62
 msgid "Direct Access:"
 msgstr "دسترسی مستقیم:"
-
-#: src/Settings/PluginSettings.php:403
-msgid "Create additional, drag and droppable, widget rows of different layout types."
-msgstr "ردیف‌های ابزارکی اضافی با انواع چیدمان متفاوت ایجاد کنید که بتوان آن‌ها را با کشیدن و رهاکردن جابه‌جا کرد."
 
 #: src/Admin/Metaboxes/views/direct-access-status.php:26
 msgid "Direct Access"
@@ -1246,18 +866,6 @@ msgstr "در صورت فعال‌بودن، ورودی‌های نما فقط پ
 msgid "Theme"
 msgstr "پوسته"
 
-#: src/Widget/Types/SearchWidget.php:358
-msgid "%d fields"
-msgstr "%d فیلد"
-
-#: src/Widget/Types/SearchWidget.php:288
-msgid "Number range"
-msgstr "بازهٔ عددی"
-
-#: src/Widget/Types/SearchWidget.php:286
-msgid "Links"
-msgstr "پیوندها"
-
 #: src/Admin/AdminViews.php:1818
 msgid "Custom HTML ID"
 msgstr "شناسهٔ HTML سفارشی"
@@ -1267,13 +875,8 @@ msgid "You have unsaved changes. Continuing will discard them. Are you sure you 
 msgstr "تغییرات ذخیره‌نشده دارید. با ادامه، این تغییرات از بین می‌روند. مطمئن هستید که می‌خواهید ادامه دهید؟"
 
 #: src/Admin/Metaboxes/views/direct-access-status.php:96
-#: vendor_prefixed/gravitykit/foundation/src/Scheduler/Overview/Diagnostics.php:338
 msgid "OK"
 msgstr "تأیید"
-
-#: src/Widget/Types/SearchWidget.php:1676
-msgid "Configure Area Settings"
-msgstr "پیکربندی تنظیمات ناحیه"
 
 #: src/Settings/ViewSettings.php:440
 msgid "Column Sorting"
@@ -1288,13 +891,6 @@ msgstr "برچسب"
 msgid "This ID will be added to the row container. Use {row_index} for the row number."
 msgstr "این ID به نگهدارندهٔ ردیف افزوده می‌شود. برای شمارهٔ ردیف از {row_index} استفاده کنید."
 
-#: src/Entry/Approval/Approval.php:227 src/Entry/Approval/Approval.php:236
-#: src/Entry/Approval/Approval.php:245
-#: src/Entry/BulkActions/RequestHandler.php:133
-#: src/Entry/BulkActions/SelectionMode.php:98 src/Field/Types/Notes.php:927
-msgid "The request was invalid. Refresh the page and try again."
-msgstr "درخواست نامعتبر بود. صفحه را تازه‌سازی کنید و دوباره تلاش کنید."
-
 #: src/Admin/Rendering/RenderSettings.php:467
 msgid "Editor Or Higher"
 msgstr "ویرایشگر یا بالاتر"
@@ -1306,10 +902,6 @@ msgstr "ردیف به موقعیت %1$d از %2$d منتقل شد."
 #: src/Admin/AdminViews.php:2591
 msgid "Field is already at the bottom."
 msgstr "فیلد از قبل در پایین‌ترین موقعیت است."
-
-#: src/Entry/Approval/GFEntriesPageBulkActions.php:174
-msgid "%d entries"
-msgstr "%d ورودی"
 
 #: src/Admin/Rendering/RenderSettings.php:645
 msgid "Field Details"
@@ -1340,14 +932,9 @@ msgstr "این نما با نوع نمای %s پیکربندی شده است ک�
 msgid "The text to display when there are no entries to show. HTML and shortcodes are allowed."
 msgstr "متنی که هنگام نبود ورودی برای نمایش نشان داده می‌شود. HTML و کد کوتاه مجاز هستند."
 
-#: src/Widget/Types/SearchWidget.php:1712
-msgid "Number of Columns:"
-msgstr "تعداد ستون‌ها:"
-
 #: src/Admin/Metaboxes/AdminMetaboxes.php:165
 #: src/Admin/Metaboxes/views/view-configuration.php:118
 #: src/Admin/Metaboxes/views/view-configuration.php:94
-#: src/Frontend/Frontend.php:820 src/Renderer/Renderer.php:354
 #: src/Settings/ViewSettings.php:649
 msgid "Multiple Entries"
 msgstr "فهرست ورودی‌ها"
@@ -1356,7 +943,6 @@ msgstr "فهرست ورودی‌ها"
 msgid "\"No Search Results\" Text"
 msgstr "متن «بدون نتیجهٔ جستجو»"
 
-#: src/Extension/EditEntry/EditEntryRender.php:3393
 #: src/Settings/ViewSettings.php:705
 msgctxt "Shown when the user decides not to edit an entry"
 msgid "Cancel"
@@ -1383,24 +969,11 @@ msgstr "کلاس CSS"
 msgid "The data is not lost; re-activate the associated plugin and the configuration will re-appear."
 msgstr "داده‌ها از بین نرفته‌اند؛ افزونهٔ مرتبط را دوباره فعال کنید تا پیکربندی دوباره ظاهر شود."
 
-#: src/Widget/Types/SearchWidget.php:1470
-msgid "Search fields shown"
-msgstr "فیلدهای جستجوی نمایش‌داده‌شده"
-
-#: src/Widget/Types/SearchWidget.php:359
-msgid "Matches All"
-msgstr "تطبیق با همه"
-
-#: src/Admin/AdminBar.php:159 src/Admin/Metaboxes/AdminMetaboxes.php:181
+#: src/Admin/Metaboxes/AdminMetaboxes.php:181
 #: src/Admin/Metaboxes/views/view-configuration.php:219
 #: src/Admin/Metaboxes/views/view-configuration.php:221
 #: src/Admin/Metaboxes/views/view-configuration.php:98
-#: src/Admin/PresetFieldGenerator.php:199
-#: src/Extension/EditEntry/EditEntryRender.php:1678
-#: src/Field/Types/EditLink.php:62 src/Frontend/Frontend.php:823
-#: src/PageBuilder/PageBuilder.php:828 src/Renderer/Renderer.php:336
-#: src/Settings/ViewSettings.php:678 src/Shortcode/GVEntryLinkShortcode.php:281
-#: templates/fields/field-edit_link-html.php:38
+#: src/Settings/ViewSettings.php:678
 msgid "Edit Entry"
 msgstr "ویرایش ورودی"
 
@@ -1413,22 +986,8 @@ msgid "Space between cards in the grid layout (in pixels)."
 msgstr "فاصلهٔ میان کارت‌ها در چیدمان شبکه (بر حسب پیکسل)."
 
 #: src/Admin/AdminViews.php:728 src/Admin/Metaboxes/views/shortcode-hint.php:20
-#: vendor_prefixed/trustedlogin/client/src/Form.php:1604
 msgid "Copied!"
 msgstr "کپی شد!"
-
-#: src/Core/Plugin.php:619 src/Entry/Approval/Approval.php:519
-msgid "Approved the Entry for GravityView"
-msgstr "ورودی برای GravityView تأیید شد"
-
-#: src/Widget/Types/SearchWidget.php:1705
-msgid "Side by side (horizontal)"
-msgstr "کنار هم (افقی)"
-
-#: src/Entry/Approval/Approval.php:157
-msgctxt "The title for an event in a notifications drop down list."
-msgid "Entry is disapproved"
-msgstr "ورودی رد می‌شود"
 
 #: src/Admin/Metaboxes/views/data-source.php:72
 msgid "Switch View"
@@ -1442,7 +1001,7 @@ msgstr "URL هدایت پس از حذف ورودی"
 msgid "Use this field as a row header"
 msgstr "استفاده از این فیلد به‌عنوان سرستون ردیف"
 
-#: src/Admin/AdminViews.php:2594 src/Admin/ViewItem.php:273
+#: src/Admin/AdminViews.php:2594
 msgid "Move field to the next column"
 msgstr "انتقال فیلد به ستون بعدی"
 
@@ -1455,10 +1014,6 @@ msgstr "در نسخهٔ PRO موجود است"
 msgid "Sort by secondary field"
 msgstr "مرتب‌سازی بر اساس فیلد ثانویه"
 
-#: src/Widget/Types/SearchWidget.php:1720
-msgid "6 Columns"
-msgstr "6 ستون"
-
 #: src/Settings/ViewSettings.php:377
 msgid "By default, entries are sorted by Entry ID."
 msgstr "به‌طور پیش‌فرض، ورودی‌ها بر اساس شناسهٔ ورودی مرتب می‌شوند."
@@ -1466,13 +1021,8 @@ msgstr "به‌طور پیش‌فرض، ورودی‌ها بر اساس شناس
 #: src/Admin/Metaboxes/views/select-template.php:107
 #: src/Admin/Metaboxes/views/view-configuration.php:113
 #: src/Admin/Metaboxes/views/view-configuration.php:186
-#: src/Integration/ObjectPlaceholder.php:262
 msgid "Buy Now"
 msgstr "خرید"
-
-#: src/Entry/Approval/Approval.php:861
-msgid "Set approval status"
-msgstr "تنظیم وضعیت تأیید"
 
 #: src/Settings/ViewSettings.php:541
 msgid "Smallest a card may shrink before the grid wraps to fewer columns. Use 0 to keep an exact column count even when cards become narrow; set a value (e.g. 280px) so cards reflow at smaller viewports."
@@ -1490,20 +1040,10 @@ msgstr "اگر کاربر غیرمدیر ورودی را ایجاد کرده ب�
 msgid "Row Settings"
 msgstr "تنظیمات ردیف"
 
-#: src/Entry/ApprovalMergeTags.php:110
-#: src/Integration/GravityFormsAdvancedPostCreation.php:163
-#: src/Integration/LifterLMS/Integration.php:51
-#: src/Settings/PluginSettings.php:357 src/Settings/PluginSettings.php:425
-#: vendor_prefixed/gravitykit/foundation/src/Core.php:754
-#: vendor_prefixed/trustedlogin/client/src/Form.php:1607
-msgid "(This link opens in a new window.)"
-msgstr "(این پیوند در پنجرهٔ جدید باز می‌شود.)"
-
 #: src/Admin/AdminViews.php:523
 msgid "GravityView Views using this form as a data source"
 msgstr "نماهای GravityView که از این فرم به‌عنوان منبع داده استفاده می‌کنند"
 
-#: src/Extension/EditEntry/EditEntryRender.php:3394
 #: src/Settings/ViewSettings.php:686
 msgctxt "Button to update an entry the user is editing"
 msgid "Update"
@@ -1517,17 +1057,9 @@ msgstr "فعال‌کردن کش"
 msgid "Show entries submitted after this date. Supports relative dates, such as \"-1 week\" or \"-1 month\"."
 msgstr "ورودی‌هایی را نشان دهید که پس از این تاریخ ارسال شده‌اند. از تاریخ‌های نسبی مانند \"-1 week\" یا \"-1 month\" پشتیبانی می‌کند."
 
-#: src/Settings/PluginSettings.php:547
-msgid "Your feedback helps us improve GravityView. If you have any questions or comments, email us: support@gravitykit.com"
-msgstr "بازخورد شما به بهبود GravityView کمک می‌کند. اگر پرسش یا نظری دارید، به ما ایمیل بزنید: support@gravitykit.com"
-
 #: src/Admin/Rendering/RenderSettings.php:215
 msgid "Custom Label:"
 msgstr "برچسب سفارشی:"
-
-#: src/Widget/Types/SearchWidget.php:365
-msgid "Search Bar configuration: %s"
-msgstr "پیکربندی نوار جستجو: %s"
 
 #: src/Admin/Metaboxes/views/view-configuration.php:185
 msgid "Activate now"
@@ -1541,10 +1073,6 @@ msgstr "URL دیگر"
 msgid "Display \"Duplicate Entry\" fields to non-administrator users if they created the entry. Duplicate Entry fields will always be displayed to site administrators."
 msgstr "اگر کاربر غیرمدیر ورودی را ایجاد کرده باشد، فیلدهای «تکثیر ورودی» را به او نشان دهید. فیلدهای تکثیر ورودی همیشه برای مدیران سایت نمایش داده می‌شوند."
 
-#: src/Settings/PluginSettings.php:373
-msgid "The cache duration must be at least 1 second."
-msgstr "مدت کش باید دست‌کم 1 ثانیه باشد."
-
 #: src/Settings/ViewSettings.php:188 src/Settings/ViewSettings.php:635
 #: src/Settings/ViewSettings.php:764
 msgid "Redirect to URL"
@@ -1554,11 +1082,7 @@ msgstr "هدایت به URL"
 msgid "Layout"
 msgstr "چیدمان"
 
-#: src/Entry/Approval/Approval.php:112 src/Entry/ApprovalStatus.php:52
-msgid "Disapproved"
-msgstr "ردشده"
-
-#: src/API/API.php:341 src/Settings/ViewSettings.php:251
+#: src/Settings/ViewSettings.php:251
 msgid "This search returned no results."
 msgstr "این جستجو نتیجه‌ای نداشت."
 
@@ -1583,17 +1107,12 @@ msgstr "فیلدهای ورودی‌ها"
 msgid "Enable lightbox for images"
 msgstr "فعال‌کردن لایت‌باکس برای تصاویر"
 
-#: src/Field/Types/DateCreated.php:38 src/Legacy/Utility/Common.php:1863
 #: src/Settings/ViewSettings.php:382 src/Settings/ViewSettings.php:413
 msgid "Date Created"
 msgstr "تاریخ ایجاد"
 
 #: src/Admin/AdminViews.php:2090 src/Admin/AdminViews.php:2557
 #: src/Admin/Metaboxes/views/view-configuration.php:151
-#: src/Extension/Lightbox/FancyBox.php:143 src/Widget/Types/BulkActions.php:467
-#: src/Widget/Types/BulkActions.php:468
-#: vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:209
-#: vendor_prefixed/trustedlogin/client/src/Form.php:1599
 msgid "Close"
 msgstr "بستن"
 
@@ -1625,7 +1144,6 @@ msgstr "می‌خواهید همهٔ فیلدهای این ناحیه حذف ش�
 msgid "CSS added here will be placed inside [style] tags in the page&rsquo;s [head], after GravityView styles."
 msgstr "CSS افزوده‌شده در اینجا، پس از سبک‌های GravityView داخل تگ‌های [style] در [head] صفحه قرار می‌گیرد."
 
-#: src/Admin/GFEntriesList.php:107
 #: src/Admin/Metaboxes/views/direct-access-status.php:74
 msgid "Edit"
 msgstr "ویرایش"
@@ -1643,31 +1161,18 @@ msgstr "اجازهٔ دسترسی REST"
 msgid "Learn more about View types & layouts"
 msgstr "دربارهٔ انواع نما و چیدمان‌ها بیشتر بدانید"
 
-#: src/Entry/Approval/EntriesList.php:263
-msgid "Allow administrators to approve or reject entries and users to opt-in or opt-out of their entries being displayed."
-msgstr "به مدیران اجازه دهید ورودی‌ها را تأیید یا رد کنند و کاربران نیز بتوانند انتخاب کنند که ورودی‌هایشان نمایش داده شود یا نه."
-
 #: src/Settings/ViewSettings.php:555
 msgid "When enabled, all cards in a row stretch to match the tallest card. Disable to allow natural heights. Applies to non-table layouts."
 msgstr "در صورت فعال‌بودن، همهٔ کارت‌های یک ردیف تا ارتفاع بلندترین کارت کشیده می‌شوند. برای استفاده از ارتفاع طبیعی غیرفعال کنید. روی چیدمان‌های غیرجدولی اعمال می‌شود."
-
-#: src/Entry/Approval/EntriesList.php:516
-msgid "GravityView entry approval status"
-msgstr "وضعیت تأیید ورودی GravityView"
 
 #: src/Admin/Rendering/RenderSettings.php:173
 msgctxt "Denotes the name under which certain field settings are grouped"
 msgid "Style"
 msgstr "سبک"
 
-#: src/Admin/AdminViews.php:2593 src/Admin/ViewItem.php:272
+#: src/Admin/AdminViews.php:2593
 msgid "Move field to the previous column"
 msgstr "انتقال فیلد به ستون قبلی"
-
-#: src/Settings/PluginSettings.php:557
-msgctxt "A scale from 0 (bad) to 10 (good)"
-msgid "%1$s (\"Not at all likely\") to %2$s (\"Extremely likely\")"
-msgstr "از %1$s («اصلاً محتمل نیست») تا %2$s («بسیار محتمل است»)"
 
 #: src/Admin/AdminViews.php:2559
 msgid "Continue"
@@ -1677,37 +1182,15 @@ msgstr "ادامه"
 msgid "Offset entries starting from"
 msgstr "شروع ورودی‌ها از فاصلهٔ"
 
-#: src/Widget/Types/SearchWidget.php:1722
-msgid "8 Columns"
-msgstr "8 ستون"
-
 #: src/Admin/Metaboxes/views/data-source.php:76
 #: src/Admin/Metaboxes/views/data-source.php:81
 #: src/Admin/Metaboxes/views/data-source.php:87
 msgid "Attention"
 msgstr "توجه"
 
-#: src/PageBuilder/BeaverBuilder/BasicModule.php:104
-#: src/PageBuilder/BeaverBuilder/EntryFieldModule.php:89
-#: src/PageBuilder/BeaverBuilder/EntryLinkModule.php:89
-#: src/PageBuilder/BeaverBuilder/EntryModule.php:89
-#: src/PageBuilder/BeaverBuilder/ViewDetailsModule.php:89
-#: src/Settings/PluginSettings.php:390
-#: vendor_prefixed/gravitykit/foundation/src/Core.php:793
-msgid "General"
-msgstr "عمومی"
-
-#: src/Entry/Approval/GFEntriesPageBulkActions.php:180
-msgid "%s approved."
-msgstr "%s تأیید شد."
-
 #: src/Admin/Metaboxes/views/data-source.php:82
 msgid "Switching the View type will move your configured fields into the new layout. Review the new configuration before saving. Changes will be permanent once you save the View."
 msgstr "با تغییر نوع نما، فیلدهای پیکربندی‌شده به چیدمان جدید منتقل می‌شوند. پیش از ذخیره، پیکربندی جدید را بررسی کنید. پس از ذخیرهٔ نما، تغییرات دائمی خواهند بود."
-
-#: src/Settings/PluginSettings.php:409
-msgid "Caching"
-msgstr "کش"
 
 #: src/Admin/AdminViews.php:521
 msgid "Connected Views"
@@ -1716,14 +1199,6 @@ msgstr "نماهای متصل"
 #: src/Settings/ViewSettings.php:834
 msgid "JavaScript added here will be placed inside [script] tags in the page&rsquo;s footer, after GravityView scripts."
 msgstr "JavaScript افزوده‌شده در اینجا، پس از اسکریپت‌های GravityView داخل تگ‌های [script] در پاورقی صفحه قرار می‌گیرد."
-
-#: src/Entry/Approval/Approval.php:116 src/Entry/ApprovalStatus.php:65
-msgid "Unapproved"
-msgstr "بررسی‌نشده"
-
-#: src/Widget/Types/SearchWidget.php:1484
-msgid "Advanced Search fields shown"
-msgstr "فیلدهای جستجوی پیشرفتهٔ نمایش‌داده‌شده"
 
 #: src/Admin/AdminViews.php:366
 msgid "Layouts"
@@ -1749,10 +1224,6 @@ msgstr "دسترسی REST به این نما را غیرفعال کنید."
 msgid "Choose the visual theme for this View. Legacy keeps the classic look; Vantage applies a refreshed, consistent design with modern typography and spacing. Your data and layout stay the same; only the styling changes."
 msgstr "پوستهٔ بصری این نما را انتخاب کنید. Legacy ظاهر کلاسیک را حفظ می‌کند؛ Vantage طراحی تازه و یکپارچه‌ای با تایپوگرافی و فاصله‌گذاری مدرن اعمال می‌کند. داده و چیدمان شما تغییر نمی‌کند و فقط سبک ظاهری عوض می‌شود."
 
-#: src/Widget/Types/SearchWidget.php:1129
-msgid "This Year"
-msgstr "امسال"
-
 #: src/Settings/ViewSettings.php:746
 msgid "Request Control Check Frequency"
 msgstr "بسامد بررسی درخواست کنترل"
@@ -1761,27 +1232,14 @@ msgstr "بسامد بررسی درخواست کنترل"
 msgid "Themes give this View a refreshed visual design that works with every View layout. Choose a theme below."
 msgstr "پوسته‌ها ظاهر تازه‌ای به این نما می‌دهند و با همهٔ چیدمان‌های نما کار می‌کنند. یکی از پوسته‌های زیر را انتخاب کنید."
 
-#: src/Entry/Approval/Approval.php:108 src/Entry/ApprovalStatus.php:58
-msgid "Approved"
-msgstr "تأییدشده"
-
 #: src/Admin/Rendering/RenderSettings.php:651
-#: src/PageBuilder/PageBuilder.php:808 src/PageBuilder/PageBuilder.php:810
 msgid "Field ID"
 msgstr "ID فیلد"
-
-#: src/Settings/PluginSettings.php:542
-msgid "Please share your thoughts about GravityView"
-msgstr "لطفاً دیدگاه خود دربارهٔ GravityView را با ما در میان بگذارید"
 
 #: src/Admin/Rendering/RenderSettings.php:657
 msgctxt "The type of field being configured (eg: \"Single Line Text\")"
 msgid "Type"
 msgstr "نوع"
-
-#: src/Widget/Types/SearchWidget.php:341
-msgid "There was an error loading searchable fields. Save the View or refresh the page to fix this issue."
-msgstr "هنگام بارگذاری فیلدهای قابل جستجو خطایی رخ داد. برای رفع مشکل، نما را ذخیره کنید یا صفحه را تازه‌سازی کنید."
 
 #: src/Admin/AdminViews.php:2589
 msgid "Field moved to position %1$d of %2$d."
@@ -1795,14 +1253,9 @@ msgstr "عملکرد پیوند لغو"
 msgid "Show entries submitted before this date. Supports relative dates, such as \"now\" or \"-3 days\"."
 msgstr "ورودی‌هایی را نشان دهید که پیش از این تاریخ ارسال شده‌اند. از تاریخ‌های نسبی مانند \"now\" یا \"-3 days\" پشتیبانی می‌کند."
 
-#: src/Admin/AddShortcode.php:136 src/Admin/Metaboxes/AdminMetaboxes.php:149
-#: src/View/Revisions.php:292
+#: src/Admin/Metaboxes/AdminMetaboxes.php:149
 msgid "View Settings"
 msgstr "تنظیمات نما"
-
-#: src/Entry/Approval/GFEntriesPageBulkActions.php:190
-msgid "%s disapproved."
-msgstr "%s رد شد."
 
 #: src/Admin/AdminViews.php:1515
 msgid "Add Widget"
@@ -1849,10 +1302,6 @@ msgstr "فرم هنگام نبود ورودی"
 msgid "GravityView requires Javascript to be enabled."
 msgstr "برای استفاده از GravityView باید JavaScript فعال باشد."
 
-#: src/Field/Types/Date.php:34 src/Widget/Types/SearchWidget.php:280
-msgid "Date"
-msgstr "تاریخ"
-
 #: src/Admin/Rendering/RenderSettings.php:174
 msgctxt "Denotes the name under which certain field settings are grouped"
 msgid "Visibility"
@@ -1861,16 +1310,6 @@ msgstr "قابلیت مشاهده"
 #: src/Settings/ViewSettings.php:587
 msgid "If Search Value is set, you can define a specific field to search in. Otherwise, all fields will be searched."
 msgstr "اگر مقدار جستجو تنظیم شده باشد، می‌توانید فیلد مشخصی را برای جستجو تعیین کنید. در غیر این صورت، همهٔ فیلدها جستجو می‌شوند."
-
-#: src/Settings/PluginSettings.php:448
-msgctxt "Vantage theme"
-msgid "Vantage"
-msgstr "Vantage"
-
-#: src/Settings/PluginSettings.php:452
-msgctxt "Legacy theme"
-msgid "Legacy"
-msgstr "Legacy"
 
 #: src/Settings/ViewSettings.php:187
 msgid "Display a Form"
@@ -1892,26 +1331,10 @@ msgstr "فیلتر بر اساس تاریخ شروع"
 msgid "Number of columns for card grid layout. Set to 1 for single-column (default stacked layout). Applies to non-table layouts."
 msgstr "تعداد ستون‌ها برای چیدمان شبکه کارت. برای یک ستون (چیدمان روی‌همِ پیش‌فرض) مقدار 1 را انتخاب کنید. روی چیدمان‌های غیرجدولی اعمال می‌شود."
 
-#: src/Widget/Types/SearchWidget.php:352
-msgid "Global search"
-msgstr "جستجوی سراسری"
-
-#: src/Settings/PluginSettings.php:552
-msgid "The plugin doesn't work"
-msgstr "افزونه کار نمی‌کند"
-
 #: src/Admin/Metaboxes/views/select-template.php:69
 #: src/Admin/Metaboxes/views/view-configuration.php:184
 msgid "Install"
 msgstr "نصب"
-
-#: src/Widget/Types/SearchWidget.php:1717
-msgid "3 Columns"
-msgstr "3 ستون"
-
-#: src/Entry/Approval/EntriesList.php:317
-msgid "Approved?"
-msgstr "تأییدشده؟"
 
 #: src/Admin/Metaboxes/views/data-source.php:77
 msgid "Changing the form will reset your field configuration. Changes will be permanent once you save the View."
@@ -1939,11 +1362,10 @@ msgstr "هیچ فیلدی به چیدمان %s پیوند ندارد."
 msgid "Administrator"
 msgstr "مدیر"
 
-#: src/Admin/Metaboxes/views/data-source.php:59 src/Utils/HtmlElements.php:45
+#: src/Admin/Metaboxes/views/data-source.php:59
 msgid "list of forms"
 msgstr "فهرست فرم‌ها"
 
-#: src/API/API.php:348 src/Entry/EntryList.php:120
 #: src/Settings/ViewSettings.php:201
 msgid "No entries match your request."
 msgstr "هیچ ورودی‌ای با درخواست شما مطابقت ندارد."
@@ -1952,7 +1374,7 @@ msgstr "هیچ ورودی‌ای با درخواست شما مطابقت ندا�
 msgid "Learn more about %s…"
 msgstr "دربارهٔ %s بیشتر بدانید…"
 
-#: src/Admin/AdminViews.php:1939 src/Widget/Types/SearchWidget.php:146
+#: src/Admin/AdminViews.php:1939
 msgid "Search Bar"
 msgstr "نوار جستجو"
 
@@ -1975,7 +1397,6 @@ msgid "If enabled, entries can be exported for this View by adding \"/csv/\" or 
 msgstr "در صورت فعال‌بودن، با افزودن \"/csv/\" یا \"/tsv/\" به URL نما می‌توان ورودی‌های این نما را برون‌بری کرد. هر فیلد پیکربندی‌شده یک ستون در فایل برون‌بری خواهد بود."
 
 #: src/Admin/AdminViews.php:492 src/Admin/AdminViews.php:505
-#: src/Admin/Welcome.php:249
 msgid "Create a View"
 msgstr "ایجاد نما"
 
@@ -1983,7 +1404,7 @@ msgstr "ایجاد نما"
 msgid "Enable sorting by column"
 msgstr "فعال‌کردن مرتب‌سازی بر اساس ستون"
 
-#: src/Admin/AdminBar.php:213 src/Admin/AdminViews.php:768
+#: src/Admin/AdminViews.php:768
 msgid "Edit Form"
 msgstr "ویرایش فرم"
 
@@ -2001,7 +1422,6 @@ msgctxt "Denotes the name under which certain field settings are grouped"
 msgid "Default"
 msgstr "پیش‌فرض"
 
-#: src/Extension/DeleteEntry/DeleteEntry.php:362
 #: src/Settings/ViewSettings.php:729
 msgctxt "Button label to delete an entry from the Edit Entry screen"
 msgid "Delete"
