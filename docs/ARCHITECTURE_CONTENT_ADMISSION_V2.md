@@ -1,9 +1,7 @@
 # Content Admission v2 — deterministic multi-record authority
 
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
-Current production extensions:
-- `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`;
-- `WU-007 — PGR-GRAVITYFORMS-FRONTEND-FIRST-BOUNDED-CONTENT-ADMISSION-01`.
+Current production state (2026-09-14): Gravity Forms has six accepted records / 1759 unique identities; Gravity Flow has seven accepted records / 732 unique identities. Historical originating Work Units below remain provenance for earlier increments.
 
 This contract generalizes bounded content admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
 
@@ -15,13 +13,7 @@ Source admission and translation-content admission remain separate. A valid prod
 
 `product + domain + locale + target_version + surface_id`
 
-Duplicate tuples fail closed. Production currently contains exactly three bounded records:
-
-1. Gravity Forms frontend shortcode — `gravityforms::frontend_runtime::shortcode:gravityform`;
-2. Gravity Flow Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
-3. Gravity Flow Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
-
-No other Gravity Forms or Gravity Flow surface is authorized by those Work Units.
+Duplicate tuples fail closed. Production now contains independently validated records across products. Gravity Forms contributes six accepted records and Gravity Flow contributes all seven accepted Surface Registry records; GravityView retains its separately bounded existing record. Record authority is still granted only by explicit revision-2 content records, never by product identity or source admission alone.
 
 ## Independent record validation
 
@@ -56,8 +48,8 @@ Validated records are grouped by product and sorted by record identity tuple. Th
 
 Current aggregates:
 
-- Gravity Forms frontend shortcode: 41 admitted identities from an independent 4207-message source census; because this is the first Gravity Forms content record, the product aggregate is exactly those 41 identities.
-- Gravity Flow Inbox + Status: 255 + 43 with 10 identical overlaps = 288 unique admitted identities from an independent 1098-message source census.
+- Gravity Forms: six independently admitted records deterministically union to 1759 identities from the independent 4207-message source census.
+- Gravity Flow: seven independently admitted records contain 768 surface occurrences and deterministically union to 732 identities from the independent 1098-message source census; 366 source identities remain non-admitted.
 
 The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal the validated union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
 
@@ -79,14 +71,7 @@ Generated `metadata.json` mirrors the validated multi-record state under `conten
 
 `tools/i18n/build.php` grants partial runtime catalog generation only when a validated product aggregate exists and the committed product PO matches the aggregate message count and SHA-256. A product with valid source admission but zero validated content records has no content authority; metadata-only products remain runtime dormant.
 
-Gravity Forms WU-007 generates only the aggregate justified by the repaired 41-identity frontend record:
-
-- aggregate provider PO SHA-256: `ba4337ab4a7df342c59aec346464e67065ea48a7fa4045aa161b7f0162d9cf5a`;
-- translation-content SHA-256: `1fc2c6ceb203c48d757d53a0892b11b417ad6c956350e3414b9588cf80afb3b6`;
-- MO SHA-256: `de4ceac4c44892cdaa75a918a3f9e3b2c4a8b864700f1662f59e5073e118fff2`;
-- `.l10n.php` SHA-256: `a8d1bee39d503e1a99c296f02f64708e57c7ef731db059778b575e20e0b11ca3`.
-
-Its `scripts` map remains empty and no Gravity Forms translation JSON is generated. Non-admitted Gravity Forms identities retain upstream/vendor/TranslationsPress/source-English fallback; this is partial surface coverage, not a full-product Persian claim.
+Current product aggregates are independent of their historical first-admission checkpoints. Gravity Forms remains exactly the merged PR #19 authority: six records / 1759 unique identities. Gravity Flow is the seven-record classified union: 732 unique identities from 768 surface occurrences, leaving 366 of 1098 source identities non-admitted.
 
 Gravity Flow Inbox fingerprints remain:
 
@@ -102,6 +87,6 @@ Gravity Flow Status fingerprints remain:
 - path fingerprint: `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed`;
 - translation fingerprint: `32ff81b876f917c75741c137b2b3513d740159b386613a13fb12db6600244aa7`.
 
-The current Gravity Flow aggregate remains 288 identities with MO `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` and `.l10n.php` `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44`.
+The current Gravity Flow aggregate is 732 identities. Its aggregate provider PO SHA-256 is `bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a`, generated MO SHA-256 is `247224d3385df3fbbeda0bb2177d649858b808d10586b7ecac8da90a5424615c`, and generated `.l10n.php` SHA-256 is `580e658d61be7190fb53db1fe7c9f1cf15ba5210ef8aa7fe8c4bf5432aa262d0`.
 
-All product script maps remain empty. No native JavaScript translation handle is activated by these content-admission records, and no Gravity Forms or Gravity Flow translation JSON is generated.
+All product script maps remain empty. No native JavaScript translation handle is activated by these content-admission records, and no Gravity Forms or Gravity Flow translation JSON is generated. Non-admitted identities retain upstream/vendor/TranslationsPress and then source-English fallback.

@@ -333,7 +333,7 @@ function pgr_validate_content_admission_record( $root, array $record, array $sou
 		pgr_content_require_hash( $record[ $field ] ?? null, $field );
 	}
 	if ( ! is_int( $record['reviewed_source_message_count'] ?? null ) || 0 >= $record['reviewed_source_message_count'] ||
-		! is_int( $record['admitted_message_count'] ?? null ) || 0 >= $record['admitted_message_count'] ||
+		! is_int( $record['admitted_message_count'] ?? null ) || 0 > $record['admitted_message_count'] ||
 		0 !== ( $record['native_js_handles_activated'] ?? null ) || 0 !== ( $record['js_translation_json_generated'] ?? null ) ) {
 		throw new RuntimeException( 'Invalid content-admission count/JavaScript contract' );
 	}
