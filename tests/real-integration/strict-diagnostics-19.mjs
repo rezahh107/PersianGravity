@@ -178,15 +178,19 @@ try {
   const matches = probe.failed_ping_requests.filter((record) => {
     try { return new URL(record.url).pathname === '/wp-admin/admin-ajax.php'; } catch { return false; }
   });
-  const allowedActions = new Set(['heartbeat', 'gk_foundation_do_ajax']);
+  const allowedActions = new Set(['heartbeat', 'gk_foundation_do_ajax', 'wp-remove-post-lock']);
 
   if (matches.length === 1 && allowedActions.has(matches[0].action)) {
     probe.result = 'PASS';
-    probe.rationale = matches[0].action === 'heartbeat'
-      ? 'The exact reproduced POST ping is WordPress Core heartbeat traffic; its action=heartbeat identity is captured from the failed request body.'
-      : 'The exact reproduced POST ping is GravityKit Foundation AJAX traffic; its action=gk_foundation_do_ajax identity is captured from the failed request body and matches the GravityView-owned settings surface configuration.';
+    if (matches[0].action === 'heartbeat') {
+      probe.rationale = 'The exact reproduced POST ping is WordPress Core heartbeat traffic; its action=heartbeat identity is captured from the failed request body.';
+    } else if (matches[0].action === 'gk_foundation_do_ajax') {
+      probe.rationale = 'The exact reproduced POST ping is GravityKit Foundation AJAX traffic; its action=gk_foundation_do_ajax identity is captured from the failed request body and matches the GravityView-owned settings surface configuration.';
+    } else {
+      probe.rationale = 'The exact reproduced POST ping is WordPress Core post-lock release traffic. Its multipart action=wp-remove-post-lock identity is captured from the failed request body, and the request begins from the previous post-edit frame during navigation away. WordPress Core registers and handles this action through wp_ajax_wp_remove_post_lock.';
+    }
   } else {
-    probe.rationale = `Fail-closed attribution: expected exactly one reproduced aborted admin-ajax ping with action heartbeat or gk_foundation_do_ajax; observed ${matches.length} matching failed ping request(s) with actions [${matches.map((item) => item.action || 'EMPTY').join(', ')}].`;
+    probe.rationale = `Fail-closed attribution: expected exactly one reproduced aborted admin-ajax ping with action heartbeat, gk_foundation_do_ajax, or wp-remove-post-lock; observed ${matches.length} matching failed ping request(s) with actions [${matches.map((item) => item.action || 'EMPTY').join(', ')}].`;
   }
 } catch (error) {
   probe.rationale = `Attribution probe failed: ${String(error?.stack || error)}`;
