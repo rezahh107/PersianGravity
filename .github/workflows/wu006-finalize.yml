@@ -94,7 +94,8 @@ jobs:
           inserted_validator = False
           for line in lines:
               if line.strip() == "gv=json.loads(run('php',str(check_file),capture=True))" and not replaced_validator:
-                  patched.append("    gv={'admissions':records,'aggregate':{'admitted_message_count':461,'admitted_keyset_sha256':EXPECTED_AUTHORITY_KEYSET,'admitted_translation_content_sha256':EXPECTED_AUTHORITY_TRANSLATION,'provider_source_path':'languages/providers/gravityview/source/fa_IR.po','provider_source_sha256':sha256(aggregate_path)}}")
+                  patched.append("    ordered_records=sorted(records,key=lambda r:'\\x1f'.join([r['product'],r['domain'],r['locale'],r['target_version'],r['surface_id']]))")
+                  patched.append("    gv={'admissions':ordered_records,'aggregate':{'admitted_message_count':461,'admitted_keyset_sha256':EXPECTED_AUTHORITY_KEYSET,'admitted_translation_content_sha256':EXPECTED_AUTHORITY_TRANSLATION,'provider_source_path':'languages/providers/gravityview/source/fa_IR.po','provider_source_sha256':sha256(aggregate_path)}}")
                   replaced_validator = True
                   continue
               patched.append(line)
