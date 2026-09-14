@@ -182,7 +182,7 @@ Work unit: `WU-PR8-SEMANTIC-RECONCILIATION-01`. Normal merge of main `62ee8b2808
 | --- | --- | --- |
 | RUNTIME_PROVIDER_STATUS | PARTIAL | Shared core implemented; empty production source scaffolds and no approved JS handles |
 | PHP_PRECEDENCE_STATUS | AUTOMATED_PASS | Actual Core gettext/JIT/controller with synthetic provider and upstream catalogs, all three manifest domains |
-| JS_PRECEDENCE_STATUS | CONTENT_COMPOSITION_PASS; PRODUCT_LIFECYCLE_NOT_PROVEN | Pure Jed composition/pass-through tests; no invented product handle is tested |
+| JS_PRECEDENCE_STATUS | CONTENT_COMPOSITION_PASS; PRODUCT_LIFECYCLE_NOT_PROVEN | Pure Jed composition/pass-through tests; no invented vendor handle is tested |
 | DISCOVERY_STATUS | AUTOMATED_PASS | Provider-only JIT, upstream custom path retained, unmanaged/non-fa_IR pass-through |
 | CATALOG_BUILD_STATUS | AUTOMATED_PASS_FOR_SCAFFOLDS_AND_SYNTHETIC_FIXTURES | Pinned PO/MO dependency, reproducible PHP/JSON, PO unchanged, no fake production output |
 | TRANSLATION_CONTENT_COVERAGE | SOURCE_UNAVAILABLE_EMPTY_SCAFFOLD | Each product PO: 0 translated / 0 untranslated / 0 fuzzy; actual product totals and coverage unknown |
