@@ -1,0 +1,474 @@
+name: WU010 Terminal Closure Revalidation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/wu010-terminal-closure.yml'
+      - 'tests/real-integration/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  terminal-closure:
+    name: Exact final-main repository + 19-surface closure evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: wu010-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -pwu010-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      WU008_WP_PATH: /tmp/wu010-wordpress
+      WU008_PACKAGE_DIR: /tmp/wu010-packages
+      WU008_ARTIFACT_DIR: /tmp/wu010-artifacts
+      WU008_MANIFEST_PATH: /tmp/wu010-artifacts/runtime-manifest.json
+      WU008_BASE_URL: http://127.0.0.1:8080
+      WU008_WP_CLI: /tmp/wp-cli.phar
+      WU008_PGR_SHA: 150d1dd3f2c4ffa0e4321bffe7c4ca503e3dfb67
+      PGR_SCANNER_ARTIFACT_DIR: /tmp/wu010-artifacts/form-builder-remediation
+      PGR_REMEDIATION_SHA: 150d1dd3f2c4ffa0e4321bffe7c4ca503e3dfb67
+      WU008_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
+      WU008_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      WU008_GF_SIZE: '5300290'
+      WU008_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
+      WU008_GF_VERSION: 3.1.1.1
+      WU008_FLOW_FILE_ID: 1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf
+      WU008_FLOW_FILE: gravityflow-3.1.0-owner-supplied-source-package.zip
+      WU008_FLOW_SIZE: '2603034'
+      WU008_FLOW_SHA256: ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404
+      WU008_FLOW_VERSION: 3.1.0
+      WU008_VIEW_FILE_ID: 16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1
+      WU008_VIEW_FILE: gravityview-3.3.4-source-package.zip
+      WU008_VIEW_SIZE: '7569755'
+      WU008_VIEW_SHA256: af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829
+      WU008_VIEW_VERSION: 3.3.4
+
+    steps:
+      - name: Checkout terminal evidence branch exactly
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Bind harness and canonical product identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "rezahh107/PersianGravity"
+          harness="$(git rev-parse HEAD)"
+          expected_harness="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$harness" = "$expected_harness"
+          printf 'WU010_HARNESS_HEAD=%s\n' "$harness" >> "$GITHUB_ENV"
+          rm -rf "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR"
+          mkdir -p "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR" "$PGR_SCANNER_ARTIFACT_DIR" "$WU008_ARTIFACT_DIR/repository-validation"
+          : > "$WU008_ARTIFACT_DIR/package-verification.jsonl"
+          admin_password="$(openssl rand -hex 24)"
+          echo "::add-mask::$admin_password"
+          printf 'WU008_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
+          printf 'PGR_SCANNER_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
+
+      - name: Set up exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.2.33'
+          coverage: none
+          extensions: mysqli
+          tools: composer:2.8.12
+
+      - name: Set up exact Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.19.0'
+
+      - name: Validate terminal harness statically
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          test "$(node --version)" = "v22.19.0"
+          composer validate --strict
+          bash -n tests/real-integration/verify-package.sh
+          php -l tests/real-integration/setup-runtime-19.php
+          php -l tests/real-integration/observer-mu-plugin.php
+          php -l tests/real-integration/scanner-editor-remediation-setup.php
+          php -l tests/real-integration/scanner-editor-remediation-observer.php
+          python3 -m py_compile tests/real-integration/wu010-closure-package.py
+          node --check tests/real-integration/browser-tests-19.mjs
+          node --check tests/real-integration/rtl-recheck-19.mjs
+          node --check tests/real-integration/scanner-editor-remediation.mjs
+          node --check tests/real-integration/strict-diagnostics-19.mjs
+          node --check tests/real-integration/finalize-revalidation.mjs
+          node --check tests/real-integration/browser-diagnostics.mjs
+          node --test tests/real-integration/browser-diagnostics.test.mjs
+          if git ls-files '*.zip' | grep -q .; then
+            echo "Licensed ZIP archives must never be committed." >&2
+            exit 1
+          fi
+
+      - name: Install repository validation dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer install --no-interaction --no-progress --prefer-dist
+          sudo apt-get update
+          sudo apt-get install --yes gettext
+
+      - name: Check out pinned WordPress 6.7.2 translation implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: WordPress/WordPress
+          ref: 6abb46bec8b58abba32602738a785ba1c83f2a1c
+          path: .wordpress-core-67
+          persist-credentials: false
+
+      - name: Check out pinned WordPress 7.1 translation implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6
+          path: .wordpress-core-71
+          persist-credentials: false
+
+      - name: Execute terminal repository validation and deterministic rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          logdir="$WU008_ARTIFACT_DIR/repository-validation"
+          tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
+          msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po |& tee "$logdir/gettext.log"
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot |& tee -a "$logdir/gettext.log"
+          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
+          find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l |& tee "$logdir/php-syntax.log"
+          composer cs |& tee "$logdir/coding-standards.log"
+          composer compat |& tee "$logdir/php-compatibility.log"
+          node --test tests/js/structured-scanner.test.js |& tee "$logdir/structured-scanner-js.log"
+          PGR_WP_CORE="$GITHUB_WORKSPACE/.wordpress-core-67" composer i18n:test |& tee "$logdir/wp-6.7.2-localization.log"
+          PGR_WP_CORE="$GITHUB_WORKSPACE/.wordpress-core-71" composer i18n:test |& tee "$logdir/wp-7.1-localization.log"
+          composer test |& tee "$logdir/phpunit-8.2.log"
+          composer i18n:build |& tee "$logdir/i18n-build.log"
+          git diff --exit-code |& tee "$logdir/i18n-build-drift.log"
+          composer i18n:check |& tee "$logdir/i18n-check.log"
+          test ! -d src
+          test ! -d assets/fonts
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
+          python3 - <<'PY'
+          import json, pathlib, re
+          root = pathlib.Path('.')
+          out = pathlib.Path('/tmp/wu010-artifacts/repository-validation-summary.json')
+          surfaces = json.loads((root/'tools/i18n/admission/surfaces.json').read_text())
+          content = json.loads((root/'tools/i18n/admission/content.json').read_text())
+          admissions = content['admissions']
+          summary = surfaces['summary']
+          expected = {
+              'gravityforms': {'surfaces': 6, 'classified_messages': 1759, 'unclassified_messages': 2448},
+              'gravityflow': {'surfaces': 7, 'classified_messages': 732, 'unclassified_messages': 366},
+              'gravityview': {'surfaces': 6, 'classified_messages': 461, 'unclassified_messages': 2666},
+          }
+          assert len(surfaces['surfaces']) == 19
+          assert len(admissions) == 19
+          for product, exp in expected.items():
+              assert summary[product]['surfaces'] == exp['surfaces']
+              assert summary[product]['classified_messages'] == exp['classified_messages']
+              assert summary[product]['unclassified_messages'] == exp['unclassified_messages']
+              assert len([a for a in admissions if a['product'] == product]) == exp['surfaces']
+          assert sum(v['unclassified_messages'] for v in summary.values()) == 5480
+          zero = [a for a in admissions if a['admitted_message_count'] == 0]
+          assert len(zero) == 1 and zero[0]['surface_id'] == 'gravityflow::entry_management_runtime::entry_detail_sidebar:gravityflow'
+          assert all(a.get('native_js_handles_activated') == 0 for a in admissions)
+          assert all(a.get('js_translation_json_generated') == 0 for a in admissions)
+          provider_json = []
+          for path in (root/'languages/providers').rglob('*.json'):
+              if path.name not in {'metadata.json', 'provenance.json'}:
+                  provider_json.append(str(path))
+          assert provider_json == []
+          validation = (root/'docs/VALIDATION.md').read_text()
+          assert '34888229939' in validation
+          assert 'wu008-final-revalidation-34888229939-1' in validation
+          assert 'a0c781b463857ab428db8cbc10fa37849854fc59af4f33428100ca29a1939a45' in validation
+          scanner = (root/'includes/fields/class-gf-field-structured-scanner.php').read_text()
+          assert "replace('%1$s', first)" in scanner and "replace('%2$s', second)" in scanner
+          assert not list(root.glob('*.zip'))
+          data = {
+              'schema_version': '1.0.0',
+              'result': 'PASS',
+              'exact_main_sha': '150d1dd3f2c4ffa0e4321bffe7c4ca503e3dfb67',
+              'checks': {
+                  'content_admission_records_exact_19': True,
+                  'product_surface_counts': {k: v['surfaces'] for k, v in expected.items()},
+                  'classified_identity_counts': {k: v['classified_messages'] for k, v in expected.items()},
+                  'unclassified_identity_counts': {k: v['unclassified_messages'] for k, v in expected.items()},
+                  'total_unclassified_exact_5480': True,
+                  'zero_admission_surface_exact': True,
+                  'native_target_product_js_handles_zero': True,
+                  'provider_translation_json_zero': True,
+                  'deterministic_i18n_build_no_tracked_drift': True,
+                  'i18n_check': True,
+                  'authored_po_generation_contract': True,
+                  'fallback_and_excluded_domain_contracts_wp_6_7_2': True,
+                  'fallback_and_excluded_domain_contracts_wp_7_1': True,
+                  'php_syntax': True,
+                  'coding_standards': True,
+                  'php_compatibility': True,
+                  'structured_scanner_js_unit': True,
+                  'phpunit_php_8_2_terminal_lane': True,
+                  'runtime_integrity_guards': True,
+                  'vendor_archives_uncommitted': True,
+                  'structured_scanner_form_builder_remediation_present': True,
+                  'active_validation_wu008_wu009_record_exact': True,
+                  'gk_query_filters_and_action_scheduler_exclusions': True,
+              },
+              'exact_head_ci': {},
+          }
+          out.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          PY
+
+      - name: Install exact WP-CLI and disposable WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$WU008_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $WU008_WP_CLI" | sha256sum -c -
+          php "$WU008_WP_CLI" core download --path="$WU008_WP_PATH" --version=6.8.3 --force --skip-content
+          php "$WU008_WP_CLI" config create --path="$WU008_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=wu010-root --dbhost=127.0.0.1:3306 --skip-check
+          php "$WU008_WP_CLI" core install --path="$WU008_WP_PATH" --url="$WU008_BASE_URL" --title='WU010 Terminal Closure' --admin_user=runtime_admin --admin_password="$WU008_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$WU008_WP_CLI" option update home "$WU008_BASE_URL" --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" option update siteurl "$WU008_BASE_URL" --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" core version --path="$WU008_WP_PATH")" = "6.8.3"
+          php "$WU008_WP_CLI" language core install fa_IR --activate --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "fa_IR"
+
+      - name: Install deterministic theme and observational probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          theme="$WU008_WP_PATH/wp-content/themes/wu010-runtime"
+          mkdir -p "$theme" "$WU008_WP_PATH/wp-content/mu-plugins"
+          cat > "$theme/style.css" <<'CSS'
+          /*
+          Theme Name: WU010 Runtime
+          Version: 1.0.0
+          */
+          CSS
+          cat > "$theme/index.php" <<'PHP'
+          <?php
+          ?><!doctype html>
+          <html <?php language_attributes(); ?>>
+          <head><meta charset="<?php bloginfo( 'charset' ); ?>"><meta name="viewport" content="width=device-width, initial-scale=1"><?php wp_head(); ?></head>
+          <body <?php body_class(); ?>><main><?php while ( have_posts() ) : the_post(); the_content(); endwhile; ?></main><?php wp_footer(); ?></body>
+          </html>
+          PHP
+          cp tests/real-integration/observer-mu-plugin.php "$WU008_WP_PATH/wp-content/mu-plugins/wu010-observer.php"
+          cp tests/real-integration/scanner-editor-remediation-observer.php "$WU008_WP_PATH/wp-content/mu-plugins/wu010-scanner-remediation-observer.php"
+          php "$WU008_WP_CLI" theme activate wu010-runtime --path="$WU008_WP_PATH"
+
+      - name: Download exact owner-supplied licensed packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          download() {
+            local file_id="$1" output="$2"
+            curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --retry-connrefused --connect-timeout 20 --max-time 180 -o "$output" "https://drive.usercontent.google.com/download?id=${file_id}&export=download&confirm=t"
+          }
+          download "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE"
+          download "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE"
+          download "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE"
+
+      - name: Fail-closed verify all licensed packages before installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$WU008_ARTIFACT_DIR/package-verification.jsonl"
+          tests/real-integration/verify-package.sh "Gravity Forms" "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE" "$WU008_GF_FILE" "$WU008_GF_SIZE" "$WU008_GF_SHA256" "gravityforms/gravityforms.php" "$WU008_GF_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "gravityflow/gravityflow.php" "$WU008_FLOW_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 3
+          jq -s 'map(. + {verified:(.verification == "PASS")})' "$evidence" > "$WU008_ARTIFACT_DIR/package-verification.json"
+
+      - name: Install exact licensed products and exact final main SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_GF_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          pgr="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms"
+          git init "$pgr"
+          git -C "$pgr" remote add origin https://github.com/rezahh107/PersianGravity.git
+          git -C "$pgr" fetch --depth=1 origin "$WU008_PGR_SHA"
+          git -C "$pgr" checkout --detach FETCH_HEAD
+          actual_pgr_sha="$(git -C "$pgr" rev-parse HEAD)"
+          test "$actual_pgr_sha" = "$WU008_PGR_SHA"
+          printf '%s\n' "$actual_pgr_sha" > "$WU008_ARTIFACT_DIR/installed-persiangravity-sha.txt"
+          php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "4.2.0"
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$WU008_PGR_SHA"
+
+      - name: Create exact 19-surface fixtures and authority manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime-19.php
+          test -s "$WU008_MANIFEST_PATH"
+          php -r '$m=json_decode(file_get_contents(getenv("WU008_MANIFEST_PATH")),true); if(count($m["surfaces"]??[])!==19 || ($m["exact_persiangravity_commit_actual"]??"")!==getenv("WU008_PGR_SHA")) exit(1);'
+
+      - name: Create focused Form Builder remediation fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-editor-remediation-setup.php
+          test -s "$PGR_SCANNER_ARTIFACT_DIR/runtime-manifest.json"
+
+      - name: Install exact Playwright and Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node -e "const p=require('playwright/package.json'); if(p.version!=='1.55.0') process.exit(1);"
+
+      - name: Start disposable WordPress HTTP server
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" server --path="$WU008_WP_PATH" --host=127.0.0.1 --port=8080 >/tmp/wu010-wp-server.log 2>&1 &
+          echo $! >/tmp/wu010-wp-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS "$WU008_BASE_URL/" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/wu010-wp-server.log >&2
+          exit 1
+
+      - name: Collect complete 19-surface provider/runtime evidence
+        id: browser
+        continue-on-error: true
+        shell: bash
+        run: node tests/real-integration/browser-tests-19.mjs
+
+      - name: Execute mandatory Structured Scanner Form Builder proof
+        id: form_builder
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node tests/real-integration/scanner-editor-remediation.mjs
+
+      - name: Execute strict classified browser diagnostics across all 19 surfaces
+        id: diagnostics
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node tests/real-integration/strict-diagnostics-19.mjs
+
+      - name: Recheck all 19 RTL/BiDi surfaces with rendered-control semantics
+        id: rtl
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node tests/real-integration/rtl-recheck-19.mjs
+
+      - name: Finalize base fail-closed evidence package
+        id: finalize
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: node tests/real-integration/finalize-revalidation.mjs
+
+      - name: Bind exact-head repository CI result into closure evidence
+        id: exact_ci
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 36); do
+            data="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$WU010_HARNESS_HEAD" -f event=pull_request -f per_page=50)"
+            row="$(printf '%s' "$data" | jq -c '[.workflow_runs[] | select(.path==".github/workflows/ci.yml") | select(.head_sha==env.WU010_HARNESS_HEAD)] | sort_by(.created_at) | reverse | .[0] // empty')"
+            if [ -n "$row" ]; then
+              status="$(printf '%s' "$row" | jq -r '.status')"
+              if [ "$status" = "completed" ]; then
+                conclusion="$(printf '%s' "$row" | jq -r '.conclusion')"
+                test "$conclusion" = "success"
+                run_id="$(printf '%s' "$row" | jq -r '.id')"
+                url="$(printf '%s' "$row" | jq -r '.html_url')"
+                tmp="$(mktemp)"
+                jq --arg conclusion "$conclusion" --arg run_id "$run_id" --arg url "$url" '.exact_head_ci={conclusion:$conclusion,run_id:$run_id,url:$url}' "$WU008_ARTIFACT_DIR/repository-validation-summary.json" > "$tmp"
+                mv "$tmp" "$WU008_ARTIFACT_DIR/repository-validation-summary.json"
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo "Exact-head CI did not complete successfully within the closure observation window." >&2
+          exit 1
+
+      - name: Build self-contained WU010 closure dossier and hash index
+        id: closure
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: python3 tests/real-integration/wu010-closure-package.py
+
+      - name: Verify internal SHA256SUMS before upload
+        id: hashes
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$WU008_ARTIFACT_DIR/SHA256SUMS"
+          test -s "$WU008_ARTIFACT_DIR/closure-dossier.md"
+          test -s "$WU008_ARTIFACT_DIR/repository-validation-summary.json"
+          cd "$WU008_ARTIFACT_DIR"
+          sha256sum -c SHA256SUMS
+
+      - name: Upload WU010 terminal closure evidence artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wu010-terminal-closure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/wu010-artifacts
+            /tmp/wu010-wp-server.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce terminal PASS only after artifact upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          idx="$WU008_ARTIFACT_DIR/evidence-index.json"
+          repo="$WU008_ARTIFACT_DIR/repository-validation-summary.json"
+          test -s "$idx"
+          test -s "$repo"
+          test "$(jq -r '.terminal_verdict' "$idx")" = "PASS"
+          test "$(jq -r '.exact_final_main_sha' "$idx")" = "$WU008_PGR_SHA"
+          test "$(jq -r '.repository_validation.result' "$idx")" = "PASS"
+          test "$(jq -r '.repository_validation.exact_head_ci.conclusion' "$idx")" = "success"
+          test "$(jq -r '.summary.surfaces_executed' "$idx")" = "19"
+          test "$(jq -r '.summary.positive_provider_proofs_passed' "$idx")" = "18"
+          test "$(jq -r '.summary.zero_admission_provider_not_applicable' "$idx")" = "1"
+          test "$(jq -r '.summary.rtl_pass' "$idx")" = "19"
+          test "$(jq -r '.summary.browser_diagnostics.blocking_diagnostics' "$idx")" = "0"
+          test "$(jq -r '.summary.browser_diagnostics.pageerrors_total' "$idx")" = "0"
+          test "$(jq -r '.summary.blocking_findings' "$idx")" = "0"
+          cd "$WU008_ARTIFACT_DIR"
+          sha256sum -c SHA256SUMS
