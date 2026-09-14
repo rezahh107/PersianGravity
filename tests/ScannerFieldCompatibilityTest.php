@@ -56,6 +56,28 @@ final class ScannerFieldCompatibilityTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
+	public function test_form_editor_inline_script_preserves_format_placeholders_and_is_valid_javascript() {
+		$scanner = $this->boot_scanner_runtime();
+		$script  = $scanner->get_form_editor_inline_script_on_page_render();
+
+		$this->assertStringContainsString( '.replace(\'%1$s\', first)', $script );
+		$this->assertStringContainsString( '.replace(\'%2$s\', second)', $script );
+		$this->assertStringContainsString( '.replace(\'%s\', first)', $script );
+		$this->assertStringNotContainsString( ".replace('%1\\', first)", $script );
+		$this->assertStringNotContainsString( ".replace('%2\\', second)", $script );
+
+		$temp_file = tempnam( sys_get_temp_dir(), 'pgr-scanner-editor-' );
+		$this->assertNotFalse( $temp_file );
+		file_put_contents( $temp_file, $script );
+		$output = array();
+		$status = 0;
+		exec( 'node --check ' . escapeshellarg( $temp_file ) . ' 2>&1', $output, $status );
+		unlink( $temp_file );
+
+		$this->assertSame( 0, $status, implode( "\n", $output ) );
+	}
+
+	#[RunInSeparateProcess]
 	public function test_frontend_message_attributes_cover_all_runtime_states() {
 		$scanner = $this->boot_scanner_runtime();
 		$markup = $scanner->get_field_input( array( 'id' => 1, 'fields' => array( $scanner ) ) );
