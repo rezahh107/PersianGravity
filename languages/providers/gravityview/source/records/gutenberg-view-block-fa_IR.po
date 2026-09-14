@@ -1,0 +1,16 @@
+# GravityView 3.3.4 Persian classified-surface authority — evidence artifact only.
+# Contains exactly the 461 canonical gk-gravityview identities proven by the six accepted Surface Registry path rules.
+# Not a PersianGravity runtime/content-admission artifact; no repository mutation or JS JSON generation is implied.
+msgid ""
+msgstr ""
+"Project-Id-Version: GravityView 3.3.4 classified authority\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gk-gravityview\n"
+
+#: src/PageBuilder/Gutenberg/blocks/view/block.php:27
+msgid "GravityView View"
+msgstr "نمای GravityView"

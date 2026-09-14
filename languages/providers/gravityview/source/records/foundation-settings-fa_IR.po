@@ -1,0 +1,182 @@
+# GravityView 3.3.4 Persian classified-surface authority — evidence artifact only.
+# Contains exactly the 461 canonical gk-gravityview identities proven by the six accepted Surface Registry path rules.
+# Not a PersianGravity runtime/content-admission artifact; no repository mutation or JS JSON generation is implied.
+msgid ""
+msgstr ""
+"Project-Id-Version: GravityView 3.3.4 classified authority\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gk-gravityview\n"
+
+#: src/Settings/PluginSettings.php:554
+msgid "What plugin you are using, and why?"
+msgstr "از چه افزونه‌ای استفاده می‌کنید و چرا؟"
+
+#: src/Settings/PluginSettings.php:376
+msgid "Entry Cache Duration"
+msgstr "مدت کش ورودی"
+
+#: src/Settings/PluginSettings.php:444
+msgid "The theme applied to new Views. Vantage uses a refreshed, consistent stylesheet with modern typography, spacing, and visual design. Legacy is the prior default GravityView theme."
+msgstr "پوسته‌ای که روی نماهای جدید اعمال می‌شود. Vantage با تایپوگرافی، فاصله‌گذاری و طراحی بصری مدرن، شیوه‌نامه‌ای تازه و یکپارچه ارائه می‌کند. Legacy پوستهٔ پیش‌فرض قبلی GravityView است."
+
+#: src/Settings/PluginSettings.php:551
+msgid "I no longer need GravityView"
+msgstr "دیگر به GravityView نیاز ندارم"
+
+#: src/Settings/PluginSettings.php:402
+msgid "Use Dynamic Widget Placement"
+msgstr "استفاده از جای‌گذاری پویای ابزارک"
+
+#: src/Settings/PluginSettings.php:541
+msgid "There was an error sharing your feedback. Sorry! Please email us at support@gravitykit.com"
+msgstr "هنگام ارسال بازخورد شما خطایی رخ داد. متأسفیم! لطفاً به support@gravitykit.com ایمیل بزنید."
+
+#: src/Settings/PluginSettings.php:546
+msgid "Thank you for using GravityView!"
+msgstr "از اینکه از GravityView استفاده می‌کنید سپاسگزاریم!"
+
+#: src/Settings/PluginSettings.php:396
+msgid "If you are unsure, disable this setting."
+msgstr "اگر مطمئن نیستید، این تنظیم را غیرفعال کنید."
+
+#: src/Settings/PluginSettings.php:544
+msgid "How likely are you to recommend GravityView?"
+msgstr "چقدر احتمال دارد GravityView را به دیگران پیشنهاد کنید؟"
+
+#: src/Settings/PluginSettings.php:545
+msgid "Send Us Your Feedback"
+msgstr "ارسال بازخورد"
+
+#: src/Settings/PluginSettings.php:555
+msgid "Other"
+msgstr "سایر"
+
+#: src/Settings/PluginSettings.php:532
+msgid "You don't have the ability to edit plugin settings."
+msgstr "اجازهٔ ویرایش تنظیمات افزونه را ندارید."
+
+#: src/Settings/PluginSettings.php:418
+msgid "Enable Public Entry Moderation"
+msgstr "فعال‌سازی مدیریت عمومی ورودی"
+
+#: src/Settings/PluginSettings.php:311
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "The following active filters could be overriding cache settings: [filters]."
+msgstr "فیلترهای فعال زیر ممکن است تنظیمات کش را بازنویسی کنند: [filters]."
+
+#: src/Settings/PluginSettings.php:549
+msgid "Delete all Views, GravityView entry approval status, GravityView-generated entry notes (including approval and entry creator changes), and GravityView plugin settings."
+msgstr "همهٔ نماها، وضعیت تأیید ورودی GravityView، یادداشت‌های ورودی ایجادشده توسط GravityView (از جمله تغییرات تأیید و ایجادکنندهٔ ورودی) و تنظیمات افزونهٔ GravityView را حذف کنید."
+
+#: src/Settings/PluginSettings.php:377
+msgid "Specify the duration in seconds that entry data should remain cached before being refreshed. A shorter duration ensures more up-to-date data, while a longer duration improves performance."
+msgstr "مدت‌زمانی را بر حسب ثانیه تعیین کنید که دادهٔ ورودی پیش از تازه‌سازی در کش بماند. مدت کوتاه‌تر داده را به‌روزتر نگه می‌دارد و مدت طولانی‌تر کارایی را بهتر می‌کند."
+
+#: src/Settings/PluginSettings.php:413
+msgid "Permissions"
+msgstr "مجوزها"
+
+#: src/Settings/PluginSettings.php:352
+msgid "Enable Caching"
+msgstr "فعال‌کردن کش"
+
+#: src/Settings/PluginSettings.php:354
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "[url]Enabling caching[/url] improves performance by reducing the number of queries during page loads. When enabled, you can also specify cache duration for entries."
+msgstr "[url]فعال‌کردن کش[/url] با کاهش تعداد پرس‌وجوها هنگام بارگذاری صفحه، کارایی را بهبود می‌دهد. در صورت فعال‌بودن، می‌توانید مدت کش ورودی‌ها را نیز تعیین کنید."
+
+#: src/Settings/PluginSettings.php:310
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "The [filter] active filter could be overriding cache settings."
+msgstr "[filter] فعال ممکن است تنظیمات کش را بازنویسی کند."
+
+#: src/Settings/PluginSettings.php:438
+msgid "Appearance"
+msgstr "ظاهر"
+
+#: src/Settings/PluginSettings.php:395
+msgid "REST API"
+msgstr "REST API"
+
+#: src/Settings/PluginSettings.php:540
+msgid "Uninstall GravityView"
+msgstr "حذف GravityView"
+
+#: src/Settings/PluginSettings.php:443
+msgid "Default theme"
+msgstr "پوستهٔ پیش‌فرض"
+
+#: src/Settings/PluginSettings.php:543
+msgid "Please follow up with me about my feedback"
+msgstr "لطفاً دربارهٔ بازخوردم با من پیگیری کنید"
+
+#: src/Settings/PluginSettings.php:548
+msgid "If you delete then re-install GravityView, it will be like installing GravityView for the first time."
+msgstr "اگر GravityView را حذف و سپس دوباره نصب کنید، مانند این است که آن را برای اولین بار نصب کرده باشید."
+
+#: src/Settings/PluginSettings.php:396
+msgid "Enable View and Entry access via the REST API? Regular per-View restrictions apply (private, password protected, etc.)."
+msgstr "دسترسی به نما و ورودی از طریق REST API فعال شود؟ محدودیت‌های عادی هر نما (خصوصی، محافظت‌شده با رمز عبور و غیره) همچنان اعمال می‌شوند."
+
+#: src/Settings/PluginSettings.php:550
+msgid "I am going to continue using GravityView"
+msgstr "به استفاده از GravityView ادامه می‌دهم"
+
+#: src/Settings/PluginSettings.php:553
+msgid "I found a better plugin"
+msgstr "افزونهٔ بهتری پیدا کرده‌ام"
+
+#: src/Settings/PluginSettings.php:421
+msgid "If enabled, adding {public} to {link}entry moderation merge tags{/link} will allow logged-out users to approve or reject entries. If disabled, all entry moderation actions require the user to be logged-in and have the ability to edit the entry."
+msgstr "اگر فعال باشد، افزودن {public} به {link}برچسب‌های ادغام مدیریت ورودی{/link} به کاربران واردنشده اجازه می‌دهد ورودی‌ها را تأیید یا رد کنند. اگر غیرفعال باشد، همهٔ عملیات مدیریت ورودی نیازمند ورود کاربر و داشتن مجوز ویرایش ورودی است."
+
+#: src/Settings/PluginSettings.php:403
+msgid "Create additional, drag and droppable, widget rows of different layout types."
+msgstr "ردیف‌های ابزارکی اضافی با انواع چیدمان متفاوت ایجاد کنید که بتوان آن‌ها را با کشیدن و رهاکردن جابه‌جا کرد."
+
+#: src/Settings/PluginSettings.php:357 src/Settings/PluginSettings.php:425
+msgid "(This link opens in a new window.)"
+msgstr "(این پیوند در پنجرهٔ جدید باز می‌شود.)"
+
+#: src/Settings/PluginSettings.php:547
+msgid "Your feedback helps us improve GravityView. If you have any questions or comments, email us: support@gravitykit.com"
+msgstr "بازخورد شما به بهبود GravityView کمک می‌کند. اگر پرسش یا نظری دارید، به ما ایمیل بزنید: support@gravitykit.com"
+
+#: src/Settings/PluginSettings.php:373
+msgid "The cache duration must be at least 1 second."
+msgstr "مدت کش باید دست‌کم 1 ثانیه باشد."
+
+#: src/Settings/PluginSettings.php:557
+msgctxt "A scale from 0 (bad) to 10 (good)"
+msgid "%1$s (\"Not at all likely\") to %2$s (\"Extremely likely\")"
+msgstr "از %1$s («اصلاً محتمل نیست») تا %2$s («بسیار محتمل است»)"
+
+#: src/Settings/PluginSettings.php:390
+msgid "General"
+msgstr "عمومی"
+
+#: src/Settings/PluginSettings.php:409
+msgid "Caching"
+msgstr "کش"
+
+#: src/Settings/PluginSettings.php:542
+msgid "Please share your thoughts about GravityView"
+msgstr "لطفاً دیدگاه خود دربارهٔ GravityView را با ما در میان بگذارید"
+
+#: src/Settings/PluginSettings.php:448
+msgctxt "Vantage theme"
+msgid "Vantage"
+msgstr "Vantage"
+
+#: src/Settings/PluginSettings.php:452
+msgctxt "Legacy theme"
+msgid "Legacy"
+msgstr "Legacy"
+
+#: src/Settings/PluginSettings.php:552
+msgid "The plugin doesn't work"
+msgstr "افزونه کار نمی‌کند"

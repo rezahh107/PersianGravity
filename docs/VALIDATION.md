@@ -5,7 +5,12 @@
 - Gravity Forms: revision 2, 6 admitted records, 1759 unique admitted identities from a 4207-identity source census; unchanged from merged PR #19.
 - Gravity Flow: revision 2, 7 admitted records with surface counts 15 / 255 / 43 / 20 / 391 / 44 / 0; 768 occurrences deduplicate to 732 unique admitted identities from a 1098-identity source census; 366 remain non-admitted.
 - Gravity Flow native JS handles: 0; generated translation JSON: 0.
+- GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; 2666 remain unclassified/non-admitted.
+- GravityView native JS handles: 0; generated translation JSON: 0; the historical two-identity frontend-shortcode admission remains byte/translation-fingerprint locked.
 - Real licensed browser/UI behavior is not inferred from this repository state and remains separately evidenced.
+
+
+WU-006 GravityView classified Content Admission v2 source evidence on 2026-09-14: exact GravityView 3.3.4 package SHA-256 `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` was reverified; the reviewed authority input was byte-verified before header-only GNU-gettext canonicalization; repository-native content validation reproduced all six surface fingerprints and the 461-identity aggregate; `composer i18n:build` and `composer i18n:check` passed deterministically; PHP syntax, `composer test`, `composer cs`, `composer compat`, Structured Scanner Node tests, runtime-integrity guards, zero-JS/no-JSON checks and protected-boundary diffs passed before the production commit. No real licensed GravityView browser/UI scenario was executed, so browser/runtime presentation remains `NOT_PROVEN`.
 
 This file distinguishes source evidence from real WordPress/Gravity Forms browser evidence.
 
