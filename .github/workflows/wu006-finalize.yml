@@ -45,7 +45,6 @@ jobs:
             -o /tmp/wu006/gravityview.zip \
             'https://drive.usercontent.google.com/download?id=16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1&export=download&confirm=t'
           echo 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829  /tmp/wu006/gravityview.zip' | sha256sum -c -
-          echo 'b6cd34f18aa6ba72c1f75041cae9d864267fd0e86038ae6ed2acbb05ce550a7f  .github/wu006-authority.po.gz' | sha256sum -c -
           gunzip -c .github/wu006-authority.po.gz > /tmp/wu006/authority.po
           echo '4c007bcc8b6b458968eb4d129697baed81406963c3a5321433abd77c4bd24643  /tmp/wu006/authority.po' | sha256sum -c -
           unzip -q /tmp/wu006/gravityview.zip -d /tmp/wu006/source
