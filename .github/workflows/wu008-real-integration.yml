@@ -96,6 +96,7 @@ jobs:
           php -l tests/real-integration/setup-runtime-19.php
           php -l tests/real-integration/observer-mu-plugin.php
           node --check tests/real-integration/browser-tests-19.mjs
+          node --check tests/real-integration/rtl-recheck-19.mjs
           node --check tests/real-integration/finalize-evidence.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
@@ -231,13 +232,21 @@ jobs:
           cat /tmp/wu008-wp-server.log >&2
           exit 1
 
-      - name: Execute complete 19-surface real Chromium evidence matrix
+      - name: Collect complete 19-surface provider/runtime evidence
         id: browser
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           node tests/real-integration/browser-tests-19.mjs
+
+      - name: Recheck all 19 RTL/BiDi surfaces with corrected rendered-control semantics
+        id: rtl
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node tests/real-integration/rtl-recheck-19.mjs
 
       - name: Finalize hash-indexed evidence package
         id: finalize
@@ -258,12 +267,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Enforce evidence outcome after artifact upload
+      - name: Enforce final evidence outcome after artifact upload
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          echo "browser outcome: ${{ steps.browser.outcome }}"
+          echo "initial browser outcome: ${{ steps.browser.outcome }}"
+          echo "corrected RTL recheck outcome: ${{ steps.rtl.outcome }}"
           echo "finalize outcome: ${{ steps.finalize.outcome }}"
-          test "${{ steps.browser.outcome }}" = "success"
+          test "${{ steps.rtl.outcome }}" = "success"
           test "${{ steps.finalize.outcome }}" = "success"
