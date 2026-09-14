@@ -50,7 +50,13 @@ try {
   const editorDefined = await page.evaluate(() => typeof window.PGRScannerEditor === 'object' && typeof window.PGRScannerEditor.setProfile === 'function' && typeof window.PGRScannerEditor.setMapping === 'function');
   if (!editorDefined) throw new Error('PGRScannerEditor was not defined by the real Form Builder script block.');
 
-  await page.click(`#gfield_edit_${manifest.scanner_field_id}`);
+  const editorControlActivated = await page.evaluate((scannerId) => {
+    const button = document.querySelector(`#gfield_edit_${scannerId}`);
+    if (!button) return false;
+    button.click();
+    return true;
+  }, manifest.scanner_field_id);
+  if (!editorControlActivated) throw new Error('Structured Scanner Form Builder edit control was not found.');
   await page.locator('#pgr_scanner_profile').waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('[data-pgr-scanner-mapping="qr_version"]').waitFor({ state: 'visible', timeout: 15000 });
 
@@ -138,6 +144,7 @@ try {
     locale: manifest.locale,
     form_builder_loaded: true,
     pgr_scanner_editor_defined: editorDefined,
+    editor_control_activated: editorControlActivated,
     scanner_controls: { initial_mapping_rows: initialRows, restored_mapping_rows: restoredRows },
     interaction_state: interactionState,
     provider_proof: { status: 'PASS', identity: providerIdentity, provider_file: providerFile.file },
