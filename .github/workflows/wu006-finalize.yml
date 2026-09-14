@@ -1,4 +1,5 @@
 name: WU006 Finalize
+# Contract test refreshed for the six-surface authority union.
 
 on:
   push:
