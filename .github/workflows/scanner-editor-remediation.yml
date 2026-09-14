@@ -89,6 +89,10 @@ jobs:
           php "$PGR_SCANNER_WP_CLI" core download --path="$PGR_SCANNER_WP_PATH" --version=6.8.3 --force --skip-content
           php "$PGR_SCANNER_WP_CLI" config create --path="$PGR_SCANNER_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=scanner-root --dbhost=127.0.0.1:3306 --skip-check
           php "$PGR_SCANNER_WP_CLI" core install --path="$PGR_SCANNER_WP_PATH" --url="$PGR_SCANNER_BASE_URL" --title='Scanner Remediation' --admin_user=runtime_admin --admin_password="$PGR_SCANNER_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$PGR_SCANNER_WP_CLI" option update home "$PGR_SCANNER_BASE_URL" --path="$PGR_SCANNER_WP_PATH"
+          php "$PGR_SCANNER_WP_CLI" option update siteurl "$PGR_SCANNER_BASE_URL" --path="$PGR_SCANNER_WP_PATH"
+          test "$(php "$PGR_SCANNER_WP_CLI" option get home --path="$PGR_SCANNER_WP_PATH")" = "$PGR_SCANNER_BASE_URL"
+          test "$(php "$PGR_SCANNER_WP_CLI" option get siteurl --path="$PGR_SCANNER_WP_PATH")" = "$PGR_SCANNER_BASE_URL"
           test "$(php "$PGR_SCANNER_WP_CLI" core version --path="$PGR_SCANNER_WP_PATH")" = "6.8.3"
           php "$PGR_SCANNER_WP_CLI" language core install fa_IR --activate --path="$PGR_SCANNER_WP_PATH"
           test "$(php "$PGR_SCANNER_WP_CLI" option get WPLANG --path="$PGR_SCANNER_WP_PATH")" = "fa_IR"
