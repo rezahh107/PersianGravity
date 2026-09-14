@@ -187,20 +187,7 @@ remains a bounded separate Composer dependency/domain and is not manifested or r
 activated by PersianGravity. GravityView contributes six source-backed surfaces; the full
 registry is 19 surfaces total: 6 Gravity Forms + 7 Gravity Flow + 6 GravityView.
 
-GravityView production content authority is revision 2 with exactly one independently
-validated record: `gravityview::frontend_runtime::shortcode:gravityview`, bounded by the
-source-path rule exactly `src/Shortcode/GravityViewShortcode.php`, with two canonical
-identities from the separately admitted 3127-message managed-domain source census. The exact
-reviewed translation authority is the final WU-002 Persian baseline SHA-256
-`2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca`; its full 3281
-canonical identities are reviewed input, not blanket runtime authority. Only the two source-
-proven identities are copied into the sparse record and aggregate. The product script map
-remains empty, native JS translation handles remain zero and no GravityView translation JSON
-is generated. Deterministic MO and `.l10n.php` are derived only from that two-message aggregate.
-Non-admitted `gk-gravityview` identities keep the existing upstream/vendor/TranslationsPress
-fallback and then source English. RTL/BiDi evidence remains source-only and real licensed
-GravityView browser/UI validation is `NOT_RUN`. This is bounded `CONTENT_ADMITTED_PARTIAL`,
-not full-product localization.
+GravityView production content authority is revision 2 with all six accepted Surface Registry records independently validated: frontend shortcode 2, Gutenberg View block 1, Admin Builder 340, Foundation Settings 41, Entry Approval 30, and Search Widget 53. The records contain 467 surface occurrences with identical overlaps deduplicated to a deterministic 461-identity aggregate from the separate 3127-message source census; 2666 source identities remain unclassified/non-admitted. The reviewed WU-003 translation authority is bounded by these source-backed records, while the historical two-identity WU-002 shortcode record and translations remain unchanged. `gk-query-filters` remains outside the manifested/runtime-activated provider boundary. GravityView script handles remain zero and no GravityView translation JSON is generated. Non-admitted identities keep the existing upstream/vendor/TranslationsPress fallback and then source English. RTL/BiDi evidence remains source-only and real licensed GravityView browser/UI validation is `NOT_RUN`. This is bounded `CONTENT_ADMITTED_PARTIAL`, not full-product localization.
 
 Gravity Forms production content authority is revision 2 with six independently validated records and a deterministic aggregate of 1759 unique identities from the separately admitted 4207-message source census. The existing PR #19 identity/path/content authority is preserved unchanged. Gravity Forms script handles remain zero and no Gravity Forms translation JSON is generated.
 
