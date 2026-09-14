@@ -7,8 +7,48 @@
 - Gravity Flow native JS handles: 0; generated translation JSON: 0.
 - GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; 2666 remain unclassified/non-admitted.
 - GravityView native JS handles: 0; generated translation JSON: 0; the historical two-identity frontend-shortcode admission remains byte/translation-fingerprint locked.
-- Real licensed browser/UI behavior is not inferred from this repository state and remains separately evidenced.
+- Real licensed browser/runtime/RTL behavior for the accepted 19-surface matrix is established by the WU-008/WU-009 evidence record below; it is not inferred from source state.
 
+## Current licensed real-browser/runtime/RTL evidence — WU-008 + WU-009
+
+WU-008 exercised exactly 19 accepted production surfaces in a disposable real WordPress/browser runtime: Gravity Forms 6, Gravity Flow 7, and GravityView 6. That execution discovered a real PersianGravity defect on the Gravity Forms Form Builder Structured Scanner surface: the generated inline JavaScript did not preserve the `%1$s` / `%2$s` formatting placeholders as valid JavaScript. WU-009 remediated that focused defect in PR #25 by preserving those placeholders in the emitted Form Editor script and adding focused syntax/runtime regression coverage. PR #25 merged as `e2629498eb406177f876e8c9ea3c7bb976730c0b`.
+
+The post-remediation licensed real-browser revalidation installed and tested exact PersianGravity commit `e2629498eb406177f876e8c9ea3c7bb976730c0b` with these exact owner-supplied package versions and package hashes:
+
+| Product | Version | Package SHA-256 | Vendor authenticity |
+| --- | --- | --- | --- |
+| Gravity Forms | `3.1.1.1` | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `NOT_PROVEN` |
+| Gravity Flow | `3.1.0` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` | `NOT_PROVEN` |
+| GravityView | `3.3.4` | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` | `NOT_PROVEN` |
+
+Final post-remediation evidence:
+
+| Evidence dimension | Result |
+| --- | --- |
+| Exact PersianGravity SHA installed | PASS — `e2629498eb406177f876e8c9ea3c7bb976730c0b` |
+| Licensed package verification | PASS — 3/3 |
+| Accepted runtime surfaces | PASS — 19/19 (Gravity Forms 6 / Gravity Flow 7 / GravityView 6) |
+| Positive-admission provider proof | PASS — 18/18 |
+| Gravity Flow Entry Detail sidebar | `NOT_APPLICABLE_ZERO_ADMISSION` — intentional zero-admission surface |
+| RTL/BiDi presentation | PASS — 19/19 |
+| Structured Scanner Form Builder remediation | PASS — functional browser proof after PR #25 |
+| JavaScript/provider JSON boundary | PASS |
+| Uncaught browser `pageerror` | 0 |
+| Unresolved `BLOCKING_IN_SCOPE` findings | 0 |
+| Internal artifact `SHA256SUMS` | PASS |
+
+Authoritative run reference: GitHub Actions run `34888229939` (`https://github.com/rezahh107/PersianGravity/actions/runs/34888229939`). Final artifact: `wu008-final-revalidation-34888229939-1`. Artifact digest: `sha256:a0c781b463857ab428db8cbc10fa37849854fc59af4f33428100ca29a1939a45`. The artifact was independently downloaded and its internal `SHA256SUMS` verified. Remaining browser diagnostics were evidence-backed upstream/vendor or environment behavior; no unresolved project blocker remained.
+
+Claim ceiling for this evidence remains strict:
+
+- it does not claim all Gravity Forms content is Persian;
+- it does not claim all Gravity Flow content is Persian;
+- it does not claim all GravityView content is Persian;
+- it does not claim ecosystem-wide Persian completion;
+- identities outside the admitted sets remain outside this project's translation authority and continue through the documented fallback chain;
+- package byte/version verification is proven, but vendor authenticity remains `NOT_PROVEN`.
+
+Historical `NOT_PROVEN` / `NOT_EXECUTED` statements below are preserved as contemporaneous records of the work units in which they were written. They are not rewritten as though newer evidence existed at those earlier checkpoints; for the current accepted 19-surface licensed browser/runtime/RTL state, the WU-008/WU-009 record above is controlling.
 
 WU-006 GravityView classified Content Admission v2 source evidence on 2026-09-14: exact GravityView 3.3.4 package SHA-256 `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` was reverified; the reviewed authority input was byte-verified before header-only GNU-gettext canonicalization; repository-native content validation reproduced all six surface fingerprints and the 461-identity aggregate; `composer i18n:build` and `composer i18n:check` passed deterministically; PHP syntax, `composer test`, `composer cs`, `composer compat`, Structured Scanner Node tests, runtime-integrity guards, zero-JS/no-JSON checks and protected-boundary diffs passed before the production commit. No real licensed GravityView browser/UI scenario was executed, so browser/runtime presentation remains `NOT_PROVEN`.
 
