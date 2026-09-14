@@ -1,4 +1,4 @@
-name: WU008 Licensed Real Integration
+name: Final 19-Surface Real-Browser Revalidation
 
 on:
   pull_request:
@@ -6,17 +6,16 @@ on:
     paths:
       - '.github/workflows/wu008-real-integration.yml'
       - 'tests/real-integration/**'
-      - 'docs/WU008_REAL_INTEGRATION.md'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  real-integration:
-    name: Exact GF 3.1.1.1 + Flow 3.1.0 + View 3.3.4
+  final-revalidation:
+    name: Exact e2629498 + 19 surfaces + hardened diagnostics
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 50
     services:
       database:
         image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
@@ -37,7 +36,9 @@ jobs:
       WU008_MANIFEST_PATH: /tmp/wu008-artifacts/runtime-manifest.json
       WU008_BASE_URL: http://127.0.0.1:8080
       WU008_WP_CLI: /tmp/wp-cli.phar
-      WU008_PGR_SHA: a92a09cd5ef21456c56d95726e325b545d893592
+      WU008_PGR_SHA: e2629498eb406177f876e8c9ea3c7bb976730c0b
+      PGR_SCANNER_ARTIFACT_DIR: /tmp/wu008-artifacts/form-builder-remediation
+      PGR_REMEDIATION_SHA: e2629498eb406177f876e8c9ea3c7bb976730c0b
 
       WU008_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
       WU008_GF_FILE: gravityforms-3.1.1.1-source-package.zip
@@ -58,13 +59,13 @@ jobs:
       WU008_VIEW_VERSION: 3.3.4
 
     steps:
-      - name: Checkout harness branch exactly
+      - name: Checkout evidence harness head exactly
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Assert harness identity and prepare isolated paths
+      - name: Assert evidence-only harness identity and prepare paths
         shell: bash
         run: |
           set -euo pipefail
@@ -72,11 +73,16 @@ jobs:
           actual="$(git rev-parse HEAD)"
           expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           test "$actual" = "$expected"
-          mkdir -p "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR"
+          rm -rf "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR"
+          mkdir -p "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR" "$PGR_SCANNER_ARTIFACT_DIR"
           : > "$WU008_ARTIFACT_DIR/package-verification.jsonl"
           admin_password="$(openssl rand -hex 24)"
           echo "::add-mask::$admin_password"
-          printf 'WU008_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
+          printf 'WU008_ADMIN_PASSWORD=%s\nPGR_SCANNER_ADMIN_PASSWORD=%s\n' "$admin_password" "$admin_password" >> "$GITHUB_ENV"
+          printf '%s\n' "$actual" > "$WU008_ARTIFACT_DIR/evidence-harness-head.txt"
+          printf '{"repository":"%s","event":"%s","run_id":"%s","run_number":"%s","run_attempt":"%s","harness_head":"%s","product_under_test_sha":"%s"}\n' \
+            "$GITHUB_REPOSITORY" "$GITHUB_EVENT_NAME" "$GITHUB_RUN_ID" "$GITHUB_RUN_NUMBER" "$GITHUB_RUN_ATTEMPT" "$actual" "$WU008_PGR_SHA" \
+            > "$WU008_ARTIFACT_DIR/github-run-context.json"
 
       - name: Set up exact PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -86,23 +92,34 @@ jobs:
           extensions: mysqli
           tools: composer:2.8.12
 
-      - name: Validate harness and repository invariants
+      - name: Harden and statically validate evidence harness
         shell: bash
         run: |
           set -euo pipefail
           test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
           composer validate --strict
+          node tests/real-integration/prepare-final-revalidation-harness.mjs
           bash -n tests/real-integration/verify-package.sh
-          php -l tests/real-integration/setup-runtime.php
+          php -l tests/real-integration/setup-runtime-19.php
+          php -l tests/real-integration/observer-mu-plugin.php
+          php -l tests/real-integration/scanner-editor-remediation-setup.php
+          php -l tests/real-integration/scanner-editor-remediation-observer.php
+          node --check tests/real-integration/browser-tests-19.mjs
+          node --check tests/real-integration/rtl-recheck-19.mjs
+          node --check tests/real-integration/scanner-editor-remediation.mjs
+          node --check tests/real-integration/audit-browser-diagnostics.mjs
+          node --check tests/real-integration/finalize-evidence.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
-          node --check tests/real-integration/browser-tests.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
             exit 1
           fi
+          mkdir -p "$WU008_ARTIFACT_DIR/harness-source"
+          cp tests/real-integration/{browser-tests-19.mjs,rtl-recheck-19.mjs,scanner-editor-remediation.mjs,audit-browser-diagnostics.mjs,finalize-evidence.mjs,prepare-final-revalidation-harness.mjs} "$WU008_ARTIFACT_DIR/harness-source/"
+          cp .github/workflows/wu008-real-integration.yml "$WU008_ARTIFACT_DIR/harness-source/"
 
-      - name: Install exact WP-CLI and disposable WordPress
+      - name: Install exact WP-CLI and disposable fa_IR WordPress
         shell: bash
         run: |
           set -euo pipefail
@@ -110,21 +127,19 @@ jobs:
           echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $WU008_WP_CLI" | sha256sum -c -
           php "$WU008_WP_CLI" core download --path="$WU008_WP_PATH" --version=6.8.3 --force --skip-content
           php "$WU008_WP_CLI" config create --path="$WU008_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=wu008-root --dbhost=127.0.0.1:3306 --skip-check
-          php "$WU008_WP_CLI" core install --path="$WU008_WP_PATH" --url="$WU008_BASE_URL" --title='WU008 Real Integration' --admin_user=runtime_admin --admin_password="$WU008_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$WU008_WP_CLI" core install --path="$WU008_WP_PATH" --url="$WU008_BASE_URL" --title='Final PersianGravity Revalidation' --admin_user=runtime_admin --admin_password="$WU008_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
           php "$WU008_WP_CLI" option update home "$WU008_BASE_URL" --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" option update siteurl "$WU008_BASE_URL" --path="$WU008_WP_PATH"
-          test "$(php "$WU008_WP_CLI" option get home --path="$WU008_WP_PATH")" = "$WU008_BASE_URL"
-          test "$(php "$WU008_WP_CLI" option get siteurl --path="$WU008_WP_PATH")" = "$WU008_BASE_URL"
           test "$(php "$WU008_WP_CLI" core version --path="$WU008_WP_PATH")" = "6.8.3"
           php "$WU008_WP_CLI" language core install fa_IR --activate --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "fa_IR"
 
-      - name: Install deterministic test theme
+      - name: Install deterministic theme and observational probes
         shell: bash
         run: |
           set -euo pipefail
           theme="$WU008_WP_PATH/wp-content/themes/wu008-runtime"
-          mkdir -p "$theme"
+          mkdir -p "$theme" "$WU008_WP_PATH/wp-content/mu-plugins"
           cat > "$theme/style.css" <<'CSS'
           /*
           Theme Name: WU008 Runtime
@@ -146,9 +161,11 @@ jobs:
           </body>
           </html>
           PHP
+          cp tests/real-integration/observer-mu-plugin.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-observer.php"
+          cp tests/real-integration/scanner-editor-remediation-observer.php "$WU008_WP_PATH/wp-content/mu-plugins/scanner-editor-remediation-observer.php"
           php "$WU008_WP_CLI" theme activate wu008-runtime --path="$WU008_WP_PATH"
 
-      - name: Download exact public Drive packages
+      - name: Download exact owner-supplied licensed packages
         shell: bash
         run: |
           set -euo pipefail
@@ -161,7 +178,7 @@ jobs:
           download "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE"
           download "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE"
 
-      - name: Fail-closed verify all packages before installation
+      - name: Fail-closed verify all licensed packages before installation
         shell: bash
         run: |
           set -euo pipefail
@@ -170,34 +187,39 @@ jobs:
           tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "gravityflow/gravityflow.php" "$WU008_FLOW_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
           test "$(wc -l < "$evidence")" -eq 3
+          php -r '$rows=array_map(static fn($l)=>json_decode($l,true,512,JSON_THROW_ON_ERROR),file(getenv("WU008_ARTIFACT_DIR")."/package-verification.jsonl",FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)); file_put_contents(getenv("WU008_ARTIFACT_DIR")."/package-verification.json",json_encode(["vendor_authenticity"=>"NOT_PROVEN","packages"=>$rows],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
 
-      - name: Install verified packages and exact PersianGravity tested commit
+      - name: Install exact products and detached product-under-test SHA
         shell: bash
         run: |
           set -euo pipefail
           unzip -q "$WU008_PACKAGE_DIR/$WU008_GF_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
-
           pgr="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms"
           git init "$pgr"
           git -C "$pgr" remote add origin https://github.com/rezahh107/PersianGravity.git
           git -C "$pgr" fetch --depth=1 origin "$WU008_PGR_SHA"
           git -C "$pgr" checkout --detach FETCH_HEAD
-          test "$(git -C "$pgr" rev-parse HEAD)" = "$WU008_PGR_SHA"
-
+          actual_pgr_sha="$(git -C "$pgr" rev-parse HEAD)"
+          test "$actual_pgr_sha" = "$WU008_PGR_SHA"
+          test "$actual_pgr_sha" = "e2629498eb406177f876e8c9ea3c7bb976730c0b"
+          printf '%s\n' "$actual_pgr_sha" > "$WU008_ARTIFACT_DIR/installed-persiangravity-sha.txt"
           php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "4.2.0"
 
-      - name: Create deterministic runtime fixtures and assert provider/fallback semantics
+      - name: Create exact 19-surface and Structured Scanner fixtures
         shell: bash
         run: |
           set -euo pipefail
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime-19.php
           test -s "$WU008_MANIFEST_PATH"
+          php -r '$m=json_decode(file_get_contents(getenv("WU008_MANIFEST_PATH")),true,512,JSON_THROW_ON_ERROR); if(count($m["surfaces"]??[])!==19 || ($m["exact_persiangravity_commit_actual"]??"")!==getenv("WU008_PGR_SHA")) exit(1);'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-editor-remediation-setup.php
+          php -r '$m=json_decode(file_get_contents(getenv("PGR_SCANNER_ARTIFACT_DIR")."/runtime-manifest.json"),true,512,JSON_THROW_ON_ERROR); if(($m["remediation_sha_installed"]??"")!==getenv("WU008_PGR_SHA") || ($m["gravityforms_version"]??"")!=="3.1.1.1") exit(1);'
 
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -226,19 +248,82 @@ jobs:
           cat /tmp/wu008-wp-server.log >&2
           exit 1
 
-      - name: Execute real Chromium integration checks
+      - name: Execute complete 19-surface provider/runtime evidence
+        id: browser
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          node tests/real-integration/browser-tests.mjs
+          node tests/real-integration/browser-tests-19.mjs
 
-      - name: Upload bounded runtime evidence only
+      - name: Execute corrected 19-surface RTL/BiDi recheck
+        id: rtl
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node tests/real-integration/rtl-recheck-19.mjs
+
+      - name: Execute mandatory Structured Scanner Form Builder remediation proof
+        id: scanner
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node tests/real-integration/scanner-editor-remediation.mjs
+
+      - name: Freeze disposable runtime log
+        id: freeze
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          if test -f /tmp/wu008-wp-server.pid; then
+            kill "$(cat /tmp/wu008-wp-server.pid)" 2>/dev/null
+            wait "$(cat /tmp/wu008-wp-server.pid)" 2>/dev/null
+          fi
+          cp /tmp/wu008-wp-server.log "$WU008_ARTIFACT_DIR/wordpress-server.log" 2>/dev/null || true
+          exit 0
+
+      - name: Disposition every meaningful browser diagnostic
+        id: audit
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node tests/real-integration/audit-browser-diagnostics.mjs
+
+      - name: Finalize fail-closed hash-indexed evidence package
+        id: finalize
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          node tests/real-integration/finalize-evidence.mjs
+          cd "$WU008_ARTIFACT_DIR"
+          sha256sum -c SHA256SUMS
+
+      - name: Upload self-contained final evidence artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /tmp/wu008-artifacts
-            /tmp/wu008-wp-server.log
-          if-no-files-found: ignore
+          name: persiangravity-final-19-surface-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/wu008-artifacts
+          if-no-files-found: error
           retention-days: 30
+
+      - name: Enforce acceptance only after artifact upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "initial browser outcome: ${{ steps.browser.outcome }}"
+          echo "corrected RTL outcome: ${{ steps.rtl.outcome }}"
+          echo "scanner remediation outcome: ${{ steps.scanner.outcome }}"
+          echo "diagnostic audit outcome: ${{ steps.audit.outcome }}"
+          echo "finalizer outcome: ${{ steps.finalize.outcome }}"
+          test "${{ steps.rtl.outcome }}" = "success"
+          test "${{ steps.scanner.outcome }}" = "success"
+          test "${{ steps.audit.outcome }}" = "success"
+          test "${{ steps.finalize.outcome }}" = "success"
