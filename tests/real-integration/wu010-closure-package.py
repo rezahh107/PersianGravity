@@ -48,7 +48,13 @@ if isinstance(packages, dict):
 else:
     package_rows = packages
 
-finding_rows = findings.get('findings', findings if isinstance(findings, list) else [])
+if isinstance(findings, list):
+    finding_rows = findings
+elif isinstance(findings, dict):
+    finding_rows = findings.get('findings', [])
+else:
+    finding_rows = []
+
 blocking = [f for f in finding_rows if f.get('classification') == 'BLOCKING_IN_SCOPE']
 positive = [r for r in matrix if int(r.get('admitted_message_count', 0)) > 0]
 zero = [r for r in matrix if int(r.get('admitted_message_count', 0)) == 0]
