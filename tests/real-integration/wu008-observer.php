@@ -4,6 +4,22 @@
  */
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * The deterministic setup script creates its GF entry before it creates the
+ * Gravity Flow step. Gravity Flow 3.1.0 only seeds these two workflow meta
+ * values from gform_post_add_entry when a step already exists. Seed the same
+ * normal starting state for this disposable fixture so that the subsequent
+ * public Gravity_Flow_API::process_workflow() call can perform real orchestration.
+ * This is fixture state only; it does not alter product/provider behavior.
+ */
+add_action( 'gform_post_add_entry', static function ( $entry, $form ) {
+	if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! getenv( 'WU008_ARTIFACT_DIR' ) || is_wp_error( $entry ) || empty( $entry['id'] ) || empty( $form['id'] ) ) {
+		return;
+	}
+	gform_update_meta( (int) $entry['id'], 'workflow_final_status', 'pending', (int) $form['id'] );
+	gform_update_meta( (int) $entry['id'], 'workflow_step', false, (int) $form['id'] );
+}, 1, 2 );
+
 function wu008_obs_map() {
 	return array(
 		's01' => array( 'id' => 'gravityforms::frontend_runtime::shortcode:gravityform', 'product' => 'gravityforms', 'domain' => 'gravityforms', 'record' => 'gravityforms/source/records/frontend-shortcode-fa_IR.po' ),
