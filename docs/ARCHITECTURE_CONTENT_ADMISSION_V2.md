@@ -1,9 +1,7 @@
 # Content Admission v2 — deterministic multi-record authority
 
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
-Current production extensions:
-- `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`;
-- `WU-007 — PGR-GRAVITYFORMS-FRONTEND-FIRST-BOUNDED-CONTENT-ADMISSION-01`.
+Current production state (2026-09-14): Gravity Forms has six accepted records / 1759 unique identities; Gravity Flow has seven accepted records / 732 unique identities. Historical originating Work Units below remain provenance for earlier increments.
 
 This contract generalizes bounded content admission without changing the closed localization architecture: **Shared Core + Declarative Product Manifests + Bounded Adapters**. It changes development-time content authority only; runtime fallback semantics remain provider entry first, then upstream/vendor/TranslationsPress content, then source English.
 
@@ -15,13 +13,7 @@ Source admission and translation-content admission remain separate. A valid prod
 
 `product + domain + locale + target_version + surface_id`
 
-Duplicate tuples fail closed. Production currently contains exactly three bounded records:
-
-1. Gravity Forms frontend shortcode — `gravityforms::frontend_runtime::shortcode:gravityform`;
-2. Gravity Flow Inbox — `gravityflow::workflow_runtime::admin_page:gravityflow-inbox`;
-3. Gravity Flow Status — `gravityflow::workflow_runtime::admin_page:gravityflow-status`.
-
-No other Gravity Forms or Gravity Flow surface is authorized by those Work Units.
+Duplicate tuples fail closed. Production now contains independently validated records across products. Gravity Forms contributes six accepted records and Gravity Flow contributes all seven accepted Surface Registry records; GravityView retains its separately bounded existing record. Record authority is still granted only by explicit revision-2 content records, never by product identity or source admission alone.
 
 ## Independent record validation
 
@@ -56,8 +48,8 @@ Validated records are grouped by product and sorted by record identity tuple. Th
 
 Current aggregates:
 
-- Gravity Forms frontend shortcode: 41 admitted identities from an independent 4207-message source census; because this is the first Gravity Forms content record, the product aggregate is exactly those 41 identities.
-- Gravity Flow Inbox + Status: 255 + 43 with 10 identical overlaps = 288 unique admitted identities from an independent 1098-message source census.
+- Gravity Forms: six independently admitted records deterministically union to 1759 identities from the independent 4207-message source census.
+- Gravity Flow: seven independently admitted records contain 768 surface occurrences and deterministically union to 732 identities from the independent 1098-message source census; 366 source identities remain non-admitted.
 
 The committed product source PO at `languages/providers/<product>/source/fa_IR.po` must equal the validated union exactly. Extra, missing, duplicate, fuzzy, empty, incomplete-plural, token-unsafe, or invalid-header catalogs fail closed.
 

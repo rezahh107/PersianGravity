@@ -1,5 +1,12 @@
 # Persian Gravity Forms Validation — 4.2.0
 
+## Current content-admission snapshot — 2026-09-14
+
+- Gravity Forms: revision 2, 6 admitted records, 1759 unique admitted identities from a 4207-identity source census; unchanged from merged PR #19.
+- Gravity Flow: revision 2, 7 admitted records with surface counts 15 / 255 / 43 / 20 / 391 / 44 / 0; 768 occurrences deduplicate to 732 unique admitted identities from a 1098-identity source census; 366 remain non-admitted.
+- Gravity Flow native JS handles: 0; generated translation JSON: 0.
+- Real licensed browser/UI behavior is not inferred from this repository state and remains separately evidenced.
+
 This file distinguishes source evidence from real WordPress/Gravity Forms browser evidence.
 
 Status vocabulary:

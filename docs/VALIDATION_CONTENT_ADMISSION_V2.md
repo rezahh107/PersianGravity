@@ -1,5 +1,11 @@
 # Content Admission v2 validation record
 
+## Current production snapshot — 2026-09-14
+
+Gravity Forms remains at the merged PR #19 authority: 6 records and 1759 unique admitted identities. Gravity Flow now validates all 7 accepted surfaces with counts 15 / 255 / 43 / 20 / 391 / 44 / 0, 768 surface occurrences, 30 multi-surface identities, 36 duplicate overlap occurrences, and a deterministic 732-identity union; 366 of the 1098 source identities remain non-admitted. Inbox and Status fingerprints are preserved exactly. The accepted Entry Detail Sidebar surface is represented by an explicit zero-identity record, and negative admitted counts remain invalid.
+
+The older WU-005 and WU-007 sections below are retained as historical incremental evidence rather than current aggregate authority.
+
 Originating Work Unit: `WU-001 — PGR-I18N-MULTI-CONTENT-ADMISSION-GENERALIZATION-01`.
 Current production extensions:
 - `WU-005 — PGR-GRAVITYFLOW-STATUS-BOUNDED-CONTENT-ADMISSION-02`;
@@ -42,7 +48,7 @@ The Gravity Flow tests additionally verify:
 - every Gravity Flow product script map remains empty and no Gravity Flow translation JSON exists; and
 - generated MO/`.l10n.php` hashes match the deterministic aggregate.
 
-Current Gravity Flow values remain unchanged:
+Historical WU-005 Gravity Flow values at the two-surface checkpoint:
 
 - Status keyset `08f03c79014c427b13d0f8cb37fd2f3d873b7f60b63db9bb7bc06e1f0640ba6d`;
 - Status path fingerprint `0fc86212261393e443a9c07954fb7286204ae5f33b25ee13e8b7a8dad23603ed`;
@@ -57,7 +63,7 @@ Current Gravity Flow values remain unchanged:
 
 ## Gravity Forms WU-007 / PR #15 semantic recovery
 
-Gravity Forms production authority is exactly one record:
+Historical WU-007 / PR #15 scope admitted exactly one Gravity Forms frontend record; current merged PR #19 authority contains six records / 1759 unique identities. The historical record was:
 
 `gravityforms::frontend_runtime::shortcode:gravityform`
 

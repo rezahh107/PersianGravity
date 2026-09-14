@@ -7,66 +7,44 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 require_once dirname( __DIR__ ) . '/tools/i18n/content-admission.php';
 
 final class GravityFlowInboxContentAdmissionTest extends TestCase {
-	public function test_inbox_content_authority_is_unchanged_inside_the_two_record_union(): void {
+	public function test_inbox_content_authority_is_preserved_inside_the_seven_surface_union(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
 		$flow     = $content['gravityflow'];
-		$inbox    = array_values(
-			array_filter(
-				$flow['admissions'],
-				static fn( array $record ): bool => 'gravityflow::workflow_runtime::admin_page:gravityflow-inbox' === $record['surface_id']
-			)
-		)[0];
+		$inbox    = $this->recordForSurface(
+			$flow['admissions'],
+			'gravityflow::workflow_runtime::admin_page:gravityflow-inbox'
+		);
 
-		$this->assertCount( 2, $flow['admissions'] );
+		$this->assertCount( 7, $flow['admissions'] );
 		$this->assertSame( 255, $inbox['admitted_message_count'] );
 		$this->assertSame( '446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a', $inbox['admitted_keyset_sha256'] );
 		$this->assertSame( '6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09', $inbox['admitted_surface_path_index_sha256'] );
 		$this->assertSame( '6fda7b2d1c75a2441eb6f0fc2447cc39af76312283f08a57819f1cc4998ffa1f', $inbox['admitted_translation_content_sha256'] );
+		$this->assertSame( '7eb6a9203d194995cd1de8e7cbb91d83b935dd591247506c386f0145bb731e0f', $inbox['surface_evidence_index_sha256'] );
 		$this->assertSame( 'languages/providers/gravityflow/source/records/inbox-fa_IR.po', $inbox['provider_source_path'] );
 		$this->assertSame( 'ac77a1812d8edcf0264b4f4ffa3bfb918a3915929f3dd35847df4d062d14b570', $inbox['provider_source_sha256'] );
 	}
 
-	public function test_gravityflow_aggregate_is_inbox_plus_status_without_javascript_authority(): void {
+	public function test_gravityflow_aggregate_is_the_exact_classified_union_without_javascript_authority(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
 		$flow     = $content['gravityflow'];
 
-		$this->assertSame( 288, $flow['aggregate']['admitted_message_count'] );
-		$this->assertSame( '58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363', $flow['aggregate']['admitted_keyset_sha256'] );
-		$this->assertSame( '00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139', $flow['aggregate']['admitted_translation_content_sha256'] );
-		$this->assertSame( '838c2409841c099d17d475e6290ec8fff49ad237331cd527f3e25769d2162267', $flow['aggregate']['provider_source_sha256'] );
+		$this->assertSame( 732, $flow['aggregate']['admitted_message_count'] );
+		$this->assertSame( 'a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12', $flow['aggregate']['admitted_keyset_sha256'] );
+		$this->assertSame( '66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826', $flow['aggregate']['admitted_translation_content_sha256'] );
+		$this->assertSame( 'bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a', $flow['aggregate']['provider_source_sha256'] );
 		$this->assertSame( array(), $products['gravityflow']['scripts'] );
 		$this->assertSame( 0, $flow['aggregate']['native_js_handles_activated'] );
 		$this->assertSame( 0, $flow['aggregate']['js_translation_json_generated'] );
-		$this->assertSame( '8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.mo' ) );
-		$this->assertSame( '7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php' ) );
+		$this->assertSame( '247224d3385df3fbbeda0bb2177d649858b808d10586b7ecac8da90a5424615c', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.mo' ) );
+		$this->assertSame( '580e658d61be7190fb53db1fe7c9f1cf15ba5210ef8aa7fe8c4bf5432aa262d0', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php' ) );
 		$this->assertSame( array(), glob( $root . '/languages/providers/gravityflow/gravityflow-fa_IR-*.json' ) ?: array() );
-	}
-
-	public function test_production_manifest_revision_two_contains_exactly_inbox_and_status(): void {
-		$root     = dirname( __DIR__ );
-		$manifest = pgr_admission_json( $root . '/tools/i18n/admission/content.json' );
-		$flow     = array_values(
-			array_filter(
-				$manifest['admissions'],
-				static fn( array $record ): bool => 'gravityflow' === ( $record['product'] ?? null )
-			)
-		);
-		$surfaces = array_column( $flow, 'surface_id' );
-
-		$this->assertSame( 2, $manifest['content_admission_revision'] );
-		$this->assertSame(
-			array(
-				'gravityflow::workflow_runtime::admin_page:gravityflow-inbox',
-				'gravityflow::workflow_runtime::admin_page:gravityflow-status',
-			),
-			$surfaces
-		);
 	}
 
 	public function test_product_identity_and_valid_source_admission_without_content_records_grant_no_content_authority(): void {
@@ -100,5 +78,14 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 			@rmdir( $temp . '/tools' );
 			@rmdir( $temp );
 		}
+	}
+
+	private function recordForSurface( array $records, string $surface ): array {
+		foreach ( $records as $record ) {
+			if ( $surface === $record['surface_id'] ) {
+				return $record;
+			}
+		}
+		throw new RuntimeException( 'Missing expected production admission: ' . $surface );
 	}
 }

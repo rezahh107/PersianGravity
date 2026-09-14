@@ -202,24 +202,9 @@ fallback and then source English. RTL/BiDi evidence remains source-only and real
 GravityView browser/UI validation is `NOT_RUN`. This is bounded `CONTENT_ADMITTED_PARTIAL`,
 not full-product localization.
 
-Gravity Forms production content authority is revision 2 with exactly one independently
-validated record: `gravityforms::frontend_runtime::shortcode:gravityform`, bounded by the
-source-path rule exactly `form_display.php`, with 41 canonical identities from a separately
-admitted 4207-message source census. The WU-003 full reviewed baseline SHA-256
-`2c7960c895216da61ff7d6b8f6a248c2ac130fdf7927efc5c3d09c5e58bc79b1` remains historical
-reviewed-input provenance; the final admitted sparse catalog applies exactly seven PR #15
-semantic corrections within the same identity/keyset/path scope and is not claimed to be a
-byte-for-byte untouched subset of that baseline. Gravity Forms script handles remain zero and
-no Gravity Forms translation JSON is generated.
+Gravity Forms production content authority is revision 2 with six independently validated records and a deterministic aggregate of 1759 unique identities from the separately admitted 4207-message source census. The existing PR #19 identity/path/content authority is preserved unchanged. Gravity Forms script handles remain zero and no Gravity Forms translation JSON is generated.
 
-Gravity Flow production content authority remains revision 2 with exactly two independently
-validated records: Inbox (`gravityflow::workflow_runtime::admin_page:gravityflow-inbox`,
-255 identities) and Status (`gravityflow::workflow_runtime::admin_page:gravityflow-status`,
-43 identities, source path exactly `includes/pages/class-status.php`). The two records share
-10 canonical identities with identical reviewed translations and deterministically union to
-288 unique admitted identities from the separate 1098-message source census. Inbox locked
-keyset/path/content fingerprints remain unchanged. Gravity Flow script handles remain zero and
-no Gravity Flow translation JSON is generated. Non-admitted identities for all three products
+Gravity Flow production content authority is revision 2 with all seven accepted Surface Registry records independently validated: shortcode 15, Inbox 255, Status 43, Reports 20, Form Settings / Admin Builder 391, Settings & Integrations 44, and Entry Detail Sidebar 0. The records contain 768 surface occurrences with identical overlaps deduplicated to a deterministic 732-identity aggregate from the separate 1098-message source census; 366 source identities remain non-admitted. Inbox and Status locked fingerprints remain unchanged. The zero-identity Entry Detail Sidebar record is still explicit and auditable. Gravity Flow script handles remain zero and no Gravity Flow translation JSON is generated. Non-admitted identities for all three products
 still fall through to upstream/vendor/TranslationsPress and then source English. These are
 partial surface authorities only, not full-product localization or licensed/browser proof. See
 `docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md`, `docs/VALIDATION_CONTENT_ADMISSION_V2.md`,

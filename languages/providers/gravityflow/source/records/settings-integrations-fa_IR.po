@@ -1,0 +1,143 @@
+# Gravity Flow 3.1.0 Persian sparse admission record — Settings/integrations surface only.
+# Derived deterministically from reviewed final-v2 baseline; do not broaden by hand.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Flow 3.1.0\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityflow\n"
+
+msgid "Gravity Flow"
+msgstr "Gravity Flow"
+
+msgid "Schedule"
+msgstr "زمان‌بندی"
+
+msgid "Expiration"
+msgstr "انقضا"
+
+msgid "Enable"
+msgstr "فعال‌سازی"
+
+msgid "Due Date"
+msgstr "تاریخ سررسید"
+
+msgid "Color"
+msgstr "رنگ"
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Display all fields"
+msgstr "نمایش تمام فیلدها"
+
+msgid "Display all fields except selected"
+msgstr "نمایش همه فیلدها به‌جز موارد انتخاب‌شده"
+
+msgid "Hide all fields except selected"
+msgstr "پنهان‌کردن همه فیلدها به‌جز موارد انتخاب‌شده"
+
+msgid "Except"
+msgstr "به‌جز"
+
+msgid "Order Summary"
+msgstr "خلاصه سفارش"
+
+msgid "Schedule due date"
+msgstr "زمان‌بندی تاریخ سررسید"
+
+msgid "Delay"
+msgstr "تأخیر"
+
+msgid "Date Field"
+msgstr "فیلد تاریخ"
+
+msgid "Due Date Field"
+msgstr "فیلد سررسید"
+
+msgid "Minute(s)"
+msgstr "دقیقه"
+
+msgid "Hour(s)"
+msgstr "ساعت"
+
+msgid "Day(s)"
+msgstr "روز"
+
+msgid "Week(s)"
+msgstr "هفته"
+
+msgid "This step has a due date on"
+msgstr "این مرحله تاریخ سررسید دارد"
+
+msgid "Due date for this step"
+msgstr "سررسید این مرحله"
+
+msgid "after"
+msgstr "بعد از"
+
+msgid "before"
+msgstr "قبل از"
+
+msgid "You cannot save the step with an empty routing rule."
+msgstr "نمی‌توانید مرحله را با قانون مسیریابی خالی ذخیره کنید."
+
+msgid "Duplicate: \"%1$s\" is already used in another row (row %2$d)."
+msgstr "تکراری: «%1$s» از قبل در ردیف دیگری (ردیف %2$d) استفاده شده است."
+
+msgid "Options"
+msgstr "گزینه‌ها"
+
+msgid "Target"
+msgstr "مقصد"
+
+msgid "Match {0} of the following criteria:"
+msgstr "با {0} مورد از معیارهای زیر مطابقت داشته باشد:"
+
+msgid "Schedule expiration"
+msgstr "زمان‌بندی انقضا"
+
+msgid "Expiration Date Field"
+msgstr "فیلد تاریخ انقضا"
+
+msgid "This step expires on"
+msgstr "این مرحله منقضی می‌شود"
+
+msgid "This step will expire"
+msgstr "این مرحله منقضی می‌شود"
+
+msgid "Expire this step"
+msgstr "این مرحله را منقضی کنید"
+
+msgid "Status after expiration"
+msgstr "وضعیت پس از انقضا"
+
+msgid "Expiration Status"
+msgstr "وضعیت انقضا"
+
+msgid "Next Step if Expired"
+msgstr "مرحله بعدی در صورت انقضا"
+
+msgid "Highlight this step"
+msgstr "این مرحله را برجسته کنید"
+
+msgid "Schedule this step"
+msgstr "زمان‌بندی این مرحله"
+
+msgid "Schedule Date Field"
+msgstr "فیلد تاریخ برای زمان‌بندی"
+
+msgid "Start this step on %s"
+msgstr "این مرحله را در %s شروع کنید"
+
+msgid "Start this step %1$s %2$s after the workflow step is triggered."
+msgstr "این مرحله را %1$s %2$s پس از فعال‌شدن مرحله گردش‌کار شروع کنید."
+
+msgid "Start this step %1$s %2$s %3$s %4$s"
+msgstr "این مرحله را %1$s %2$s %3$s %4$s شروع کنید"
+
+msgid "Select page"
+msgstr "صفحه را انتخاب کنید"
