@@ -29,7 +29,12 @@ function productRelated(text = '', url = '') {
 }
 function postAction(record) {
   const data = record.post_data || record.raw?.post_data || '';
-  try { return new URLSearchParams(data).get('action'); } catch { return null; }
+  try {
+    const encoded = new URLSearchParams(data).get('action');
+    if (encoded) return encoded;
+  } catch {}
+  const multipart = data.match(/name=\"action\"\r?\n\r?\n([^\r\n]+)/i);
+  return multipart ? multipart[1].trim() : null;
 }
 function isCompressionProbeAbort(record) {
   const url = parsedUrl(record.url_resource);
@@ -52,6 +57,32 @@ function isWordPressHeartbeatAbort(record) {
     && url?.origin === runtimeOrigin
     && url.pathname === '/wp-admin/admin-ajax.php'
     && postAction(record) === 'heartbeat'
+    && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isWordPressPostLockAbort(record) {
+  const url = parsedUrl(record.url_resource);
+  return record.kind === 'request_failure'
+    && url?.origin === runtimeOrigin
+    && url.pathname === '/wp-admin/admin-ajax.php'
+    && postAction(record) === 'wp-remove-post-lock'
+    && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isLicensedVendorStaticAbort(record) {
+  const url = parsedUrl(record.url_resource);
+  return record.kind === 'request_failure'
+    && url?.origin === runtimeOrigin
+    && /^\/wp-content\/plugins\/(gravityforms|gravityflow|gravityview)\//i.test(url.pathname)
+    && ['script', 'stylesheet', 'image', 'font'].includes(record.resource_type || '')
+    && /ERR_ABORTED/i.test(record.message_status || '');
+}
+function isGravityViewGettingStartedExternalAbort(record) {
+  const url = parsedUrl(record.url_resource);
+  const page = parsedUrl(record.page_url || '');
+  return record.kind === 'request_failure'
+    && url?.hostname === 'www.youtube-nocookie.com'
+    && page?.origin === runtimeOrigin
+    && page.pathname === '/wp-admin/admin.php'
+    && page.searchParams.get('page') === 'gv-getting-started'
     && /ERR_ABORTED/i.test(record.message_status || '');
 }
 function isHelpScoutVendorDiagnostic(record) {
@@ -165,6 +196,30 @@ function disposition(record) {
       supporting_evidence: `${record.evidence_reference}; captured post_data=${record.post_data}`,
     };
   }
+  if (isWordPressPostLockAbort(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The failed same-origin POST is proven by captured multipart payload to be WordPress core post-lock cleanup (action=wp-remove-post-lock). Chromium aborted the ping while leaving the post editor; it is not a PersianGravity action.',
+      supporting_evidence: `${record.evidence_reference}; captured post_data contains action=wp-remove-post-lock`,
+    };
+  }
+  if (isLicensedVendorStaticAbort(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The aborted static resource is served from an exact licensed host-plugin directory (Gravity Forms/Flow/View), outside PersianGravity-owned assets. The diagnostic is a vendor static-resource abort during navigation.',
+      supporting_evidence: `${record.evidence_reference}; resource path=${url.pathname}; resource_type=${record.resource_type}`,
+    };
+  }
+  if (isGravityViewGettingStartedExternalAbort(record)) {
+    return {
+      classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
+      blocks_acceptance: false,
+      rationale: 'The aborted script comes from YouTube no-cookie while the browser is on the GravityView getting-started admin page (page=gv-getting-started). Both the page identity and external hostname place this diagnostic outside PersianGravity authority.',
+      supporting_evidence: `${record.evidence_reference}; page_url=${record.page_url}; external host=${url.hostname}`,
+    };
+  }
   if (isHelpScoutVendorDiagnostic(record)) {
     return {
       classification: 'UPSTREAM_OR_VENDOR_BEHAVIOR',
@@ -246,7 +301,7 @@ fs.writeFileSync(findingsPath, JSON.stringify(findings, null, 2) + '\n');
 const classificationCounts = Object.fromEntries([...allowedClassifications].map((name) => [name, records.filter((record) => record.classification === name).length]));
 const blocking = records.filter((record) => record.blocks_acceptance);
 const audited = {
-  schema_version: '3.1.0',
+  schema_version: '3.2.0',
   result: blocking.length === 0 ? 'PASS' : 'BLOCKED',
   runtime_origin: runtimeOrigin,
   policy: {
@@ -258,6 +313,9 @@ const audited = {
       'WordPress core wp-compression-test abort',
       'WordPress core /wp-includes static-asset abort',
       'WordPress core heartbeat abort proven by captured action=heartbeat POST payload',
+      'WordPress core post-lock cleanup abort proven by captured action=wp-remove-post-lock multipart payload',
+      'licensed Gravity Forms/Flow/View static-resource abort proven by plugin-owned resource path and resource type',
+      'YouTube no-cookie script abort on page=gv-getting-started proven by page identity and external host',
       'Help Scout Beacon diagnostics proven by external hostname plus GravityView/GravityKit page evidence',
       'disposable-theme favicon 404',
     ],
