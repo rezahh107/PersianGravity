@@ -8,17 +8,39 @@ require_once dirname( __DIR__ ) . '/admin/class-pgr-help-catalog.php';
 final class RepositoryConsistencyTest extends TestCase {
 
 	public function test_active_version_declarations_are_synchronized() {
-		$root    = dirname( __DIR__ );
-		$plugin  = file_get_contents( $root . '/persian-gravityforms.php' );
-		$readme  = file_get_contents( $root . '/readme.txt' );
-		$github  = file_get_contents( $root . '/README.md' );
-		$agents  = file_get_contents( $root . '/AGENTS.md' );
+		$root               = dirname( __DIR__ );
+		$plugin             = file_get_contents( $root . '/persian-gravityforms.php' );
+		$readme             = file_get_contents( $root . '/readme.txt' );
+		$github             = file_get_contents( $root . '/README.md' );
+		$agents             = file_get_contents( $root . '/AGENTS.md' );
+		$languages_readme   = file_get_contents( $root . '/languages/README.md' );
+		$architecture       = file_get_contents( $root . '/docs/ARCHITECTURE.md' );
+		$localization       = file_get_contents( $root . '/docs/LOCALIZATION.md' );
+		$pot                = file_get_contents( $root . '/languages/persian-gravityforms.pot' );
+		$po                 = file_get_contents( $root . '/languages/persian-gravityforms-fa_IR.po' );
+		$header_match       = array();
+		$constant_match     = array();
+		$stable_tag_match   = array();
 
-		$this->assertMatchesRegularExpression( '/^ \* Version: 4\.2\.0$/m', $plugin );
-		$this->assertStringContainsString( "define( 'PGR_VERSION', '4.2.0' );", $plugin );
-		$this->assertMatchesRegularExpression( '/^Stable tag: 4\.2\.0$/m', $readme );
-		$this->assertStringContainsString( '- Plugin version: `4.2.0`', $github );
-		$this->assertStringContainsString( '- Version: `4.2.0`', $agents );
+		$this->assertSame( 1, preg_match( '/^ \* Version:\s*([^\r\n]+)$/m', $plugin, $header_match ) );
+		$version = trim( $header_match[1] );
+		$this->assertMatchesRegularExpression( '/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/', $version );
+
+		$this->assertSame( 1, preg_match( "/define\\(\\s*'PGR_VERSION',\\s*'([^']+)'\\s*\\);/", $plugin, $constant_match ) );
+		$this->assertSame( $version, $constant_match[1] );
+
+		$this->assertSame( 1, preg_match( '/^Stable tag:\s*([^\r\n]+)$/m', $readme, $stable_tag_match ) );
+		$this->assertSame( $version, trim( $stable_tag_match[1] ) );
+		$this->assertStringContainsString( 'Version ' . $version . ' exposes six bounded', $readme );
+		$this->assertStringContainsString( '- Plugin version: `' . $version . '`', $github );
+		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes six bounded', $github );
+		$this->assertStringContainsString( '- Version: `' . $version . '`', $agents );
+		$this->assertStringContainsString( 'own-plugin text domain in ' . $version, $languages_readme );
+		$this->assertStringContainsString( 'Version ' . $version . ' ships:', $languages_readme );
+		$this->assertStringContainsString( '# Persian Gravity Forms Architecture — ' . $version, $architecture );
+		$this->assertStringContainsString( 'active repository identity is **' . $version . '**', $localization );
+		$this->assertStringContainsString( '"Project-Id-Version: Persian Gravity Forms ' . $version . '\\n"', $pot );
+		$this->assertStringContainsString( '"Project-Id-Version: Persian Gravity Forms ' . $version . '\\n"', $po );
 	}
 
 	public function test_bounded_module_catalog_and_help_are_complete() {
@@ -74,7 +96,7 @@ final class RepositoryConsistencyTest extends TestCase {
 	}
 
 	public function test_text_domain_remains_plugin_owned_only() {
-		$root = dirname( __DIR__ );
+		$root   = dirname( __DIR__ );
 		$source = file_get_contents( $root . '/persian-gravityforms.php' )
 			. file_get_contents( $root . '/admin/class-pgr-product-admin.php' )
 			. file_get_contents( $root . '/includes/class-pgr-core.php' );
