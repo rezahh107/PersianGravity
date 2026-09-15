@@ -1,0 +1,27 @@
+name: Gravity Forms executor bootstrap
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityforms-full-persian-coverage
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Package workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -czf /tmp/persiangravity-gf-workspace.tar.gz --exclude='.git/objects/pack/*.pack' .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: persiangravity-gf-workspace
+          path: /tmp/persiangravity-gf-workspace.tar.gz
+          retention-days: 1
