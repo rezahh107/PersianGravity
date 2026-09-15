@@ -32,6 +32,7 @@ jobs:
           mkdir -p /tmp/flow-tools /tmp/flow-data /tmp/flow-src
           tar -xJf /tmp/flow-mini-final.tar.xz -C /tmp/flow-tools
           git apply /tmp/flow-tools/flow-code.patch
+          git apply .flow-bootstrap/runtime-test.patch
 
       - name: Download and verify exact Gravity Flow 3.1.0 source package
         shell: bash
@@ -58,6 +59,7 @@ jobs:
           php -l tools/i18n/build.php
           php -l tests/CatalogBuildTest.php
           php -l tests/ContentAdmissionGeneralizationTest.php
+          php -l tests/i18n/run-production.php
           git diff --check
 
       - name: Install repository development dependencies
@@ -148,6 +150,7 @@ jobs:
             'languages/providers/gravityflow/source/records/remainder-fa_IR.po',
             'tests/CatalogBuildTest.php',
             'tests/ContentAdmissionGeneralizationTest.php',
+            'tests/i18n/run-production.php',
             'tools/i18n/admission/content.json',
             'tools/i18n/admission/remainders/gravityflow.json',
             'tools/i18n/admission/reviews/gravityflow-remainder.json',
