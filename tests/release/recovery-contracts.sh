@@ -200,12 +200,16 @@ grep -Fq '[[ "$remote_main" == "$WORKFLOW_SHA" ]]' "$PUBLISH_WORKFLOW" || {
 }
 pass 'Publish workflow preserves exact-source recovery and layout-independent artifact resolution'
 
-for file in "$RESOLVER" "$RECOVERY" tests/release/recovery-contracts.sh; do
+for file in "$RESOLVER" "$RECOVERY"; do
   if grep -Eq 'gh[[:space:]]+release[[:space:]]+create|git[[:space:]]+tag|git[[:space:]]+update-ref|git[[:space:]]+push.*--force|repos/.*/git/refs' "$file"; then
-    echo "Recovery test/helper file contains a publication mutation primitive: $file" >&2
+    echo "Recovery helper contains a publication mutation primitive: $file" >&2
     exit 1
   fi
 done
+if grep -Eq '^[[:space:]]*(gh[[:space:]]+release[[:space:]]+create|gh[[:space:]]+api.*git/refs|git[[:space:]]+tag([[:space:]]|$)|git[[:space:]]+update-ref|git[[:space:]]+push.*--force)' tests/release/recovery-contracts.sh; then
+  echo 'Recovery contract suite contains an executable publication mutation command.' >&2
+  exit 1
+fi
 pass 'recovery tests and helpers cannot create tags or GitHub Releases'
 
 printf 'RELEASE_RECOVERY_CONTRACTS=PASS tests=%d version=%s\n' "$PASS_COUNT" "$CURRENT"
