@@ -72,6 +72,35 @@ jobs:
           assert d['baseline_translation']=='a0b631dfcb88eb497be26086799a8816b7f85f99fd42c62afe6488ee508f9c27'
           PY
 
+      - name: Patch pluralized URL protected-literal regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          validator = Path('tools/i18n/content-admission.php')
+          text = validator.read_text(encoding='utf-8')
+          old = r'\bAPI\b|\bURL\b|\bPHP\b'
+          new = r'\bAPI\b|\bURLs?\b|\bPHP\b'
+          assert old in text
+          text = text.replace(old, new, 1)
+          old_result = "\t$result = $matches[0];\n\tsort( $result, SORT_STRING );"
+          new_result = "\t$result = array_map(\n\t\tstatic function ( $literal ) {\n\t\t\treturn 'URLs' === $literal ? 'URL' : $literal;\n\t\t},\n\t\t$matches[0]\n\t);\n\tsort( $result, SORT_STRING );"
+          assert old_result in text
+          validator.write_text(text.replace(old_result, new_result, 1), encoding='utf-8')
+
+          test_path = Path('tests/ContentAdmissionTokenSemanticsTest.php')
+          test_text = test_path.read_text(encoding='utf-8')
+          marker = 'test_pluralized_url_protected_literal_is_canonicalized'
+          if marker not in test_text:
+              addition = "\n\n    public function test_pluralized_url_protected_literal_is_canonicalized(): void {\n        $this->assertSame( array( 'URL' ), pgr_content_protected_literals( 'Links/URLs are not allowed.' ) );\n        $this->assertSame( array( 'URL' ), pgr_content_protected_literals( 'پیوندها/URLها مجاز نیستند.' ) );\n    }\n"
+              idx = test_text.rfind('\n}')
+              assert idx != -1
+              test_path.write_text(test_text[:idx] + addition + test_text[idx:], encoding='utf-8')
+          PY
+          php -l tools/i18n/content-admission.php
+          php -l tests/ContentAdmissionTokenSemanticsTest.php
+
       - name: Validate Composer contract and install exact dependencies
         shell: bash
         run: |
