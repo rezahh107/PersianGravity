@@ -1,0 +1,120 @@
+name: Gravity Forms translation review draft
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityforms-full-persian-coverage
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install draft tooling
+        run: |
+          python3 -m pip install --quiet gdown==5.2.0 polib==1.2.0 torch==2.8.0 transformers==4.57.1 sentencepiece==0.2.1
+      - name: Download and verify exact Gravity Forms package
+        shell: bash
+        run: |
+          set -euo pipefail
+          gdown 'https://drive.google.com/uc?id=1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy' -O /tmp/gravityforms.zip
+          echo '542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b  /tmp/gravityforms.zip' | sha256sum -c -
+          unzip -q /tmp/gravityforms.zip -d /tmp/gf-src
+          pot="$(find /tmp/gf-src -type f -path '*/languages/gravityforms.pot' -print -quit)"
+          test -n "$pot"
+          echo 'a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf  '"$pot" | sha256sum -c -
+          printf '%s\n' "$pot" > /tmp/gf-pot-path
+          git show 83f2cbfb5425984ac6545a6075497606efd81508:languages/gravityforms/gravityforms-fa_IR.po > /tmp/legacy.po
+      - name: Reconstruct exact residual and draft all 2448 identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/draft.py <<'PY'
+          import hashlib,json,re
+          from pathlib import Path
+          import polib, torch
+          from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+          pot=polib.pofile(Path('/tmp/gf-pot-path').read_text().strip())
+          current=polib.pofile('languages/providers/gravityforms/source/fa_IR.po')
+          legacy=polib.pofile('/tmp/legacy.po')
+          def raw(e): return (e.msgctxt or '')+'\x1f'+e.msgid+'\x1f'+(e.msgid_plural or '')
+          def hid(e): return hashlib.sha256(raw(e).encode()).hexdigest()
+          all_pot=[e for e in pot if e.msgid]
+          stale=[e for e in all_pot if e.msgid=="I'm a Button!" and not e.msgctxt and not e.msgid_plural]
+          assert len(all_pot)==4208 and len(stale)==1
+          assert hid(stale[0])=='2b64a903d2065499fa0248c6199db150bb7d1a43025d2908e8a66e4af9d4ab92'
+          canon=[e for e in all_pot if hid(e)!=hid(stale[0])]
+          ids=sorted(hid(e) for e in canon)
+          assert len(ids)==4207 and hashlib.sha256('\n'.join(ids).encode()).hexdigest()=='1b92edc87f2d152cb98a026dde815ab93e3e8303eef2954e95b3a816a85801fb'
+          cmap={hid(e):e for e in canon}; accepted={hid(e) for e in current if e.msgid}
+          assert len(accepted)==1759 and accepted <= set(cmap)
+          residual=sorted(set(cmap)-accepted)
+          assert len(residual)==2448 and hid(stale[0]) not in residual
+          lmap={hid(e):e for e in legacy if e.msgid and 'fuzzy' not in e.flags and e.msgstr and (not e.msgid_plural or (len(e.msgstr_plural)>=2 and e.msgstr_plural.get(0,'') and e.msgstr_plural.get(1,'')))}
+
+          protect=re.compile(r'(https?://[^\s<>"\']+|%(?:\d+\$)?[-+0#\' ]*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}|</?[A-Za-z][^>]*>|&#(?:\d+|x[0-9A-Fa-f]+);|`[^`]+`|Gravity Forms|Gravity Flow|GravityView|WordPress|JavaScript|reCAPTCHA|\b(?:API|URL|PHP|CSS|HTML|JSON|REST|AJAX|ID|IDs|SQL|CLI|UTC|GMT)\b)')
+          tok=AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M',src_lang='eng_Latn')
+          model=AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')
+          model.eval(); forced=tok.convert_tokens_to_ids('pes_Arab')
+
+          def segments(s):
+              parts=protect.split(s); natural=[]; slots=[]
+              for i,p in enumerate(parts):
+                  if not p: continue
+                  if protect.fullmatch(p): slots.append(('p',p))
+                  else: slots.append(('n',len(natural))); natural.append(p)
+              return natural,slots
+          def translate_many(strings,batch=24):
+              out=[]
+              for i in range(0,len(strings),batch):
+                  b=strings[i:i+batch]
+                  enc=tok(b,return_tensors='pt',padding=True,truncation=True,max_length=384)
+                  with torch.inference_mode(): gen=model.generate(**enc,forced_bos_token_id=forced,max_new_tokens=384,num_beams=1)
+                  out.extend(tok.batch_decode(gen,skip_special_tokens=True))
+              return out
+          source_forms=[]; recipes=[]
+          rows=[]
+          for identity in residual:
+              e=cmap[identity]
+              forms=[e.msgid]+([e.msgid_plural] if e.msgid_plural else [])
+              form_rec=[]
+              for s in forms:
+                  n,slots=segments(s)
+                  idx=[]
+                  for x in n:
+                      idx.append(len(source_forms)); source_forms.append(x)
+                  form_rec.append((slots,idx))
+              recipes.append(form_rec)
+              le=lmap.get(identity)
+              legacy_vals=None
+              if le:
+                  legacy_vals=[le.msgstr] if not le.msgid_plural else [le.msgstr_plural.get(0,''),le.msgstr_plural.get(1,'')]
+              rows.append({'identity':identity,'msgctxt':e.msgctxt or None,'msgid':e.msgid,'msgid_plural':e.msgid_plural or None,'references':list(e.occurrences),'legacy':legacy_vals})
+          translated=translate_many(source_forms)
+          for row,form_rec in zip(rows,recipes):
+              vals=[]
+              for slots,idx in form_rec:
+                  it=iter(idx); pieces=[]
+                  for kind,val in slots:
+                      if kind=='p': pieces.append(val)
+                      else: pieces.append(translated[next(it)])
+                  vals.append(''.join(pieces).strip())
+              row['nllb']=vals
+          data={'canonical_count':4207,'accepted_count':1759,'residual_count':2448,'stale_identity':hid(stale[0]),'legacy_candidate_count':sum(1 for r in rows if r['legacy']),'entries':rows}
+          Path('/tmp/gravityforms-review-draft.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          print('draft complete',len(rows),'legacy',data['legacy_candidate_count'],'nllb_forms',len(source_forms))
+          PY
+          python3 /tmp/draft.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gravityforms-review-draft
+          path: /tmp/gravityforms-review-draft.json
+          retention-days: 2
