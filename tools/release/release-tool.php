@@ -257,6 +257,14 @@ function bool_option(array $options, string $key): bool {
     return $value === '1';
 }
 
+function tag_state_option(array $options): string {
+    $state = require_option($options, 'tag-state');
+    if (!in_array($state, ['ABSENT', 'EXACT_SOURCE', 'CONFLICT'], true)) {
+        fail_release('--tag-state must be ABSENT, EXACT_SOURCE, or CONFLICT');
+    }
+    return $state;
+}
+
 function validate_publish(array $options): void {
     $sourceVersion = require_option($options, 'source-version');
     $candidateVersion = require_option($options, 'candidate-version');
@@ -268,7 +276,7 @@ function validate_publish(array $options): void {
     $candidateBranch = require_option($options, 'candidate-branch');
     $tag = require_option($options, 'tag');
     $merged = bool_option($options, 'candidate-merged');
-    $tagExists = bool_option($options, 'tag-exists');
+    $tagState = tag_state_option($options);
     $releaseExists = bool_option($options, 'release-exists');
 
     foreach ([$sourceVersion, $candidateVersion] as $version) {
@@ -305,13 +313,13 @@ function validate_publish(array $options): void {
     if ($sourceTree !== $candidateTree) {
         fail_release("release-source identity mismatch: main tree={$sourceTree} candidate tree={$candidateTree}");
     }
-    if ($tagExists) {
-        fail_release("tag {$tag} already exists; refusing to overwrite or move it");
+    if ($tagState === 'CONFLICT') {
+        fail_release("tag {$tag} exists but does not identify the exact qualified source; refusing to overwrite or move it");
     }
     if ($releaseExists) {
         fail_release("GitHub Release {$tag} already exists; refusing to mutate it");
     }
-    fwrite(STDOUT, "PUBLISH_CONTRACT=PASS version={$sourceVersion} source={$sourceSha} candidate={$candidateSha} tree={$sourceTree}\n");
+    fwrite(STDOUT, "PUBLISH_CONTRACT=PASS version={$sourceVersion} source={$sourceSha} candidate={$candidateSha} tree={$sourceTree} tag_state={$tagState}\n");
 }
 
 [$options, $positionals] = parse_options(array_slice($argv, 1));
