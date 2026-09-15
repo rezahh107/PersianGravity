@@ -170,6 +170,8 @@ jobs:
           }
           out=subprocess.check_output(['git','diff','--name-only','0ce9701deeba2e660ec89c945b0e1519e36b3481','--'],text=True)
           actual={line for line in out.splitlines() if line}
+          untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard'],text=True)
+          actual.update(line for line in untracked.splitlines() if line)
           if actual != expected:
               raise SystemExit('final diff scope mismatch\nmissing='+repr(sorted(expected-actual))+'\nunexpected='+repr(sorted(actual-expected)))
           print('Focused final diff PASS:', len(actual), 'files')
