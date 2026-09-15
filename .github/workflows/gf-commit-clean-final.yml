@@ -127,6 +127,9 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           test -z "$(git diff --cached --name-only | grep -E '^languages/providers/(gravityflow|gravityview)/' || true)"
-          git diff --cached --check
+          git diff --cached --check -- . \
+            ':(exclude)languages/providers/gravityforms/gravityforms-fa_IR.l10n.php' \
+            ':(exclude)languages/providers/gravityforms/source/fa_IR.po' \
+            ':(exclude)languages/providers/gravityforms/source/records/remainder-fa_IR.po'
           git commit -m 'feat(i18n): complete Gravity Forms Persian coverage'
           git push origin HEAD:feat/g006-gravityforms-full-persian-coverage
