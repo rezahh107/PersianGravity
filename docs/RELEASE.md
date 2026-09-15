@@ -46,7 +46,11 @@ After the generated Release PR has been reviewed and merged:
 4. Wait for PASS.
 5. Open **GitHub → Releases** to see the published release and installable ZIP.
 
-Publish Release automatically refuses to continue unless `main` is still the exact integrated result of the reviewed Release PR and has the exact reviewed candidate tree. If an unrelated commit landed after the candidate was merged, prepare a fresh release candidate instead.
+Normally, Publish Release requires `main` to still be the exact integrated result of the reviewed Release PR and to have the exact reviewed candidate tree.
+
+There is one bounded pre-publication recovery exception: if a defect in the Release System itself is discovered **after** the Release PR was merged but **before** any production tag or GitHub Release exists, a repaired Publish workflow may continue to publish the original reviewed integrated source only when all post-candidate changes are deterministically proven to be confined to the small Release-System recovery allowlist. The original integrated Release PR commit remains the source for qualification, package identity, tag creation, and publication; the newer `main` commit supplies only the repaired automation. Any product/runtime/package-input drift, version drift, unrelated documentation/code drift, divergent history, conflicting tag, or existing GitHub Release fails closed and requires a fresh candidate or Owner intervention.
+
+For qualification artifacts, Publish Release does not assume GitHub Actions flattens uploaded paths. It searches recursively for the exact expected ZIP basename and checksum basename, requires exactly one match for each, rejects missing or duplicate matches with explicit diagnostics, then verifies the exact ZIP SHA-256 and the existing production-package identity contract.
 
 Before creating any public tag or Release, Publish Release re-runs the exact-source qualification, rebuilds and validates the production ZIP, verifies SHA-256, and installs/activates that generated ZIP in disposable WordPress at the supported minimum boundary.
 
@@ -73,7 +77,9 @@ The release system fails closed when it detects conditions such as:
 - the release branch already exists during preparation;
 - the expected version tag exists but does not identify the exact qualified source;
 - a GitHub Release for the expected version already exists;
-- `main` no longer identifies the exact reviewed Release Candidate;
+- `main` no longer identifies the exact reviewed Release Candidate and the difference is not a bounded Release-System-only recovery;
+- any product/runtime/package input changed after the reviewed Release Candidate;
+- the downloaded qualification artifact is missing the exact expected ZIP/checksum, contains duplicate basename matches, or has the wrong ZIP digest;
 - provider localization generated artifacts drift from their admitted source/authority;
 - required production files are missing;
 - repository/development/private provider-source material leaks into the ZIP;
@@ -92,3 +98,5 @@ It does **not** replace the historical licensed Gravity Forms / Gravity Flow / G
 For a normal release, the only routine choices are:
 
 **choose patch/minor/major → review/merge the generated Release PR → run Publish Release**.
+
+For a pre-publication Release-System repair, merge only the focused repair PR after it is green, then rerun **Publish Release** from `main`. Do not create the version tag or GitHub Release manually.
