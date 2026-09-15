@@ -78,7 +78,7 @@ jobs:
           set -euo pipefail
           composer validate --strict
           composer install --no-interaction --no-progress --prefer-dist
-          php -r '$d=json_decode(file_get_contents("composer.lock"),true); foreach (array_merge($d["packages"]??[], $d["packages-dev"]??[]) as $p) {if (($p["name"]??"")==="gettext/gettext") {if (($p["version"]??"")!=="5.7.3") exit(2); echo "gettext/gettext 5.7.3\n"; exit(0);}} exit(3);'
+          php -r '$d=json_decode(file_get_contents("composer.lock"),true); foreach (array_merge($d["packages"]??[], $d["packages-dev"]??[]) as $p) {if (($p["name"]??"")==="gettext/gettext") {$v=ltrim((string)($p["version"]??""),"v"); if ($v!=="5.7.3") exit(2); echo "gettext/gettext 5.7.3\n"; exit(0);}} exit(3);'
 
       - name: Build, GNU gettext validate, and prove deterministic output
         shell: bash
