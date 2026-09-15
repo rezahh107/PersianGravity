@@ -1,0 +1,225 @@
+name: Release Candidate Qualification
+
+on:
+  workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact source commit to qualify.
+        required: true
+        type: string
+      version:
+        description: Expected stable SemVer candidate version.
+        required: true
+        type: string
+    outputs:
+      version:
+        value: ${{ jobs.qualify.outputs.version }}
+      zip_name:
+        value: ${{ jobs.qualify.outputs.zip_name }}
+      checksum_name:
+        value: ${{ jobs.qualify.outputs.checksum_name }}
+      artifact_name:
+        value: ${{ jobs.qualify.outputs.artifact_name }}
+      zip_sha:
+        value: ${{ jobs.qualify.outputs.zip_sha }}
+      source_head:
+        value: ${{ jobs.qualify.outputs.source_head }}
+      source_tree:
+        value: ${{ jobs.qualify.outputs.source_tree }}
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    name: Exact candidate source + package + install smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: release-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -prelease-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      zip_name: ${{ steps.package.outputs.zip_name }}
+      checksum_name: ${{ steps.package.outputs.checksum_name }}
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
+      zip_sha: ${{ steps.package.outputs.zip_sha }}
+      source_head: ${{ steps.package.outputs.source_head }}
+      source_tree: ${{ steps.package.outputs.source_tree }}
+
+    steps:
+      - name: Checkout exact release candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact candidate checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          observed="$(git rev-parse HEAD)"
+          [[ "$observed" == "$EXPECTED_SHA" ]] || {
+            echo "Candidate checkout mismatch: expected=$EXPECTED_SHA observed=$observed" >&2
+            exit 1
+          }
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2.33'
+          coverage: none
+          tools: composer:2.8.12
+
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.19.0'
+
+      - name: Install locked development dependencies and gettext
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+          sudo apt-get update
+          sudo apt-get install --yes gettext
+
+      - name: Verify release metadata and release-system contracts
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          php tools/release/release-tool.php verify --expected="$EXPECTED_VERSION"
+          bash tests/release/contracts.sh
+
+      - name: Validate Persian gettext catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
+          trap 'rm -f "$tmp_mo"' EXIT
+          msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
+
+      - name: Run release-relevant repository verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          composer cs
+          composer compat
+          node --test tests/js/structured-scanner.test.js
+
+      - name: Check out pinned WordPress 6.7.2 translation implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: WordPress/WordPress
+          ref: 6abb46bec8b58abba32602738a785ba1c83f2a1c
+          path: .wordpress-core-67
+          persist-credentials: false
+
+      - name: Minimum WordPress localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core-67
+
+      - name: Check out pinned WordPress 7.1 translation implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6
+          path: .wordpress-core-71
+          persist-credentials: false
+
+      - name: Current WordPress localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core-71
+
+      - name: PHPUnit, provider drift, and runtime-integrity gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer test
+          composer i18n:check
+          test ! -d src
+          test ! -d assets/fonts
+          test ! -f persian-gravityforms-refactor.php
+          test ! -f assets/js/jalali-datepicker.js
+          test ! -f assets/js/jalali-datepicker.min.js
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
+          test -f includes/fields/class-gf-field-national-id.php
+          test -f includes/fields/class-gf-field-jalali-date.php
+          test -f includes/fields/class-gf-field-structured-scanner.php
+          test -f includes/class-pgr-scanner-profile-registry.php
+          test -f includes/class-pgr-localization.php
+          test -f includes/localization/products.php
+
+      - name: Build and fail-closed verify production package
+        id: package
+        env:
+          PGR_PACKAGE_VERSION: ${{ inputs.version }}
+          PGR_PACKAGE_SOURCE_SHA: ${{ inputs.candidate_sha }}
+        run: bash tools/build-production-package.sh
+
+      - name: Install and activate generated ZIP in WordPress 6.7.2
+        env:
+          PGR_PACKAGE_ZIP: ${{ github.workspace }}/dist/${{ steps.package.outputs.zip_name }}
+          PGR_PACKAGE_VERSION: ${{ steps.package.outputs.version }}
+          PGR_PACKAGE_SOURCE_SHA: ${{ steps.package.outputs.source_head }}
+          PGR_PACKAGE_SOURCE_TREE: ${{ steps.package.outputs.source_tree }}
+          PGR_SMOKE_WP_VERSION: '6.7.2'
+          PGR_SMOKE_DB_PASSWORD: release-root
+          PGR_SMOKE_EVIDENCE: ${{ github.workspace }}/release-evidence/artifact-smoke.txt
+        run: bash tools/release/smoke-production-package.sh
+
+      - name: Record qualification identity
+        shell: bash
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+          ZIP_NAME: ${{ steps.package.outputs.zip_name }}
+          ZIP_SHA: ${{ steps.package.outputs.zip_sha }}
+          SOURCE_HEAD: ${{ steps.package.outputs.source_head }}
+          SOURCE_TREE: ${{ steps.package.outputs.source_tree }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-evidence
+          {
+            printf 'RELEASE_CANDIDATE_QUALIFICATION=PASS\n'
+            printf 'VERSION=%s\n' "$VERSION"
+            printf 'SOURCE_HEAD=%s\n' "$SOURCE_HEAD"
+            printf 'SOURCE_TREE=%s\n' "$SOURCE_TREE"
+            printf 'ZIP_NAME=%s\n' "$ZIP_NAME"
+            printf 'ZIP_SHA256=%s\n' "$ZIP_SHA"
+          } > release-evidence/qualification.txt
+
+      - name: Upload exact qualified package and evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: |
+            dist/${{ steps.package.outputs.zip_name }}
+            dist/${{ steps.package.outputs.checksum_name }}
+            release-evidence/qualification.txt
+            release-evidence/artifact-smoke.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
