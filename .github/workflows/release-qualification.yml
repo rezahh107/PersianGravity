@@ -13,33 +13,193 @@ on:
         type: string
     outputs:
       version:
-        value: ${{ jobs.qualify.outputs.version }}
+        value: ${{ jobs.package.outputs.version }}
       zip_name:
-        value: ${{ jobs.qualify.outputs.zip_name }}
+        value: ${{ jobs.package.outputs.zip_name }}
       checksum_name:
-        value: ${{ jobs.qualify.outputs.checksum_name }}
+        value: ${{ jobs.package.outputs.checksum_name }}
       artifact_name:
-        value: ${{ jobs.qualify.outputs.artifact_name }}
+        value: ${{ jobs.package.outputs.artifact_name }}
       zip_sha:
-        value: ${{ jobs.qualify.outputs.zip_sha }}
+        value: ${{ jobs.package.outputs.zip_sha }}
       source_head:
-        value: ${{ jobs.qualify.outputs.source_head }}
+        value: ${{ jobs.package.outputs.source_head }}
       source_tree:
-        value: ${{ jobs.qualify.outputs.source_tree }}
+        value: ${{ jobs.package.outputs.source_tree }}
 
 permissions:
   contents: read
 
 jobs:
-  qualify:
-    name: Exact candidate source + package + install smoke
+  quality:
+    name: Exact candidate quality / PHP 8.3
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 25
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout exact release candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact candidate checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]] || {
+            echo "Candidate checkout mismatch: expected=$EXPECTED_SHA observed=$(git rev-parse HEAD)" >&2
+            exit 1
+          }
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: composer:2.8.12
+          coverage: none
+
+      - name: Install locked development dependencies
+        run: |
+          composer validate --strict
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install GNU gettext
+        run: sudo apt-get update && sudo apt-get install --yes gettext
+
+      - name: Verify release metadata and Persian gettext catalog
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          php tools/release/release-tool.php verify --expected="$EXPECTED_VERSION"
+          tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
+          trap 'rm -f "$tmp_mo"' EXIT
+          msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
+
+      - name: Syntax check shipped PHP
+        run: find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: WordPress Coding Standards
+        run: composer cs
+
+      - name: PHPCompatibility minimum baseline
+        run: composer compat
+
+      - name: Structured Scanner pure JavaScript tests
+        run: node --test tests/js/structured-scanner.test.js
+
+      - name: Check out pinned current WordPress Core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: WordPress/WordPress
+          ref: b998fef9238af183f9523b3df71618e6e57498b6 # WordPress 7.1
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Current WordPress Core localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
+
+      - name: Provider catalog integrity and deterministic drift
+        run: composer i18n:check
+
+      - name: Runtime integrity guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -d src
+          test ! -d assets/fonts
+          test ! -f persian-gravityforms-refactor.php
+          test ! -f assets/js/jalali-datepicker.js
+          test ! -f assets/js/jalali-datepicker.min.js
+          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
+          test -f includes/fields/class-gf-field-national-id.php
+          test -f includes/fields/class-gf-field-jalali-date.php
+          test -f includes/fields/class-gf-field-structured-scanner.php
+          test -f includes/class-pgr-scanner-profile-registry.php
+          test -f includes/class-pgr-localization.php
+          test -f includes/localization/products.php
+
+  unit:
+    name: Exact candidate unit / PHP ${{ matrix.php }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - name: Checkout exact release candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact candidate checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:2.8.12
+          coverage: none
+
+      - name: Install locked development dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Verify candidate release metadata
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: php tools/release/release-tool.php verify --expected="$EXPECTED_VERSION"
+
+      - name: Check out pinned WordPress 6.7.2 translation implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: WordPress/WordPress
+          ref: 6abb46bec8b58abba32602738a785ba1c83f2a1c # WordPress 6.7.2
+          path: .wordpress-core
+          persist-credentials: false
+
+      - name: Minimum WordPress localization contracts
+        run: composer i18n:test
+        env:
+          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
+
+      - name: PHPUnit
+        run: composer test
+
+  package:
+    name: Exact candidate package / WordPress 6.7.2 / PHP 8.2
+    needs:
+      - quality
+      - unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
     services:
       database:
-        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        image: mariadb:11.4.8
         env:
           MARIADB_ROOT_PASSWORD: release-root
           MARIADB_DATABASE: wordpress
@@ -73,105 +233,21 @@ jobs:
           EXPECTED_SHA: ${{ inputs.candidate_sha }}
         run: |
           set -euo pipefail
-          observed="$(git rev-parse HEAD)"
-          [[ "$observed" == "$EXPECTED_SHA" ]] || {
-            echo "Candidate checkout mismatch: expected=$EXPECTED_SHA observed=$observed" >&2
-            exit 1
-          }
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
 
-      - name: Set up PHP 8.2
+      - name: Set up PHP, Composer and WP-CLI
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.2.33'
+          php-version: '8.2'
+          tools: composer:2.8.12, wp-cli:2.12.0
           coverage: none
-          tools: composer:2.8.12
 
-      - name: Set up Node 22
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: '22.19.0'
-
-      - name: Install locked development dependencies and gettext
-        shell: bash
-        run: |
-          set -euo pipefail
-          composer validate --strict
-          composer install --no-interaction --no-progress --prefer-dist
-          sudo apt-get update
-          sudo apt-get install --yes gettext
-
-      - name: Verify release metadata and release-system contracts
-        shell: bash
+      - name: Release-system contract tests
         env:
           EXPECTED_VERSION: ${{ inputs.version }}
         run: |
-          set -euo pipefail
           php tools/release/release-tool.php verify --expected="$EXPECTED_VERSION"
           bash tests/release/contracts.sh
-
-      - name: Validate Persian gettext catalog
-        shell: bash
-        run: |
-          set -euo pipefail
-          tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
-          trap 'rm -f "$tmp_mo"' EXIT
-          msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
-          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
-          cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
-
-      - name: Run release-relevant repository verification
-        shell: bash
-        run: |
-          set -euo pipefail
-          find persian-gravityforms.php includes admin uninstall.php languages -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          composer cs
-          composer compat
-          node --test tests/js/structured-scanner.test.js
-
-      - name: Check out pinned WordPress 6.7.2 translation implementation
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: WordPress/WordPress
-          ref: 6abb46bec8b58abba32602738a785ba1c83f2a1c
-          path: .wordpress-core-67
-          persist-credentials: false
-
-      - name: Minimum WordPress localization contracts
-        run: composer i18n:test
-        env:
-          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core-67
-
-      - name: Check out pinned WordPress 7.1 translation implementation
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: WordPress/WordPress
-          ref: b998fef9238af183f9523b3df71618e6e57498b6
-          path: .wordpress-core-71
-          persist-credentials: false
-
-      - name: Current WordPress localization contracts
-        run: composer i18n:test
-        env:
-          PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core-71
-
-      - name: PHPUnit, provider drift, and runtime-integrity gates
-        shell: bash
-        run: |
-          set -euo pipefail
-          composer test
-          composer i18n:check
-          test ! -d src
-          test ! -d assets/fonts
-          test ! -f persian-gravityforms-refactor.php
-          test ! -f assets/js/jalali-datepicker.js
-          test ! -f assets/js/jalali-datepicker.min.js
-          ! grep -R -n -E 'GFPersian_|mellicart|ir_national_id|load_textdomain_mofile|registration_counter|pgrJalali|jquery-ui-datepicker|wp_deregister_script' persian-gravityforms.php includes admin
-          test -f includes/fields/class-gf-field-national-id.php
-          test -f includes/fields/class-gf-field-jalali-date.php
-          test -f includes/fields/class-gf-field-structured-scanner.php
-          test -f includes/class-pgr-scanner-profile-registry.php
-          test -f includes/class-pgr-localization.php
-          test -f includes/localization/products.php
 
       - name: Build and fail-closed verify production package
         id: package
