@@ -228,17 +228,63 @@ PUBLISH_BASE=("${TOOL[@]}" validate-publish
   --candidate-branch="release/v${CURRENT}"
   --tag="v${CURRENT}"
   --candidate-merged=1
-  --tag-exists=0
+  --tag-state=ABSENT
   --release-exists=0)
 
-expect_pass 'valid merged release candidate publish identity is accepted' "${PUBLISH_BASE[@]}"
-expect_fail 'candidate/source version mismatch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$PATCH" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=0 --release-exists=0
-expect_fail 'existing production tag is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=1 --release-exists=0
-expect_fail 'existing GitHub Release is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=0 --release-exists=1
-expect_fail 'main that is not exact integrated Release PR result is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_B" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=0 --release-exists=0
-expect_fail 'release source tree that differs from reviewed candidate is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE_B" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=0 --release-exists=0
-expect_fail 'unmerged release candidate is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=0 --tag-exists=0 --release-exists=0
-expect_fail 'non-release candidate branch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="feature/not-release" --tag="v${CURRENT}" --candidate-merged=1 --tag-exists=0 --release-exists=0
-expect_fail 'tag/version mismatch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${PATCH}" --candidate-merged=1 --tag-exists=0 --release-exists=0
+expect_pass 'fresh publish state with absent tag and Release is accepted' "${PUBLISH_BASE[@]}"
+expect_pass 'exact existing expected tag is resumable' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=EXACT_SOURCE --release-exists=0
+expect_fail 'wrong-target existing tag is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=CONFLICT --release-exists=0
+expect_fail 'existing GitHub Release is refused even with exact tag' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=EXACT_SOURCE --release-exists=1
+expect_fail 'candidate/source version mismatch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$PATCH" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=ABSENT --release-exists=0
+expect_fail 'main that is not exact integrated Release PR result is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_B" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=ABSENT --release-exists=0
+expect_fail 'release source tree that differs from reviewed candidate is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE_B" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=ABSENT --release-exists=0
+expect_fail 'unmerged release candidate is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${CURRENT}" --candidate-merged=0 --tag-state=ABSENT --release-exists=0
+expect_fail 'non-release candidate branch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="feature/not-release" --tag="v${CURRENT}" --candidate-merged=1 --tag-state=ABSENT --release-exists=0
+expect_fail 'tag/version mismatch is refused' "${TOOL[@]}" validate-publish --source-version="$CURRENT" --candidate-version="$CURRENT" --source-sha="$SHA_A" --candidate-sha="$SHA_B" --integrated-sha="$SHA_A" --source-tree="$TREE" --candidate-tree="$TREE" --candidate-branch="release/v${CURRENT}" --tag="v${PATCH}" --candidate-merged=1 --tag-state=ABSENT --release-exists=0
+
+PUBLISH_WORKFLOW='.github/workflows/publish-release.yml'
+tag_state_contract_count="$(grep -F -- '--tag-state="$tag_state"' "$PUBLISH_WORKFLOW" | wc -l | tr -d '[:space:]')"
+[[ "$tag_state_contract_count" == '2' ]] || {
+  echo "Publish workflow must pass identity-sensitive tag state at both validation boundaries; found $tag_state_contract_count." >&2
+  exit 1
+}
+if grep -Fq -- '--tag-exists=' "$PUBLISH_WORKFLOW"; then
+  echo 'Publish workflow regressed to boolean tag-exists publication state.' >&2
+  exit 1
+fi
+
+tag_step="$(awk '
+  /^[[:space:]]*- name: Create or reuse immutable version tag on exact qualified source$/ { capture=1 }
+  capture { print }
+  /^[[:space:]]*- name: Publish GitHub Release with generated notes and qualified assets$/ { exit }
+' "$PUBLISH_WORKFLOW")"
+[[ -n "$tag_step" ]] || { echo 'Could not locate idempotent tag-creation workflow step.' >&2; exit 1; }
+for state in 'ABSENT)' 'EXACT_SOURCE)' 'CONFLICT)'; do
+  grep -Fq "$state" <<< "$tag_step" || { echo "Tag workflow is missing state branch: $state" >&2; exit 1; }
+done
+
+absent_branch="$(awk '
+  /^[[:space:]]*ABSENT\)/ { capture=1; next }
+  /^[[:space:]]*EXACT_SOURCE\)/ { capture=0 }
+  capture { print }
+' <<< "$tag_step")"
+exact_branch="$(awk '
+  /^[[:space:]]*EXACT_SOURCE\)/ { capture=1; next }
+  /^[[:space:]]*CONFLICT\)/ { capture=0 }
+  capture { print }
+' <<< "$tag_step")"
+
+grep -Fq 'gh api --method POST' <<< "$absent_branch" || { echo 'ABSENT tag path no longer creates the tag.' >&2; exit 1; }
+grep -Fq 'tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"' <<< "$absent_branch" || { echo 'ABSENT tag path no longer re-reads remote identity after create/race.' >&2; exit 1; }
+grep -Fq 'reusing it without mutation' <<< "$exact_branch" || { echo 'EXACT_SOURCE tag path no longer documents no-op reuse.' >&2; exit 1; }
+if grep -Fq 'gh api --method POST' <<< "$exact_branch"; then
+  echo 'EXACT_SOURCE tag path must not create or mutate a tag.' >&2
+  exit 1
+fi
+if grep -Eq 'git[[:space:]]+tag[[:space:]]+-f|git[[:space:]]+update-ref|git[[:space:]]+push.*--force|gh[[:space:]]+api[[:space:]]+--method[[:space:]]+(DELETE|PATCH).*git/refs' <<< "$tag_step"; then
+  echo 'Tag workflow contains a destructive tag mutation path.' >&2
+  exit 1
+fi
+pass 'Publish workflow keeps EXACT_SOURCE resumable and tag mutation non-destructive'
 
 printf 'RELEASE_CONTRACTS=PASS tests=%d version=%s\n' "$PASS_COUNT" "$CURRENT"
