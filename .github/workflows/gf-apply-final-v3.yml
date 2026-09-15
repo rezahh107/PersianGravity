@@ -175,9 +175,10 @@ jobs:
             $gf=json_decode(file_get_contents("languages/providers/gravityforms/metadata.json"),true);
             $flow=json_decode(file_get_contents("languages/providers/gravityflow/metadata.json"),true);
             foreach ([["gf",$gf,4207],["flow",$flow,1098]] as [$n,$d,$count]) {
-              if (($d["authoritative_total"]??null)!==$count || ($d["counts_in_committed_po"]??null)!==$count || ($d["content_status"]??null)!=="FULL_TRANSLATION_CONTENT_ACCEPTED") {fwrite(STDERR,"bad $n full metadata\n"); exit(1);}
+              $counts=$d["counts_in_committed_po"]??[];
+              if (($d["authoritative_total"]??null)!==$count || ($counts["translated"]??null)!==$count || ($counts["untranslated"]??null)!==0 || ($counts["fuzzy"]??null)!==0 || ($d["coverage_percent"]??null)!==100 || ($d["content_status"]??null)!=="FULL_TRANSLATION_CONTENT_ACCEPTED") {fwrite(STDERR,"bad $n full metadata\n"); exit(1);}
+              if (($d["validated_script_handles"]??null)!==[]) {fwrite(STDERR,"bad $n JS authority\n"); exit(1);}
             }
-            if (($gf["js_translation_handles"]??null)!==0 || ($flow["js_translation_handles"]??null)!==0) exit(1);
           '
           test -z "$(find languages/providers/gravityforms -maxdepth 1 -type f -name '*.json' ! -name 'metadata.json' -print -quit)"
           git diff --exit-code origin/main -- languages/providers/gravityflow
