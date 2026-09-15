@@ -20,9 +20,11 @@ jobs:
     name: Generated ZIP / WordPress 6.7.2 / PHP 8.2
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    permissions:
+      contents: read
     services:
       database:
-        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        image: mariadb:11.4.8
         env:
           MARIADB_ROOT_PASSWORD: release-root
           MARIADB_DATABASE: wordpress
@@ -56,10 +58,11 @@ jobs:
           }
           printf 'head=%s\n' "$observed" >> "$GITHUB_OUTPUT"
 
-      - name: Set up PHP 8.2
+      - name: Set up PHP and WP-CLI
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.2.33'
+          php-version: '8.2'
+          tools: wp-cli:2.12.0
           coverage: none
 
       - name: Verify release contracts and build production ZIP
