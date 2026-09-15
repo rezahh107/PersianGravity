@@ -119,10 +119,12 @@ jobs:
           review=json.loads((root/'tools/i18n/admission/reviews/gravityflow-remainder.json').read_text())
           prov=json.loads((root/'languages/providers/gravityflow/source/provenance.json').read_text())
           assert meta['provenance']['content_admission_state']=='CONTENT_ADMITTED_FULL'
-          assert meta['coverage']['known_translatable_strings']==1098
-          assert meta['coverage']['translated_strings']==1098
-          assert meta['coverage']['coverage_percent']==100
-          assert meta['coverage']['status']=='FULL_TRANSLATION_CONTENT_ACCEPTED'
+          assert meta['authoritative_total']==1098
+          assert meta['counts_in_committed_po']['translated']==1098
+          assert meta['counts_in_committed_po']['untranslated']==0
+          assert meta['counts_in_committed_po']['fuzzy']==0
+          assert float(meta['coverage_percent'])==100.0
+          assert meta['content_status']=='FULL_TRANSLATION_CONTENT_ACCEPTED'
           assert prov['content_admission_state']=='CONTENT_ADMITTED_FULL'
           assert prov['content_aggregate']['admitted_message_count']==1098
           assert review['accepted_count']==366
