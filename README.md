@@ -81,7 +81,7 @@ Localization is cross-cutting infrastructure outside the six-module registry. It
 - changelog
 - production package contents
 
-این تطبیق شاخه، شناسهٔ فعلی `4.2.0` را حفظ می‌کند و نسخه یا انتشار جدید ایجاد نمی‌کند.
+ادغام تغییرات عادی یا تغییر خود سامانهٔ انتشار، به‌تنهایی نسخه یا انتشار تولید نمی‌کند. تغییر نسخه فقط از مسیر **Prepare Release** و انتشار فقط پس از تأیید صریح مالک از مسیر **Publish Release** انجام می‌شود.
 
 مستندات contributor/agent: [`AGENTS.md`](AGENTS.md)
 
