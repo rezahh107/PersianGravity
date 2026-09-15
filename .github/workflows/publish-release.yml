@@ -61,6 +61,38 @@ jobs:
         run: |
           set -euo pipefail
 
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
           source_sha="$(git rev-parse HEAD)"
           source_tree="$(git rev-parse HEAD^{tree})"
           remote_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
@@ -137,9 +169,8 @@ jobs:
             exit 1
           }
 
-          tag_exists=0
+          tag_state="$(resolve_tag_state "$tag" "$source_sha")"
           release_exists=0
-          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then tag_exists=1; fi
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then release_exists=1; fi
 
           php tools/release/release-tool.php validate-publish \
@@ -153,7 +184,7 @@ jobs:
             --candidate-branch="$branch" \
             --tag="$tag" \
             --candidate-merged=1 \
-            --tag-exists="$tag_exists" \
+            --tag-state="$tag_state" \
             --release-exists="$release_exists"
 
           printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
@@ -238,6 +269,39 @@ jobs:
           QUALIFIED_ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
         run: |
           set -euo pipefail
+
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
           [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
           [[ "$(git rev-parse HEAD^{tree})" == "$SOURCE_TREE" ]]
           remote_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
@@ -248,9 +312,8 @@ jobs:
 
           php tools/release/release-tool.php verify --expected="$VERSION"
 
-          tag_exists=0
+          tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
           release_exists=0
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then tag_exists=1; fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then release_exists=1; fi
 
           php tools/release/release-tool.php validate-publish \
@@ -264,7 +327,7 @@ jobs:
             --candidate-branch="$CANDIDATE_BRANCH" \
             --tag="$TAG" \
             --candidate-merged=1 \
-            --tag-exists="$tag_exists" \
+            --tag-state="$tag_state" \
             --release-exists="$release_exists"
 
           test -s "qualified-assets/$ZIP_NAME"
@@ -278,7 +341,7 @@ jobs:
             "qualified-assets/$ZIP_NAME" "qualified-assets/$CHECKSUM_NAME" \
             "$VERSION" "$SOURCE_SHA" "$SOURCE_TREE"
 
-      - name: Create immutable version tag on exact qualified source
+      - name: Create or reuse immutable version tag on exact qualified source
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -286,16 +349,69 @@ jobs:
           SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
         run: |
           set -euo pipefail
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG appeared after preflight; refusing to overwrite it." >&2
-            exit 1
-          fi
-          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
-            -f ref="refs/tags/$TAG" \
-            -f sha="$SOURCE_SHA" >/dev/null
-          tagged_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
-          [[ "$tagged_sha" == "$SOURCE_SHA" ]] || {
-            echo "Created tag does not identify qualified source: tag=$tagged_sha source=$SOURCE_SHA" >&2
+
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
+          tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+          case "$tag_state" in
+            ABSENT)
+              if ! gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                -f ref="refs/tags/$TAG" \
+                -f sha="$SOURCE_SHA" >/dev/null; then
+                echo "Tag creation did not succeed immediately; re-reading remote state in case the exact ref appeared concurrently." >&2
+              fi
+              tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+              [[ "$tag_state" == 'EXACT_SOURCE' ]] || {
+                echo "Tag $TAG is not the exact qualified source after creation/race recovery: state=$tag_state source=$SOURCE_SHA" >&2
+                exit 1
+              }
+              ;;
+            EXACT_SOURCE)
+              echo "Tag $TAG already identifies the exact qualified source; reusing it without mutation."
+              ;;
+            CONFLICT)
+              echo "Tag $TAG exists with a conflicting identity; refusing to delete, overwrite, force-update, or move it." >&2
+              exit 1
+              ;;
+            *)
+              echo "Unexpected tag state for $TAG: $tag_state" >&2
+              exit 1
+              ;;
+          esac
+
+          final_tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+          [[ "$final_tag_state" == 'EXACT_SOURCE' ]] || {
+            echo "Final tag identity check failed: tag=$TAG state=$final_tag_state source=$SOURCE_SHA" >&2
             exit 1
           }
 
@@ -310,7 +426,7 @@ jobs:
         run: |
           set -euo pipefail
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "GitHub Release $TAG appeared after preflight; refusing to mutate it. Owner intervention is required because the version tag now exists." >&2
+            echo "GitHub Release $TAG appeared after preflight; refusing to mutate it. Owner intervention is required." >&2
             exit 1
           fi
           gh release create "$TAG" \
