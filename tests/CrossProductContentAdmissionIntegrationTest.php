@@ -16,10 +16,10 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 		$expected = array(
 			'gravityforms' => array(
 				'domain'       => 'gravityforms',
-				'records'      => 6,
-				'union'        => 1759,
+				'records'      => 7,
+				'union'        => 4207,
 				'source'       => 4207,
-				'non_admitted' => 2448,
+				'non_admitted' => 0,
 			),
 			'gravityflow' => array(
 				'domain'       => 'gravityflow',
@@ -37,7 +37,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			),
 		);
 
-		$this->assertCount( 20, $manifest['admissions'] );
+		$this->assertCount( 21, $manifest['admissions'] );
 		$this->assertSame(
 			array( 'gk-gravityview', 'gravityflow', 'gravityforms' ),
 			$this->sortedKeys( $products )
@@ -50,7 +50,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertSame( $expected[ $record['product'] ]['domain'], $record['domain'] );
 			$record_identities[] = pgr_content_record_identity( $record );
 		}
-		$this->assertCount( 20, array_unique( $record_identities, SORT_STRING ) );
+		$this->assertCount( 21, array_unique( $record_identities, SORT_STRING ) );
 
 		foreach ( $expected as $product => $contract ) {
 			$this->assertArrayHasKey( $product, $content );
@@ -70,16 +70,16 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertCount( $contract['union'], $aggregate['ids'] );
 			$total_records += count( $content[ $product ]['admissions'] );
 		}
-		$this->assertSame( 20, $total_records );
+		$this->assertSame( 21, $total_records );
 	}
 
-	public function test_partial_representatives_full_flow_boundary_dependencies_and_js_authority_remain_excluded(): void {
+	public function test_full_gravityforms_and_flow_partial_gravityview_boundaries_and_js_authority_remain_bounded(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
 		$outside  = array(
-			'gravityforms' => array( 'gravityforms', 'The URL is not valid.' ),
+			'gravityforms' => array( 'gravityforms', 'PersianGravity Gravity Forms out-of-census fallback probe.' ),
 			'gravityflow'  => array( 'gravityflow', 'PersianGravity Gravity Flow out-of-census fallback probe.' ),
 			'gravityview'  => array( 'gk-gravityview', 'API Key' ),
 		);

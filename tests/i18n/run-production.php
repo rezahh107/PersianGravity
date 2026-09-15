@@ -22,8 +22,8 @@ try {
 			'prefix'        => 'gravityforms',
 			'admitted'      => 'Validation Message Placement',
 			'translation'   => 'پیام اعتبارسنجی',
-			'fallback_probe' => 'The URL is not valid.',
-			'fallback_scope' => 'non-admitted identity',
+			'fallback_probe' => 'PersianGravity Gravity Forms out-of-census fallback probe.',
+			'fallback_scope' => 'out-of-census identity',
 			'upstream_only' => 'کنترل بالادستی گرویتی فرمز',
 		),
 		'gravityflow' => array(
