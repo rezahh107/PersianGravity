@@ -31,6 +31,9 @@ foreach ( $products as $domain => $product ) {
 	$unavailable   = 'PACKAGE_UNAVAILABLE' === $status;
 	$content       = $content_admission[ $product['product'] ] ?? null;
 	$partial       = is_array( $content ) && 'CONTENT_ADMITTED_PARTIAL' === ( $content['content_state'] ?? null );
+	$full          = is_array( $content ) && 'CONTENT_ADMITTED_FULL' === ( $content['content_state'] ?? null );
+	$has_content   = $partial || $full;
+	$source_record = $admission[ $product['product'] ] ?? null;
 
 	if ( ! $verified && ! $metadata_only && ! $unavailable ) {
 		throw new RuntimeException( 'Unknown source status: ' . $domain );
@@ -38,15 +41,22 @@ foreach ( $products as $domain => $product ) {
 	if ( $product['target_version'] !== $provenance['target_product_version'] ) {
 		throw new RuntimeException( 'Target version drift' );
 	}
-	if ( ( $metadata_only || $unavailable ) && ! $partial && ( 0 !== $known || array() !== $product['scripts'] ) ) {
+	if ( ( $metadata_only || $unavailable ) && ! $has_content && ( 0 !== $known || array() !== $product['scripts'] ) ) {
 		throw new RuntimeException( 'Non-content source state must remain runtime dormant: ' . $domain );
 	}
-	if ( $partial &&
+	if ( $has_content &&
 		( ! $metadata_only ||
 			array() !== $product['scripts'] ||
 			$known !== $content['aggregate']['admitted_message_count'] ||
 			hash_file( 'sha256', $source . '/fa_IR.po' ) !== $content['aggregate']['provider_source_sha256'] ) ) {
-		throw new RuntimeException( 'Invalid partial-content aggregate runtime boundary: ' . $domain );
+		throw new RuntimeException( 'Invalid admitted-content aggregate runtime boundary: ' . $domain );
+	}
+	if ( $full &&
+		( $known !== $source_record['canonical_message_count'] ||
+			$counts['translated'] !== $source_record['canonical_message_count'] ||
+			0 !== $counts['untranslated'] ||
+			0 !== $counts['fuzzy'] ) ) {
+		throw new RuntimeException( 'Full-content admission does not cover the exact canonical source census: ' . $domain );
 	}
 
 	if ( $metadata_only ) {
@@ -122,17 +132,18 @@ foreach ( $products as $domain => $product ) {
 		$hashes[ $name ] = hash( 'sha256', $bytes );
 	}
 
-	$source_record       = $admission[ $product['product'] ] ?? null;
 	$authoritative_total = $verified ? $known : ( $metadata_only ? $source_record['canonical_message_count'] : null );
 	if ( $verified && $known > 0 ) {
 		$coverage = round( 100 * $counts['translated'] / $known, 2 );
-	} elseif ( $partial ) {
+	} elseif ( $has_content ) {
 		$coverage = round( 100 * $counts['translated'] / $source_record['canonical_message_count'], 2 );
 	} else {
 		$coverage = $metadata_only ? 0 : null;
 	}
 
-	if ( $partial ) {
+	if ( $full ) {
+		$content_status = 'FULL_TRANSLATION_CONTENT_ACCEPTED';
+	} elseif ( $partial ) {
 		$content_status = 'PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED';
 	} elseif ( $verified ) {
 		$content_status = 'PARTIAL_TRANSLATION_CONTENT';
@@ -158,9 +169,9 @@ foreach ( $products as $domain => $product ) {
 		'vendor_surface_drift_check' => $surface_status,
 		'generator'                  => 'gettext/gettext 5.7.3 + tools/i18n/catalog.php',
 	);
-	if ( $partial ) {
+	if ( $has_content ) {
 		$metadata['content_admission'] = array(
-			'revision'   => 2,
+			'revision'   => $content['content_admission_revision'],
 			'state'      => $content['content_state'],
 			'admissions' => array_map( 'pgr_content_provenance_record', $content['admissions'] ),
 			'aggregate'  => $content['aggregate'],

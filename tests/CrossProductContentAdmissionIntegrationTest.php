@@ -7,7 +7,7 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 require_once dirname( __DIR__ ) . '/tools/i18n/content-admission.php';
 
 final class CrossProductContentAdmissionIntegrationTest extends TestCase {
-	public function test_integrated_manifest_contains_only_the_accepted_nineteen_records(): void {
+	public function test_integrated_manifest_contains_only_the_accepted_records(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
@@ -23,10 +23,10 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			),
 			'gravityflow' => array(
 				'domain'       => 'gravityflow',
-				'records'      => 7,
-				'union'        => 732,
+				'records'      => 8,
+				'union'        => 1098,
 				'source'       => 1098,
-				'non_admitted' => 366,
+				'non_admitted' => 0,
 			),
 			'gravityview' => array(
 				'domain'       => 'gk-gravityview',
@@ -37,7 +37,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			),
 		);
 
-		$this->assertCount( 19, $manifest['admissions'] );
+		$this->assertCount( 20, $manifest['admissions'] );
 		$this->assertSame(
 			array( 'gk-gravityview', 'gravityflow', 'gravityforms' ),
 			$this->sortedKeys( $products )
@@ -50,7 +50,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertSame( $expected[ $record['product'] ]['domain'], $record['domain'] );
 			$record_identities[] = pgr_content_record_identity( $record );
 		}
-		$this->assertCount( 19, array_unique( $record_identities, SORT_STRING ) );
+		$this->assertCount( 20, array_unique( $record_identities, SORT_STRING ) );
 
 		foreach ( $expected as $product => $contract ) {
 			$this->assertArrayHasKey( $product, $content );
@@ -70,17 +70,17 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertCount( $contract['union'], $aggregate['ids'] );
 			$total_records += count( $content[ $product ]['admissions'] );
 		}
-		$this->assertSame( 19, $total_records );
+		$this->assertSame( 20, $total_records );
 	}
 
-	public function test_non_admitted_representatives_dependencies_and_js_authority_remain_excluded(): void {
+	public function test_partial_representatives_full_flow_boundary_dependencies_and_js_authority_remain_excluded(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
 		$outside  = array(
 			'gravityforms' => array( 'gravityforms', 'The URL is not valid.' ),
-			'gravityflow'  => array( 'gravityflow', 'Allow the Reports shortcode to display workflow reports to all registered and anonymous users.' ),
+			'gravityflow'  => array( 'gravityflow', 'PersianGravity Gravity Flow out-of-census fallback probe.' ),
 			'gravityview'  => array( 'gk-gravityview', 'API Key' ),
 		);
 

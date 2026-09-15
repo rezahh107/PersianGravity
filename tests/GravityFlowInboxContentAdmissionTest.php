@@ -7,7 +7,7 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 require_once dirname( __DIR__ ) . '/tools/i18n/content-admission.php';
 
 final class GravityFlowInboxContentAdmissionTest extends TestCase {
-	public function test_inbox_content_authority_is_preserved_inside_the_seven_surface_union(): void {
+	public function test_inbox_content_authority_is_preserved_inside_the_full_product_union(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
@@ -18,7 +18,8 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 			'gravityflow::workflow_runtime::admin_page:gravityflow-inbox'
 		);
 
-		$this->assertCount( 7, $flow['admissions'] );
+		$this->assertCount( 8, $flow['admissions'] );
+		$this->assertCount( 7, array_filter( $flow['admissions'], static fn( array $record ): bool => isset( $record['surface_id'] ) ) );
 		$this->assertSame( 255, $inbox['admitted_message_count'] );
 		$this->assertSame( '446d961de3a5572fb8ff7ebce8a24ce3ed7d7372efcce7022967d319a20a147a', $inbox['admitted_keyset_sha256'] );
 		$this->assertSame( '6e0459570b6b10dab7385cb712d00b7b80d1550c0d3f4f2d8c80f81d2a38aa09', $inbox['admitted_surface_path_index_sha256'] );
@@ -35,15 +36,17 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 		$content  = pgr_validate_content_admission( $root, $source, $products );
 		$flow     = $content['gravityflow'];
 
-		$this->assertSame( 732, $flow['aggregate']['admitted_message_count'] );
-		$this->assertSame( 'a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12', $flow['aggregate']['admitted_keyset_sha256'] );
-		$this->assertSame( '66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826', $flow['aggregate']['admitted_translation_content_sha256'] );
-		$this->assertSame( 'bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a', $flow['aggregate']['provider_source_sha256'] );
+		$this->assertSame( 'CONTENT_ADMITTED_FULL', $flow['content_state'] );
+		$this->assertSame( 1098, $flow['aggregate']['admitted_message_count'] );
+		$this->assertSame( '612c1ded4350b766c35b9abda22fcc213f91a1cc77e9f78f5fe11caa26244903', $flow['aggregate']['admitted_keyset_sha256'] );
+		$this->assertSame( '311aacfedbe309374a13f777e8ae6c45d98d118c9ca5c6ffcf7ef3378dcfed36', $flow['aggregate']['admitted_translation_content_sha256'] );
+		$this->assertSame( '01936627afef409f7da7412e0a6b25e8684144ca9356a04a2ef71e474d6260f2', $flow['aggregate']['provider_source_sha256'] );
 		$this->assertSame( array(), $products['gravityflow']['scripts'] );
 		$this->assertSame( 0, $flow['aggregate']['native_js_handles_activated'] );
 		$this->assertSame( 0, $flow['aggregate']['js_translation_json_generated'] );
-		$this->assertSame( '247224d3385df3fbbeda0bb2177d649858b808d10586b7ecac8da90a5424615c', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.mo' ) );
-		$this->assertSame( '580e658d61be7190fb53db1fe7c9f1cf15ba5210ef8aa7fe8c4bf5432aa262d0', hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php' ) );
+		$metadata = pgr_admission_json( $root . '/languages/providers/gravityflow/metadata.json' );
+		$this->assertSame( $metadata['artifact_sha256']['gravityflow-fa_IR.mo'], hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.mo' ) );
+		$this->assertSame( $metadata['artifact_sha256']['gravityflow-fa_IR.l10n.php'], hash_file( 'sha256', $root . '/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php' ) );
 		$this->assertSame( array(), glob( $root . '/languages/providers/gravityflow/gravityflow-fa_IR-*.json' ) ?: array() );
 	}
 
@@ -82,7 +85,7 @@ final class GravityFlowInboxContentAdmissionTest extends TestCase {
 
 	private function recordForSurface( array $records, string $surface ): array {
 		foreach ( $records as $record ) {
-			if ( $surface === $record['surface_id'] ) {
+			if ( $surface === ( $record['surface_id'] ?? null ) ) {
 				return $record;
 			}
 		}

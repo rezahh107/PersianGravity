@@ -1,13 +1,13 @@
 # Persian Gravity Forms Validation — 4.2.0
 
-## Current content-admission snapshot — 2026-09-14
+## Current content-admission snapshot — 2026-09-15
 
-- Gravity Forms: revision 2, 6 admitted records, 1759 unique admitted identities from a 4207-identity source census; unchanged from merged PR #19.
-- Gravity Flow: revision 2, 7 admitted records with surface counts 15 / 255 / 43 / 20 / 391 / 44 / 0; 768 occurrences deduplicate to 732 unique admitted identities from a 1098-identity source census; 366 remain non-admitted.
-- Gravity Flow native JS handles: 0; generated translation JSON: 0.
-- GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; 2666 remain unclassified/non-admitted.
-- GravityView native JS handles: 0; generated translation JSON: 0; the historical two-identity frontend-shortcode admission remains byte/translation-fingerprint locked.
-- Real licensed browser/runtime/RTL behavior for the accepted 19-surface matrix is established by the WU-008/WU-009 evidence record below; it is not inferred from source state.
+- Gravity Forms: revision 2, 6 admitted records, 1759 unique admitted identities from a 4207-identity source census; unchanged by this Gravity Flow-only change.
+- Gravity Flow: revision 3 `CONTENT_ADMITTED_FULL`. The 7 historical surface records still deduplicate to the same 732 identities; one reviewed `PRODUCT_REMAINDER` record admits the exact disjoint 366 residual identities. The required union is 1098/1098, with 0 fuzzy, empty, rejected or unreviewed remainder entries.
+- Gravity Flow remainder review: 2 semantic passes, 34 second-pass corrections, per-identity accepted translation hashes and source-derived risk flags. The revision-3 validator pins the original 732 keyset/translation fingerprint and fails closed on overlap, omission, source-census drift, review drift, placeholder/markup drift or protected technical-literal drift in the 366 new entries.
+- Gravity Flow native JS handles: 0; generated translation JSON: 0. `vendor_authenticity` remains `NOT_PROVEN`; exact package byte/version admission is not a vendor-authenticity claim.
+- GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; unchanged by this Gravity Flow-only change.
+- The historical WU-008/WU-009 19-surface browser evidence below remains valid historical evidence for those accepted surfaces. Full-census Gravity Flow runtime evidence, when executed for this revision-3 change, is reported separately rather than inferred from source admission.
 
 ## Current licensed real-browser/runtime/RTL evidence — WU-008 + WU-009
 
@@ -42,7 +42,7 @@ Authoritative run reference: GitHub Actions run `34888229939` (`https://github.c
 Claim ceiling for this evidence remains strict:
 
 - it does not claim all Gravity Forms content is Persian;
-- it does not claim all Gravity Flow content is Persian;
+- that WU-008/WU-009 evidence by itself does not claim all Gravity Flow content is Persian;
 - it does not claim all GravityView content is Persian;
 - it does not claim ecosystem-wide Persian completion;
 - identities outside the admitted sets remain outside this project's translation authority and continue through the documented fallback chain;
