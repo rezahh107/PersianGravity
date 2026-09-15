@@ -40,10 +40,12 @@ jobs:
       G006_GF_WP_CLI: /tmp/wp-cli.phar
       G006_GF_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
       G006_GF_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      G006_GF_GF_SIZE: '5300290'
       G006_GF_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
       G006_GF_GF_VERSION: 3.1.1.1
       G006_GF_FLOW_FILE_ID: 1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf
       G006_GF_FLOW_FILE: gravityflow-3.1.0-owner-supplied-source-package.zip
+      G006_GF_FLOW_SIZE: '2603034'
       G006_GF_FLOW_SHA256: ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404
       G006_GF_FLOW_VERSION: 3.1.0
 
@@ -70,6 +72,7 @@ jobs:
           expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           test "$(git rev-parse HEAD)" = "$expected"
           composer validate --strict
+          bash -n tests/real-integration/verify-package.sh
           php -l tests/real-integration/g006-gravityforms-runtime.php
           test -z "$(git ls-files '*.zip')"
           mkdir -p "$G006_GF_WP_PATH" "$G006_GF_PACKAGE_DIR" "$G006_GF_ARTIFACT_DIR"
@@ -95,12 +98,15 @@ jobs:
           }
           download "$G006_GF_GF_FILE_ID" "$G006_GF_PACKAGE_DIR/$G006_GF_GF_FILE"
           download "$G006_GF_FLOW_FILE_ID" "$G006_GF_PACKAGE_DIR/$G006_GF_FLOW_FILE"
-          echo "$G006_GF_GF_SHA256  $G006_GF_PACKAGE_DIR/$G006_GF_GF_FILE" | sha256sum -c -
-          echo "$G006_GF_FLOW_SHA256  $G006_GF_PACKAGE_DIR/$G006_GF_FLOW_FILE" | sha256sum -c -
+
+          evidence="$G006_GF_ARTIFACT_DIR/package-verification.jsonl"
+          : > "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Forms" "$G006_GF_GF_FILE_ID" "$G006_GF_PACKAGE_DIR/$G006_GF_GF_FILE" "$G006_GF_GF_FILE" "$G006_GF_GF_SIZE" "$G006_GF_GF_SHA256" "gravityforms/gravityforms.php" "$G006_GF_GF_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Flow" "$G006_GF_FLOW_FILE_ID" "$G006_GF_PACKAGE_DIR/$G006_GF_FLOW_FILE" "$G006_GF_FLOW_FILE" "$G006_GF_FLOW_SIZE" "$G006_GF_FLOW_SHA256" "gravityflow/gravityflow.php" "$G006_GF_FLOW_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 2
+
           unzip -q "$G006_GF_PACKAGE_DIR/$G006_GF_GF_FILE" -d "$G006_GF_WP_PATH/wp-content/plugins"
           unzip -q "$G006_GF_PACKAGE_DIR/$G006_GF_FLOW_FILE" -d "$G006_GF_WP_PATH/wp-content/plugins"
-          grep -Eq '^ \* Version: +3\.1\.1\.1$' "$G006_GF_WP_PATH/wp-content/plugins/gravityforms/gravityforms.php"
-          grep -Eq '^ \* Version: +3\.1\.0$' "$G006_GF_WP_PATH/wp-content/plugins/gravityflow/gravityflow.php"
 
       - name: Install PR Head and execute real host runtime assertions
         shell: bash
