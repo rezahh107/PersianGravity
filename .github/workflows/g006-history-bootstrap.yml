@@ -1,0 +1,29 @@
+name: G-006 history bootstrap
+
+on:
+  push:
+    branches:
+      - feat/g006-full-provider-coverage
+    paths:
+      - .github/workflows/g006-history-bootstrap.yml
+
+permissions:
+  contents: read
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Pack repository history
+        run: |
+          set -euo pipefail
+          tar -czf "$RUNNER_TEMP/persiangravity-git.tgz" .git
+      - uses: actions/upload-artifact@v4
+        with:
+          name: persiangravity-git-history
+          path: ${{ runner.temp }}/persiangravity-git.tgz
+          if-no-files-found: error
+          retention-days: 1
