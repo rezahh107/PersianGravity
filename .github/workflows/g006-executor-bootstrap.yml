@@ -1,0 +1,29 @@
+name: G-006 executor bootstrap
+
+on:
+  push:
+    branches:
+      - feat/g006-full-provider-coverage
+    paths:
+      - .github/workflows/g006-executor-bootstrap.yml
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create repository snapshot
+        run: |
+          set -euo pipefail
+          tar --exclude=.git -czf "$RUNNER_TEMP/persiangravity-g006-source.tgz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: persiangravity-g006-source
+          path: ${{ runner.temp }}/persiangravity-g006-source.tgz
+          if-no-files-found: error
+          retention-days: 1
