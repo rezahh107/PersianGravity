@@ -2,6 +2,14 @@
 
 This is the normal release process for the Owner. You do not need to calculate a version, create a Git tag, build a ZIP, calculate a checksum, or upload GitHub Release files manually.
 
+## One-time repository setup
+
+GitHub must allow repository workflows to create pull requests with the built-in `GITHUB_TOKEN`: **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**.
+
+This is a one-time repository setting, not a per-release step. PersianGravity does not require a PAT or any new long-lived release secret.
+
+The generated Release Candidate is qualified inside the Prepare Release run itself. It does not depend on a new `push` workflow run, and it does not assume that ordinary PR workflows created by `GITHUB_TOKEN` will run without approval.
+
 ## 1. Prepare Release
 
 1. Open **GitHub → Actions → Prepare Release**.
