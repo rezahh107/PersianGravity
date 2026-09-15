@@ -1,0 +1,65 @@
+diff --git a/tests/i18n/run-production.php b/tests/i18n/run-production.php
+index 6ee8565..081432e 100644
+--- a/tests/i18n/run-production.php
++++ b/tests/i18n/run-production.php
+@@ -22,7 +22,8 @@ try {
+ 			'prefix'        => 'gravityforms',
+ 			'admitted'      => 'Validation Message Placement',
+ 			'translation'   => 'پیام اعتبارسنجی',
+-			'non_admitted'  => 'The URL is not valid.',
++			'fallback_probe' => 'The URL is not valid.',
++			'fallback_scope' => 'non-admitted identity',
+ 			'upstream_only' => 'کنترل بالادستی گرویتی فرمز',
+ 		),
+ 		'gravityflow' => array(
+@@ -30,7 +31,8 @@ try {
+ 			'prefix'        => 'gravityflow',
+ 			'admitted'      => 'Workflow Inbox',
+ 			'translation'   => 'کارهای من',
+-			'non_admitted'  => 'Allow the Reports shortcode to display workflow reports to all registered and anonymous users.',
++			'fallback_probe' => 'PersianGravity Gravity Flow out-of-census fallback probe.',
++			'fallback_scope' => 'out-of-census identity',
+ 			'upstream_only' => 'کنترل بالادستی گرویتی فلو',
+ 		),
+ 		'gk-gravityview' => array(
+@@ -38,7 +40,8 @@ try {
+ 			'prefix'        => 'gravityview',
+ 			'admitted'      => 'This View is in the Trash. %1$sClick to restore the View%2$s.',
+ 			'translation'   => 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.',
+-			'non_admitted'  => 'API Key',
++			'fallback_probe' => 'API Key',
++			'fallback_scope' => 'non-admitted identity',
+ 			'upstream_only' => 'کنترل بالادستی گرویتی ویو',
+ 		),
+ 	);
+@@ -63,7 +66,7 @@ try {
+ 		write_fixture(
+ 			$case['upstream_base'],
+ 			$domain,
+-			array( $case['non_admitted'] => $case['upstream_only'] )
++			array( $case['fallback_probe'] => $case['upstream_only'] )
+ 		);
+ 	}
+ 	unset( $case );
+@@ -80,8 +83,8 @@ try {
+ 				$case['product'] . " admitted identity resolves from committed PersianGravity $format provider"
+ 			);
+ 			production_check(
+-				__( $case['non_admitted'], $domain ) === $case['upstream_only'],
+-				$case['product'] . " non-admitted identity preserves upstream $format fallback"
++				__( $case['fallback_probe'], $domain ) === $case['upstream_only'],
++				$case['product'] . ' ' . $case['fallback_scope'] . " preserves upstream $format fallback"
+ 			);
+ 			remove_filter( 'translation_file_format', $format_filter );
+ 		}
+@@ -106,8 +109,8 @@ try {
+ 		unlink( $case['upstream_base'] . '.mo' );
+ 		reset_domain( $domain );
+ 		production_check(
+-			__( $case['non_admitted'], $domain ) === $case['non_admitted'],
+-			$case['product'] . ' non-admitted identity falls through provider to source English when upstream is absent'
++			__( $case['fallback_probe'], $domain ) === $case['fallback_probe'],
++			$case['product'] . ' ' . $case['fallback_scope'] . ' falls through provider to source English when upstream is absent'
+ 		);
+ 	}
+ 
