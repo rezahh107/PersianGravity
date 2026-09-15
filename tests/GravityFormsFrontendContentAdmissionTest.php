@@ -42,7 +42,7 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
-		$records  = $content['gravityforms']['admissions'];
+		$records  = array_values( array_filter( $content['gravityforms']['admissions'], static fn( $record ) => isset( $record['surface_id'] ) ) );
 		$aggregate = $content['gravityforms']['aggregate'];
 		$counts   = array();
 		$occurrences = 0;
@@ -67,10 +67,12 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$this->assertCount( 1759, $membership );
 		$this->assertCount( 55, $multi );
 		$this->assertSame( 67, $occurrences - count( $membership ) );
-		$this->assertSame( 1759, $aggregate['admitted_message_count'] );
-		$this->assertSame( 'e15f8e80cc711ea7b862be66d3a8a5827f85e0312caae391fcdecbf1a34fdec7', $aggregate['admitted_keyset_sha256'] );
-		$this->assertSame( 'a0b631dfcb88eb497be26086799a8816b7f85f99fd42c62afe6488ee508f9c27', $aggregate['admitted_translation_content_sha256'] );
-		$this->assertSame( 2448, 4207 - $aggregate['admitted_message_count'] );
+		$this->assertSame( 4207, $aggregate['admitted_message_count'] );
+		$remainder = array_values( array_filter( $content['gravityforms']['admissions'], static fn( $record ) => 'PRODUCT_REMAINDER' === ( $record['authority_scope'] ?? null ) ) );
+		$this->assertCount( 1, $remainder );
+		$this->assertSame( 'e15f8e80cc711ea7b862be66d3a8a5827f85e0312caae391fcdecbf1a34fdec7', $remainder[0]['preexisting_accepted_keyset_sha256'] );
+		$this->assertSame( 'a0b631dfcb88eb497be26086799a8816b7f85f99fd42c62afe6488ee508f9c27', $remainder[0]['preexisting_accepted_translation_content_sha256'] );
+		$this->assertSame( 2448, $remainder[0]['admitted_message_count'] );
 		$this->assertSame( array(), $products['gravityforms']['scripts'] );
 		$this->assertSame( 0, $aggregate['native_js_handles_activated'] );
 		$this->assertSame( 0, $aggregate['js_translation_json_generated'] );
@@ -103,7 +105,7 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		$this->assertSame( 41, iterator_count( $catalog ) );
 	}
 
-	public function test_known_unclassified_control_is_absent_from_aggregate_provider(): void {
+	public function test_former_unclassified_control_is_admitted_but_stale_pot_only_key_is_excluded(): void {
 		$root     = dirname( __DIR__ );
 		$provider = pgr_content_load_sparse_po(
 			$root . '/languages/providers/gravityforms/source/fa_IR.po',
@@ -112,8 +114,9 @@ final class GravityFormsFrontendContentAdmissionTest extends TestCase {
 		);
 
 		$this->assertContains( hash( 'sha256', "\x1fValidation Message Placement\x1f" ), $provider['ids'] );
-		$this->assertNotContains( hash( 'sha256', "\x1fThe URL is not valid.\x1f" ), $provider['ids'] );
-		$this->assertCount( 1759, $provider['ids'] );
+		$this->assertContains( hash( 'sha256', "\x1fThe URL is not valid.\x1f" ), $provider['ids'] );
+		$this->assertNotContains( '2b64a903d2065499fa0248c6199db150bb7d1a43025d2908e8a66e4af9d4ab92', $provider['ids'] );
+		$this->assertCount( 4207, $provider['ids'] );
 	}
 
 	private function recordForSurface( array $records, string $surface ): array {

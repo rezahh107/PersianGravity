@@ -1,13 +1,22 @@
-# Persian Gravity Forms Validation — 4.2.0
+# Persian Gravity Forms Validation — 4.3.0
 
 ## Current content-admission snapshot — 2026-09-15
 
-- Gravity Forms: revision 2, 6 admitted records, 1759 unique admitted identities from a 4207-identity source census; unchanged by this Gravity Flow-only change.
-- Gravity Flow: revision 3 `CONTENT_ADMITTED_FULL`. The 7 historical surface records still deduplicate to the same 732 identities; one reviewed `PRODUCT_REMAINDER` record admits the exact disjoint 366 residual identities. The required union is 1098/1098, with 0 fuzzy, empty, rejected or unreviewed remainder entries.
-- Gravity Flow remainder review: 2 semantic passes, 34 second-pass corrections, per-identity accepted translation hashes and source-derived risk flags. The revision-3 validator pins the original 732 keyset/translation fingerprint and fails closed on overlap, omission, source-census drift, review drift, placeholder/markup drift or protected technical-literal drift in the 366 new entries.
-- Gravity Flow native JS handles: 0; generated translation JSON: 0. `vendor_authenticity` remains `NOT_PROVEN`; exact package byte/version admission is not a vendor-authenticity claim.
-- GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; unchanged by this Gravity Flow-only change.
-- The historical WU-008/WU-009 19-surface browser evidence below remains valid historical evidence for those accepted surfaces. Full-census Gravity Flow runtime evidence, when executed for this revision-3 change, is reported separately rather than inferred from source admission.
+- Gravity Forms: revision 3 `CONTENT_ADMITTED_FULL`. The 6 historical surface records still deduplicate to the same 1759 identities; one reviewed `PRODUCT_REMAINDER` record admits the exact disjoint 2448 residual source-backed identities. The required union is 4207/4207, with 0 fuzzy, empty, rejected or unreviewed remainder entries.
+- Gravity Forms remainder review: 2 semantic passes, 1604 second-pass corrections, per-identity accepted translation hashes and source-derived risk flags. The revision-3 validator pins the original 1759 keyset/translation fingerprint, requires the exact canonical keyset `1b92edc87f2d152cb98a026dde815ab93e3e8303eef2954e95b3a816a85801fb`, and fails closed on overlap, omission, stale-POT-only admission, source-census drift, review drift, placeholder/markup drift or protected technical-literal drift.
+- Gravity Flow: revision 3 `CONTENT_ADMITTED_FULL` remains unchanged. The 7 historical surface records deduplicate to 732 identities and its reviewed `PRODUCT_REMAINDER` remains 366, for 1098/1098 with 0 fuzzy, empty, rejected or unreviewed remainder entries.
+- Gravity Flow remainder review remains: 2 semantic passes, 34 second-pass corrections, with the original 732 keyset/translation fingerprint pinned and unchanged.
+- Gravity Forms native JS handles: 0; generated translation JSON: 0. Gravity Flow also remains 0/0. `vendor_authenticity` remains `NOT_PROVEN`; exact package byte/version admission is not a vendor-authenticity claim.
+- GravityView: revision 2, 6 admitted records with surface counts 2 / 1 / 340 / 41 / 30 / 53; 467 occurrences deduplicate to 461 unique admitted identities from a 3127-identity source census; provider content remains unchanged by this Gravity Forms-only batch.
+- The historical WU-008/WU-009 19-surface browser evidence below remains historical evidence for those accepted surfaces. G-006 Gravity Forms runtime evidence is separately executed against the exact PR Head and exact verified Gravity Forms 3.1.1.1 package; it is representative runtime evidence, not browser coverage of all 4207 identities.
+
+## G-006 Gravity Forms full-content qualification
+
+This batch completes only the exact locked Gravity Forms 3.1.1.1 `gravityforms` authority. The source-backed census remains 4207 identities even though the verified vendor POT contains 4208 keys: the single POT-only stale identity `2b64a903d2065499fa0248c6199db150bb7d1a43025d2908e8a66e4af9d4ab92` (`I'm a Button!`) is not source-backed and remains excluded. The six historical surface records remain the unchanged 1759-identity accepted baseline. The new product remainder is exactly 2448 disjoint identities, and the committed aggregate must therefore be exactly 4207 identities with the pinned source keyset hash.
+
+The remainder review index binds every accepted identity to the exact committed translation hash, records two semantic/context review passes and 1604 second-pass corrections, and reports 2448 accepted / 0 unreviewed / 0 rejected. Structural validation covers Persian plural completeness, printf placeholders, HTML/markup, URLs/entities, brace/merge-tag/template tokens and protected brand/technical literals. No correction to the original 1759 accepted Gravity Forms mappings is part of this batch. Gravity Flow must remain 1098/1098 and GravityView provider content must remain byte/semantic stable.
+
+`G006 Gravity Forms Runtime` is the dedicated disposable integration gate for this batch. It installs the exact hash-verified Gravity Forms 3.1.1.1 and Gravity Flow 3.1.0 packages into a real `fa_IR` WordPress runtime, activates the exact PR Head, exercises newly admitted Gravity Forms text-field title and validation paths, checks representative preexisting Gravity Forms translations, checks Gravity Flow translation health, verifies provider-first/upstream-fallback behavior, verifies the stale POT-only key remains non-authoritative, renders a real Gravity Forms form, and asserts zero Gravity Forms native-JS authority/provider JSON. Passing this workflow proves representative host/runtime behavior only; it does not mean every one of the 4207 identities was browser-exercised.
 
 ## Current licensed real-browser/runtime/RTL evidence — WU-008 + WU-009
 

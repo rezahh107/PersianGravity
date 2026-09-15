@@ -54,4 +54,10 @@ PO;
             unlink( $path );
         }
     }
+
+    public function test_pluralized_url_protected_literal_is_canonicalized(): void {
+        $this->assertSame( array( 'URL' ), pgr_content_protected_literals( 'Links/URLs are not allowed.' ) );
+        $this->assertSame( array( 'URL' ), pgr_content_protected_literals( 'پیوندها/URLها مجاز نیستند.' ) );
+    }
+
 }

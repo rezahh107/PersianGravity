@@ -107,7 +107,7 @@ final class GravityFlowClassifiedContentAdmissionTest extends TestCase {
 		$this->assertSame( array(), $provider['ids'] );
 	}
 
-	public function test_former_non_admitted_source_identity_is_now_admitted_and_gravityforms_state_is_preserved(): void {
+	public function test_former_non_admitted_source_identity_is_now_admitted_and_gravityforms_full_state_is_preserved(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
@@ -125,8 +125,9 @@ final class GravityFlowClassifiedContentAdmissionTest extends TestCase {
 		$this->assertContains( $formerly_non_admitted, $aggregate['ids'], true );
 		$this->assertSame( 1098, count( $aggregate['ids'] ) );
 		$this->assertSame( 'CONTENT_ADMITTED_FULL', $content['gravityflow']['content_state'] );
-		$this->assertSame( 1759, $content['gravityforms']['aggregate']['admitted_message_count'] );
-		$this->assertCount( 6, $content['gravityforms']['admissions'] );
+		$this->assertSame( 4207, $content['gravityforms']['aggregate']['admitted_message_count'] );
+		$this->assertSame( 'CONTENT_ADMITTED_FULL', $content['gravityforms']['content_state'] );
+		$this->assertCount( 7, $content['gravityforms']['admissions'] );
 		$this->assertSame( array(), $products['gravityflow']['scripts'] );
 	}
 

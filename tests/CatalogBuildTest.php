@@ -58,9 +58,9 @@ final class CatalogBuildTest extends TestCase {
 			}
 
 			$aggregate         = $admission['aggregate'];
-			$is_flow_full      = 'gravityflow' === $product['product'];
-			$expected_state    = $is_flow_full ? 'CONTENT_ADMITTED_FULL' : 'CONTENT_ADMITTED_PARTIAL';
-			$expected_revision = $is_flow_full ? 3 : 2;
+			$is_full           = in_array( $product['product'], array( 'gravityforms', 'gravityflow' ), true );
+			$expected_state    = $is_full ? 'CONTENT_ADMITTED_FULL' : 'CONTENT_ADMITTED_PARTIAL';
+			$expected_revision = $is_full ? 3 : 2;
 			$this->assertSame( $expected_state, $admission['content_state'] );
 			$this->assertSame( $aggregate['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
 			$this->assertSame( $aggregate['provider_source_sha256'], $meta['provider_po_sha256'] );
@@ -74,22 +74,25 @@ final class CatalogBuildTest extends TestCase {
 			$this->assertFileExists( $php );
 			$this->assertSame( array(), glob( $path . '/' . $domain . '-fa_IR-*.json' ) ?: array() );
 
-			if ( $is_flow_full ) {
+			if ( $is_full ) {
 				$remainders = array_values(
 					array_filter(
 						$admission['admissions'],
 						static fn( $record ) => 'PRODUCT_REMAINDER' === ( $record['authority_scope'] ?? null )
 					)
 				);
-				$this->assertCount( 8, $admission['admissions'] );
+				$expected_full = 'gravityforms' === $product['product']
+					? array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207 )
+					: array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098 );
+				$this->assertCount( $expected_full['records'], $admission['admissions'] );
 				$this->assertCount( 1, $remainders );
-				$this->assertSame( 732, $remainders[0]['preexisting_accepted_message_count'] );
-				$this->assertSame( 366, $remainders[0]['admitted_message_count'] );
-				$this->assertSame( 1098, $aggregate['admitted_message_count'] );
-				$this->assertSame( 1098, $meta['authoritative_total'] );
+				$this->assertSame( $expected_full['preexisting'], $remainders[0]['preexisting_accepted_message_count'] );
+				$this->assertSame( $expected_full['remainder'], $remainders[0]['admitted_message_count'] );
+				$this->assertSame( $expected_full['total'], $aggregate['admitted_message_count'] );
+				$this->assertSame( $expected_full['total'], $meta['authoritative_total'] );
 				$this->assertSame( 100, $meta['coverage_percent'] );
 				$this->assertSame( 'FULL_TRANSLATION_CONTENT_ACCEPTED', $meta['content_status'] );
-				$this->assertSame( array( 'translated' => 1098, 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
+				$this->assertSame( array( 'translated' => $expected_full['total'], 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
 			}
 		}
 	}

@@ -97,10 +97,10 @@ function pgr_content_surface_path_matches( $path, array $rules ) {
  */
 function pgr_content_tokens( $value ) {
 	$patterns = array(
-		'printf' => '/%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/',
-		'printf_space' => '/%(?:\d+\$)?[-+0#\']* +[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX](?![A-Za-z])/',
+		'printf' => '/(?<!\d)%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/',
+		'printf_space' => '/(?<!\d)%(?:\d+\$)?[-+0#\']* +[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX](?![A-Za-z])/',
 		'literal' => '/\$\{[^{}\r\n]+\}/',
-		'brace'   => '/\{[A-Za-z0-9_.:-]+\}/',
+		'brace'   => '/\{[^{}\r\n]+\}/',
 		'markup'  => '/<\/?[A-Za-z][^>]*>/',
 		'url'     => '~https?://[^\s<>"\']+~u',
 		'entity'  => '/&#(?:\d+|x[0-9A-Fa-f]+);/',
@@ -135,11 +135,16 @@ function pgr_content_tokens( $value ) {
  * @return array
  */
 function pgr_content_protected_literals( $value ) {
-	$pattern = '/Gravity Forms|Gravity Flow|GravityView|WordPress|\bAPI\b|\bURL\b|\bPHP\b|\bCSS\b|\bHTML\b|\bJSON\b|JavaScript|reCAPTCHA|OAuth1|SMTP|Mailgun|GravityFlow\.io|display_all|allow_anonymous|page_id|\[gravityflow\]|Client Key|Client Secret|Consumer Key|Form ID|Lead ID/';
+	$pattern = '/Gravity Forms|Gravity Flow|GravityView|WordPress|\bAPI\b|\bURLs?\b|\bPHP\b|\bCSS\b|\bHTML\b|\bJSON\b|\bREST\b|\bAJAX\b|JavaScript|reCAPTCHA|OAuth1|SMTP|Mailgun|GravityFlow\.io|display_all|allow_anonymous|page_id|\[gravityflow\]|Client Key|Client Secret|Consumer Key|Form ID|Lead ID/';
 	if ( ! preg_match_all( $pattern, $value, $matches ) ) {
 		return array();
 	}
-	$result = $matches[0];
+	$result = array_map(
+		static function ( $literal ) {
+			return 'URLs' === $literal ? 'URL' : $literal;
+		},
+		$matches[0]
+	);
 	sort( $result, SORT_STRING );
 	return $result;
 }
@@ -178,7 +183,7 @@ function pgr_content_review_risk_flags( $msgid, $msgid_plural ) {
 	if ( null !== $msgid_plural ) {
 		$flags[] = 'PLURAL';
 	}
-	if ( preg_match( '/%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/', $value ) ) {
+	if ( preg_match( '/(?<!\d)%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]/', $value ) ) {
 		$flags[] = 'PRINTF';
 	}
 	if ( preg_match( '/<\/?[A-Za-z][^>]*>/', $value ) ) {
