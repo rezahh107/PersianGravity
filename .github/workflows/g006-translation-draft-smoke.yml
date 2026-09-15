@@ -15,6 +15,7 @@ jobs:
       - name: Install development-only translation model tooling
         run: |
           set -euo pipefail
+          python3 -m pip install --quiet --index-url https://download.pytorch.org/whl/cpu 'torch==2.8.0'
           python3 -m pip install --quiet 'transformers==4.57.1' 'sentencepiece==0.2.1' 'sacremoses==0.1.1'
       - name: Exercise development-only translation draft model
         env:
@@ -23,10 +24,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from transformers import MarianMTModel, MarianTokenizer
-          name='Helsinki-NLP/opus-mt-en-fa'
+          name='Helsinki-NLP/opus-mt-en-ine'
           tok=MarianTokenizer.from_pretrained(name)
           model=MarianMTModel.from_pretrained(name)
-          texts=['Workflow Steps','You are not allowed to cancel workflows.','The entry is on a workflow step type which cannot be updated via the API.']
+          texts=['>>pes<< Workflow Steps','>>pes<< You are not allowed to cancel workflows.','>>pes<< The entry is on a workflow step type which cannot be updated via the API.']
           batch=tok(texts,return_tensors='pt',padding=True,truncation=True)
           out=model.generate(**batch,max_new_tokens=160)
           for src,dst in zip(texts,tok.batch_decode(out,skip_special_tokens=True)):
