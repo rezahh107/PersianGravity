@@ -110,7 +110,7 @@ foreach ($expected as $key => $value) {
 }
 ' "$INSTALLED_ROOT/release-manifest.json" "$EXPECTED_VERSION" "$EXPECTED_SOURCE_SHA" "$EXPECTED_SOURCE_TREE" || fail 'installed artifact source identity is invalid'
 
-active_basename="$(wp eval --path="$WP_ROOT" 'echo array_key_exists("persian-gravityforms/persian-gravityforms.php", (array) get_option("active_plugins", [])) ? "yes" : "no";')"
+active_basename="$(wp eval --path="$WP_ROOT" 'echo in_array("persian-gravityforms/persian-gravityforms.php", (array) get_option("active_plugins", []), true) ? "yes" : "no";')"
 [[ "$active_basename" == 'yes' ]] || fail "expected active plugin basename not found: $PLUGIN_BASENAME"
 
 zip_sha="$(sha256sum "$ZIP_PATH" | awk '{print $1}')"
