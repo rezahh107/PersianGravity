@@ -381,12 +381,22 @@ jobs:
           SOURCE_TREE: ${{ needs.resolve.outputs.source_tree }}
         run: |
           set -euo pipefail
-          bash tools/release/resolve-qualified-artifact.sh \
-            qualified-assets "$ZIP_NAME" "$CHECKSUM_NAME" "$QUALIFIED_ZIP_SHA"
+          resolver_output="$(mktemp)"
+          trap 'rm -f "$resolver_output"' EXIT
+          PGR_ARTIFACT_RESOLVER_OUTPUT_FILE="$resolver_output" \
+            bash tools/release/resolve-qualified-artifact.sh \
+              qualified-assets "$ZIP_NAME" "$CHECKSUM_NAME" "$QUALIFIED_ZIP_SHA"
+          zip_path="$(awk -F= '$1 == "zip_path" { print substr($0, index($0, "=") + 1) }' "$resolver_output")"
+          checksum_path="$(awk -F= '$1 == "checksum_path" { print substr($0, index($0, "=") + 1) }' "$resolver_output")"
+          [[ -n "$zip_path" && -n "$checksum_path" ]] || {
+            echo 'Qualified artifact resolver did not emit both resolved paths.' >&2
+            exit 1
+          }
           bash tools/release/verify-production-package.sh \
-            "${{ steps.qualified_assets.outputs.zip_path }}" \
-            "${{ steps.qualified_assets.outputs.checksum_path }}" \
+            "$zip_path" "$checksum_path" \
             "$VERSION" "$SOURCE_SHA" "$SOURCE_TREE"
+          printf 'zip_path=%s\n' "$zip_path" >> "$GITHUB_OUTPUT"
+          printf 'checksum_path=%s\n' "$checksum_path" >> "$GITHUB_OUTPUT"
 
       - name: Create or reuse immutable version tag on exact qualified source
         shell: bash
@@ -520,12 +530,22 @@ jobs:
           QUALIFIED_ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
         run: |
           set -euo pipefail
-          bash tools/release/resolve-qualified-artifact.sh \
-            published-assets "$ZIP_NAME" "$CHECKSUM_NAME" "$QUALIFIED_ZIP_SHA"
+          resolver_output="$(mktemp)"
+          trap 'rm -f "$resolver_output"' EXIT
+          PGR_ARTIFACT_RESOLVER_OUTPUT_FILE="$resolver_output" \
+            bash tools/release/resolve-qualified-artifact.sh \
+              published-assets "$ZIP_NAME" "$CHECKSUM_NAME" "$QUALIFIED_ZIP_SHA"
+          zip_path="$(awk -F= '$1 == "zip_path" { print substr($0, index($0, "=") + 1) }' "$resolver_output")"
+          checksum_path="$(awk -F= '$1 == "checksum_path" { print substr($0, index($0, "=") + 1) }' "$resolver_output")"
+          [[ -n "$zip_path" && -n "$checksum_path" ]] || {
+            echo 'Published artifact resolver did not emit both resolved paths.' >&2
+            exit 1
+          }
           bash tools/release/verify-production-package.sh \
-            "${{ steps.published_assets.outputs.zip_path }}" \
-            "${{ steps.published_assets.outputs.checksum_path }}" \
+            "$zip_path" "$checksum_path" \
             "$VERSION" "$SOURCE_SHA" "$SOURCE_TREE"
+          printf 'zip_path=%s\n' "$zip_path" >> "$GITHUB_OUTPUT"
+          printf 'checksum_path=%s\n' "$checksum_path" >> "$GITHUB_OUTPUT"
 
       - name: Install and activate the exact downloaded published ZIP
         env:
