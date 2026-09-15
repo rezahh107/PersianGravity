@@ -2,7 +2,7 @@
 
 Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*` runtime.
 
-- Plugin version: `4.2.0`
+- Plugin version: `4.3.0`
 - WordPress minimum: `6.7`
 - PHP minimum: `8.2`
 - Gravity Forms minimum: `3.0`
@@ -10,7 +10,7 @@ Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*
 
 ## Current capabilities
 
-PersianGravity 4.2.0 exposes six bounded, source-defined modules. All default to enabled, including on upgrade when `pgr_modules` does not yet exist:
+PersianGravity 4.3.0 exposes six bounded, source-defined modules. All default to enabled, including on upgrade when `pgr_modules` does not yet exist:
 
 - `national_id` — `pgr_national_id`, server-authoritative checksum validation, canonical ten-ASCII-digit storage, native No Duplicates normalization, optional typing normalization.
 - `jalali_date` — `pgr_jalali_date`, server-side Jalali validation and canonical ASCII `YYYY-MM-DD` storage with Jalali semantics.
