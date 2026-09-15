@@ -12,19 +12,23 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Exercise development-only translation draft endpoint
-        shell: bash
+      - name: Install development-only translation model tooling
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet 'transformers==4.57.1' 'sentencepiece==0.2.1' 'sacremoses==0.1.1'
+      - name: Exercise development-only translation draft model
+        env:
+          HF_HUB_DISABLE_XET: '1'
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, urllib.parse, urllib.request
-          for text in [
-              'Workflow Steps',
-              'You are not allowed to cancel workflows.',
-              'The entry is on a workflow step type which cannot be updated via the API.',
-          ]:
-              q = urllib.parse.urlencode({'client':'gtx','sl':'en','tl':'fa','dt':'t','q':text})
-              with urllib.request.urlopen('https://translate.googleapis.com/translate_a/single?' + q, timeout=20) as r:
-                  payload = json.load(r)
-              print(text, '=>', ''.join(x[0] for x in payload[0] if x and x[0]))
+          from transformers import MarianMTModel, MarianTokenizer
+          name='Helsinki-NLP/opus-mt-en-fa'
+          tok=MarianTokenizer.from_pretrained(name)
+          model=MarianMTModel.from_pretrained(name)
+          texts=['Workflow Steps','You are not allowed to cancel workflows.','The entry is on a workflow step type which cannot be updated via the API.']
+          batch=tok(texts,return_tensors='pt',padding=True,truncation=True)
+          out=model.generate(**batch,max_new_tokens=160)
+          for src,dst in zip(texts,tok.batch_decode(out,skip_special_tokens=True)):
+              print(src,'=>',dst)
           PY
