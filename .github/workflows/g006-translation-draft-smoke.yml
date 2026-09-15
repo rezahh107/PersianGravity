@@ -1,0 +1,30 @@
+name: G-006 translation draft smoke
+
+on:
+  push:
+    branches: [feat/g006-full-provider-coverage]
+    paths: [.github/workflows/g006-translation-draft-smoke.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exercise development-only translation draft endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, urllib.parse, urllib.request
+          for text in [
+              'Workflow Steps',
+              'You are not allowed to cancel workflows.',
+              'The entry is on a workflow step type which cannot be updated via the API.',
+          ]:
+              q = urllib.parse.urlencode({'client':'gtx','sl':'en','tl':'fa','dt':'t','q':text})
+              with urllib.request.urlopen('https://translate.googleapis.com/translate_a/single?' + q, timeout=20) as r:
+                  payload = json.load(r)
+              print(text, '=>', ''.join(x[0] for x in payload[0] if x and x[0]))
+          PY
