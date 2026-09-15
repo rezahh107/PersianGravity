@@ -1,0 +1,293 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version change: patch = compatible fix, minor = compatible new capability, major = intentional incompatible change'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: read
+
+concurrency:
+  group: persiangravity-prepare-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Compute and create exact release candidate
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      previous_version: ${{ steps.prepare.outputs.previous_version }}
+      candidate_version: ${{ steps.prepare.outputs.candidate_version }}
+      bump: ${{ steps.prepare.outputs.bump }}
+      base_sha: ${{ steps.identity.outputs.base_sha }}
+      candidate_sha: ${{ steps.commit.outputs.candidate_sha }}
+      candidate_tree: ${{ steps.commit.outputs.candidate_tree }}
+      branch: ${{ steps.commit.outputs.branch }}
+
+    steps:
+      - name: Require manual dispatch from main
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]] || {
+            echo 'Prepare Release must be launched from the main branch selector.' >&2
+            exit 1
+          }
+
+      - name: Checkout canonical main for release preparation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          # This bounded job alone must push the generated release branch.
+          persist-credentials: true
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2.33'
+          coverage: none
+
+      - name: Install GNU gettext
+        run: sudo apt-get update && sudo apt-get install --yes gettext
+
+      - name: Bind exact canonical main
+        id: identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          local_head="$(git rev-parse HEAD)"
+          remote_head="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ -n "$remote_head" && "$local_head" == "$remote_head" ]] || {
+            echo "main changed during preparation: checkout=$local_head remote=$remote_head" >&2
+            exit 1
+          }
+          printf 'base_sha=%s\n' "$local_head" >> "$GITHUB_OUTPUT"
+
+      - name: Verify current release metadata and resolve next version
+        id: resolve
+        shell: bash
+        env:
+          BUMP: ${{ inputs.bump }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          php tools/release/release-tool.php verify
+          current_mo="$(mktemp)"
+          trap 'rm -f "$current_mo"' EXIT
+          msgfmt --check --output-file="$current_mo" languages/persian-gravityforms-fa_IR.po
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          cmp -s "$current_mo" languages/persian-gravityforms-fa_IR.mo
+
+          current="$(php tools/release/release-tool.php current)"
+          candidate="$(php tools/release/release-tool.php next "$BUMP")"
+          branch="release/v${candidate}"
+          tag="v${candidate}"
+
+          if git ls-remote --exit-code origin "refs/heads/$branch" >/dev/null 2>&1; then
+            echo "Release branch $branch already exists; refusing to overwrite it. Resolve or remove it explicitly before retrying." >&2
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists; refusing to prepare a conflicting release." >&2
+            exit 1
+          fi
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $tag already exists; refusing to prepare a conflicting release." >&2
+            exit 1
+          fi
+
+          existing_pr="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls" \
+            -f state=all \
+            -f head="${GITHUB_REPOSITORY_OWNER}:${branch}" \
+            -f per_page=100 \
+            --jq 'length')"
+          [[ "$existing_pr" == '0' ]] || {
+            echo "A prior PR already uses $branch; refusing to silently replace it." >&2
+            exit 1
+          }
+
+          printf 'current=%s\n' "$current" >> "$GITHUB_OUTPUT"
+          printf 'candidate=%s\n' "$candidate" >> "$GITHUB_OUTPUT"
+          printf 'branch=%s\n' "$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Update bounded release metadata and changelog
+        id: prepare
+        shell: bash
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          php tools/release/release-tool.php prepare "$BUMP"
+          msgfmt --check --output-file=languages/persian-gravityforms-fa_IR.mo languages/persian-gravityforms-fa_IR.po
+          msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          git diff --check
+
+          actual_changes="$(git diff --name-only | LC_ALL=C sort)"
+          expected_changes="$(printf '%s\n' \
+            AGENTS.md README.md docs/ARCHITECTURE.md docs/LOCALIZATION.md languages/README.md \
+            languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po \
+            languages/persian-gravityforms-fa_IR.mo persian-gravityforms.php readme.txt | LC_ALL=C sort)"
+          [[ "$actual_changes" == "$expected_changes" ]] || {
+            echo 'Release preparation changed files outside the bounded active release metadata set.' >&2
+            printf 'Expected:\n%s\nActual:\n%s\n' "$expected_changes" "$actual_changes" >&2
+            exit 1
+          }
+          [[ -z "$(git ls-files --others --exclude-standard)" ]] || {
+            echo 'Release preparation created unexpected untracked files.' >&2
+            git ls-files --others --exclude-standard >&2
+            exit 1
+          }
+
+      - name: Commit and push immutable candidate branch
+        id: commit
+        shell: bash
+        env:
+          VERSION: ${{ steps.prepare.outputs.candidate_version }}
+          BRANCH: ${{ steps.resolve.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git switch -c "$BRANCH"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            persian-gravityforms.php readme.txt README.md AGENTS.md \
+            docs/ARCHITECTURE.md docs/LOCALIZATION.md languages/README.md \
+            languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po \
+            languages/persian-gravityforms-fa_IR.mo
+          git commit -m "chore: prepare PersianGravity ${VERSION} release"
+          candidate_sha="$(git rev-parse HEAD)"
+          candidate_tree="$(git rev-parse HEAD^{tree})"
+          git push --set-upstream origin "$BRANCH"
+          printf 'candidate_sha=%s\n' "$candidate_sha" >> "$GITHUB_OUTPUT"
+          printf 'candidate_tree=%s\n' "$candidate_tree" >> "$GITHUB_OUTPUT"
+          printf 'branch=%s\n' "$BRANCH" >> "$GITHUB_OUTPUT"
+
+  qualification:
+    name: Qualify exact generated candidate
+    needs: prepare
+    permissions:
+      contents: read
+    uses: ./.github/workflows/release-qualification.yml
+    with:
+      candidate_sha: ${{ needs.prepare.outputs.candidate_sha }}
+      version: ${{ needs.prepare.outputs.candidate_version }}
+
+  open-pr:
+    name: Open qualified Release PR
+    needs:
+      - prepare
+      - qualification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout exact qualified candidate read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify candidate did not move after qualification
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ needs.prepare.outputs.candidate_sha }}
+          EXPECTED_TREE: ${{ needs.prepare.outputs.candidate_tree }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
+          [[ "$(git rev-parse HEAD^{tree})" == "$EXPECTED_TREE" ]]
+
+      - name: Create owner-reviewable Release PR and qualification status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIOUS_VERSION: ${{ needs.prepare.outputs.previous_version }}
+          VERSION: ${{ needs.prepare.outputs.candidate_version }}
+          BUMP: ${{ needs.prepare.outputs.bump }}
+          BASE_SHA: ${{ needs.prepare.outputs.base_sha }}
+          CANDIDATE_SHA: ${{ needs.prepare.outputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ needs.prepare.outputs.candidate_tree }}
+          BRANCH: ${{ needs.prepare.outputs.branch }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
+        run: |
+          set -euo pipefail
+          notes_file="$(mktemp)"
+          body_file="$(mktemp)"
+          trap 'rm -f "$notes_file" "$body_file"' EXIT
+
+          awk -v version="$VERSION" '
+            $0 == "= " version " =" { capture=1; next }
+            capture && /^= / { exit }
+            capture { print }
+          ' readme.txt | sed '/^[[:space:]]*$/d' > "$notes_file"
+          test -s "$notes_file"
+
+          marker="$(jq -cn \
+            --arg version "$VERSION" \
+            --arg candidate_sha "$CANDIDATE_SHA" \
+            --arg candidate_tree "$CANDIDATE_TREE" \
+            --arg base_sha "$BASE_SHA" \
+            --arg branch "$BRANCH" \
+            '{version:$version,candidate_sha:$candidate_sha,candidate_tree:$candidate_tree,base_sha:$base_sha,branch:$branch}')"
+
+          cat > "$body_file" <<EOF
+          ## Release candidate
+
+          This PR was created by **Prepare Release** after qualifying the exact candidate commit.
+
+          - Previous version: \`$PREVIOUS_VERSION\`
+          - Candidate version: \`$VERSION\`
+          - Bump: \`$BUMP\`
+          - Exact base/main SHA: \`$BASE_SHA\`
+          - Exact candidate Head SHA: \`$CANDIDATE_SHA\`
+          - Exact candidate tree: \`$CANDIDATE_TREE\`
+          - Qualified production ZIP: \`$ZIP_NAME\`
+          - Qualified ZIP SHA-256: \`$ZIP_SHA\`
+          - Qualification run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          ### Changelog content moved from Unreleased
+
+          \`\`\`text
+          $(cat "$notes_file")
+          \`\`\`
+
+          ### Publication boundary
+
+          **Merging this PR does not publish a release.** After merge, the Owner must explicitly run **Publish Release**. Normal feature merges never create tags or GitHub Releases.
+
+          <!-- PGR_RELEASE_CANDIDATE $marker -->
+          EOF
+
+          pr_url="$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: prepare PersianGravity ${VERSION} release" \
+            --body-file "$body_file")"
+
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$CANDIDATE_SHA" \
+            -f state=success \
+            -f context='release-candidate/qualified' \
+            -f description="Exact candidate ${VERSION} qualified including installable ZIP smoke" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+
+          printf 'RELEASE_PR=%s\n' "$pr_url"

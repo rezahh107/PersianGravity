@@ -1,0 +1,531 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: persiangravity-publish-release
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Bind main to merged Release Candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
+      source_tree: ${{ steps.resolve.outputs.source_tree }}
+      candidate_sha: ${{ steps.resolve.outputs.candidate_sha }}
+      candidate_tree: ${{ steps.resolve.outputs.candidate_tree }}
+      candidate_branch: ${{ steps.resolve.outputs.candidate_branch }}
+      integrated_sha: ${{ steps.resolve.outputs.integrated_sha }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+
+    steps:
+      - name: Require manual dispatch from main
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]] || {
+            echo 'Publish Release must be launched from the main branch selector.' >&2
+            exit 1
+          }
+
+      - name: Checkout canonical main read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Resolve and validate merged candidate identity
+        id: resolve
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
+          source_sha="$(git rev-parse HEAD)"
+          source_tree="$(git rev-parse HEAD^{tree})"
+          remote_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ -n "$remote_main" && "$source_sha" == "$remote_main" ]] || {
+            echo "main changed or checkout is stale: checkout=$source_sha remote=$remote_main" >&2
+            exit 1
+          }
+
+          php tools/release/release-tool.php verify
+          version="$(php tools/release/release-tool.php current)"
+          branch="release/v${version}"
+          tag="v${version}"
+
+          gh api --method GET "repos/$GITHUB_REPOSITORY/pulls" \
+            -f state=closed \
+            -f base=main \
+            -f head="${GITHUB_REPOSITORY_OWNER}:${branch}" \
+            -f per_page=100 > /tmp/release-prs.json
+
+          jq '[.[] | select(.merged_at != null)]' /tmp/release-prs.json > /tmp/merged-release-prs.json
+          count="$(jq 'length' /tmp/merged-release-prs.json)"
+          [[ "$count" == '1' ]] || {
+            echo "Expected exactly one merged Release PR for $branch, found $count. Prepare a fresh release candidate." >&2
+            exit 1
+          }
+
+          pr_number="$(jq -r '.[0].number' /tmp/merged-release-prs.json)"
+          pr_head_sha="$(jq -r '.[0].head.sha' /tmp/merged-release-prs.json)"
+          integrated_sha="$(jq -r '.[0].merge_commit_sha' /tmp/merged-release-prs.json)"
+          [[ "$integrated_sha" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "Merged Release PR #$pr_number has no valid integrated commit identity." >&2
+            exit 1
+          }
+          [[ "$source_sha" == "$integrated_sha" ]] || {
+            echo "main is no longer the exact integrated result of Release PR #$pr_number: main=$source_sha integrated=$integrated_sha. Prepare a fresh release candidate." >&2
+            exit 1
+          }
+
+          body="$(jq -r '.[0].body // ""' /tmp/merged-release-prs.json)"
+          marker_json="$(printf '%s\n' "$body" | sed -n 's/^<!-- PGR_RELEASE_CANDIDATE \(.*\) -->$/\1/p')"
+          [[ -n "$marker_json" ]] || {
+            echo "Merged PR #$pr_number has no release-candidate identity marker." >&2
+            exit 1
+          }
+          printf '%s\n' "$marker_json" | jq -e . >/dev/null
+
+          marker_version="$(printf '%s\n' "$marker_json" | jq -r '.version')"
+          marker_sha="$(printf '%s\n' "$marker_json" | jq -r '.candidate_sha')"
+          marker_tree="$(printf '%s\n' "$marker_json" | jq -r '.candidate_tree')"
+          marker_branch="$(printf '%s\n' "$marker_json" | jq -r '.branch')"
+
+          [[ "$marker_version" == "$version" ]] || {
+            echo "Merged candidate version marker does not match main: marker=$marker_version main=$version" >&2
+            exit 1
+          }
+          [[ "$marker_branch" == "$branch" ]] || {
+            echo "Merged candidate branch marker mismatch: marker=$marker_branch expected=$branch" >&2
+            exit 1
+          }
+          [[ "$marker_sha" == "$pr_head_sha" ]] || {
+            echo "Merged PR Head changed relative to candidate marker: pr=$pr_head_sha marker=$marker_sha" >&2
+            exit 1
+          }
+
+          git fetch origin "pull/${pr_number}/head:refs/pgr/release-candidate" --force
+          candidate_sha="$(git rev-parse refs/pgr/release-candidate)"
+          candidate_tree="$(git rev-parse refs/pgr/release-candidate^{tree})"
+          [[ "$candidate_sha" == "$marker_sha" ]] || {
+            echo "Fetched reviewed candidate Head mismatch: fetched=$candidate_sha marker=$marker_sha" >&2
+            exit 1
+          }
+          [[ "$candidate_tree" == "$marker_tree" ]] || {
+            echo "Fetched reviewed candidate tree mismatch: fetched=$candidate_tree marker=$marker_tree" >&2
+            exit 1
+          }
+
+          tag_state="$(resolve_tag_state "$tag" "$source_sha")"
+          release_exists=0
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then release_exists=1; fi
+
+          php tools/release/release-tool.php validate-publish \
+            --source-version="$version" \
+            --candidate-version="$marker_version" \
+            --source-sha="$source_sha" \
+            --candidate-sha="$candidate_sha" \
+            --integrated-sha="$integrated_sha" \
+            --source-tree="$source_tree" \
+            --candidate-tree="$candidate_tree" \
+            --candidate-branch="$branch" \
+            --tag="$tag" \
+            --candidate-merged=1 \
+            --tag-state="$tag_state" \
+            --release-exists="$release_exists"
+
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+          printf 'source_sha=%s\n' "$source_sha" >> "$GITHUB_OUTPUT"
+          printf 'source_tree=%s\n' "$source_tree" >> "$GITHUB_OUTPUT"
+          printf 'candidate_sha=%s\n' "$candidate_sha" >> "$GITHUB_OUTPUT"
+          printf 'candidate_tree=%s\n' "$candidate_tree" >> "$GITHUB_OUTPUT"
+          printf 'candidate_branch=%s\n' "$branch" >> "$GITHUB_OUTPUT"
+          printf 'integrated_sha=%s\n' "$integrated_sha" >> "$GITHUB_OUTPUT"
+          printf 'pr_number=%s\n' "$pr_number" >> "$GITHUB_OUTPUT"
+
+  qualification:
+    name: Requalify exact integrated release source before publication
+    needs: resolve
+    permissions:
+      contents: read
+    uses: ./.github/workflows/release-qualification.yml
+    with:
+      candidate_sha: ${{ needs.resolve.outputs.source_sha }}
+      version: ${{ needs.resolve.outputs.version }}
+
+  publish:
+    name: Tag, publish, and verify exact GitHub Release artifact
+    needs:
+      - resolve
+      - qualification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: read
+    services:
+      database:
+        image: mariadb:11.4.8
+        env:
+          MARIADB_ROOT_PASSWORD: release-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -prelease-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Checkout exact qualified integrated source read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up PHP 8.2 and WP-CLI
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          tools: wp-cli:2.12.0
+          coverage: none
+
+      - name: Download exact qualified production artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: ${{ needs.qualification.outputs.artifact_name }}
+          path: qualified-assets
+
+      - name: Revalidate all irreversible publication preconditions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+          SOURCE_TREE: ${{ needs.resolve.outputs.source_tree }}
+          CANDIDATE_SHA: ${{ needs.resolve.outputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ needs.resolve.outputs.candidate_tree }}
+          CANDIDATE_BRANCH: ${{ needs.resolve.outputs.candidate_branch }}
+          INTEGRATED_SHA: ${{ needs.resolve.outputs.integrated_sha }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          CHECKSUM_NAME: ${{ needs.qualification.outputs.checksum_name }}
+          QUALIFIED_ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
+        run: |
+          set -euo pipefail
+
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          [[ "$(git rev-parse HEAD^{tree})" == "$SOURCE_TREE" ]]
+          remote_main="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          [[ "$remote_main" == "$SOURCE_SHA" ]] || {
+            echo "main advanced after qualification: qualified=$SOURCE_SHA current=$remote_main. Prepare a fresh release candidate." >&2
+            exit 1
+          }
+
+          php tools/release/release-tool.php verify --expected="$VERSION"
+
+          tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+          release_exists=0
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then release_exists=1; fi
+
+          php tools/release/release-tool.php validate-publish \
+            --source-version="$VERSION" \
+            --candidate-version="$VERSION" \
+            --source-sha="$SOURCE_SHA" \
+            --candidate-sha="$CANDIDATE_SHA" \
+            --integrated-sha="$INTEGRATED_SHA" \
+            --source-tree="$SOURCE_TREE" \
+            --candidate-tree="$CANDIDATE_TREE" \
+            --candidate-branch="$CANDIDATE_BRANCH" \
+            --tag="$TAG" \
+            --candidate-merged=1 \
+            --tag-state="$tag_state" \
+            --release-exists="$release_exists"
+
+          test -s "qualified-assets/$ZIP_NAME"
+          test -s "qualified-assets/$CHECKSUM_NAME"
+          qualified_zip_sha="$(sha256sum "qualified-assets/$ZIP_NAME" | awk '{print $1}')"
+          [[ "$qualified_zip_sha" == "$QUALIFIED_ZIP_SHA" ]] || {
+            echo "Qualified artifact SHA changed between qualification and publication: expected=$QUALIFIED_ZIP_SHA actual=$qualified_zip_sha" >&2
+            exit 1
+          }
+          bash tools/release/verify-production-package.sh \
+            "qualified-assets/$ZIP_NAME" "qualified-assets/$CHECKSUM_NAME" \
+            "$VERSION" "$SOURCE_SHA" "$SOURCE_TREE"
+
+      - name: Create or reuse immutable version tag on exact qualified source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+
+          resolve_tag_state() {
+            local tag_name="$1"
+            local expected_sha="$2"
+            local remote line_count object_sha ref_name
+
+            if ! remote="$(git ls-remote --refs origin "refs/tags/${tag_name}")"; then
+              echo "Unable to read remote tag state for ${tag_name}." >&2
+              return 2
+            fi
+            if [[ -z "$remote" ]]; then
+              printf 'ABSENT\n'
+              return 0
+            fi
+
+            line_count="$(printf '%s\n' "$remote" | sed '/^[[:space:]]*$/d' | wc -l | tr -d '[:space:]')"
+            [[ "$line_count" == '1' ]] || {
+              echo "Unexpected remote tag resolution count for ${tag_name}: ${line_count}." >&2
+              return 2
+            }
+            read -r object_sha ref_name <<< "$remote"
+            [[ "$ref_name" == "refs/tags/${tag_name}" && "$object_sha" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "Invalid remote tag identity for ${tag_name}." >&2
+              return 2
+            }
+
+            if [[ "$object_sha" == "$expected_sha" ]]; then
+              printf 'EXACT_SOURCE\n'
+            else
+              printf 'CONFLICT\n'
+            fi
+          }
+
+          tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+          case "$tag_state" in
+            ABSENT)
+              if ! gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                -f ref="refs/tags/$TAG" \
+                -f sha="$SOURCE_SHA" >/dev/null; then
+                echo "Tag creation did not succeed immediately; re-reading remote state in case the exact ref appeared concurrently." >&2
+              fi
+              tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+              [[ "$tag_state" == 'EXACT_SOURCE' ]] || {
+                echo "Tag $TAG is not the exact qualified source after creation/race recovery: state=$tag_state source=$SOURCE_SHA" >&2
+                exit 1
+              }
+              ;;
+            EXACT_SOURCE)
+              echo "Tag $TAG already identifies the exact qualified source; reusing it without mutation."
+              ;;
+            CONFLICT)
+              echo "Tag $TAG exists with a conflicting identity; refusing to delete, overwrite, force-update, or move it." >&2
+              exit 1
+              ;;
+            *)
+              echo "Unexpected tag state for $TAG: $tag_state" >&2
+              exit 1
+              ;;
+          esac
+
+          final_tag_state="$(resolve_tag_state "$TAG" "$SOURCE_SHA")"
+          [[ "$final_tag_state" == 'EXACT_SOURCE' ]] || {
+            echo "Final tag identity check failed: tag=$TAG state=$final_tag_state source=$SOURCE_SHA" >&2
+            exit 1
+          }
+
+      - name: Publish GitHub Release with generated notes and qualified assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          CHECKSUM_NAME: ${{ needs.qualification.outputs.checksum_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG appeared after preflight; refusing to mutate it. Owner intervention is required." >&2
+            exit 1
+          fi
+          gh release create "$TAG" \
+            "qualified-assets/$ZIP_NAME" \
+            "qualified-assets/$CHECKSUM_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --generate-notes \
+            --title "$TAG" \
+            --target "$SOURCE_SHA"
+
+      - name: Download the actual published release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          CHECKSUM_NAME: ${{ needs.qualification.outputs.checksum_name }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          rm -rf published-assets
+          mkdir -p published-assets
+          gh release download "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir published-assets \
+            --pattern "$ZIP_NAME" \
+            --pattern "$CHECKSUM_NAME"
+          tag_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
+          [[ "$tag_sha" == "$SOURCE_SHA" ]] || {
+            echo "Published release tag moved unexpectedly: tag=$tag_sha expected=$SOURCE_SHA" >&2
+            exit 1
+          }
+
+      - name: Verify the exact downloaded published artifact
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+          SOURCE_TREE: ${{ needs.resolve.outputs.source_tree }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          CHECKSUM_NAME: ${{ needs.qualification.outputs.checksum_name }}
+          QUALIFIED_ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
+        run: |
+          set -euo pipefail
+          published_zip_sha="$(sha256sum "published-assets/$ZIP_NAME" | awk '{print $1}')"
+          [[ "$published_zip_sha" == "$QUALIFIED_ZIP_SHA" ]] || {
+            echo "Published ZIP bytes differ from the exact qualified artifact: qualified=$QUALIFIED_ZIP_SHA published=$published_zip_sha" >&2
+            exit 1
+          }
+          bash tools/release/verify-production-package.sh \
+            "published-assets/$ZIP_NAME" "published-assets/$CHECKSUM_NAME" \
+            "$VERSION" "$SOURCE_SHA" "$SOURCE_TREE"
+
+      - name: Install and activate the exact downloaded published ZIP
+        env:
+          PGR_PACKAGE_ZIP: ${{ github.workspace }}/published-assets/${{ needs.qualification.outputs.zip_name }}
+          PGR_PACKAGE_VERSION: ${{ needs.resolve.outputs.version }}
+          PGR_PACKAGE_SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+          PGR_PACKAGE_SOURCE_TREE: ${{ needs.resolve.outputs.source_tree }}
+          PGR_SMOKE_WP_VERSION: '6.7.2'
+          PGR_SMOKE_DB_PASSWORD: release-root
+          PGR_SMOKE_EVIDENCE: ${{ github.workspace }}/release-evidence/published-smoke.txt
+        run: bash tools/release/smoke-production-package.sh
+
+      - name: Record publication verification evidence
+        if: always()
+        shell: bash
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.source_sha }}
+          SOURCE_TREE: ${{ needs.resolve.outputs.source_tree }}
+          CANDIDATE_SHA: ${{ needs.resolve.outputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ needs.resolve.outputs.candidate_tree }}
+          PR_NUMBER: ${{ needs.resolve.outputs.pr_number }}
+          ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
+          ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-evidence
+          {
+            printf 'VERSION=%s\n' "$VERSION"
+            printf 'TAG=%s\n' "$TAG"
+            printf 'SOURCE_SHA=%s\n' "$SOURCE_SHA"
+            printf 'SOURCE_TREE=%s\n' "$SOURCE_TREE"
+            printf 'CANDIDATE_SHA=%s\n' "$CANDIDATE_SHA"
+            printf 'CANDIDATE_TREE=%s\n' "$CANDIDATE_TREE"
+            printf 'RELEASE_PR=%s\n' "$PR_NUMBER"
+            printf 'QUALIFIED_ZIP=%s\n' "$ZIP_NAME"
+            printf 'QUALIFIED_ZIP_SHA256=%s\n' "$ZIP_SHA"
+            printf 'WORKFLOW_RUN=%s/%s/actions/runs/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+          } > release-evidence/publication.txt
+
+      - name: Upload release evidence without mutating a failed publication
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: publish-release-evidence-${{ needs.resolve.outputs.version }}-${{ github.run_id }}
+          path: release-evidence
+          if-no-files-found: warn
+          retention-days: 30
