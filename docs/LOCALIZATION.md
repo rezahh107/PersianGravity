@@ -12,7 +12,7 @@ Decision C is closed: **Shared Core + Declarative Product Manifests + Bounded Ad
 | --- | --- | --- | --- | --- | --- |
 | Gravity Forms | 3.1.1.1 / 3.1.1.1 | `PACKAGE_INSPECTED_METADATA_ONLY` + full reviewed content | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` | `a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf` | 0 |
 | Gravity Flow | 3.1.0 / 3.1.0 | `PACKAGE_INSPECTED_METADATA_ONLY` + full reviewed content | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` | `09a66357bb86fa4b425c2905a6c3417b057da18a9d423d934aa4c544be306961` | 0 |
-| GravityView | 3.3.4 / 3.3.4 | `PACKAGE_INSPECTED_METADATA_ONLY` / content dormant | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` | `null` (vendor POT absent) | 0 |
+| GravityView | 3.3.4 / 3.3.4 | `PACKAGE_INSPECTED_METADATA_ONLY` + partial reviewed content | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` | `null` (vendor POT absent) | 0 |
 
 For Gravity Forms, Gravity Flow and GravityView, `PROJECT_SOURCE_AUTHORITY=OWNER_SUPPLIED_EXACT_PACKAGE`, `VENDOR_AUTHENTICITY=NOT_PROVEN`, and source admission remains separately evidenced. Exact package bytes were inspected and pinned, but vendor authenticity is not claimed. Vendor ZIPs, extracted vendor source, full vendor POT/message corpora, and the full reviewed Persian baselines are not committed. GravityView's exact package contains no vendor POT, so `vendor_pot_sha256` remains `null`; no POT hash is inferred or fabricated.
 
