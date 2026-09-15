@@ -75,6 +75,7 @@ jobs:
           php tools/release/release-tool.php verify
           bash tests/release/contracts.sh
           bash tools/build-production-package.sh
+          bash tests/release/recovery-contracts.sh
 
       - name: Install and activate generated ZIP without Gravity Forms
         env:
