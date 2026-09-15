@@ -32,7 +32,7 @@ jobs:
           echo 'a4eb120ee9513552004400548c26a568612ace6accdf9fdcd60b8aa4b163bccf  '"$pot" | sha256sum -c -
           printf '%s\n' "$pot" > /tmp/gf-pot-path
           git show 83f2cbfb5425984ac6545a6075497606efd81508:languages/gravityforms/gravityforms-fa_IR.po > /tmp/legacy.po
-      - name: Reconstruct exact residual and draft all 2448 identities
+      - name: Reconstruct exact residual and draft untranslated historical gaps
         shell: bash
         run: |
           set -euo pipefail
@@ -47,6 +47,8 @@ jobs:
           legacy=polib.pofile('/tmp/legacy.po')
           def raw(e): return (e.msgctxt or '')+'\x1f'+e.msgid+'\x1f'+(e.msgid_plural or '')
           def hid(e): return hashlib.sha256(raw(e).encode()).hexdigest()
+          def vals(e):
+              return [e.msgstr] if not e.msgid_plural else [e.msgstr_plural.get(0,''),e.msgstr_plural.get(1,'')]
           all_pot=[e for e in pot if e.msgid]
           stale=[e for e in all_pot if e.msgid=="I'm a Button!" and not e.msgctxt and not e.msgid_plural]
           assert len(all_pot)==4208 and len(stale)==1
@@ -58,59 +60,60 @@ jobs:
           assert len(accepted)==1759 and accepted <= set(cmap)
           residual=sorted(set(cmap)-accepted)
           assert len(residual)==2448 and hid(stale[0]) not in residual
-          lmap={hid(e):e for e in legacy if e.msgid and 'fuzzy' not in e.flags and e.msgstr and (not e.msgid_plural or (len(e.msgstr_plural)>=2 and e.msgstr_plural.get(0,'') and e.msgstr_plural.get(1,'')))}
+          lmap={hid(e):e for e in legacy if e.msgid and 'fuzzy' not in e.flags and all(vals(e))}
 
-          protect=re.compile(r'(https?://[^\s<>"\']+|%(?:\d+\$)?[-+0#\' ]*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}|</?[A-Za-z][^>]*>|&#(?:\d+|x[0-9A-Fa-f]+);|`[^`]+`|Gravity Forms|Gravity Flow|GravityView|WordPress|JavaScript|reCAPTCHA|\b(?:API|URL|PHP|CSS|HTML|JSON|REST|AJAX|ID|IDs|SQL|CLI|UTC|GMT)\b)')
-          tok=AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M',src_lang='eng_Latn')
-          model=AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')
-          model.eval(); forced=tok.convert_tokens_to_ids('pes_Arab')
-
+          protect=re.compile(r'(https?://[^\s<>"\']+|%(?:\d+\$)?[-+0#\' ]*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}|\[[A-Za-z][^\]\r\n]*\]|</?[A-Za-z][^>]*>|&#(?:\d+|x[0-9A-Fa-f]+);|`[^`]+`|Gravity Forms|Gravity Flow|GravityView|WordPress|JavaScript|reCAPTCHA|\b(?:API|URL|PHP|CSS|HTML|JSON|REST|AJAX|ID|IDs|SQL|CLI|UTC|GMT)\b)')
           def segments(s):
               parts=protect.split(s); natural=[]; slots=[]
-              for i,p in enumerate(parts):
+              for p in parts:
                   if not p: continue
                   if protect.fullmatch(p): slots.append(('p',p))
                   else: slots.append(('n',len(natural))); natural.append(p)
               return natural,slots
-          def translate_many(strings,batch=24):
-              out=[]
-              for i in range(0,len(strings),batch):
-                  b=strings[i:i+batch]
-                  enc=tok(b,return_tensors='pt',padding=True,truncation=True,max_length=384)
-                  with torch.inference_mode(): gen=model.generate(**enc,forced_bos_token_id=forced,max_new_tokens=384,num_beams=1)
-                  out.extend(tok.batch_decode(gen,skip_special_tokens=True))
-              return out
-          source_forms=[]; recipes=[]
-          rows=[]
+
+          rows=[]; source_forms=[]; recipes={}
           for identity in residual:
               e=cmap[identity]
+              le=lmap.get(identity)
+              legacy_vals=vals(le) if le else None
+              row={'identity':identity,'msgctxt':e.msgctxt or None,'msgid':e.msgid,'msgid_plural':e.msgid_plural or None,'references':list(e.occurrences),'legacy':legacy_vals,'nllb':None}
+              rows.append(row)
+              if legacy_vals is not None:
+                  continue
               forms=[e.msgid]+([e.msgid_plural] if e.msgid_plural else [])
               form_rec=[]
               for s in forms:
-                  n,slots=segments(s)
-                  idx=[]
-                  for x in n:
-                      idx.append(len(source_forms)); source_forms.append(x)
-                  form_rec.append((slots,idx))
-              recipes.append(form_rec)
-              le=lmap.get(identity)
-              legacy_vals=None
-              if le:
-                  legacy_vals=[le.msgstr] if not le.msgid_plural else [le.msgstr_plural.get(0,''),le.msgstr_plural.get(1,'')]
-              rows.append({'identity':identity,'msgctxt':e.msgctxt or None,'msgid':e.msgid,'msgid_plural':e.msgid_plural or None,'references':list(e.occurrences),'legacy':legacy_vals})
-          translated=translate_many(source_forms)
-          for row,form_rec in zip(rows,recipes):
-              vals=[]
-              for slots,idx in form_rec:
-                  it=iter(idx); pieces=[]
-                  for kind,val in slots:
-                      if kind=='p': pieces.append(val)
-                      else: pieces.append(translated[next(it)])
-                  vals.append(''.join(pieces).strip())
-              row['nllb']=vals
-          data={'canonical_count':4207,'accepted_count':1759,'residual_count':2448,'stale_identity':hid(stale[0]),'legacy_candidate_count':sum(1 for r in rows if r['legacy']),'entries':rows}
+                  natural,slots=segments(s); indexes=[]
+                  for text in natural:
+                      indexes.append(len(source_forms)); source_forms.append(text)
+                  form_rec.append((slots,indexes))
+              recipes[identity]=form_rec
+
+          tok=AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M',src_lang='eng_Latn')
+          model=AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M')
+          model.eval(); forced=tok.convert_tokens_to_ids('pes_Arab')
+          translated=[]
+          for i in range(0,len(source_forms),32):
+              batch=source_forms[i:i+32]
+              enc=tok(batch,return_tensors='pt',padding=True,truncation=True,max_length=384)
+              with torch.inference_mode():
+                  gen=model.generate(**enc,forced_bos_token_id=forced,max_new_tokens=384,num_beams=1)
+              translated.extend(tok.batch_decode(gen,skip_special_tokens=True))
+
+          for row in rows:
+              form_rec=recipes.get(row['identity'])
+              if form_rec is None: continue
+              out=[]
+              for slots,indexes in form_rec:
+                  pieces=[]; it=iter(indexes)
+                  for kind,value in slots:
+                      pieces.append(value if kind=='p' else translated[next(it)])
+                  out.append(''.join(pieces).strip())
+              row['nllb']=out
+          data={'canonical_count':4207,'accepted_count':1759,'residual_count':2448,'stale_identity':hid(stale[0]),'legacy_candidate_count':sum(1 for r in rows if r['legacy']),'nllb_candidate_count':sum(1 for r in rows if r['nllb']),'entries':rows}
+          assert data['legacy_candidate_count'] + data['nllb_candidate_count'] == 2448
           Path('/tmp/gravityforms-review-draft.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
-          print('draft complete',len(rows),'legacy',data['legacy_candidate_count'],'nllb_forms',len(source_forms))
+          print('draft complete',data['residual_count'],'legacy',data['legacy_candidate_count'],'nllb',data['nllb_candidate_count'],'forms',len(source_forms))
           PY
           python3 /tmp/draft.py
       - uses: actions/upload-artifact@v4
