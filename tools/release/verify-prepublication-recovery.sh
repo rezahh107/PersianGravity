@@ -39,7 +39,7 @@ git merge-base --is-ancestor "$SOURCE_SHA" "$WORKFLOW_SHA" || {
 
 allowed_path() {
   case "$1" in
-    .github/workflows/publish-release.yml|docs/RELEASE.md|tests/release/contracts.sh|tools/release/resolve-qualified-artifact.sh|tools/release/verify-prepublication-recovery.sh)
+    .github/workflows/publish-release.yml|.github/workflows/artifact-install-smoke.yml|docs/RELEASE.md|tests/release/recovery-contracts.sh|tools/release/resolve-qualified-artifact.sh|tools/release/verify-prepublication-recovery.sh)
       return 0
       ;;
     *)
