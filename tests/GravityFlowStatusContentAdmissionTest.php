@@ -52,12 +52,13 @@ final class GravityFlowStatusContentAdmissionTest extends TestCase {
 			$this->assertSame( $inbox_po['translation_rows'][ $identity ], $status_po['translation_rows'][ $identity ] );
 		}
 		$this->assertSame( 288, count( array_unique( array_merge( $inbox_po['ids'], $status_po['ids'] ) ) ) );
-		$this->assertSame( 732, $content['gravityflow']['aggregate']['admitted_message_count'] );
+		$this->assertSame( 1098, $content['gravityflow']['aggregate']['admitted_message_count'] );
+		$this->assertSame( 'CONTENT_ADMITTED_FULL', $content['gravityflow']['content_state'] );
 	}
 
 	private function recordForSurface( array $records, string $surface ): array {
 		foreach ( $records as $record ) {
-			if ( $surface === $record['surface_id'] ) {
+			if ( $surface === ( $record['surface_id'] ?? null ) ) {
 				return $record;
 			}
 		}

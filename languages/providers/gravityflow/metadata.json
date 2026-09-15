@@ -15,9 +15,33 @@
         "source_pot_consistency": "PASS",
         "admission_baseline": "tools/i18n/admission/baseline.json",
         "content_admission_manifest": "tools/i18n/admission/content.json",
-        "content_admission_revision": 2,
-        "content_admission_state": "CONTENT_ADMITTED_PARTIAL",
+        "content_admission_revision": 3,
+        "content_admission_state": "CONTENT_ADMITTED_FULL",
         "content_admissions": [
+            {
+                "product": "gravityflow",
+                "domain": "gravityflow",
+                "locale": "fa_IR",
+                "target_version": "3.1.0",
+                "content_state": "CONTENT_ADMITTED_REMAINDER",
+                "reviewed_source_po_sha256": "c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9",
+                "reviewed_source_message_count": 1098,
+                "authority_scope": "PRODUCT_REMAINDER",
+                "preexisting_accepted_message_count": 732,
+                "preexisting_accepted_keyset_sha256": "a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12",
+                "preexisting_accepted_translation_content_sha256": "66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826",
+                "canonical_message_count": 1098,
+                "canonical_keyset_sha256": "cea9efe9c99f0e4424de029137ecef044133129684918ba6523f4691e6d58c82",
+                "admitted_message_count": 366,
+                "admitted_keyset_sha256": "b16eaf6231555a30d82d596a0f6c4ff70f00f833777d2b8076633bfbb723bab8",
+                "admitted_translation_content_sha256": "0b3771b11bf4cd0f0d08ef10a4be4dcd2f79f56e5a7816dc6c8b128bfe69e1c9",
+                "remainder_evidence_index_path": "tools/i18n/admission/remainders/gravityflow.json",
+                "remainder_evidence_index_sha256": "ea172598895517f58910e849f7ddc1c3dee49f18499bfb6c40d0e513b92c7876",
+                "review_index_path": "tools/i18n/admission/reviews/gravityflow-remainder.json",
+                "review_index_sha256": "ca696d357cbe78ece3a09c6f7e63c664cb455ff2f3a6a39d134e07a4fb10d92f",
+                "provider_source_path": "languages/providers/gravityflow/source/records/remainder-fa_IR.po",
+                "provider_source_sha256": "bdeef229dc80fe49032d4952802b5be63ff5bdea9058fb2cbc09c01225e5e36d"
+            },
             {
                 "product": "gravityflow",
                 "domain": "gravityflow",
@@ -146,38 +170,62 @@
             }
         ],
         "content_aggregate": {
-            "admitted_message_count": 732,
-            "admitted_keyset_sha256": "a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12",
-            "admitted_translation_content_sha256": "66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826",
+            "admitted_message_count": 1098,
+            "admitted_keyset_sha256": "612c1ded4350b766c35b9abda22fcc213f91a1cc77e9f78f5fe11caa26244903",
+            "admitted_translation_content_sha256": "311aacfedbe309374a13f777e8ae6c45d98d118c9ca5c6ffcf7ef3378dcfed36",
             "provider_source_path": "languages/providers/gravityflow/source/fa_IR.po",
-            "provider_source_sha256": "bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a"
+            "provider_source_sha256": "01936627afef409f7da7412e0a6b25e8684144ca9356a04a2ef71e474d6260f2"
         },
-        "catalog_revision": 4,
-        "translation_review": "FINAL_V2_REVIEWED_BASELINE_EXACT_ACCEPTED_SEVEN_SURFACE_CLASSIFIED_UNION",
+        "catalog_revision": 5,
+        "translation_review": "G006_GRAVITYFLOW_FULL_SOURCE_CENSUS_REVIEWED_ACCEPTED",
         "native_js_handles_activated": 0,
         "js_translation_json_generated": 0,
         "upstream_fallback_validation": "SYNTHETIC_CORE_SPARSE_PRECEDENCE"
     },
-    "provider_po_sha256": "bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a",
+    "provider_po_sha256": "01936627afef409f7da7412e0a6b25e8684144ca9356a04a2ef71e474d6260f2",
     "counts_in_committed_po": {
-        "translated": 732,
+        "translated": 1098,
         "untranslated": 0,
         "fuzzy": 0
     },
     "authoritative_total": 1098,
-    "coverage_percent": 66.67,
-    "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
+    "coverage_percent": 100,
+    "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gravityflow-fa_IR.mo": "247224d3385df3fbbeda0bb2177d649858b808d10586b7ecac8da90a5424615c",
-        "gravityflow-fa_IR.l10n.php": "580e658d61be7190fb53db1fe7c9f1cf15ba5210ef8aa7fe8c4bf5432aa262d0"
+        "gravityflow-fa_IR.mo": "f3d1b0fee4f798fcf130ad0c72c174df5778c725fdc6aee162b7771f7cf2776e",
+        "gravityflow-fa_IR.l10n.php": "3d5a10d627430569e6227949adc3e4ca722964ccfac222182c947826f079e6ca"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
     "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",
     "content_admission": {
-        "revision": 2,
-        "state": "CONTENT_ADMITTED_PARTIAL",
+        "revision": 3,
+        "state": "CONTENT_ADMITTED_FULL",
         "admissions": [
+            {
+                "product": "gravityflow",
+                "domain": "gravityflow",
+                "locale": "fa_IR",
+                "target_version": "3.1.0",
+                "content_state": "CONTENT_ADMITTED_REMAINDER",
+                "reviewed_source_po_sha256": "c1dbd59c8364b5fbe9e0b3aaad4c20363642d80a8b7869592993c127cb7c84d9",
+                "reviewed_source_message_count": 1098,
+                "authority_scope": "PRODUCT_REMAINDER",
+                "preexisting_accepted_message_count": 732,
+                "preexisting_accepted_keyset_sha256": "a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12",
+                "preexisting_accepted_translation_content_sha256": "66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826",
+                "canonical_message_count": 1098,
+                "canonical_keyset_sha256": "cea9efe9c99f0e4424de029137ecef044133129684918ba6523f4691e6d58c82",
+                "admitted_message_count": 366,
+                "admitted_keyset_sha256": "b16eaf6231555a30d82d596a0f6c4ff70f00f833777d2b8076633bfbb723bab8",
+                "admitted_translation_content_sha256": "0b3771b11bf4cd0f0d08ef10a4be4dcd2f79f56e5a7816dc6c8b128bfe69e1c9",
+                "remainder_evidence_index_path": "tools/i18n/admission/remainders/gravityflow.json",
+                "remainder_evidence_index_sha256": "ea172598895517f58910e849f7ddc1c3dee49f18499bfb6c40d0e513b92c7876",
+                "review_index_path": "tools/i18n/admission/reviews/gravityflow-remainder.json",
+                "review_index_sha256": "ca696d357cbe78ece3a09c6f7e63c664cb455ff2f3a6a39d134e07a4fb10d92f",
+                "provider_source_path": "languages/providers/gravityflow/source/records/remainder-fa_IR.po",
+                "provider_source_sha256": "bdeef229dc80fe49032d4952802b5be63ff5bdea9058fb2cbc09c01225e5e36d"
+            },
             {
                 "product": "gravityflow",
                 "domain": "gravityflow",
@@ -306,11 +354,11 @@
             }
         ],
         "aggregate": {
-            "admitted_message_count": 732,
-            "admitted_keyset_sha256": "a1367158915f7e3369e138cdd5c2b1474cd75b8c0372f3a674440d2c78025a12",
-            "admitted_translation_content_sha256": "66d251b35c04a2bbd24138f1d99fc006689a615e47e82ed679cd998881982826",
+            "admitted_message_count": 1098,
+            "admitted_keyset_sha256": "612c1ded4350b766c35b9abda22fcc213f91a1cc77e9f78f5fe11caa26244903",
+            "admitted_translation_content_sha256": "311aacfedbe309374a13f777e8ae6c45d98d118c9ca5c6ffcf7ef3378dcfed36",
             "provider_source_path": "languages/providers/gravityflow/source/fa_IR.po",
-            "provider_source_sha256": "bff3f53338558fd9c62e19a6dc8161f39c61a8cdb42d807acc1fe6693868fa1a",
+            "provider_source_sha256": "01936627afef409f7da7412e0a6b25e8684144ca9356a04a2ef71e474d6260f2",
             "native_js_handles_activated": 0,
             "js_translation_json_generated": 0
         }

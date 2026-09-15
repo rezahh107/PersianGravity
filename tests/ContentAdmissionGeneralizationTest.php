@@ -218,6 +218,18 @@ final class ContentAdmissionGeneralizationTest extends TestCase {
 		$this->assertSame( $first['alpha']['aggregate']['admitted_translation_content_sha256'], $second['alpha']['aggregate']['admitted_translation_content_sha256'] );
 	}
 
+	public function test_remainder_provider_protected_literal_drift_fails_closed(): void {
+		$root = sys_get_temp_dir() . '/pgr-protected-literal-' . bin2hex( random_bytes( 8 ) );
+		$this->roots[] = $root;
+		mkdir( $root, 0777, true );
+		$po = $root . '/provider.po';
+		$this->writePo( $po, 'gravityflow', array( 'Gravity Flow API' => 'رابط گردش‌کار' ) );
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Protected literal drift in admitted entry' );
+		pgr_content_load_sparse_po( $po, 'gravityflow', 'fa_IR', true );
+	}
+
 	public function test_valid_source_admission_with_zero_content_records_grants_no_content_authority(): void {
 		$fixture = $this->fixture( array( $this->spec( 'alpha', 'alpha-domain', '1.0.0', 'surface-a', 'src/a/', array( 'One' => 'یک' ) ) ) );
 		$manifest = $this->readJson( $fixture['root'] . '/tools/i18n/admission/content.json' );
