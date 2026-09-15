@@ -51,7 +51,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          # This one job must push the bounded release branch; later jobs use read-only checkouts.
+          # This bounded job alone must push the generated release branch.
           persist-credentials: true
 
       - name: Set up PHP 8.2
@@ -90,6 +90,7 @@ jobs:
           msgfmt --check --output-file="$current_mo" languages/persian-gravityforms-fa_IR.po
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
           cmp -s "$current_mo" languages/persian-gravityforms-fa_IR.mo
+
           current="$(php tools/release/release-tool.php current)"
           candidate="$(php tools/release/release-tool.php next "$BUMP")"
           branch="release/v${candidate}"
@@ -107,6 +108,7 @@ jobs:
             echo "GitHub Release $tag already exists; refusing to prepare a conflicting release." >&2
             exit 1
           fi
+
           existing_pr="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls" \
             -f state=all \
             -f head="${GITHUB_REPOSITORY_OWNER}:${branch}" \
@@ -116,6 +118,7 @@ jobs:
             echo "A prior PR already uses $branch; refusing to silently replace it." >&2
             exit 1
           }
+
           printf 'current=%s\n' "$current" >> "$GITHUB_OUTPUT"
           printf 'candidate=%s\n' "$candidate" >> "$GITHUB_OUTPUT"
           printf 'branch=%s\n' "$branch" >> "$GITHUB_OUTPUT"
@@ -131,13 +134,14 @@ jobs:
           msgfmt --check --output-file=languages/persian-gravityforms-fa_IR.mo languages/persian-gravityforms-fa_IR.po
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
           git diff --check
+
           actual_changes="$(git diff --name-only | LC_ALL=C sort)"
           expected_changes="$(printf '%s\n' \
-            AGENTS.md README.md languages/README.md \
+            AGENTS.md README.md docs/ARCHITECTURE.md docs/LOCALIZATION.md languages/README.md \
             languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po \
             languages/persian-gravityforms-fa_IR.mo persian-gravityforms.php readme.txt | LC_ALL=C sort)"
           [[ "$actual_changes" == "$expected_changes" ]] || {
-            echo 'Release preparation changed files outside the bounded release metadata set.' >&2
+            echo 'Release preparation changed files outside the bounded active release metadata set.' >&2
             printf 'Expected:\n%s\nActual:\n%s\n' "$expected_changes" "$actual_changes" >&2
             exit 1
           }
@@ -158,8 +162,11 @@ jobs:
           git switch -c "$BRANCH"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add persian-gravityforms.php readme.txt README.md AGENTS.md languages/README.md \
-            languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms-fa_IR.mo
+          git add \
+            persian-gravityforms.php readme.txt README.md AGENTS.md \
+            docs/ARCHITECTURE.md docs/LOCALIZATION.md languages/README.md \
+            languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po \
+            languages/persian-gravityforms-fa_IR.mo
           git commit -m "chore: prepare PersianGravity ${VERSION} release"
           candidate_sha="$(git rev-parse HEAD)"
           candidate_tree="$(git rev-parse HEAD^{tree})"
