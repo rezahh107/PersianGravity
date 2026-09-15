@@ -129,6 +129,21 @@ file_put_contents($p, $s);
 expect_fail 'empty Unreleased changelog is refused' "${TOOL[@]}" --root="$fixture" prepare patch
 
 fixture="$(make_fixture)"
+# Own the positive fixture's release notes so this contract remains valid both
+# before release preparation and against the generated post-prepare candidate.
+php -r '
+$p=$argv[1];
+$s=file_get_contents($p);
+$s=preg_replace(
+    "/^= Unreleased =\\R.*?(?=^= [0-9]+\\.[0-9]+\\.[0-9]+ =\\R)/ms",
+    "= Unreleased =\n* Contract fixture release note with meaningful content.\n\n",
+    $s,
+    1,
+    $count
+);
+if ($count !== 1) { exit(2); }
+file_put_contents($p, $s);
+' "$fixture/readme.txt"
 historical_before="$(awk -v version="$CURRENT" '$0 == "= " version " =" { capture=1 } capture { print }' "$fixture/readme.txt" | sha256sum | awk '{print $1}')"
 expect_pass 'release preparation succeeds with meaningful Unreleased notes' "${TOOL[@]}" --root="$fixture" prepare patch
 historical_after="$(awk -v version="$CURRENT" '$0 == "= " version " =" { capture=1 } capture { print }' "$fixture/readme.txt" | sha256sum | awk '{print $1}')"
