@@ -52,14 +52,16 @@ Before creating any public tag or Release, Publish Release re-runs the exact-sou
 
 Only after those pre-publication gates pass does it:
 
-- create `vX.Y.Z` on the exact qualified source;
+- create `vX.Y.Z` on the exact qualified source, or reuse that same lightweight tag without mutation when an earlier failed attempt already created it on the exact qualified source;
 - create the GitHub Release with generated release notes;
 - attach `persian-gravityforms-X.Y.Z.zip` and `persian-gravityforms-X.Y.Z.zip.sha256`;
 - download those actual published assets again;
 - verify the downloaded checksum and package/source identity;
 - install and activate the exact downloaded Release ZIP in disposable WordPress.
 
-If post-publication verification fails, the workflow fails visibly and preserves evidence. It does **not** delete, rewrite, move, or silently replace the published tag or Release. Owner intervention is then required.
+If a Publish Release attempt fails after creating the expected version tag but before the GitHub Release exists, rerunning the workflow can resume automatically **only** when that lightweight tag still points directly at the same qualified source commit. The workflow verifies and reuses that exact tag without deleting, moving, overwriting, or force-updating it. A wrong-target/annotated conflicting tag, or any already-existing GitHub Release for that version, remains fail-closed and requires Owner intervention.
+
+If verification fails after a GitHub Release already exists, the workflow fails visibly and preserves evidence. It does **not** delete, rewrite, move, replace, or silently mutate the published tag or Release; Owner intervention is required.
 
 ## What the automation protects against
 
@@ -68,7 +70,9 @@ The release system fails closed when it detects conditions such as:
 - version declarations disagree;
 - the current version is not stable `X.Y.Z` SemVer;
 - `Unreleased` has no meaningful release notes;
-- the release branch, version tag, or GitHub Release already exists;
+- the release branch already exists during preparation;
+- the expected version tag exists but does not identify the exact qualified source;
+- a GitHub Release for the expected version already exists;
 - `main` no longer identifies the exact reviewed Release Candidate;
 - provider localization generated artifacts drift from their admitted source/authority;
 - required production files are missing;
