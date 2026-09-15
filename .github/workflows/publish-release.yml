@@ -50,7 +50,7 @@ jobs:
       - name: Set up PHP 8.2
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.2.33'
+          php-version: '8.2'
           coverage: none
 
       - name: Resolve and validate merged candidate identity
@@ -98,10 +98,11 @@ jobs:
             echo "main is no longer the exact integrated result of Release PR #$pr_number: main=$source_sha integrated=$integrated_sha. Prepare a fresh release candidate." >&2
             exit 1
           }
+
           body="$(jq -r '.[0].body // ""' /tmp/merged-release-prs.json)"
           marker_json="$(printf '%s\n' "$body" | sed -n 's/^<!-- PGR_RELEASE_CANDIDATE \(.*\) -->$/\1/p')"
           [[ -n "$marker_json" ]] || {
-            echo "Merged PR #$pr_number has no trusted release-candidate marker." >&2
+            echo "Merged PR #$pr_number has no release-candidate identity marker." >&2
             exit 1
           }
           printf '%s\n' "$marker_json" | jq -e . >/dev/null
@@ -110,6 +111,7 @@ jobs:
           marker_sha="$(printf '%s\n' "$marker_json" | jq -r '.candidate_sha')"
           marker_tree="$(printf '%s\n' "$marker_json" | jq -r '.candidate_tree')"
           marker_branch="$(printf '%s\n' "$marker_json" | jq -r '.branch')"
+
           [[ "$marker_version" == "$version" ]] || {
             echo "Merged candidate version marker does not match main: marker=$marker_version main=$version" >&2
             exit 1
@@ -186,7 +188,7 @@ jobs:
       pull-requests: read
     services:
       database:
-        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        image: mariadb:11.4.8
         env:
           MARIADB_ROOT_PASSWORD: release-root
           MARIADB_DATABASE: wordpress
@@ -206,10 +208,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up PHP 8.2
+      - name: Set up PHP 8.2 and WP-CLI
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: '8.2.33'
+          php-version: '8.2'
+          tools: wp-cli:2.12.0
           coverage: none
 
       - name: Download exact qualified production artifact
@@ -229,6 +232,7 @@ jobs:
           CANDIDATE_SHA: ${{ needs.resolve.outputs.candidate_sha }}
           CANDIDATE_TREE: ${{ needs.resolve.outputs.candidate_tree }}
           CANDIDATE_BRANCH: ${{ needs.resolve.outputs.candidate_branch }}
+          INTEGRATED_SHA: ${{ needs.resolve.outputs.integrated_sha }}
           ZIP_NAME: ${{ needs.qualification.outputs.zip_name }}
           CHECKSUM_NAME: ${{ needs.qualification.outputs.checksum_name }}
           QUALIFIED_ZIP_SHA: ${{ needs.qualification.outputs.zip_sha }}
@@ -241,18 +245,27 @@ jobs:
             echo "main advanced after qualification: qualified=$SOURCE_SHA current=$remote_main. Prepare a fresh release candidate." >&2
             exit 1
           }
+
           php tools/release/release-tool.php verify --expected="$VERSION"
 
           tag_exists=0
           release_exists=0
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then tag_exists=1; fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then release_exists=1; fi
+
           php tools/release/release-tool.php validate-publish \
-            --source-version="$VERSION" --candidate-version="$VERSION" \
-            --source-sha="$SOURCE_SHA" --candidate-sha="$CANDIDATE_SHA" --integrated-sha="${{ needs.resolve.outputs.integrated_sha }}" \
-            --source-tree="$SOURCE_TREE" --candidate-tree="$CANDIDATE_TREE" \
-            --candidate-branch="$CANDIDATE_BRANCH" --tag="$TAG" \
-            --candidate-merged=1 --tag-exists="$tag_exists" --release-exists="$release_exists"
+            --source-version="$VERSION" \
+            --candidate-version="$VERSION" \
+            --source-sha="$SOURCE_SHA" \
+            --candidate-sha="$CANDIDATE_SHA" \
+            --integrated-sha="$INTEGRATED_SHA" \
+            --source-tree="$SOURCE_TREE" \
+            --candidate-tree="$CANDIDATE_TREE" \
+            --candidate-branch="$CANDIDATE_BRANCH" \
+            --tag="$TAG" \
+            --candidate-merged=1 \
+            --tag-exists="$tag_exists" \
+            --release-exists="$release_exists"
 
           test -s "qualified-assets/$ZIP_NAME"
           test -s "qualified-assets/$CHECKSUM_NAME"
