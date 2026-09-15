@@ -58,6 +58,15 @@ jobs:
           gf_root="$(dirname "$(dirname "$pot")")"
           test ! -e "$gf_root/tests/playwright/mu-plugins/snippets/gform_settings_header_buttons.php"
           git show 83f2cbfb5425984ac6545a6075497606efd81508:languages/gravityforms/gravityforms-fa_IR.po > /tmp/legacy-gf.po
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.g006/finalize-v3.py')
+          text = path.read_text(encoding='utf-8')
+          old = r'\bAPI\b|\bURL\b|\bPHP\b'
+          new = r'\bAPI\b|\bURLs?\b|\bPHP\b'
+          assert old in text
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           python3 .g006/finalize-v3.py | tee /tmp/gf-finalize.json
           python3 - <<'PY'
           import json, pathlib
