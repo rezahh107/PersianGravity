@@ -2,7 +2,7 @@
 
 Original foundation work unit: `WU-PGR-GRAVITY-LOCALIZATION-PROVIDER-02`.
 Original foundation base: `b1a52c975988bf60f473d4b843de057ed5bd0c06`.
-Reconciled with main `62ee8b2808640578bfdba0583342d29b7ef8a164` through `WU-PR8-SEMANTIC-RECONCILIATION-01`; active repository identity is **4.3.0**. The six-module manager, module-state class-load gates, bilingual admin/help and own-plugin GNU-gettext assets remain authoritative. Localization is cross-cutting infrastructure outside `PGR_Module_Registry`, independent of every module toggle.
+Reconciled with main `62ee8b2808640578bfdba0583342d29b7ef8a164` through `WU-PR8-SEMANTIC-RECONCILIATION-01`; active repository identity is **4.4.0**. The six-module manager, module-state class-load gates, bilingual admin/help and own-plugin GNU-gettext assets remain authoritative. Localization is cross-cutting infrastructure outside `PGR_Module_Registry`, independent of every module toggle.
 
 Decision C is closed: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
 
