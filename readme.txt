@@ -118,3 +118,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
 * Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.
+
+= G-007 development note =
+* Adds bounded Persian provider authority for exact Gravity Perks 2.3.16 (83/83), GP File Upload Pro 1.5.13 (39/39), and GP Advanced Select 1.1.21 (5/5).
+* Adds source-proven File Upload Pro uploader translations and a bounded GP Advanced Select RTL caret compatibility adapter without modifying vendor files.
+* Licensed browser execution for the screenshot-backed acceptance targets remains separately evidenced; source/unit checks are not presented as browser proof.
