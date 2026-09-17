@@ -1,70 +1,70 @@
 {
-  "product": "gp-advanced-select",
-  "domain": "gp-advanced-select",
-  "locale": "fa_IR",
-  "provenance": {
-    "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
-    "target_product_version": "1.1.21",
-    "source_product_version": "1.1.21",
-    "source_pot_sha256": null,
-    "source_package_sha256": "d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2",
-    "vendor_pot_sha256": "1b595f32532235e931a5572b880fa03840c3420dbcfd40384cac52d566301923",
-    "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
-    "vendor_authenticity": "NOT_PROVEN",
-    "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
-    "source_pot_consistency": "PASS",
-    "canonical_message_count": 5,
-    "canonical_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
-    "source_reference_index_sha256": "6bf27c90006db2b831a1057764a2aa18855b56a642cbf93bb967f9332862d92e",
-    "translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
-    "translation_review": "G007_TWO_PASS_REVIEWED_ACCEPTED",
-    "cross_domain_boundaries": {
-      "gp-advanced-phone-field": {
-        "canonical_message_count": 4,
-        "source_reference_count": 4,
-        "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
-      },
-      "gp-populate-anything": {
-        "canonical_message_count": 1,
-        "source_reference_count": 1,
-        "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
-      },
-      "gravityperks": {
-        "canonical_message_count": 1,
-        "source_reference_count": 1,
-        "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
-      }
+    "product": "gp-advanced-select",
+    "domain": "gp-advanced-select",
+    "locale": "fa_IR",
+    "provenance": {
+        "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+        "target_product_version": "1.1.21",
+        "source_product_version": "1.1.21",
+        "source_pot_sha256": null,
+        "source_package_sha256": "d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2",
+        "vendor_pot_sha256": "1b595f32532235e931a5572b880fa03840c3420dbcfd40384cac52d566301923",
+        "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+        "vendor_authenticity": "NOT_PROVEN",
+        "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+        "source_pot_consistency": "PASS",
+        "canonical_message_count": 5,
+        "canonical_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
+        "source_reference_index_sha256": "6bf27c90006db2b831a1057764a2aa18855b56a642cbf93bb967f9332862d92e",
+        "translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
+        "translation_review": "G007_TWO_PASS_REVIEWED_ACCEPTED",
+        "cross_domain_boundaries": {
+            "gp-advanced-phone-field": {
+                "canonical_message_count": 4,
+                "source_reference_count": 4,
+                "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+            },
+            "gp-populate-anything": {
+                "canonical_message_count": 1,
+                "source_reference_count": 1,
+                "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+            },
+            "gravityperks": {
+                "canonical_message_count": 1,
+                "source_reference_count": 1,
+                "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+            }
+        }
+    },
+    "provider_po_sha256": "3a4e727e9d0c945508d5a9e519f5fa403d467a1036afb81c524b087dae3c477f",
+    "counts_in_committed_po": {
+        "translated": 5,
+        "untranslated": 0,
+        "fuzzy": 0
+    },
+    "authoritative_total": 5,
+    "coverage_percent": 100,
+    "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
+    "validated_script_handles": [],
+    "artifact_sha256": {
+        "gp-advanced-select-fa_IR.mo": "d0e3ca0fd41e0fc443b30d41ad3f2cef40cb2a71a9228cd63c743b9fe7bf0a86",
+        "gp-advanced-select-fa_IR.l10n.php": "2ab7b02b2a4e9bde1ce4178a06a90ba7f9d2c24b604157f1e277b41183a3244b"
+    },
+    "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
+    "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
+    "content_admission": {
+        "goal": "G-007",
+        "state": "CONTENT_ADMITTED_FULL",
+        "review_index_path": "tools/i18n/admission/reviews/gp-advanced-select-g007.json",
+        "review_index_sha256": "e94a7b682677bcd7967600af539a2012d4616ef09464a8c12624424659771cd5",
+        "aggregate": {
+            "admitted_message_count": 5,
+            "admitted_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
+            "admitted_translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
+            "provider_source_path": "languages/providers/gp-advanced-select/source/fa_IR.po",
+            "provider_source_sha256": "3a4e727e9d0c945508d5a9e519f5fa403d467a1036afb81c524b087dae3c477f",
+            "native_js_handles_activated": 0,
+            "js_translation_json_generated": 0
+        }
     }
-  },
-  "provider_po_sha256": "3a4e727e9d0c945508d5a9e519f5fa403d467a1036afb81c524b087dae3c477f",
-  "counts_in_committed_po": {
-    "translated": 5,
-    "untranslated": 0,
-    "fuzzy": 0
-  },
-  "authoritative_total": 5,
-  "coverage_percent": 100,
-  "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
-  "validated_script_handles": [],
-  "artifact_sha256": {
-    "gp-advanced-select-fa_IR.mo": "3827b9c5365ce49a6ce67893ebcf0fc1121069b8ed93796e9e953ab7ade2b613",
-    "gp-advanced-select-fa_IR.l10n.php": "2ab7b02b2a4e9bde1ce4178a06a90ba7f9d2c24b604157f1e277b41183a3244b"
-  },
-  "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-  "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
-  "content_admission": {
-    "goal": "G-007",
-    "state": "CONTENT_ADMITTED_FULL",
-    "review_index_path": "tools/i18n/admission/reviews/gp-advanced-select-g007.json",
-    "review_index_sha256": "e94a7b682677bcd7967600af539a2012d4616ef09464a8c12624424659771cd5",
-    "aggregate": {
-      "admitted_message_count": 5,
-      "admitted_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
-      "admitted_translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
-      "provider_source_path": "languages/providers/gp-advanced-select/source/fa_IR.po",
-      "provider_source_sha256": "3a4e727e9d0c945508d5a9e519f5fa403d467a1036afb81c524b087dae3c477f",
-      "native_js_handles_activated": 0,
-      "js_translation_json_generated": 0
-    }
-  }
 }
