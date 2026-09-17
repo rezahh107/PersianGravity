@@ -77,7 +77,10 @@ for required in \
   "$STAGE/admin/class-pgr-product-admin.php" \
   "$STAGE/assets/js/pgr-structured-scanner-core.js" \
   "$STAGE/includes/class-pgr-localization.php" \
+  "$STAGE/includes/class-pgr-gravity-perks-rtl.php" \
   "$STAGE/includes/localization/products.php" \
+  "$STAGE/includes/localization/g007-products.php" \
+  "$STAGE/includes/localization/registry.php" \
   "$STAGE/languages/persian-gravityforms-fa_IR.po" \
   "$STAGE/languages/persian-gravityforms-fa_IR.mo" \
   "$STAGE/languages/providers/gravityforms/gravityforms-fa_IR.mo" \
@@ -85,7 +88,13 @@ for required in \
   "$STAGE/languages/providers/gravityflow/gravityflow-fa_IR.mo" \
   "$STAGE/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php" \
   "$STAGE/languages/providers/gravityview/gravityview-fa_IR.mo" \
-  "$STAGE/languages/providers/gravityview/gravityview-fa_IR.l10n.php"; do
+  "$STAGE/languages/providers/gravityview/gravityview-fa_IR.l10n.php" \
+  "$STAGE/languages/providers/gravityperks/gravityperks-fa_IR.mo" \
+  "$STAGE/languages/providers/gravityperks/gravityperks-fa_IR.l10n.php" \
+  "$STAGE/languages/providers/gp-file-upload-pro/gp-file-upload-pro-fa_IR.mo" \
+  "$STAGE/languages/providers/gp-file-upload-pro/gp-file-upload-pro-fa_IR.l10n.php" \
+  "$STAGE/languages/providers/gp-advanced-select/gp-advanced-select-fa_IR.mo" \
+  "$STAGE/languages/providers/gp-advanced-select/gp-advanced-select-fa_IR.l10n.php"; do
   [[ -f "$required" ]] || fail "required staged production file is missing: $required"
 done
 

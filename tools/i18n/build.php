@@ -4,6 +4,8 @@ require dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 require __DIR__ . '/catalog.php';
 require __DIR__ . '/admission.php';
 require __DIR__ . '/content-admission.php';
+require __DIR__ . '/g007-admission.php';
+require __DIR__ . '/g007-build.php';
 
 define( 'ABSPATH', dirname( __DIR__, 2 ) . '/' );
 
@@ -187,6 +189,8 @@ foreach ( $products as $domain => $product ) {
 		$expected[ $dir . '/' . $name ] = $bytes;
 	}
 }
+
+$expected = array_merge( $expected, pgr_g007_expected_artifacts( ABSPATH, $root ) );
 
 $actual = array();
 foreach ( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root, FilesystemIterator::SKIP_DOTS ) ) as $file ) {

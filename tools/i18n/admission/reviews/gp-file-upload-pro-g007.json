@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "review_scope": "ACCEPTED_TRANSLATION_REVIEW",
+  "goal": "G-007",
+  "product": "gp-file-upload-pro",
+  "domain": "gp-file-upload-pro",
+  "locale": "fa_IR",
+  "target_version": "1.5.13",
+  "accepted_count": 39,
+  "unreviewed_count": 0,
+  "rejected_count": 0,
+  "semantic_review_passes": 2,
+  "second_pass_corrections": 0,
+  "second_pass_corrected_identities": [],
+  "risk_reviewed_identity_count": 26,
+  "risk_flag_counts": {
+    "MARKUP": 1,
+    "PRINTF": 1,
+    "SHORT_AMBIGUOUS": 22,
+    "TEMPLATE_TOKEN": 3
+  },
+  "reviewed_keyset_sha256": "594d4f31c1e8fd022ee19fdfeed2fb7b0acbc68ad4d88e870a23c93caada783a",
+  "reviewed_translation_content_sha256": "d915c02e65131ca8f1ac42e75f8b8acf18c6a2cda325d66be936fa2e248a48e7",
+  "review_method": "ENTRY_BY_ENTRY_SEMANTIC_REVIEW_PLUS_SECOND_PASS_RISK_TOKEN_AND_UI_REVIEW",
+  "binding": "FULL_CANONICAL_KEYSET_AND_TRANSLATION_CONTENT_FINGERPRINT"
+}

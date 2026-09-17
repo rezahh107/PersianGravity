@@ -1,0 +1,343 @@
+# gravityperks 2.3.16 — G-007 reviewed full source-backed Persian catalog.
+# Derived from the owner-supplied exact package; licensed package bytes are not committed.
+msgid ""
+msgstr ""
+"Project-Id-Version: gravityperks 2.3.16\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gravityperks\n"
+
+#: admin/manage_perks.php:137 admin/manage_perks.php:876 gravityperks.php:200 gravityperks.php:768
+msgid "Manage Perks"
+msgstr "مدیریت پرک‌ها"
+
+#: gravityperks.php:267
+msgid "Register Gravity Perks to enable auto-updates."
+msgstr "برای فعال‌شدن به‌روزرسانی خودکار، Gravity Perks را ثبت کنید."
+
+#: gravityperks.php:509
+msgid "Current Gravity Forms version (%1$s) does not meet minimum Gravity Forms version requirement (%2$s)."
+msgstr "نسخهٔ فعلی Gravity Forms (%1$s) حداقل نسخهٔ موردنیاز Gravity Forms (%2$s) را برآورده نمی‌کند."
+
+#: gravityperks.php:512
+msgid "Gravity Forms %1$s or greater is required. Activate it now or %2$spurchase it today!%3$s"
+msgstr "Gravity Forms نسخهٔ %1$s یا بالاتر لازم است. همین حالا آن را فعال کنید یا %2$sامروز تهیه‌اش کنید!%3$s"
+
+#: gravityperks.php:518
+msgid "%1$s requires WordPress %2$s or greater. You must upgrade WordPress in order to use this perk."
+msgstr "%1$s به WordPress نسخهٔ %2$s یا بالاتر نیاز دارد. برای استفاده از این پرک باید WordPress را ارتقا دهید."
+
+#: gravityperks.php:521
+msgid "Gravity Perks requires WordPress %1$s or greater. You must upgrade WordPress in order to use Gravity Perks."
+msgstr "Gravity Perks به WordPress نسخهٔ %1$s یا بالاتر نیاز دارد. برای استفاده از Gravity Perks باید WordPress را ارتقا دهید."
+
+#: gravityperks.php:526
+msgid "%1$s requires Gravity Perks %2$s or greater. Activate it now or %3$spurchase it today!%4$s"
+msgstr "%1$s به Gravity Perks نسخهٔ %2$s یا بالاتر نیاز دارد. همین حالا آن را فعال کنید یا %3$sامروز تهیه‌اش کنید!%4$s"
+
+#: gravityperks.php:531
+msgid "%1$sRegister%2$s your copy of Gravity Perks to receive access to automatic upgrades and support for this perk. Need a license key? %3$sPurchase one now.%2$s"
+msgstr "برای دسترسی به ارتقای خودکار و پشتیبانی این پرک، نسخهٔ Gravity Perks خود را %1$sثبت%2$s کنید. به کلید لایسنس نیاز دارید؟ %3$sهمین حالا یکی تهیه کنید.%2$s"
+
+#: gravityperks.php:534
+msgid "%1$sRegister%2$s your copy of Gravity Perks to receive access to automatic upgrades and support. Need a license key? %3$sPurchase one now.%2$s"
+msgstr "برای دسترسی به ارتقای خودکار و پشتیبانی، نسخهٔ Gravity Perks خود را %1$sثبت%2$s کنید. به کلید لایسنس نیاز دارید؟ %3$sهمین حالا یکی تهیه کنید.%2$s"
+
+#: gravityperks.php:765
+msgid "Back to Manage Perks"
+msgstr "بازگشت به مدیریت پرک‌ها"
+
+#: gravityperks.php:772
+msgid "Activate Perk"
+msgstr "فعال‌کردن پرک"
+
+#: gravityperks.php:934
+msgid "<strong>Gravity Perks</strong> must be network activated before a <strong>perk</strong> can be network activated."
+msgstr "پیش از آنکه یک <strong>پرک</strong> در شبکه فعال شود، باید <strong>Gravity Perks</strong> در شبکه فعال باشد."
+
+#: gravityperks.php:974
+msgid "No, Return to Manage Perks page"
+msgstr "خیر، به صفحهٔ مدیریت پرک‌ها بازگردید"
+
+#: gravityperks.php:1071
+msgid "Oops! Your site is having some trouble communicating with our API."
+msgstr "اوه! سایت شما در ارتباط با API ما با مشکل روبه‌رو شده است."
+
+#: gravityperks.php:1072
+msgid "Let's get this fixed."
+msgstr "بیایید این مشکل را برطرف کنیم."
+
+#: gravityperks.php:1262 gravityperks.php:1284 gravityperks.php:1737 gravityperks.php:1741
+msgid "Perks"
+msgstr "پرک‌ها"
+
+#: gravityperks.php:1308 gravityperks.php:1308
+msgid "Return to Perks Page"
+msgstr "بازگشت به صفحهٔ پرک‌ها"
+
+#: gravityperks.php:1513
+msgid "Welcome to Gravity Perks"
+msgstr "به Gravity Perks خوش آمدید"
+
+#: gravityperks.php:1514
+msgid "Ready to get started? Click the <strong>Perks</strong> link (to the left) to take a quick tour."
+msgstr "آمادهٔ شروع هستید؟ برای یک مرور سریع، روی پیوند <strong>پرک‌ها</strong> در سمت چپ کلیک کنید."
+
+#: gravityperks.php:1600
+msgid "Does this page look strange? Your PHP version is out-of-date. <strong>Please upgrade.</strong>"
+msgstr "این صفحه غیرعادی به نظر می‌رسد؟ نسخهٔ PHP شما قدیمی است. <strong>لطفاً آن را ارتقا دهید.</strong>"
+
+#: gravityperks.php:1669
+msgid "Gravity Perks"
+msgstr "Gravity Perks"
+
+#: includes/class-gwapi.php:202
+msgid "<strong>Important Note!</strong> Gravity Perks (plugin) has been converted to Spellbook"
+msgstr "<strong>نکتهٔ مهم!</strong> Gravity Perks (افزونه) به Spellbook تبدیل شده است"
+
+#: includes/class-gwapi.php:207
+msgid "Spellbook has been activated."
+msgstr "Spellbook فعال شد."
+
+#: includes/class-gwapi.php:249
+msgid "<strong>Important Note!</strong> GP Google Sheets has been converted to GC Google Sheets"
+msgstr "<strong>نکتهٔ مهم!</strong> GP Google Sheets به GC Google Sheets تبدیل شده است"
+
+#: includes/class-gwapi.php:253
+msgid "GC Google Sheets has been activated."
+msgstr "GC Google Sheets فعال شد."
+
+#: model/perk.php:95
+msgid "The file for this perk does not exist."
+msgstr "فایل این پرک وجود ندارد."
+
+#: model/perk.php:120
+msgid "There is no class for this perk."
+msgstr "کلاسی برای این پرک وجود ندارد."
+
+#: model/perk.php:136
+msgid "%s is not a perk."
+msgstr "%s یک پرک نیست."
+
+#: model/perk.php:371
+msgid "Uh-oh! <strong>%s</strong> needs your attention."
+msgstr "اوه! <strong>%s</strong> به توجه شما نیاز دارد."
+
+#: model/perk.php:748
+msgid "There was an issue deleting this perk. The perk directory was not available."
+msgstr "در حذف این پرک مشکلی رخ داد. پوشهٔ پرک در دسترس نبود."
+
+#: admin/manage_perks.php:139 admin/manage_perks.php:882
+msgid "Install Perks"
+msgstr "نصب پرک‌ها"
+
+#: admin/manage_perks.php:162
+msgid "Active Perks"
+msgstr "پرک‌های فعال"
+
+#: admin/manage_perks.php:177
+msgid "Inactive Perks"
+msgstr "پرک‌های غیرفعال"
+
+#: admin/manage_perks.php:196
+msgid "You don't have any perks installed."
+msgstr "هیچ پرکی نصب نکرده‌اید."
+
+#: admin/manage_perks.php:197
+msgid "Let's go install some perks!"
+msgstr "بیایید چند پرک نصب کنیم!"
+
+#: admin/manage_perks.php:1016 admin/manage_perks.php:232 admin/manage_perks.php:407 admin/manage_perks.php:422
+msgid "%s Documentation"
+msgstr "مستندات %s"
+
+#: admin/manage_perks.php:233
+msgid "View Documentation"
+msgstr "مشاهدهٔ مستندات"
+
+#: admin/manage_perks.php:245
+msgid "Install Perk"
+msgstr "نصب پرک"
+
+#: admin/manage_perks.php:248
+msgid "Deregister"
+msgstr "لغو ثبت"
+
+#: admin/manage_perks.php:253
+msgid "Upgrade License"
+msgstr "ارتقای لایسنس"
+
+#: admin/manage_perks.php:259 admin/manage_perks.php:732
+msgid "Buy License"
+msgstr "خرید لایسنس"
+
+#: admin/manage_perks.php:309
+msgid "Registered Perks"
+msgstr "پرک‌های ثبت‌شده"
+
+#: admin/manage_perks.php:326
+msgid "Unregistered Perks"
+msgstr "پرک‌های ثبت‌نشده"
+
+#: admin/manage_perks.php:342
+msgid "Holy cow. You must really love perks.<br /><strong>You've installed them all</strong>!"
+msgstr "عجب! انگار واقعاً پرک‌ها را دوست دارید.<br /><strong>همهٔ آن‌ها را نصب کرده‌اید</strong>!"
+
+#: admin/manage_perks.php:409 admin/manage_perks.php:423
+msgid "Docs"
+msgstr "مستندات"
+
+#: admin/manage_perks.php:412 admin/manage_perks.php:699
+msgid "Deactivate"
+msgstr "غیرفعال‌کردن"
+
+#: admin/manage_perks.php:416
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: admin/manage_perks.php:438
+msgid "Are you sure you want to delete this perk and all of its data?"
+msgstr "مطمئن هستید که می‌خواهید این پرک و همهٔ داده‌های آن را حذف کنید؟"
+
+#: admin/manage_perks.php:439
+msgid "Uninstall"
+msgstr "حذف"
+
+#: admin/manage_perks.php:467
+msgid "<b>This perk is unregistered.</b><br>You will not receive updates for it."
+msgstr "<b>این پرک ثبت نشده است.</b><br>برای آن به‌روزرسانی دریافت نخواهید کرد."
+
+#: admin/manage_perks.php:534
+msgid "You must purchase or register your license to take advantage of automatic upgrades."
+msgstr "برای استفاده از ارتقای خودکار باید لایسنس خود را خریداری یا ثبت کنید."
+
+#: admin/manage_perks.php:541
+msgid "<h6>Network Activated Perk</h6>This perk is network activated. You can deactivate this perk from the Network Admin Plugins page."
+msgstr "<h6>پرک فعال در شبکه</h6>این پرک در شبکه فعال است. می‌توانید آن را از صفحهٔ افزونه‌ها در مدیریت شبکه غیرفعال کنید."
+
+#: admin/manage_perks.php:541
+msgid "Network Activated"
+msgstr "فعال در شبکه"
+
+#: admin/manage_perks.php:559 admin/manage_perks.php:663
+msgid "There was an error managing this perk."
+msgstr "هنگام مدیریت این پرک خطایی رخ داد."
+
+#: admin/manage_perks.php:574
+msgid "You do not have sufficient permissions to activate plugins for this site."
+msgstr "مجوز کافی برای فعال‌کردن افزونه‌ها در این سایت ندارید."
+
+#: admin/manage_perks.php:590
+msgid "There was an error activating this perk."
+msgstr "هنگام فعال‌کردن این پرک خطایی رخ داد."
+
+#: admin/manage_perks.php:613
+msgid "You do not have sufficient permissions to deactivate plugins for this site."
+msgstr "مجوز کافی برای غیرفعال‌کردن افزونه‌ها در این سایت ندارید."
+
+#: admin/manage_perks.php:619
+msgid "This perk can only be managed from the network admin's Plugins page."
+msgstr "این پرک فقط از صفحهٔ افزونه‌ها در مدیریت شبکه قابل مدیریت است."
+
+#: admin/manage_perks.php:637
+msgid "You do not have sufficient permissions to delete plugins for this site."
+msgstr "مجوز کافی برای حذف افزونه‌ها در این سایت ندارید."
+
+#: admin/manage_perks.php:699
+msgid "Are you sure you wish to deactivate your Gravity Perks license on this site?"
+msgstr "مطمئن هستید که می‌خواهید لایسنس Gravity Perks را در این سایت غیرفعال کنید؟"
+
+#: admin/manage_perks.php:702
+msgid "Upgrade"
+msgstr "ارتقا"
+
+#: admin/manage_perks.php:705
+msgid "Manage"
+msgstr "مدیریت"
+
+#: admin/manage_perks.php:714
+msgid "Refresh"
+msgstr "تازه‌سازی"
+
+#: admin/manage_perks.php:727
+msgid "Get Support"
+msgstr "دریافت پشتیبانی"
+
+#: admin/manage_perks.php:736
+msgid "Register License"
+msgstr "ثبت لایسنس"
+
+#: admin/manage_perks.php:770
+msgid "Oops! That doesn't appear to be a valid license."
+msgstr "اوه! به نظر نمی‌رسد این لایسنس معتبر باشد."
+
+#: admin/manage_perks.php:776
+msgid "Oops! You have reached your license's site limit of %d site(s)."
+msgstr "اوه! به سقف %d سایت برای این لایسنس رسیده‌اید."
+
+#: admin/manage_perks.php:778
+msgid "Oops! You have reached your license's site limit."
+msgstr "اوه! به سقف تعداد سایت‌های این لایسنس رسیده‌اید."
+
+#: admin/manage_perks.php:781
+msgid "Upgrade Now"
+msgstr "همین حالا ارتقا دهید"
+
+#: admin/manage_perks.php:794
+msgid "Perk successfully deregistered."
+msgstr "ثبت پرک با موفقیت لغو شد."
+
+#: admin/manage_perks.php:803
+msgid "Perk successfully registered."
+msgstr "پرک با موفقیت ثبت شد."
+
+#: admin/manage_perks.php:820
+msgid "License successfully deactivated."
+msgstr "لایسنس با موفقیت غیرفعال شد."
+
+#: admin/manage_perks.php:828
+msgid "License successfully refreshed."
+msgstr "لایسنس با موفقیت تازه‌سازی شد."
+
+#: admin/manage_perks.php:877
+msgid "Welcome to the <strong>Manage Perks</strong> page. Here you can activate/deactivate installed perks, view documentation, modify a perk\\'s global settings and also delete unwanted perks."
+msgstr "به صفحهٔ <strong>مدیریت پرک‌ها</strong> خوش آمدید. در اینجا می‌توانید پرک‌های نصب‌شده را فعال یا غیرفعال کنید، مستندات را ببینید، تنظیمات عمومی یک پرک را تغییر دهید و پرک‌های ناخواسته را حذف کنید."
+
+#: admin/manage_perks.php:883
+msgid "The <strong>Install Perks</strong> page provides you a complete list of perks available for installation. Just click the <em>Install</em> button on any listed perk to automatically download and install."
+msgstr "صفحهٔ <strong>نصب پرک‌ها</strong> فهرست کاملی از پرک‌های قابل نصب را نشان می‌دهد. کافی است روی دکمهٔ <em>نصب</em> هر پرک کلیک کنید تا به‌طور خودکار دانلود و نصب شود."
+
+#: admin/manage_perks.php:890
+msgid "Buy a License"
+msgstr "خرید لایسنس"
+
+#: admin/manage_perks.php:891
+msgid "Buy a license to receive unlimited access to <strong>all perks</strong> along with automatic upgrades and support."
+msgstr "برای دسترسی نامحدود به <strong>همهٔ پرک‌ها</strong> همراه با ارتقای خودکار و پشتیبانی، یک لایسنس خریداری کنید."
+
+#: admin/manage_perks.php:902
+msgid "Need Help? Get Support!"
+msgstr "کمک می‌خواهید؟ پشتیبانی بگیرید!"
+
+#: admin/manage_perks.php:903
+msgid "One of the best perks of your Gravity Perks license is premium support! If you\\'ve got a question or problem, get in touch. We are eager to help!"
+msgstr "یکی از بهترین مزایای لایسنس Gravity Perks، پشتیبانی ویژه است! اگر پرسش یا مشکلی دارید، با ما در تماس باشید. مشتاق کمک به شما هستیم!"
+
+#: admin/manage_perks.php:1082
+msgid "Settings saved successfully."
+msgstr "تنظیمات با موفقیت ذخیره شد."
+
+#: admin/manage_perks.php:1084
+msgid "Settings were not saved."
+msgstr "تنظیمات ذخیره نشد."
+
+#: admin/manage_perks.php:1088
+msgid "%s Settings"
+msgstr "تنظیمات %s"
+
+#: admin/manage_perks.php:1123
+msgid "Save Settings"
+msgstr "ذخیرهٔ تنظیمات"

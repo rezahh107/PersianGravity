@@ -198,3 +198,9 @@ Across the exact locked-source censuses, accepted Persian coverage is 5766/8432:
 ## Scope
 
 PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases.
+
+## G-007 bounded Gravity Perks family extension
+
+G-007 keeps `PGR_Localization` as the single shared runtime core. `includes/localization/products.php` continues to hold the prior Gravity Forms / Gravity Flow / GravityView manifest data; `includes/localization/registry.php` now merges that unchanged set with the bounded G-007 data in `includes/localization/g007-products.php`. The only added domains are `gravityperks`, `gp-file-upload-pro`, and `gp-advanced-select`, bound to exact package versions 2.3.16, 1.5.13, and 1.1.21 and admitted primary-domain censuses 83, 39, and 5. Observed cross-domain/default-domain calls are evidence only and do not activate unrelated domains.
+
+GP File Upload Pro remains data-only at runtime: its exact source passes the relevant gettext values into the uploader through `wp_localize_script()`, so the shared PHP provider supplies the Persian labels without a new JavaScript translation subsystem. GP Advanced Select is the only G-007 product with executable compatibility behavior. `PGR_Gravity_Perks_RTL` attaches inline CSS only to the source-proven `gp-advanced-select-tom-select` style handle, only under `fa_IR` + RTL, and mirrors Tom Select's actual `.ts-wrapper.rtl` state and caret spacing. Vendor package bytes, vendor CSS, and updater behavior remain untouched.

@@ -1,0 +1,167 @@
+# gp-file-upload-pro 1.5.13 — G-007 reviewed full source-backed Persian catalog.
+# Derived from the owner-supplied exact package; licensed package bytes are not committed.
+msgid ""
+msgstr ""
+"Project-Id-Version: gp-file-upload-pro 1.5.13\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gp-file-upload-pro\n"
+
+#: class-gp-file-upload-pro.php:397
+msgid "select files"
+msgstr "انتخاب فایل‌ها"
+
+#: class-gp-file-upload-pro.php:398
+msgid "Drop files here"
+msgstr "فایل‌ها را اینجا رها کنید"
+
+#: class-gp-file-upload-pro.php:399
+msgid "or"
+msgstr "یا"
+
+#: class-gp-file-upload-pro.php:400
+msgid "Cancel"
+msgstr "لغو"
+
+#: class-gp-file-upload-pro.php:401
+msgid "Crop"
+msgstr "برش"
+
+#: class-gp-file-upload-pro.php:402
+msgid "Save"
+msgstr "ذخیره"
+
+#: class-gp-file-upload-pro.php:403
+msgid "Rotate Right"
+msgstr "چرخش به راست"
+
+#: class-gp-file-upload-pro.php:404
+msgid "Rotate Left"
+msgstr "چرخش به چپ"
+
+#: class-gp-file-upload-pro.php:405
+msgid "Cropping"
+msgstr "در حال برش"
+
+#: class-gp-file-upload-pro.php:406
+msgid "Editing"
+msgstr "در حال ویرایش"
+
+#: class-gp-file-upload-pro.php:407 class-gp-file-upload-pro.php:408
+msgid "of"
+msgstr "از"
+
+#: class-gp-file-upload-pro.php:409
+msgid "This image does not meet the minimum dimensions: {minWidth}x{minHeight}px."
+msgstr "ابعاد این تصویر از حداقل مجاز {minWidth}x{minHeight}px کمتر است."
+
+#: class-gp-file-upload-pro.php:410
+msgid "This image does not meet the minimum width: {minWidth}px."
+msgstr "عرض این تصویر از حداقل مجاز {minWidth}px کمتر است."
+
+#: class-gp-file-upload-pro.php:411
+msgid "This image does not meet the minimum height: {minHeight}px."
+msgstr "ارتفاع این تصویر از حداقل مجاز {minHeight}px کمتر است."
+
+#: class-gp-file-upload-pro.php:422 class-gp-file-upload-pro.php:446
+msgid "Enable Cropping"
+msgstr "فعال‌کردن برش"
+
+#: class-gp-file-upload-pro.php:423 class-gp-file-upload-pro.php:451
+msgid "Enable Sorting"
+msgstr "فعال‌کردن مرتب‌سازی"
+
+#: class-gp-file-upload-pro.php:424
+msgid "Enable File Upload Pro"
+msgstr "فعال‌کردن File Upload Pro"
+
+#: class-gp-file-upload-pro.php:425
+msgid "You are about to enable File Upload Pro on a Single File Upload field.\n\nCompleting this action will convert this field to a Multi-file Upload field. Entry data associated with this field will be converted into the multi-file upload format when the form is saved. This conversion cannot be undone.\n\nWould you like to enable File Upload Pro on this field?"
+msgstr "در حال فعال‌کردن File Upload Pro روی یک فیلد آپلود تک‌فایلی هستید.\n\nبا تکمیل این کار، فیلد به آپلود چندفایلی تبدیل می‌شود. هنگام ذخیرهٔ فرم، داده‌های ورودی مرتبط با این فیلد نیز به قالب آپلود چندفایلی تبدیل خواهند شد. این تبدیل قابل بازگشت نیست.\n\nآیا می‌خواهید File Upload Pro را روی این فیلد فعال کنید؟"
+
+#: class-gp-file-upload-pro.php:426
+msgid "Require Crop"
+msgstr "الزام برش"
+
+#: class-gp-file-upload-pro.php:427
+msgid "Constraints"
+msgstr "محدودیت‌ها"
+
+#: class-gp-file-upload-pro.php:428 class-gp-file-upload-pro.php:476
+msgid "Aspect Ratio"
+msgstr "نسبت ابعاد"
+
+#: class-gp-file-upload-pro.php:429
+msgid "Max Dimensions"
+msgstr "حداکثر ابعاد"
+
+#: class-gp-file-upload-pro.php:430
+msgid "Min Dimensions"
+msgstr "حداقل ابعاد"
+
+#: class-gp-file-upload-pro.php:431 class-gp-file-upload-pro.php:461
+msgid "Exact Dimensions"
+msgstr "ابعاد دقیق"
+
+#: class-gp-file-upload-pro.php:432
+msgid "Width"
+msgstr "عرض"
+
+#: class-gp-file-upload-pro.php:433
+msgid "Height"
+msgstr "ارتفاع"
+
+#: class-gp-file-upload-pro.php:436
+msgid "This setting is required when File Upload Pro is enabled. <a href=\"%s\" target=\"_blank\">Learn more.</a>"
+msgstr "وقتی File Upload Pro فعال است، این تنظیم الزامی است. <a href=\"%s\" target=\"_blank\">بیشتر بدانید.</a>"
+
+#: class-gp-file-upload-pro.php:441
+msgid "File Upload Pro"
+msgstr "File Upload Pro"
+
+#: class-gp-file-upload-pro.php:442
+msgid "Greatly improve the uploading experience for your Gravity Forms File Upload fields."
+msgstr "تجربهٔ آپلود در فیلدهای File Upload مربوط به Gravity Forms را به‌طور محسوسی بهبود دهید."
+
+#: class-gp-file-upload-pro.php:447
+msgid "Automatically crop images according to the specified constraints. Users may re-crop the image by clicking on the image thumbnail. Use the Require Crop setting to require the user to manually crop the image."
+msgstr "تصاویر را به‌طور خودکار بر اساس محدودیت‌های تعیین‌شده برش دهید. کاربران می‌توانند با کلیک روی تصویر بندانگشتی، تصویر را دوباره برش دهند. برای الزام کاربر به برش دستی تصویر، از تنظیم «الزام برش» استفاده کنید."
+
+#: class-gp-file-upload-pro.php:452
+msgid "Allow the order of files to be modified using drag-and-drop sorting in the uploader area."
+msgstr "اجازه دهید ترتیب فایل‌ها با کشیدن و رهاکردن در ناحیهٔ آپلود تغییر کند."
+
+#: class-gp-file-upload-pro.php:456
+msgid "Require Crop on Upload"
+msgstr "الزام برش هنگام آپلود"
+
+#: class-gp-file-upload-pro.php:457
+msgid "Require that images be cropped on upload by automatically opening the cropper. If the crop is canceled, the files are not uploaded."
+msgstr "با بازکردن خودکار ابزار برش، کاربر را ملزم کنید تصاویر را هنگام آپلود برش دهد. اگر برش لغو شود، فایل‌ها آپلود نمی‌شوند."
+
+#: class-gp-file-upload-pro.php:462
+msgid "Require file to be upload with exact dimensions. These dimensions will be used as the minimum dimensions in the cropper and an aspect ratio will be derived from the dimensions. If an image exceeds the exact dimensions after cropping, it will be downscaled."
+msgstr "فایل باید با ابعاد دقیق آپلود شود. این ابعاد به‌عنوان حداقل ابعاد ابزار برش استفاده می‌شوند و نسبت ابعاد از آن‌ها محاسبه خواهد شد. اگر تصویر پس از برش از ابعاد دقیق بزرگ‌تر باشد، اندازهٔ آن کاهش می‌یابد."
+
+#: class-gp-file-upload-pro.php:466
+msgid "Minimum Dimensions"
+msgstr "حداقل ابعاد"
+
+#: class-gp-file-upload-pro.php:467
+msgid "Require cropper to meet the minimum dimensions. If cropper is not used, file dimensions will be validated prior to upload."
+msgstr "ابزار برش باید حداقل ابعاد را رعایت کند. اگر از ابزار برش استفاده نشود، ابعاد فایل پیش از آپلود اعتبارسنجی می‌شود."
+
+#: class-gp-file-upload-pro.php:471
+msgid "Maximum Dimensions"
+msgstr "حداکثر ابعاد"
+
+#: class-gp-file-upload-pro.php:472
+msgid "Images will be downscaled to the maximum dimensions set below."
+msgstr "اندازهٔ تصاویر تا حداکثر ابعاد تعیین‌شده در زیر کاهش می‌یابد."
+
+#: class-gp-file-upload-pro.php:477
+msgid "Restrict cropper to aspect ratio."
+msgstr "ابزار برش را به نسبت ابعاد تعیین‌شده محدود کنید."
