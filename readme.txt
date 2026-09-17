@@ -9,7 +9,7 @@ Focused Persian and Iranian capabilities for Gravity Forms with runtime module c
 
 == Description ==
 
-Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms without owning typography, workflow business rules, payment gateways, or translations for other plugins.
+Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
 
 Version 4.4.0 exposes six bounded source-defined modules, all enabled by default for backward compatibility:
 
@@ -36,9 +36,13 @@ Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these or
 
 = Gravity ecosystem localization foundation =
 
-The shared generic fa_IR provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
+The shared generic `fa_IR` provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
 
-Owner-authorized targets are Gravity Forms 3.1.1.1, Gravity Flow 3.1.0 and GravityView 3.3.4. Gravity Forms is revision-3 `CONTENT_ADMITTED_FULL` at 4207/4207 accepted source-backed identities: its six historical surface records still union to 1759 identities, and the reviewed `PRODUCT_REMAINDER` adds the exact disjoint 2448 residual identities. The known vendor-POT-only stale identity remains excluded. Gravity Flow is revision-3 `CONTENT_ADMITTED_FULL` at 1098/1098 accepted identities: its seven historical surface records still union to 732 identities, and the reviewed `PRODUCT_REMAINDER` adds the exact disjoint 366 residual identities. GravityView 3.3.4 remains revision-2 `CONTENT_ADMITTED_PARTIAL` at 461/3127 accepted identities; exactly 2666 identities remain mandatory. Across the locked source census, current accepted Persian coverage is 5766/8432, so G-006 remains active and GravityView remains mandatory after this release checkpoint. `gk-query-filters` remains a separate bounded Composer dependency/domain that PersianGravity does not manifest or runtime-activate. `action-scheduler` remains outside provider authority. Provider translations override only admitted authority; missing identities retain upstream/vendor/TranslationsPress fallback and then source English. All product script maps remain empty; zero native product JS translation handles are activated and no provider translation JSON is generated. `project_source_authority=OWNER_SUPPLIED_EXACT_PACKAGE`, but `vendor_authenticity=NOT_PROVEN`. These claims are exact-version and source-bounded, not ecosystem-wide, future-version, all-browser-exercised, or native-product-JS localization claims. See docs/LOCALIZATION.md, docs/ARCHITECTURE_CONTENT_ADMISSION_V2.md, and docs/WU006_GRAVITYVIEW_FRONTEND_CONTENT_ADMISSION.md for the source/load-order and content-authority boundaries.
+The existing locked Gravity products remain Gravity Forms 3.1.1.1 at 4207/4207 accepted source-backed identities, Gravity Flow 3.1.0 at 1098/1098, and GravityView 3.3.4 at 461/3127. Exactly 2666 GravityView identities remain mandatory under G-006; its partial authority is not broadened by this release checkpoint.
+
+G-007 adds separately bounded, exact-version provider authority for Gravity Perks 2.3.16 (`gravityperks`, 83/83), GP File Upload Pro 1.5.13 (`gp-file-upload-pro`, 39/39), and GP Advanced Select 1.1.21 (`gp-advanced-select`, 5/5): 127/127 reviewed source-backed primary-domain identities in total. Broader/current/future Gravity Perks products are not implicitly supported, observed cross-domain calls remain explicit exclusions, and all three native script-translation maps remain empty. File Upload Pro's uploader labels are supplied through its real PHP gettext → `wp_localize_script()` path, including `select files` → `انتخاب فایل‌ها`, `Drop files here` → `فایل‌ها را اینجا رها کنید`, and `or` → `یا`. GP Advanced Select uses a bounded `fa_IR` RTL compatibility adapter attached only to the exact `gp-advanced-select-tom-select` style handle; vendor package bytes, vendor CSS and updater behavior remain unmodified.
+
+Exact package/source/build evidence exists for G-007, but exact-package browser rendering of the File Upload Pro labels and screenshot-level real-package Advanced Select caret placement remains `NOT_VERIFIED`. Source/unit/CI evidence is not presented as browser proof. See `docs/LOCALIZATION.md`, `docs/G007_GRAVITY_PERKS_LOCALIZATION.md`, and `docs/VALIDATION_G007.md` for the exact authority and evidence boundaries.
 
 == Requirements ==
 
@@ -84,6 +88,9 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Added bounded Persian localization support for exact Gravity Perks 2.3.16, GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21, covering 127 reviewed source-backed primary-domain identities.
+* Added Persian File Upload Pro uploader labels through the product's real gettext/localized-script path and a bounded `fa_IR` RTL compatibility adapter for GP Advanced Select's Tom Select caret/padding behavior, without modifying vendor files.
+* Existing Gravity Forms and Gravity Flow full localization states remain intact; GravityView remains partial at 461/3127 with 2666 identities still mandatory.
 
 = 4.4.0 =
 * Gravity Flow 3.1.0 now has complete accepted Persian coverage for all 1098 canonical identities, including the former 366 residual identities.
@@ -118,8 +125,3 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
 * Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.
-
-= G-007 development note =
-* Adds bounded Persian provider authority for exact Gravity Perks 2.3.16 (83/83), GP File Upload Pro 1.5.13 (39/39), and GP Advanced Select 1.1.21 (5/5).
-* Adds source-proven File Upload Pro uploader translations and a bounded GP Advanced Select RTL caret compatibility adapter without modifying vendor files.
-* Licensed browser execution for the screenshot-backed acceptance targets remains separately evidenced; source/unit checks are not presented as browser proof.
