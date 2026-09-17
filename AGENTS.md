@@ -6,7 +6,7 @@ This document defines current repository rules for human contributors and coding
 
 - Repository: `rezahh107/PersianGravity`
 - Plugin name: `Persian Gravity Forms`
-- Version: `4.4.0`
+- Version: `4.5.0`
 - Entrypoint: `persian-gravityforms.php`
 - Runtime prefix: `PGR_`
 - Text domain: `persian-gravityforms`
