@@ -47,7 +47,7 @@ $versions = array(
 );
 g006_gf_assert( '3.1.1.1' === $versions['gravityforms'], 'Gravity Forms runtime version mismatch.' );
 g006_gf_assert( '3.1.0' === $versions['gravityflow'], 'Gravity Flow runtime version mismatch.' );
-g006_gf_assert( '4.3.0' === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
+g006_gf_assert( '4.4.0' === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
 
 // Newly admitted G-006 identity through the real Gravity Forms field implementation.
 $text_field = GF_Fields::get( 'text' );
