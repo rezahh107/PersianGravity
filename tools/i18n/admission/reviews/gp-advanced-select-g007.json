@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "review_scope": "ACCEPTED_TRANSLATION_REVIEW",
+  "goal": "G-007",
+  "product": "gp-advanced-select",
+  "domain": "gp-advanced-select",
+  "locale": "fa_IR",
+  "target_version": "1.1.21",
+  "accepted_count": 5,
+  "unreviewed_count": 0,
+  "rejected_count": 0,
+  "semantic_review_passes": 2,
+  "second_pass_corrections": 1,
+  "second_pass_corrected_identities": [
+    "163f73e2f051945f95b4d59e9ce38f299975017c6e69320974498aa0e7ec27ea"
+  ],
+  "risk_reviewed_identity_count": 2,
+  "risk_flag_counts": {
+    "SHORT_AMBIGUOUS": 2
+  },
+  "reviewed_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
+  "reviewed_translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
+  "review_method": "ENTRY_BY_ENTRY_SEMANTIC_REVIEW_PLUS_SECOND_PASS_RISK_TOKEN_AND_UI_REVIEW",
+  "binding": "FULL_CANONICAL_KEYSET_AND_TRANSLATION_CONTENT_FINGERPRINT"
+}

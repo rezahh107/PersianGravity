@@ -1,0 +1,60 @@
+{
+  "product": "gp-file-upload-pro",
+  "domain": "gp-file-upload-pro",
+  "locale": "fa_IR",
+  "provenance": {
+    "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+    "target_product_version": "1.5.13",
+    "source_product_version": "1.5.13",
+    "source_pot_sha256": null,
+    "source_package_sha256": "fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce",
+    "vendor_pot_sha256": "f2ccb660acd7b6952950eef9a617386da6b4bc19a22ede8f765765578ece1b7b",
+    "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+    "vendor_authenticity": "NOT_PROVEN",
+    "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+    "source_pot_consistency": "PASS",
+    "canonical_message_count": 39,
+    "canonical_keyset_sha256": "594d4f31c1e8fd022ee19fdfeed2fb7b0acbc68ad4d88e870a23c93caada783a",
+    "source_reference_index_sha256": "1d6e77eacea1ca827be026acdfd902f933a23cbec2f8cc5103376d2b6f24e068",
+    "translation_content_sha256": "d915c02e65131ca8f1ac42e75f8b8acf18c6a2cda325d66be936fa2e248a48e7",
+    "translation_review": "G007_TWO_PASS_REVIEWED_ACCEPTED",
+    "cross_domain_boundaries": {
+      "gravityperks": {
+        "canonical_message_count": 1,
+        "source_reference_count": 1,
+        "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+      }
+    }
+  },
+  "provider_po_sha256": "27a0150cb4bdb34cb1211300eb5ac981b9d6b4f4715982c11a8f982443c4e8fc",
+  "counts_in_committed_po": {
+    "translated": 39,
+    "untranslated": 0,
+    "fuzzy": 0
+  },
+  "authoritative_total": 39,
+  "coverage_percent": 100,
+  "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
+  "validated_script_handles": [],
+  "artifact_sha256": {
+    "gp-file-upload-pro-fa_IR.mo": "2839ab72e958dd174316476d4d1bd66b1780d390a8a3ffc49817b826204606ef",
+    "gp-file-upload-pro-fa_IR.l10n.php": "15380d7a6d91b3617b241f8bee9b0b4e69f99d9ddafc6f26ebb338cdf5bf17b0"
+  },
+  "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
+  "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
+  "content_admission": {
+    "goal": "G-007",
+    "state": "CONTENT_ADMITTED_FULL",
+    "review_index_path": "tools/i18n/admission/reviews/gp-file-upload-pro-g007.json",
+    "review_index_sha256": "7dd7d2124e28a2dcd05d4cfa390b86539af91abe76d054c72fa935b694135b14",
+    "aggregate": {
+      "admitted_message_count": 39,
+      "admitted_keyset_sha256": "594d4f31c1e8fd022ee19fdfeed2fb7b0acbc68ad4d88e870a23c93caada783a",
+      "admitted_translation_content_sha256": "d915c02e65131ca8f1ac42e75f8b8acf18c6a2cda325d66be936fa2e248a48e7",
+      "provider_source_path": "languages/providers/gp-file-upload-pro/source/fa_IR.po",
+      "provider_source_sha256": "27a0150cb4bdb34cb1211300eb5ac981b9d6b4f4715982c11a8f982443c4e8fc",
+      "native_js_handles_activated": 0,
+      "js_translation_json_generated": 0
+    }
+  }
+}

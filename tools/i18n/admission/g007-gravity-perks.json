@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "goal": "G-007",
+  "locale": "fa_IR",
+  "identity_hash_method": "SHA256_UTF8_MSGCTXT_US_MSGID_US_MSGID_PLURAL",
+  "keyset_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256",
+  "source_reference_hash_method": "SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_US_SOURCE_PATH_COLON_LINE",
+  "products": [
+    {
+      "product": "gravityperks",
+      "domain": "gravityperks",
+      "target_version": "2.3.16",
+      "observed_source_version": "2.3.16",
+      "package_sha256": "a160d166fb7894b0dfc558ae92e0c230a1336ed2a81e78fa1216be72b1024e7c",
+      "vendor_pot_sha256": "d56ae3bab39365193e17f9c4113ed30e65f33565d2697749df2931890b6f453d",
+      "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "vendor_authenticity": "NOT_PROVEN",
+      "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+      "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+      "canonical_message_count": 83,
+      "context_message_count": 0,
+      "plural_message_count": 0,
+      "source_reference_count": 98,
+      "canonical_keyset_sha256": "5d700169deb042f7848ffe551bfdd88595420c4db83d651f09d2dd48c7b52df5",
+      "source_reference_index_sha256": "bd6565886444416b156616ee95dc7c4f486cd32549f9822f64cb375cb737fe3b",
+      "vendor_pot_consistency": {
+        "status": "PASS",
+        "vendor_pot_unique_keys": 86,
+        "source_backed_unique_keys": 83,
+        "missing_from_vendor_pot": 0,
+        "vendor_pot_only_nonruntime_metadata": 3,
+        "vendor_pot_only_msgids": [
+          "Effortlessly enhance Gravity Forms with powerful add-ons (“perks”) for smarter, more flexible forms—all backed by legendary support.",
+          "Gravity Wiz",
+          "https://gravitywiz.com/"
+        ]
+      },
+      "cross_domain_boundaries": {
+        "gravity-perks": {
+          "canonical_message_count": 1,
+          "source_reference_count": 1,
+          "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+        }
+      },
+      "dynamic_or_unmanaged_calls": [
+        {
+          "function": "__",
+          "reference": "gravityperks.php:772",
+          "domain": null,
+          "decision": "EXCLUDED_UNMANAGED_OR_NON_LITERAL_CALL"
+        },
+        {
+          "function": "_e",
+          "reference": "gravityperks.php:973",
+          "domain": null,
+          "decision": "EXCLUDED_UNMANAGED_OR_NON_LITERAL_CALL"
+        },
+        {
+          "function": "__",
+          "reference": "admin/manage_perks.php:655",
+          "domain": null,
+          "decision": "EXCLUDED_UNMANAGED_OR_NON_LITERAL_CALL"
+        },
+        {
+          "function": "__",
+          "reference": "admin/manage_perks.php:1059",
+          "domain": null,
+          "decision": "EXCLUDED_UNMANAGED_OR_NON_LITERAL_CALL"
+        }
+      ],
+      "content_state": "CONTENT_ADMITTED_FULL",
+      "provider_source_path": "languages/providers/gravityperks/source/fa_IR.po",
+      "provider_source_sha256": "ec592347136925b2b724f9edd8c59f35c30401b0369631a94843492b5a365a89",
+      "admitted_message_count": 83,
+      "admitted_translation_content_sha256": "952531fdec3c08cc4165baa6d3ab7ad6dfaad2801d9c72774e12cb1e8e141d20",
+      "review_index_path": "tools/i18n/admission/reviews/gravityperks-g007.json",
+      "review_index_sha256": "21d739cc17067ec1d760dfe84d8c8abf7c26c5cb654bdb342b08e372ffdfedf8",
+      "javascript": {
+        "native_translation_handles_activated": 0,
+        "php_localized_js": false,
+        "decision": "NO_PROVIDER_JSON_REQUIRED"
+      }
+    },
+    {
+      "product": "gp-file-upload-pro",
+      "domain": "gp-file-upload-pro",
+      "target_version": "1.5.13",
+      "observed_source_version": "1.5.13",
+      "package_sha256": "fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce",
+      "vendor_pot_sha256": "f2ccb660acd7b6952950eef9a617386da6b4bc19a22ede8f765765578ece1b7b",
+      "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "vendor_authenticity": "NOT_PROVEN",
+      "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+      "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+      "canonical_message_count": 39,
+      "context_message_count": 0,
+      "plural_message_count": 0,
+      "source_reference_count": 44,
+      "canonical_keyset_sha256": "594d4f31c1e8fd022ee19fdfeed2fb7b0acbc68ad4d88e870a23c93caada783a",
+      "source_reference_index_sha256": "1d6e77eacea1ca827be026acdfd902f933a23cbec2f8cc5103376d2b6f24e068",
+      "vendor_pot_consistency": {
+        "status": "PASS",
+        "vendor_pot_unique_keys": 44,
+        "source_backed_unique_keys": 39,
+        "missing_from_vendor_pot": 0,
+        "vendor_pot_only_nonruntime_metadata": 5,
+        "vendor_pot_only_msgids": [
+          "A professional file and image uploader that feels like magic.",
+          "GP File Upload Pro",
+          "Gravity Wiz",
+          "https://gravitywiz.com/",
+          "https://gravitywiz.com/documentation/gravity-forms-file-upload-pro/"
+        ]
+      },
+      "cross_domain_boundaries": {
+        "gravityperks": {
+          "canonical_message_count": 1,
+          "source_reference_count": 1,
+          "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+        }
+      },
+      "dynamic_or_unmanaged_calls": [],
+      "content_state": "CONTENT_ADMITTED_FULL",
+      "provider_source_path": "languages/providers/gp-file-upload-pro/source/fa_IR.po",
+      "provider_source_sha256": "27a0150cb4bdb34cb1211300eb5ac981b9d6b4f4715982c11a8f982443c4e8fc",
+      "admitted_message_count": 39,
+      "admitted_translation_content_sha256": "d915c02e65131ca8f1ac42e75f8b8acf18c6a2cda325d66be936fa2e248a48e7",
+      "review_index_path": "tools/i18n/admission/reviews/gp-file-upload-pro-g007.json",
+      "review_index_sha256": "7dd7d2124e28a2dcd05d4cfa390b86539af91abe76d054c72fa935b694135b14",
+      "javascript": {
+        "native_translation_handles_activated": 0,
+        "php_localized_js": true,
+        "decision": "PHP_GETTEXT_VALUES_FLOW_THROUGH_WP_LOCALIZE_SCRIPT_NO_PROVIDER_JSON_REQUIRED"
+      },
+      "acceptance_targets": {
+        "frontend_uploader_strings": {
+          "select files": "انتخاب فایل‌ها",
+          "Drop files here": "فایل‌ها را اینجا رها کنید",
+          "or": "یا"
+        },
+        "runtime_wiring_evidence": [
+          "class-gp-file-upload-pro.php:395-414",
+          "class-gp-file-upload-pro.php:382"
+        ],
+        "status": "SOURCE_PATH_AND_WORDPRESS_PROVIDER_CONTRACT_VERIFIED_BROWSER_PENDING"
+      }
+    },
+    {
+      "product": "gp-advanced-select",
+      "domain": "gp-advanced-select",
+      "target_version": "1.1.21",
+      "observed_source_version": "1.1.21",
+      "package_sha256": "d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2",
+      "vendor_pot_sha256": "1b595f32532235e931a5572b880fa03840c3420dbcfd40384cac52d566301923",
+      "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "vendor_authenticity": "NOT_PROVEN",
+      "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+      "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+      "canonical_message_count": 5,
+      "context_message_count": 0,
+      "plural_message_count": 0,
+      "source_reference_count": 5,
+      "canonical_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
+      "source_reference_index_sha256": "6bf27c90006db2b831a1057764a2aa18855b56a642cbf93bb967f9332862d92e",
+      "vendor_pot_consistency": {
+        "status": "PASS",
+        "vendor_pot_unique_keys": 10,
+        "source_backed_unique_keys": 5,
+        "missing_from_vendor_pot": 0,
+        "vendor_pot_only_nonruntime_metadata": 5,
+        "vendor_pot_only_msgids": [
+          "GP Advanced Select",
+          "Gravity Wiz",
+          "Modern Drop Down and Multi Select fields with search and powerful integrations.",
+          "https://gravitywiz.com/",
+          "https://gravitywiz.com/documentation/gravity-forms-advanced-select/"
+        ]
+      },
+      "cross_domain_boundaries": {
+        "gp-advanced-phone-field": {
+          "canonical_message_count": 4,
+          "source_reference_count": 4,
+          "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+        },
+        "gp-populate-anything": {
+          "canonical_message_count": 1,
+          "source_reference_count": 1,
+          "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+        },
+        "gravityperks": {
+          "canonical_message_count": 1,
+          "source_reference_count": 1,
+          "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+        }
+      },
+      "dynamic_or_unmanaged_calls": [],
+      "content_state": "CONTENT_ADMITTED_FULL",
+      "provider_source_path": "languages/providers/gp-advanced-select/source/fa_IR.po",
+      "provider_source_sha256": "3a4e727e9d0c945508d5a9e519f5fa403d467a1036afb81c524b087dae3c477f",
+      "admitted_message_count": 5,
+      "admitted_translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
+      "review_index_path": "tools/i18n/admission/reviews/gp-advanced-select-g007.json",
+      "review_index_sha256": "e94a7b682677bcd7967600af539a2012d4616ef09464a8c12624424659771cd5",
+      "javascript": {
+        "native_translation_handles_activated": 0,
+        "php_localized_js": true,
+        "decision": "PHP_GETTEXT_VALUES_FLOW_THROUGH_WP_LOCALIZE_SCRIPT_NO_PROVIDER_JSON_REQUIRED"
+      },
+      "acceptance_targets": {
+        "rtl_caret": {
+          "root_cause": "TOM_SELECT_SETS_RTL_ON_TS_WRAPPER_BUT_VENDOR_CSS_USES_BROKEN_TS_CONTROL_RTL_SELECTOR_AND_RIGHT_FIXED_CARET_BACKGROUND",
+          "runtime_class_evidence": "js/built/gp-advanced-select.js (computed direction -> wrapper.classList.toggle(\"rtl\", this.rtl))",
+          "vendor_css_evidence": [
+            "styles/tom-select.bootstrap5.css:299-307",
+            "styles/tom-select.bootstrap5.css:576-589"
+          ],
+          "persiangravity_adapter": "includes/class-pgr-gravity-perks-rtl.php"
+        },
+        "status": "SOURCE_ROOT_CAUSE_FIXED_BROWSER_PENDING"
+      }
+    }
+  ]
+}
