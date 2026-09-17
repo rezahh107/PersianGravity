@@ -12,6 +12,10 @@ $GLOBALS['pgr_test_option_autoload'] = array();
 $GLOBALS['pgr_test_enqueued']        = array();
 $GLOBALS['pgr_test_styles']          = array();
 $GLOBALS['pgr_test_inline_scripts']  = array();
+$GLOBALS['pgr_test_inline_styles']   = array();
+$GLOBALS['pgr_test_style_states']    = array();
+$GLOBALS['pgr_test_locale']          = 'en_US';
+$GLOBALS['pgr_test_is_rtl']          = false;
 
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_actions'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
 function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_filters'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
@@ -45,4 +49,8 @@ function submit_button() {}
 function wp_enqueue_script( $handle ) { $GLOBALS['pgr_test_enqueued'][] = $handle; }
 function wp_enqueue_style( $handle ) { $GLOBALS['pgr_test_styles'][] = $handle; }
 function wp_add_inline_script( $handle, $data, $position = 'after' ) { $GLOBALS['pgr_test_inline_scripts'][] = array( 'handle' => $handle, 'data' => $data, 'position' => $position ); return true; }
+function wp_add_inline_style( $handle, $data ) { $GLOBALS['pgr_test_inline_styles'][] = array( 'handle' => $handle, 'data' => $data ); return true; }
+function wp_style_is( $handle, $status = 'enqueued' ) { return ! empty( $GLOBALS['pgr_test_style_states'][ $handle ][ $status ] ); }
+function determine_locale() { return $GLOBALS['pgr_test_locale']; }
+function is_rtl() { return (bool) $GLOBALS['pgr_test_is_rtl']; }
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ], $GLOBALS['pgr_test_option_autoload'][ $key ] ); }

@@ -1,0 +1,31 @@
+# gp-advanced-select 1.1.21 — G-007 reviewed full source-backed Persian catalog.
+# Derived from the owner-supplied exact package; licensed package bytes are not committed.
+msgid ""
+msgstr ""
+"Project-Id-Version: gp-advanced-select 1.1.21\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: gp-advanced-select\n"
+
+#: class-gp-advanced-select.php:593
+msgid "Remove this item"
+msgstr "حذف این مورد"
+
+#: class-gp-advanced-select.php:594
+msgid "No results found"
+msgstr "نتیجه‌ای یافت نشد"
+
+#: class-gp-advanced-select.php:605
+msgid "GP Advanced Select requires that Enhanced UI is disabled."
+msgstr "برای استفاده از GP Advanced Select، گزینهٔ Enhanced UI باید غیرفعال باشد."
+
+#: class-gp-advanced-select.php:738
+msgid "Enable Advanced Select"
+msgstr "فعال‌کردن Advanced Select"
+
+#: class-gp-advanced-select.php:747
+msgid "Lazy Load Populated Choices"
+msgstr "بارگذاری تدریجی گزینه‌های مقداردهی‌شده"

@@ -61,7 +61,10 @@ REQUIRED_PATHS=(
   "$PLUGIN_ROOT/admin/class-pgr-product-admin.php"
   "$PLUGIN_ROOT/assets/js/pgr-structured-scanner-core.js"
   "$PLUGIN_ROOT/includes/class-pgr-localization.php"
+  "$PLUGIN_ROOT/includes/class-pgr-gravity-perks-rtl.php"
   "$PLUGIN_ROOT/includes/localization/products.php"
+  "$PLUGIN_ROOT/includes/localization/g007-products.php"
+  "$PLUGIN_ROOT/includes/localization/registry.php"
   "$PLUGIN_ROOT/languages/persian-gravityforms-fa_IR.po"
   "$PLUGIN_ROOT/languages/persian-gravityforms-fa_IR.mo"
   "$PLUGIN_ROOT/languages/providers/gravityforms/gravityforms-fa_IR.mo"
@@ -70,6 +73,12 @@ REQUIRED_PATHS=(
   "$PLUGIN_ROOT/languages/providers/gravityflow/gravityflow-fa_IR.l10n.php"
   "$PLUGIN_ROOT/languages/providers/gravityview/gravityview-fa_IR.mo"
   "$PLUGIN_ROOT/languages/providers/gravityview/gravityview-fa_IR.l10n.php"
+  "$PLUGIN_ROOT/languages/providers/gravityperks/gravityperks-fa_IR.mo"
+  "$PLUGIN_ROOT/languages/providers/gravityperks/gravityperks-fa_IR.l10n.php"
+  "$PLUGIN_ROOT/languages/providers/gp-file-upload-pro/gp-file-upload-pro-fa_IR.mo"
+  "$PLUGIN_ROOT/languages/providers/gp-file-upload-pro/gp-file-upload-pro-fa_IR.l10n.php"
+  "$PLUGIN_ROOT/languages/providers/gp-advanced-select/gp-advanced-select-fa_IR.mo"
+  "$PLUGIN_ROOT/languages/providers/gp-advanced-select/gp-advanced-select-fa_IR.l10n.php"
 )
 for required in "${REQUIRED_PATHS[@]}"; do
   grep -Fxq "$required" "$LISTING" || fail "required ZIP entry missing: $required"
@@ -87,6 +96,9 @@ FORBIDDEN_PREFIXES=(
   "$PLUGIN_ROOT/languages/providers/gravityforms/source/"
   "$PLUGIN_ROOT/languages/providers/gravityflow/source/"
   "$PLUGIN_ROOT/languages/providers/gravityview/source/"
+  "$PLUGIN_ROOT/languages/providers/gravityperks/source/"
+  "$PLUGIN_ROOT/languages/providers/gp-file-upload-pro/source/"
+  "$PLUGIN_ROOT/languages/providers/gp-advanced-select/source/"
 )
 for forbidden in "${FORBIDDEN_PREFIXES[@]}"; do
   if grep -Fq "$forbidden" "$LISTING"; then

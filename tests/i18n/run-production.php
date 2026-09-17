@@ -15,7 +15,7 @@ function production_check( $condition, $label ) {
 try {
 	$root          = dirname( __DIR__, 2 );
 	$provider_root = WP_CONTENT_DIR . '/providers';
-	$products      = require $root . '/includes/localization/products.php';
+	$products      = require $root . '/includes/localization/registry.php';
 	$cases         = array(
 		'gravityforms' => array(
 			'product'       => 'gravityforms',
@@ -43,6 +43,33 @@ try {
 			'fallback_probe' => 'API Key',
 			'fallback_scope' => 'non-admitted identity',
 			'upstream_only' => 'کنترل بالادستی گرویتی ویو',
+		),
+		'gravityperks' => array(
+			'product'       => 'gravityperks',
+			'prefix'        => 'gravityperks',
+			'admitted'      => 'Manage Perks',
+			'translation'   => 'مدیریت پرک‌ها',
+			'fallback_probe' => 'PersianGravity Gravity Perks out-of-census fallback probe.',
+			'fallback_scope' => 'out-of-census identity',
+			'upstream_only' => 'کنترل بالادستی Gravity Perks',
+		),
+		'gp-file-upload-pro' => array(
+			'product'       => 'gp-file-upload-pro',
+			'prefix'        => 'gp-file-upload-pro',
+			'admitted'      => 'select files',
+			'translation'   => 'انتخاب فایل‌ها',
+			'fallback_probe' => 'PersianGravity GP File Upload Pro out-of-census fallback probe.',
+			'fallback_scope' => 'out-of-census identity',
+			'upstream_only' => 'کنترل بالادستی File Upload Pro',
+		),
+		'gp-advanced-select' => array(
+			'product'       => 'gp-advanced-select',
+			'prefix'        => 'gp-advanced-select',
+			'admitted'      => 'No results found',
+			'translation'   => 'نتیجه‌ای یافت نشد',
+			'fallback_probe' => 'PersianGravity GP Advanced Select out-of-census fallback probe.',
+			'fallback_scope' => 'out-of-census identity',
+			'upstream_only' => 'کنترل بالادستی Advanced Select',
 		),
 	);
 
@@ -115,7 +142,7 @@ try {
 	}
 
 	$overlay = new PGR_Localization( $products, $provider_root );
-	foreach ( array( 'gk-query-filters', 'action-scheduler' ) as $domain ) {
+	foreach ( array( 'gk-query-filters', 'action-scheduler', 'gravity-perks', 'gp-advanced-phone-field', 'gp-populate-anything' ) as $domain ) {
 		production_check(
 			false === $overlay->discover( false, $domain, 'fa_IR' ),
 			$domain . ' remains outside provider discovery authority'
@@ -126,7 +153,7 @@ try {
 		);
 	}
 
-	echo "PRODUCTION PROVIDER TOTAL: $production_checks checks passed across all three admitted product domains.\n";
+	echo "PRODUCTION PROVIDER TOTAL: $production_checks checks passed across all six admitted product domains.\n";
 } finally {
 	cleanup( WP_CONTENT_DIR );
 }

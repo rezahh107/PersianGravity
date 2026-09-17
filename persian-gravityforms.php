@@ -21,9 +21,13 @@ define( 'PGR_MIN_GF_VERSION', '3.0' );
 // Resolver registration is immediate; registration performs no foreign load.
 require_once PGR_PATH . 'includes/class-pgr-localization.php';
 ( new PGR_Localization(
-	require PGR_PATH . 'includes/localization/products.php',
+	require PGR_PATH . 'includes/localization/registry.php',
 	PGR_PATH . 'languages/providers'
 ) )->hooks();
+
+// Bounded G-007 UI compatibility: no vendor writes and no foreign-class dependency.
+require_once PGR_PATH . 'includes/class-pgr-gravity-perks-rtl.php';
+( new PGR_Gravity_Perks_RTL() )->hooks();
 
 /**
  * Load this plugin's own translations using the standard WordPress mechanism.

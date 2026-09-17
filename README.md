@@ -102,3 +102,7 @@ Own UI POT extraction uses `composer i18n:pot` when deliberately updating source
 ## Scope
 
 PersianGravity does not own Gravity Flow workflows, GravityView business behavior, SRWF-specific business logic, fonts, payment gateways, online Sayad inquiry, OCR/camera scanning, custom databases, or arbitrary third-party translations. Only explicitly manifested generic `fa_IR` overlays are permitted; vendor files and updaters remain vendor-owned.
+
+## G-007 — Gravity Perks family localization
+
+G-007 adds exact-version, source-bounded `fa_IR` provider authority for Gravity Perks 2.3.16 (`gravityperks`, 83/83), GP File Upload Pro 1.5.13 (`gp-file-upload-pro`, 39/39), and GP Advanced Select 1.1.21 (`gp-advanced-select`, 5/5). Cross-domain calls remain outside these three catalogs. File Upload Pro’s uploader labels are covered through its PHP-gettext → `wp_localize_script()` path, and a bounded RTL adapter targets only GP Advanced Select’s exact `gp-advanced-select-tom-select` style handle. No vendor package bytes or vendor files are committed or modified. Exact package/source/build evidence and the browser-evidence ceiling are in `docs/G007_GRAVITY_PERKS_LOCALIZATION.md` and `docs/VALIDATION_G007.md`.

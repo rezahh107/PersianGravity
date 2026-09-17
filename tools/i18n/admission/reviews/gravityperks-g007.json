@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "review_scope": "ACCEPTED_TRANSLATION_REVIEW",
+  "goal": "G-007",
+  "product": "gravityperks",
+  "domain": "gravityperks",
+  "locale": "fa_IR",
+  "target_version": "2.3.16",
+  "accepted_count": 83,
+  "unreviewed_count": 0,
+  "rejected_count": 0,
+  "semantic_review_passes": 2,
+  "second_pass_corrections": 2,
+  "second_pass_corrected_identities": [
+    "18e6c2d703736f349931593395aefc1036f4da54417abdd0b7234f00c97be3e6",
+    "8091d76bf8851da6914cd835367728965891bf8fc76cfdf610e71cdfa116df45"
+  ],
+  "risk_reviewed_identity_count": 47,
+  "risk_flag_counts": {
+    "MARKUP": 12,
+    "PRINTF": 12,
+    "SHORT_AMBIGUOUS": 26
+  },
+  "reviewed_keyset_sha256": "5d700169deb042f7848ffe551bfdd88595420c4db83d651f09d2dd48c7b52df5",
+  "reviewed_translation_content_sha256": "952531fdec3c08cc4165baa6d3ab7ad6dfaad2801d9c72774e12cb1e8e141d20",
+  "review_method": "ENTRY_BY_ENTRY_SEMANTIC_REVIEW_PLUS_SECOND_PASS_RISK_TOKEN_AND_UI_REVIEW",
+  "binding": "FULL_CANONICAL_KEYSET_AND_TRANSLATION_CONTENT_FINGERPRINT"
+}

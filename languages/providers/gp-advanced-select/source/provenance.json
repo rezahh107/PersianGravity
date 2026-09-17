@@ -1,0 +1,34 @@
+{
+  "source_status": "PACKAGE_INSPECTED_METADATA_ONLY",
+  "target_product_version": "1.1.21",
+  "source_product_version": "1.1.21",
+  "source_pot_sha256": null,
+  "source_package_sha256": "d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2",
+  "vendor_pot_sha256": "1b595f32532235e931a5572b880fa03840c3420dbcfd40384cac52d566301923",
+  "project_source_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+  "vendor_authenticity": "NOT_PROVEN",
+  "admission_mode": "SOURCE_BACKED_FULL_PRODUCT_DOMAIN_ADMISSION",
+  "source_pot_consistency": "PASS",
+  "canonical_message_count": 5,
+  "canonical_keyset_sha256": "ee9d5927678d70ccd66fbb66c80d2722e58830e23b4ebf2b0d3a556d83c6c5ec",
+  "source_reference_index_sha256": "6bf27c90006db2b831a1057764a2aa18855b56a642cbf93bb967f9332862d92e",
+  "translation_content_sha256": "7c280b7ce8b75b1796c1c6bb84fa7f6ed4dc0a4720de20ec1178eb5b47dd4960",
+  "translation_review": "G007_TWO_PASS_REVIEWED_ACCEPTED",
+  "cross_domain_boundaries": {
+    "gp-advanced-phone-field": {
+      "canonical_message_count": 4,
+      "source_reference_count": 4,
+      "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+    },
+    "gp-populate-anything": {
+      "canonical_message_count": 1,
+      "source_reference_count": 1,
+      "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+    },
+    "gravityperks": {
+      "canonical_message_count": 1,
+      "source_reference_count": 1,
+      "scope": "EXCLUDED_CROSS_DOMAIN_REFERENCE"
+    }
+  }
+}
