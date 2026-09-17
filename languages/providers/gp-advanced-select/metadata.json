@@ -47,11 +47,11 @@
     "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gp-advanced-select-fa_IR.mo": "d0e3ca0fd41e0fc443b30d41ad3f2cef40cb2a71a9228cd63c743b9fe7bf0a86",
+        "gp-advanced-select-fa_IR.mo": "3827b9c5365ce49a6ce67893ebcf0fc1121069b8ed93796e9e953ab7ade2b613",
         "gp-advanced-select-fa_IR.l10n.php": "2ab7b02b2a4e9bde1ce4178a06a90ba7f9d2c24b604157f1e277b41183a3244b"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-    "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
+    "generator": "gettext/gettext 5.7.3 + G-007 source-order MO header normalization",
     "content_admission": {
         "goal": "G-007",
         "state": "CONTENT_ADMITTED_FULL",

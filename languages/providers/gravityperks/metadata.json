@@ -37,11 +37,11 @@
     "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gravityperks-fa_IR.mo": "5cdfbce32beecfb2b61465a621a96d5e3ac9d48ed92b86f15865f18d67872062",
+        "gravityperks-fa_IR.mo": "cc08e6bb1492c6150ff25ab86b5f58f6b100ba3e6ba23fc4441dad64735891ee",
         "gravityperks-fa_IR.l10n.php": "97ce5d6a2deb84188f5dce1ce4233733b96f88c59e969b2ab46e59728fb8fef0"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-    "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
+    "generator": "gettext/gettext 5.7.3 + G-007 source-order MO header normalization",
     "content_admission": {
         "goal": "G-007",
         "state": "CONTENT_ADMITTED_FULL",

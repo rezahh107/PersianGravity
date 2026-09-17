@@ -37,11 +37,11 @@
     "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gp-file-upload-pro-fa_IR.mo": "82407685b37ec6ac1f9ccc254b3bd3da05fdba40453e35028973a7913779ff29",
+        "gp-file-upload-pro-fa_IR.mo": "2839ab72e958dd174316476d4d1bd66b1780d390a8a3ffc49817b826204606ef",
         "gp-file-upload-pro-fa_IR.l10n.php": "15380d7a6d91b3617b241f8bee9b0b4e69f99d9ddafc6f26ebb338cdf5bf17b0"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
-    "generator": "gettext-compatible deterministic G-007 build via tools/i18n/catalog.php contract",
+    "generator": "gettext/gettext 5.7.3 + G-007 source-order MO header normalization",
     "content_admission": {
         "goal": "G-007",
         "state": "CONTENT_ADMITTED_FULL",
