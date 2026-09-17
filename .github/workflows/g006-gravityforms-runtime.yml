@@ -118,7 +118,7 @@ jobs:
           php "$G006_GF_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow --path="$G006_GF_WP_PATH"
           test "$(php "$G006_GF_WP_CLI" plugin get gravityforms --field=version --path="$G006_GF_WP_PATH")" = "$G006_GF_GF_VERSION"
           test "$(php "$G006_GF_WP_CLI" plugin get gravityflow --field=version --path="$G006_GF_WP_PATH")" = "$G006_GF_FLOW_VERSION"
-          test "$(php "$G006_GF_WP_CLI" plugin get persian-gravityforms --field=version --path="$G006_GF_WP_PATH")" = "4.3.0"
+          test "$(php "$G006_GF_WP_CLI" plugin get persian-gravityforms --field=version --path="$G006_GF_WP_PATH")" = "4.4.0"
           G006_GF_ARTIFACT_DIR="$G006_GF_ARTIFACT_DIR" php "$G006_GF_WP_CLI" --path="$G006_GF_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g006-gravityforms-runtime.php"
           test -s "$G006_GF_ARTIFACT_DIR/g006-gravityforms-runtime.json"
 
