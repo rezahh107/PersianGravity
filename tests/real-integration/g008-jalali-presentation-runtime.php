@@ -175,7 +175,7 @@ $filtered = GFAPI::get_entries(
 	$form_id,
 	array(
 		'status'     => 'active',
-		'start_date' => '2026-03-20',
+		'start_date' => '2026-03-21',
 		'end_date'   => '2026-03-21',
 	)
 );
