@@ -31,9 +31,9 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertSame( 1, preg_match( '/^Stable tag:\s*([^\r\n]+)$/m', $readme, $stable_tag_match ) );
 		$this->assertSame( $version, trim( $stable_tag_match[1] ) );
-		$this->assertStringContainsString( 'Version ' . $version . ' exposes seven bounded', $readme );
+		$this->assertStringContainsString( 'Version ' . $version . ' exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module', $readme );
 		$this->assertStringContainsString( '- Plugin version: `' . $version . '`', $github );
-		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes seven bounded', $github );
+		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes six bounded default-enabled modules plus one bounded opt-in module', $github );
 		$this->assertStringContainsString( '- Version: `' . $version . '`', $agents );
 		$this->assertStringContainsString( 'own-plugin text domain in ' . $version, $languages_readme );
 		$this->assertStringContainsString( 'Version ' . $version . ' ships:', $languages_readme );
