@@ -142,6 +142,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          expected_pgr_version="$(php tools/release/release-tool.php current)"
+          test -n "$expected_pgr_version"
           pgr="$G008_WP_PATH/wp-content/plugins/persian-gravityforms"
           mkdir -p "$pgr"
           tar --exclude=.git -cf - . | tar -xf - -C "$pgr"
@@ -149,7 +151,7 @@ jobs:
           php "$G008_WP_CLI" option update gravityformsaddon_gravityformswebapi_settings '{"enabled":"1"}' --format=json --path="$G008_WP_PATH"
           php "$G008_WP_CLI" plugin activate gravityforms persian-gravityforms --path="$G008_WP_PATH"
           test "$(php "$G008_WP_CLI" plugin get gravityforms --field=version --path="$G008_WP_PATH")" = "$G008_GF_VERSION"
-          test "$(php "$G008_WP_CLI" plugin get persian-gravityforms --field=version --path="$G008_WP_PATH")" = "4.5.0"
+          test "$(php "$G008_WP_CLI" plugin get persian-gravityforms --field=version --path="$G008_WP_PATH")" = "$expected_pgr_version"
 
       - name: Execute exact-host data and display-seam assertions
         shell: bash
