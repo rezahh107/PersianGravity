@@ -87,12 +87,13 @@ function pgr_initialize() {
 
 	require_once PGR_PATH . 'includes/class-pgr-module-registry.php';
 
-	$national_enabled = PGR_Module_Registry::is_enabled( 'national_id' );
-	$digits_enabled   = PGR_Module_Registry::is_enabled( 'digit_normalization' );
-	$jalali_enabled   = PGR_Module_Registry::is_enabled( 'jalali_date' );
-	$address_enabled  = PGR_Module_Registry::is_enabled( 'iranian_address' );
-	$currency_enabled = PGR_Module_Registry::is_enabled( 'iranian_currency' );
-	$scanner_enabled  = PGR_Module_Registry::is_enabled( 'structured_scanner' );
+	$national_enabled     = PGR_Module_Registry::is_enabled( 'national_id' );
+	$digits_enabled       = PGR_Module_Registry::is_enabled( 'digit_normalization' );
+	$jalali_enabled       = PGR_Module_Registry::is_enabled( 'jalali_date' );
+	$presentation_enabled = PGR_Module_Registry::is_enabled( 'jalali_presentation' );
+	$address_enabled      = PGR_Module_Registry::is_enabled( 'iranian_address' );
+	$currency_enabled     = PGR_Module_Registry::is_enabled( 'iranian_currency' );
+	$scanner_enabled      = PGR_Module_Registry::is_enabled( 'structured_scanner' );
 
 	if ( $national_enabled || $digits_enabled ) {
 		require_once PGR_PATH . 'includes/class-pgr-utils.php';
@@ -106,6 +107,11 @@ function pgr_initialize() {
 	if ( $jalali_enabled ) {
 		require_once PGR_PATH . 'includes/class-pgr-persian-date.php';
 		require_once PGR_PATH . 'includes/fields/class-gf-field-jalali-date.php';
+	}
+	if ( $presentation_enabled ) {
+		require_once PGR_PATH . 'includes/class-pgr-gregorian-jalali-converter.php';
+		require_once PGR_PATH . 'includes/class-pgr-jalali-presentation.php';
+		require_once PGR_PATH . 'includes/class-pgr-gf-jalali-presentation-adapter.php';
 	}
 	if ( $scanner_enabled ) {
 		require_once PGR_PATH . 'includes/class-pgr-scanner-profile-registry.php';

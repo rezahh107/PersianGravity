@@ -6,8 +6,8 @@ use PHPUnit\Framework\TestCase;
 final class RuntimeBootstrapTest extends TestCase {
 
 	#[RunInSeparateProcess]
-	public function test_localization_is_independent_of_all_six_module_states() {
-		$ids = array( 'national_id', 'jalali_date', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' );
+	public function test_localization_is_independent_of_all_seven_module_states() {
+		$ids = array( 'national_id', 'jalali_date', 'jalali_presentation', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' );
 		$GLOBALS['pgr_test_options']['pgr_modules'] = array(
 			'schema_version' => 1,
 			'states'         => array_fill_keys( $ids, false ),
@@ -35,7 +35,6 @@ final class RuntimeBootstrapTest extends TestCase {
 			$this->assertArrayHasKey( 10, $GLOBALS['pgr_test_filters'][ $hook ] );
 			$this->assertInstanceOf( PGR_Localization::class, $GLOBALS['pgr_test_filters'][ $hook ][10][0][0][0] );
 		}
-		// load_textdomain() is deliberately not stubbed: an eager call would fatal.
 		$this->assertFalse( function_exists( 'load_textdomain' ) );
 		$this->assertFalse( class_exists( 'GFForms', false ) );
 	}
@@ -50,10 +49,8 @@ final class RuntimeBootstrapTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
-	public function test_gravity_forms_runtime_initializes_once_and_registers_all_custom_fields() {
-		eval( 'class GFForms { public static $version = "3.1.0"; }' );
-		eval( 'class GF_Field { public $id = 1; public $size = ""; public $isRequired = false; public $failed_validation = false; public $validation_message = ""; public $errorMessage = ""; public $type = ""; public $forceEnglish = true; public $displayOnly = false; public function is_entry_detail(){return false;} public function is_form_editor(){return false;} public function get_field_placeholder_attribute(){return "";} }' );
-		eval( 'class GF_Fields { public static $registered = array(); public static function register( $field ) { self::$registered[] = $field; } }' );
+	public function test_gravity_forms_runtime_initializes_once_and_registers_existing_custom_fields() {
+		$this->define_gravity_forms_stubs();
 
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 		do_action( 'gform_loaded' );
@@ -63,6 +60,8 @@ final class RuntimeBootstrapTest extends TestCase {
 		$this->assertInstanceOf( PGR_GF_Field_National_ID::class, GF_Fields::$registered[0] );
 		$this->assertInstanceOf( PGR_GF_Field_Jalali_Date::class, GF_Fields::$registered[1] );
 		$this->assertInstanceOf( PGR_GF_Field_Structured_Scanner::class, GF_Fields::$registered[2] );
+		$this->assertFalse( class_exists( 'PGR_Jalali_Presentation', false ) );
+		$this->assertArrayNotHasKey( 'gform_entries_field_value', $GLOBALS['pgr_test_filters'] );
 		$this->assertFalse( method_exists( PGR_Persian_Date::class, 'hooks' ) );
 
 		$field = GF_Fields::$registered[0];
@@ -73,11 +72,36 @@ final class RuntimeBootstrapTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
-	public function test_structured_scanner_is_display_only_and_returns_no_persisted_or_export_value() {
-		eval( 'class GFForms { public static $version = "3.1.0"; }' );
-		eval( 'class GF_Field { public $id = 7; public $size = ""; public $isRequired = false; public $failed_validation = false; public $validation_message = ""; public $errorMessage = ""; public $type = ""; public $forceEnglish = true; public $displayOnly = false; public function is_entry_detail(){return false;} public function is_form_editor(){return false;} public function get_field_placeholder_attribute(){return "";} }' );
-		eval( 'class GF_Fields { public static $registered = array(); public static function register( $field ) { self::$registered[] = $field; } }' );
+	public function test_presentation_runtime_can_be_enabled_while_jalali_field_is_disabled() {
+		$this->define_gravity_forms_stubs();
+		$GLOBALS['pgr_test_options']['pgr_modules'] = array(
+			'schema_version' => 1,
+			'states'         => array(
+				'national_id'         => false,
+				'jalali_date'         => false,
+				'jalali_presentation' => true,
+				'iranian_address'     => false,
+				'digit_normalization' => false,
+				'iranian_currency'    => false,
+				'structured_scanner'  => false,
+			),
+		);
 
+		require dirname( __DIR__ ) . '/persian-gravityforms.php';
+		do_action( 'gform_loaded' );
+
+		$this->assertTrue( class_exists( 'PGR_Gregorian_Jalali_Converter', false ) );
+		$this->assertTrue( class_exists( 'PGR_Jalali_Presentation', false ) );
+		$this->assertTrue( class_exists( 'PGR_GF_Jalali_Presentation_Adapter', false ) );
+		$this->assertFalse( class_exists( 'PGR_Persian_Date', false ) );
+		$this->assertFalse( class_exists( 'PGR_GF_Field_Jalali_Date', false ) );
+		$this->assertArrayHasKey( 'gform_entries_field_value', $GLOBALS['pgr_test_filters'] );
+		$this->assertCount( 0, GF_Fields::$registered );
+	}
+
+	#[RunInSeparateProcess]
+	public function test_structured_scanner_is_display_only_and_returns_no_persisted_or_export_value() {
+		$this->define_gravity_forms_stubs();
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 		do_action( 'gform_loaded' );
 
@@ -105,10 +129,7 @@ final class RuntimeBootstrapTest extends TestCase {
 
 	#[RunInSeparateProcess]
 	public function test_native_date_fields_do_not_activate_persian_gravity_assets() {
-		eval( 'class GFForms { public static $version = "3.1.0"; }' );
-		eval( 'class GF_Field { public $id = 1; public $size = ""; public $isRequired = false; public $failed_validation = false; public $validation_message = ""; public $errorMessage = ""; public $type = ""; public $forceEnglish = true; public $displayOnly = false; public function is_entry_detail(){return false;} public function is_form_editor(){return false;} public function get_field_placeholder_attribute(){return "";} }' );
-		eval( 'class GF_Fields { public static $registered = array(); public static function register( $field ) { self::$registered[] = $field; } }' );
-
+		$this->define_gravity_forms_stubs();
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 		do_action( 'gform_loaded' );
 
@@ -125,10 +146,7 @@ final class RuntimeBootstrapTest extends TestCase {
 
 	#[RunInSeparateProcess]
 	public function test_scanner_assets_are_loaded_only_for_forms_containing_scanner_field() {
-		eval( 'class GFForms { public static $version = "3.1.0"; }' );
-		eval( 'class GF_Field { public $id = 1; public $size = ""; public $isRequired = false; public $failed_validation = false; public $validation_message = ""; public $errorMessage = ""; public $type = ""; public $forceEnglish = true; public $displayOnly = false; public function is_entry_detail(){return false;} public function is_form_editor(){return false;} public function get_field_placeholder_attribute(){return "";} }' );
-		eval( 'class GF_Fields { public static $registered = array(); public static function register( $field ) { self::$registered[] = $field; } }' );
-
+		$this->define_gravity_forms_stubs();
 		require dirname( __DIR__ ) . '/persian-gravityforms.php';
 		do_action( 'gform_loaded' );
 
@@ -140,5 +158,11 @@ final class RuntimeBootstrapTest extends TestCase {
 			$GLOBALS['pgr_test_enqueued']
 		);
 		$this->assertSame( array( 'pgr-structured-scanner-style' ), $GLOBALS['pgr_test_styles'] );
+	}
+
+	private function define_gravity_forms_stubs(): void {
+		eval( 'class GFForms { public static $version = "3.1.0"; }' );
+		eval( 'class GF_Field { public $id = 1; public $size = ""; public $isRequired = false; public $failed_validation = false; public $validation_message = ""; public $errorMessage = ""; public $type = ""; public $forceEnglish = true; public $displayOnly = false; public function is_entry_detail(){return false;} public function is_form_editor(){return false;} public function get_field_placeholder_attribute(){return "";} }' );
+		eval( 'class GF_Fields { public static $registered = array(); public static function register( $field ) { self::$registered[] = $field; } }' );
 	}
 }

@@ -31,9 +31,9 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertSame( 1, preg_match( '/^Stable tag:\s*([^\r\n]+)$/m', $readme, $stable_tag_match ) );
 		$this->assertSame( $version, trim( $stable_tag_match[1] ) );
-		$this->assertStringContainsString( 'Version ' . $version . ' exposes six bounded', $readme );
+		$this->assertStringContainsString( 'Version ' . $version . ' exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module', $readme );
 		$this->assertStringContainsString( '- Plugin version: `' . $version . '`', $github );
-		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes six bounded', $github );
+		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes six bounded default-enabled modules plus one bounded opt-in module', $github );
 		$this->assertStringContainsString( '- Version: `' . $version . '`', $agents );
 		$this->assertStringContainsString( 'own-plugin text domain in ' . $version, $languages_readme );
 		$this->assertStringContainsString( 'Version ' . $version . ' ships:', $languages_readme );
@@ -46,7 +46,7 @@ final class RepositoryConsistencyTest extends TestCase {
 	public function test_bounded_module_catalog_and_help_are_complete() {
 		$modules = PGR_Module_Registry::all();
 		$this->assertSame(
-			array( 'national_id', 'jalali_date', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' ),
+			array( 'national_id', 'jalali_date', 'jalali_presentation', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' ),
 			array_keys( $modules )
 		);
 

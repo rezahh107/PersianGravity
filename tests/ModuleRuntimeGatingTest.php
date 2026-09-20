@@ -1,9 +1,48 @@
 <?php
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 final class ModuleRuntimeGatingTest extends TestCase {
+
+	public static function jalali_state_cases(): array {
+		return array(
+			'field on / presentation on'   => array( true, true ),
+			'field on / presentation off'  => array( true, false ),
+			'field off / presentation on'  => array( false, true ),
+			'field off / presentation off' => array( false, false ),
+		);
+	}
+
+	#[DataProvider( 'jalali_state_cases' )]
+	#[RunInSeparateProcess]
+	public function test_jalali_field_and_presentation_runtime_states_are_independent( bool $field_enabled, bool $presentation_enabled ) {
+		$this->define_gravity_forms_stubs();
+		$GLOBALS['pgr_test_options']['pgr_modules'] = array(
+			'schema_version' => 1,
+			'states'         => array(
+				'national_id'         => false,
+				'jalali_date'         => $field_enabled,
+				'jalali_presentation' => $presentation_enabled,
+				'iranian_address'     => false,
+				'digit_normalization' => false,
+				'iranian_currency'    => false,
+				'structured_scanner'  => false,
+			),
+		);
+
+		require dirname( __DIR__ ) . '/persian-gravityforms.php';
+		do_action( 'gform_loaded' );
+
+		$this->assertSame( $field_enabled, class_exists( 'PGR_Persian_Date', false ) );
+		$this->assertSame( $field_enabled, class_exists( 'PGR_GF_Field_Jalali_Date', false ) );
+		$this->assertSame( $field_enabled, in_array( 'pgr_jalali_date', $this->registered_types(), true ) );
+		$this->assertSame( $presentation_enabled, class_exists( 'PGR_Gregorian_Jalali_Converter', false ) );
+		$this->assertSame( $presentation_enabled, class_exists( 'PGR_Jalali_Presentation', false ) );
+		$this->assertSame( $presentation_enabled, class_exists( 'PGR_GF_Jalali_Presentation_Adapter', false ) );
+		$this->assertSame( $presentation_enabled, isset( $GLOBALS['pgr_test_filters']['gform_entries_field_value'] ) );
+	}
 
 	#[RunInSeparateProcess]
 	public function test_disabled_national_id_is_not_loaded_registered_or_hooked() {
@@ -31,6 +70,18 @@ final class ModuleRuntimeGatingTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
+	public function test_disabled_presentation_is_not_loaded_or_hooked() {
+		$this->define_gravity_forms_stubs();
+		$GLOBALS['pgr_test_options']['pgr_modules'] = $this->states_with_disabled( 'jalali_presentation' );
+		require dirname( __DIR__ ) . '/persian-gravityforms.php';
+		do_action( 'gform_loaded' );
+
+		$this->assertFalse( class_exists( 'PGR_Jalali_Presentation', false ) );
+		$this->assertFalse( class_exists( 'PGR_GF_Jalali_Presentation_Adapter', false ) );
+		$this->assertArrayNotHasKey( 'gform_entries_field_value', $GLOBALS['pgr_test_filters'] );
+	}
+
+	#[RunInSeparateProcess]
 	public function test_disabled_address_currency_and_digits_omit_owned_hooks() {
 		$this->define_gravity_forms_stubs();
 		$GLOBALS['pgr_test_options']['pgr_modules'] = array(
@@ -38,6 +89,7 @@ final class ModuleRuntimeGatingTest extends TestCase {
 			'states' => array(
 				'national_id' => true,
 				'jalali_date' => true,
+				'jalali_presentation' => false,
 				'iranian_address' => false,
 				'digit_normalization' => false,
 				'iranian_currency' => false,
@@ -80,10 +132,9 @@ final class ModuleRuntimeGatingTest extends TestCase {
 
 	private function states_with_disabled( $disabled ) {
 		$ids = array( 'national_id', 'jalali_date', 'iranian_address', 'digit_normalization', 'iranian_currency', 'structured_scanner' );
-		$states = array();
-		foreach ( $ids as $id ) {
-			$states[ $id ] = $id !== $disabled;
-		}
+		$states = array_fill_keys( $ids, true );
+		$states['jalali_presentation'] = false;
+		$states[ $disabled ] = false;
 		return array( 'schema_version' => 1, 'states' => $states );
 	}
 

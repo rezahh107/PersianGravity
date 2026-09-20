@@ -1,5 +1,45 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-008 Jalali presentation validation — 2026-09-20
+
+Required and observed implementation base: `3c89992ab19482df10bdcba22e00aba62ec0f761`.
+
+G-008 adds the opt-in `jalali_presentation` module without changing plugin version `4.5.0`. The six pre-G-008 module defaults remain enabled; the new module default is disabled. A schema-v1 option written by an older installation is merged over source defaults so existing boolean states are preserved and the missing G-008 key remains false. `jalali_date` / `pgr_jalali_date` remains a separate true-Jalali data contract.
+
+Production algorithm lineage is Borkowski 1996, adapted from the MIT-licensed `jalaali-js` 2.0.1 reference at commit `7ff10a0a4145c84a6911e87bfacf40ddf51a2adc`; the required notice is shipped with production runtime under `includes/jalali-presentation/LICENSE.jalaali-js.txt`. No production calendar package, Node requirement, or `ext-intl` requirement was added.
+
+The ranges are intentionally distinct:
+
+- `REFERENCE_CROSSCHECK_RANGE`: Gregorian years `1800..2256`, recorded as the upstream `jalaali-js` documented `Intl` agreement claim.
+- `VALIDATED_PRODUCT_RANGE`: Gregorian civil dates `1800-01-01..2124-03-19` inclusive.
+- Official golden coverage: directly sourced published dates from the University of Tehran Institute of Geophysics Calendar Center final calendar for 1405; this is not represented as official coverage for the whole product range.
+
+Local exhaustive differential execution before the production commit used PHP `8.4.23`, Node `22.16.0`, and Unicode ICU `77.1`. `tests/js/g008-jalali-oracles.test.js` exercised all `118,417` Gregorian dates in `VALIDATED_PRODUCT_RANGE` and observed:
+
+| Evidence | Result |
+| --- | --- |
+| Production PHP vs ICU Persian Calendar | PASS — `0` mismatches / `118,417` |
+| Production PHP vs locked `jalaali-js` reference | PASS — `0` mismatches / `118,417` |
+| Production Jalali → production Gregorian round-trip | PASS — `0` mismatches / `118,417` |
+| First excluded date | `2124-03-20` |
+| Borkowski/reference at first excluded date | `1502-12-30` |
+| ICU 77.1 at first excluded date | `1503-01-01` |
+
+That first current independent-oracle divergence is the reason V1 fails native after `2124-03-19` instead of silently equating the broader upstream reference claim with PersianGravity product support. Round-trip is consistency evidence only; it is not treated as official-calendar correctness proof.
+
+Official 1405 golden fixtures include `2026-03-21 → 1405-01-01` plus published month-boundary cases from the same Calendar Center source. The fixture records the source identity and does not manually invent unrelated historical/future official values.
+
+Targeted source execution before the production commit:
+
+- PHP syntax: PASS for all staged G-008 PHP files and runtime harnesses.
+- Deterministic direct assertions: PASS for official anchor, validated-range boundaries, malformed Gregorian dates, timezone day-crossing, date-only no-shift, adapter fallback, and raw Entry-value immutability.
+- Exhaustive ICU/reference verifier: PASS as recorded above.
+- Full repository `composer test`, `composer cs`, `composer compat`, localization checks, and PHP 8.2–8.5 matrix: delegated to the exact PR Head CI because Composer/PHPCS/PHPUnit are not installed in the source-preparation runtime.
+
+`.github/workflows/g008-jalali-presentation-runtime.yml` is the exact-host evidence gate. It independently runs the exhaustive oracle check and installs the hash-verified owner-supplied Gravity Forms `3.1.1.1` package in disposable WordPress. The runtime harness inspects exact Gravity Forms 3.1.1.1 Entry List source for the bounded `gform_entries_field_value` / `date_created` seam; verifies visible Jalali/site-time presentation while raw GFAPI/database/REST values and native sorting/filtering remain Gregorian; disables the module; then starts a fresh WP-CLI request and proves the presentation classes/filter are absent and the display pipeline returns its native value unchanged. Exact resulting-Head workflow status must be taken from the PR run, not inferred from this source record.
+
+G-008 V1 deliberately does not validate or activate Gravity Flow Inbox/Entry Detail/Timeline, workflow dates, Print, global WordPress dates, GPP, ordinary GF Date fields, or other GF system columns.
+
 ## Current content-admission snapshot — 2026-09-15
 
 - Gravity Forms: revision 3 `CONTENT_ADMITTED_FULL`. The 6 historical surface records still deduplicate to the same 1759 identities; one reviewed `PRODUCT_REMAINDER` record admits the exact disjoint 2448 residual source-backed identities. The required union is 4207/4207, with 0 fuzzy, empty, rejected or unreviewed remainder entries.
