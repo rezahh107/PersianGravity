@@ -13,9 +13,9 @@ final class PGR_Help_Catalog {
 		return array(
 			'quick-start'         => self::topic(
 				'شروع سریع',
-				'<p>PersianGravity مجموعه‌ای محدود از قابلیت‌های فارسی/ایرانی برای Gravity Forms است. منوی <strong>Persian Gravity</strong> شامل Overview، Scanner Profiles، Settings، System Status و Help & Documentation است. نیازمندی فعلی WordPress 6.7+، PHP 8.2+ و Gravity Forms 3.0+ است.</p><p>همه شش ماژول هنگام ارتقا از 4.1.0 پیش‌فرض فعال‌اند. غیرفعال‌سازی فقط runtime قابلیت را متوقف می‌کند و داده، تنظیمات یا فرم موجود را حذف نمی‌کند.</p>',
+				'<p>PersianGravity مجموعه‌ای محدود از قابلیت‌های فارسی/ایرانی برای Gravity Forms است. منوی <strong>Persian Gravity</strong> شامل Overview، Scanner Profiles، Settings، System Status و Help & Documentation است. نیازمندی فعلی WordPress 6.7+، PHP 8.2+ و Gravity Forms 3.0+ است.</p><p>شش ماژول قبلی همچنان پیش‌فرض فعال‌اند؛ ماژول <code dir="ltr">jalali_presentation</code> برای جلوگیری از تغییر ناخواسته نمایش تاریخ پس از ارتقا، پیش‌فرض غیرفعال و opt-in است. غیرفعال‌سازی module داده، تنظیمات یا فرم موجود را حذف نمی‌کند.</p>',
 				'Quick start',
-				'<p>PersianGravity is a bounded set of Persian/Iranian capabilities for Gravity Forms. The <strong>Persian Gravity</strong> menu contains Overview, Scanner Profiles, Settings, System Status, and Help & Documentation. Current requirements are WordPress 6.7+, PHP 8.2+, and Gravity Forms 3.0+.</p><p>All six modules remain enabled by default when upgrading from 4.1.0. Disabling stops that capability runtime; it does not delete existing forms, settings, profiles, or entries.</p>'
+				'<p>PersianGravity is a bounded set of Persian/Iranian capabilities for Gravity Forms. The <strong>Persian Gravity</strong> menu contains Overview, Scanner Profiles, Settings, System Status, and Help & Documentation. Current requirements are WordPress 6.7+, PHP 8.2+, and Gravity Forms 3.0+.</p><p>The six pre-G-008 modules retain their default-enabled behavior. <code>jalali_presentation</code> defaults disabled and is opt-in so upgrade alone cannot change system-date presentation. Disabling a module does not delete existing forms, settings, profiles, or entries.</p>'
 			),
 			'module-manager'      => self::topic(
 				'مدیریت ماژول‌ها',
@@ -34,6 +34,12 @@ final class PGR_Help_Catalog {
 				'<p>Field type <code dir="ltr">pgr_jalali_date</code> یک فیلد اختصاصی است و Date بومی Gravity Forms را جایگزین نمی‌کند. قالب‌های نمایشی YYYY/MM/DD، YYYY-MM-DD، YYYY.MM.DD، DD/MM/YYYY، DD-MM-YYYY، DD.MM.YYYY و MM/DD/YYYY پشتیبانی می‌شوند.</p><p>اعتبار تقویم جلالی در سرور بررسی و مقدار به صورت ASCII <code dir="ltr">YYYY-MM-DD</code> ذخیره می‌شود؛ معنای تقویم ذخیره‌شده همچنان جلالی است و تبدیل ضمنی Gregorian انجام نمی‌شود.</p>',
 				'Jalali Date',
 				'<p>Field type <code>pgr_jalali_date</code> is dedicated and does not replace the native Gravity Forms Date field. Supported presentation formats include YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD, DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, and MM/DD/YYYY.</p><p>Jalali calendar validity is checked server-side and storage is canonical ASCII <code>YYYY-MM-DD</code>. The stored calendar semantics remain Jalali; no implicit Gregorian conversion occurs.</p>'
+			),
+			'jalali-presentation' => self::topic(
+				'نمایش جلالی تاریخ‌های سیستمی',
+				'<p>ماژول <code dir="ltr">jalali_presentation</code> مستقل از field type <code dir="ltr">pgr_jalali_date</code> است. این module فقط منبعی را که semantics میلادی/سیستمی آن از host مشخص است برای نمایش به جلالی تبدیل می‌کند و مقدار ذخیره‌شده را بازنویسی نمی‌کند.</p><p>در V1 فقط <code dir="ltr">date_created</code> در Gravity Forms Entries List پوشش داده می‌شود. مقدار UTC خام، REST/API، sorting و filtering میلادی باقی می‌ماند. module پیش‌فرض خاموش است؛ اگر تاریخ خارج از محدوده اعتبارسنجی‌شده باشد یا parsing/timezone قطعی نباشد، خروجی native حفظ می‌شود.</p>',
+				'Jalali System-Date Presentation',
+				'<p><code>jalali_presentation</code> is independent from the <code>pgr_jalali_date</code> field. It converts only sources whose Gregorian/system semantics are explicitly known from the host, and never rewrites the stored value.</p><p>V1 admits only Gravity Forms Entries List <code>date_created</code>. The raw UTC Entry value, REST/API output, sorting, and filtering remain Gregorian. The module defaults off; unsupported range, parsing, or timezone conditions retain native presentation.</p>'
 			),
 			'iranian-address'     => self::topic(
 				'نشانی ایران',
@@ -79,9 +85,9 @@ final class PGR_Help_Catalog {
 			),
 			'system-status'       => self::topic(
 				'وضعیت سیستم',
-				'<p>System Status نسخه PersianGravity، WordPress، PHP، دسترس‌پذیری/version Gravity Forms، وضعیت هر شش ماژول و availability Profile Registry را نشان می‌دهد. WARNING به معنی نیاز به بررسی است و عملیات مخرب در این صفحه وجود ندارد.</p>',
+				'<p>System Status نسخه PersianGravity، WordPress، PHP، دسترس‌پذیری/version Gravity Forms، وضعیت هر هفت module و availability Profile Registry را نشان می‌دهد. شش module قبلی default-enabled هستند و <code dir="ltr">jalali_presentation</code> opt-in است. WARNING به معنی نیاز به بررسی است و عملیات مخرب در این صفحه وجود ندارد.</p>',
 				'System Status',
-				'<p>System Status reports PersianGravity, WordPress, PHP, Gravity Forms availability/version, all six module states, and Profile Registry availability. WARNING means the condition needs review; the page contains no destructive action.</p>'
+				'<p>System Status reports PersianGravity, WordPress, PHP, Gravity Forms availability/version, all seven module states, and Profile Registry availability. The six pre-G-008 modules are default-enabled and <code>jalali_presentation</code> is opt-in. WARNING means the condition needs review; the page contains no destructive action.</p>'
 			),
 			'data-behavior'       => self::topic(
 				'داده و حریم خصوصی',
