@@ -142,6 +142,7 @@ jobs:
           mkdir -p "$pgr"
           tar --exclude=.git -cf - . | tar -xf - -C "$pgr"
           php "$G008_WP_CLI" option update pgr_modules '{"schema_version":1,"states":{"national_id":false,"jalali_date":false,"jalali_presentation":true,"iranian_address":false,"digit_normalization":false,"iranian_currency":false,"structured_scanner":false}}' --format=json --path="$G008_WP_PATH"
+          php "$G008_WP_CLI" option update gravityformsaddon_gravityformswebapi_settings '{"enabled":"1"}' --format=json --path="$G008_WP_PATH"
           php "$G008_WP_CLI" plugin activate gravityforms persian-gravityforms --path="$G008_WP_PATH"
           test "$(php "$G008_WP_CLI" plugin get gravityforms --field=version --path="$G008_WP_PATH")" = "$G008_GF_VERSION"
           test "$(php "$G008_WP_CLI" plugin get persian-gravityforms --field=version --path="$G008_WP_PATH")" = "4.5.0"
