@@ -22,17 +22,23 @@ await Promise.all([
 
 await page.goto(`${baseUrl}/wp-admin/admin.php?page=gf_entries&id=${manifest.form_id}`, { waitUntil: 'networkidle' });
 const bodyText = await page.locator('body').innerText();
+const evidencePrefix = `${artifactDir}/entries-list-${mode}`;
+
+fs.writeFileSync(`${evidencePrefix}.txt`, bodyText);
+await page.screenshot({ path: `${evidencePrefix}.png`, fullPage: true });
+
+if (!Array.isArray(manifest.active_grid_columns) || !manifest.active_grid_columns.includes('date_created')) {
+  throw new Error('Runtime fixture did not prove date_created as an active Entries List column.');
+}
 
 if (mode === 'enabled') {
   if (!bodyText.includes(manifest.expected_display)) {
     throw new Error(`Enabled Entries List did not visibly contain ${manifest.expected_display}`);
   }
-  await page.screenshot({ path: `${artifactDir}/entries-list-enabled.png`, fullPage: true });
 } else {
   if (bodyText.includes(manifest.expected_display)) {
     throw new Error('Disabled Entries List still contains PersianGravity Jalali presentation.');
   }
-  await page.screenshot({ path: `${artifactDir}/entries-list-disabled.png`, fullPage: true });
 }
 
 await browser.close();
