@@ -3,7 +3,7 @@ name: G008 Jalali Presentation Runtime
 on:
   push:
     branches:
-      - feat/g008-jalali-presentation-v1-implementation
+      - feat/g008-jalali-presentation-v1-final
     paths:
       - '.github/workflows/g008-jalali-presentation-runtime.yml'
       - 'persian-gravityforms.php'

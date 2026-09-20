@@ -324,7 +324,7 @@ Deterministic preparation and independent reproduction establish these locked va
 | Aggregate keyset | `58167ac415f0367a5a64dc098273b81bdca07a38641deaf75fd29ff4be42f363` |
 | Aggregate translation fingerprint | `00c79c563019f01f68e0c03c9671e3587779cd6757fb830c53d1c2da4ecb4139` |
 | Aggregate PO | `bc52c11763b536e44e977a1417d9096a1e3086f016b0a31206291340f411b757` |
-| Generated MO | `8f00043eae653e199d7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` |
+| Generated MO | `8f00043eae653e1993eb7d07d3dd1c6ad832348499b0bd59aa932b03bafbe640` |
 | Generated `.l10n.php` | `7d3f2231831377e3a75d2e745a43553f5535fdabd85d68fbda6d360d93614e44` |
 
 The aggregate admitted count `288` is intentionally reported separately from the full Gravity Flow source census `1098`; no full-product coverage claim is implied. Gravity Flow native JS handles remain zero and no Gravity Flow translation JSON is generated. Provider-first/upstream-fallback semantics are unchanged.
