@@ -110,12 +110,12 @@ jobs:
           fi
 
           existing_pr="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls" \
-            -f state=all \
+            -f state=open \
             -f head="${GITHUB_REPOSITORY_OWNER}:${branch}" \
             -f per_page=100 \
             --jq 'length')"
           [[ "$existing_pr" == '0' ]] || {
-            echo "A prior PR already uses $branch; refusing to silently replace it." >&2
+            echo "An open PR already uses $branch; refusing to silently replace it." >&2
             exit 1
           }
 
