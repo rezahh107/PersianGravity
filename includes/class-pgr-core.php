@@ -35,6 +35,10 @@ final class PGR_Core {
 			PGR_GF_Field_Jalali_Date::register_editor_hooks();
 		}
 
+		if ( PGR_Module_Registry::is_enabled( 'jalali_presentation' ) ) {
+			( new PGR_GF_Jalali_Presentation_Adapter() )->hooks();
+		}
+
 		if ( PGR_Module_Registry::is_enabled( 'structured_scanner' ) ) {
 			GF_Fields::register( new PGR_GF_Field_Structured_Scanner() );
 			PGR_GF_Field_Structured_Scanner::register_editor_hooks();
