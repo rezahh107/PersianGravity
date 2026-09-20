@@ -20,12 +20,29 @@ await Promise.all([
   page.click('#wp-submit'),
 ]);
 
-await page.goto(`${baseUrl}/wp-admin/admin.php?page=gf_entries&id=${manifest.form_id}`, { waitUntil: 'networkidle' });
+const entriesUrl = `${baseUrl}/wp-admin/admin.php?page=gf_entries&view=entries&id=${manifest.form_id}`;
+const entriesResponse = await page.goto(entriesUrl, { waitUntil: 'domcontentloaded' });
 const bodyText = await page.locator('body').innerText();
+const html = await page.content();
 const evidencePrefix = `${artifactDir}/entries-list-${mode}`;
+const navigation = {
+  requested_url: entriesUrl,
+  final_url: page.url(),
+  response_status: entriesResponse ? entriesResponse.status() : null,
+  title: await page.title(),
+  body_text_length: bodyText.length,
+  html_length: html.length,
+  entry_list_form_count: await page.locator('#entry_list_form').count(),
+};
 
 fs.writeFileSync(`${evidencePrefix}.txt`, bodyText);
+fs.writeFileSync(`${evidencePrefix}.html`, html);
+fs.writeFileSync(`${evidencePrefix}-navigation.json`, JSON.stringify(navigation, null, 2));
 await page.screenshot({ path: `${evidencePrefix}.png`, fullPage: true });
+
+if (!entriesResponse || entriesResponse.status() >= 400 || bodyText.length === 0 || navigation.entry_list_form_count !== 1) {
+  throw new Error(`Entries List navigation did not render a valid document: ${JSON.stringify(navigation)}`);
+}
 
 if (!Array.isArray(manifest.active_grid_columns) || !manifest.active_grid_columns.includes('date_created')) {
   throw new Error('Runtime fixture did not prove date_created as an active Entries List column.');
