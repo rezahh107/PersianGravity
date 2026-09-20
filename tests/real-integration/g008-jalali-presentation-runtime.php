@@ -45,7 +45,16 @@ foreach ( (array) $wp_filter as $hook_name => $hook ) {
 	foreach ( $hook->callbacks as $callbacks ) {
 		foreach ( $callbacks as $definition ) {
 			$registered = $definition['function'] ?? null;
-			if ( is_array( $registered ) && 'PGR_GF_Jalali_Presentation_Adapter' === (string) ( $registered[0] ?? '' ) ) {
+			if ( ! is_array( $registered ) ) {
+				continue;
+			}
+
+			$callback_owner = $registered[0] ?? null;
+			$is_adapter     = is_string( $callback_owner )
+				? 'PGR_GF_Jalali_Presentation_Adapter' === $callback_owner
+				: is_object( $callback_owner ) && 'PGR_GF_Jalali_Presentation_Adapter' === get_class( $callback_owner );
+
+			if ( $is_adapter ) {
 				$adapter_hooks[] = (string) $hook_name;
 			}
 		}
