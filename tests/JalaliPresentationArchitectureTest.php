@@ -38,4 +38,18 @@ final class JalaliPresentationArchitectureTest extends TestCase {
 		$this->assertStringNotContainsString( 'wp_date(', $source );
 		$this->assertStringNotContainsString( 'date_i18n(', $source );
 	}
+
+	public function test_exact_runtime_derives_installed_plugin_version_from_release_authority(): void {
+		$workflow = file_get_contents( dirname( __DIR__ ) . '/.github/workflows/g008-jalali-presentation-runtime.yml' );
+
+		$this->assertSame( 1, substr_count( $workflow, 'expected_pgr_version="$(php tools/release/release-tool.php current)"' ) );
+		$this->assertStringContainsString(
+			'test "$(php "$G008_WP_CLI" plugin get persian-gravityforms --field=version --path="$G008_WP_PATH")" = "$expected_pgr_version"',
+			$workflow
+		);
+		$this->assertDoesNotMatchRegularExpression(
+			'/plugin get persian-gravityforms --field=version[^\r\n]*\)" = "[0-9]+\.[0-9]+\.[0-9]+"/',
+			$workflow
+		);
+	}
 }
