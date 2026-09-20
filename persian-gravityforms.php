@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Persian Gravity Forms
  * Description: Generic Persian and Iranian enhancements for Gravity Forms.
- * Version: 4.5.0
+ * Version: 4.6.0
  * Requires at least: 6.7
  * Requires PHP: 8.2
  * Author: PGR Team
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PGR_VERSION', '4.5.0' );
+define( 'PGR_VERSION', '4.6.0' );
 define( 'PGR_FILE', __FILE__ );
 define( 'PGR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PGR_URL', plugin_dir_url( __FILE__ ) );
