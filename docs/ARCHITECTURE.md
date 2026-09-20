@@ -21,6 +21,7 @@ persian-gravityforms.php
               +-- PGR_Core
                     +-- National ID [conditional]
                     +-- Jalali Date [conditional]
+                    +-- Jalali system-date presentation [conditional]
                     +-- Iranian Address [conditional]
                     +-- Digit normalization [conditional]
                     +-- Iranian Currency [conditional]
@@ -35,6 +36,7 @@ This remains one canonical `PGR_*` runtime. There is no service container, gener
 
 - `national_id`
 - `jalali_date`
+- `jalali_presentation`
 - `iranian_address`
 - `digit_normalization`
 - `iranian_currency`
@@ -52,6 +54,7 @@ array(
     'states' => array(
         'national_id' => true,
         'jalali_date' => true,
+        'jalali_presentation' => false,
         'iranian_address' => true,
         'digit_normalization' => true,
         'iranian_currency' => true,
@@ -60,7 +63,7 @@ array(
 )
 ```
 
-The option is small and explicitly autoloaded when first persisted. Missing/malformed state falls back safely to source defaults. Unknown IDs and non-boolean values are ignored. All six current modules default enabled so upgrade from 4.1.0 does not remove capabilities.
+The option is small and explicitly autoloaded when first persisted. Missing/malformed state falls back safely to source defaults. Unknown IDs and non-boolean values are ignored. The six pre-G-008 modules retain their prior default-enabled behavior. `jalali_presentation` defaults disabled so installing or upgrading PersianGravity cannot silently change system-date presentation. Existing schema-v1 state is merged over source defaults, so pre-G-008 stored states remain intact without a data migration or schema bump.
 
 ## Runtime gating
 
@@ -71,13 +74,42 @@ At `gform_loaded`, the GF runtime bootstrap loads `PGR_Module_Registry` first, t
 | Module | Runtime ownership |
 |---|---|
 | `national_id` | `pgr_national_id`, editor setting, duplicate normalization, typing-normalization asset |
-| `jalali_date` | `pgr_jalali_date` and Jalali helper runtime |
+| `jalali_date` | `pgr_jalali_date` and Jalali-domain helper runtime |
+| `jalali_presentation` | source-owned Gregorian→Jalali converter, typed presentation facade, Gravity Forms Entries List `date_created` display adapter |
 | `iranian_address` | `gform_address_types`, `gform_predefined_choices` |
 | `digit_normalization` | `pgr_normalize_digits` form setting, `gform_save_field_value` |
 | `iranian_currency` | `gform_currencies` IRR/IRT definitions |
 | `structured_scanner` | `pgr_structured_scanner`, editor integration, Scanner frontend assets/runtime |
 
 `PGR_Utils` loads when National ID or generic digit normalization needs it. Scanner Profile administration is intentionally independent of `structured_scanner` runtime state.
+
+## G-008 Jalali system-date presentation
+
+`jalali_presentation` is deliberately separate from `jalali_date`. `PGR_Persian_Date` and `pgr_jalali_date` continue to own true Jalali-domain user data and canonical Jalali storage. G-008 never activates from field presence and never interprets a `pgr_jalali_date` value as Gregorian.
+
+The V1 production path is intentionally narrow:
+
+```text
+known Gregorian/system source
+        ↓
+PGR_Gregorian_Jalali_Converter (pure calendar arithmetic)
+        ↓
+PGR_Jalali_Presentation (typed timezone + formatting facade)
+        ↓
+PGR_GF_Jalali_Presentation_Adapter
+        ↓
+Gravity Forms Entries List date_created only
+```
+
+`PGR_Gregorian_Jalali_Converter` is a source-owned PHP adaptation of the Borkowski-lineage arithmetic represented by `jalaali-js` 2.0.1 commit `7ff10a0a4145c84a6911e87bfacf40ddf51a2adc`. MIT attribution ships in `includes/jalali-presentation/LICENSE.jalaali-js.txt`. Production adds no calendar library, Node, or `ext-intl` requirement.
+
+The public capability is `PGR_Jalali_Presentation::format_datetime( DateTimeInterface, ?DateTimeZone )`. The input's timezone is part of the typed source semantics. The facade applies the target/site timezone before extracting Gregorian Y/M/D, converts only that local date, and preserves local time-of-day. `format_date()` is the bounded civil-date companion and performs no timezone shift.
+
+The upstream reference documents a Gregorian `1800..2256` `Intl` cross-check range. PersianGravity records that separately as `REFERENCE_CROSSCHECK_RANGE`; it is not promoted to the V1 product range. Exhaustive current differential evidence against Unicode ICU 77.1 and the locked reference establishes `VALIDATED_PRODUCT_RANGE = 1800-01-01..2124-03-19` (118,417 dates, zero mismatches). The first current ICU/reference divergence is `2124-03-20`, so that date and everything outside the validated product range fall back to native presentation rather than emitting a guessed Jalali value.
+
+The V1 Gravity Forms adapter uses `gform_entries_field_value`, acts only on `date_created`, parses `entry['date_created']` under Gravity Forms' documented UTC contract, and never parses arbitrary display strings. It has no save/update/query/global-date hooks. Raw Entry values, database storage, REST/API values, sorting/filtering keys, and chronological comparisons remain Gregorian/native.
+
+See `docs/G008_JALALI_PRESENTATION.md` for detailed provenance, official golden evidence, range distinctions, timezone contract, fallback rules, and exact-package verification.
 
 ## Safe disable
 
@@ -92,6 +124,7 @@ States:
 Detection:
 
 - custom field modules: field type match.
+- `jalali_presentation`: always `UNUSED` because it owns no persisted form configuration or migrated data.
 - digit normalization: form-level `pgr_normalize_digits`.
 - Iranian address: Address field with `addressType = iran`.
 - Iranian currency: intentionally `UNKNOWN`; safe site-wide non-use is not inferred from incomplete form metadata.
@@ -126,7 +159,7 @@ Ordinary UI remains WordPress gettext with text domain `persian-gravityforms`. E
 - `pgr_modules` — module state only.
 - field types, `pgr_normalize_digits`, Scanner Profile selection, and mappings — Gravity Forms form metadata.
 
-Disable does not delete Entries, field definitions, settings, profiles, mappings, or form metadata.
+Disable does not delete Entries, field definitions, settings, profiles, mappings, or form metadata. G-008 adds no database migration, custom table, or alternate date storage.
 
 ## Scanner invariants
 
@@ -140,7 +173,7 @@ It adds no Sayad checksum authority, bank validity, cross-bank guarantee, paymen
 
 ## Localization provider
 
-Localization is cross-cutting infrastructure, never a seventh `PGR_Module_Registry` module and never gated by `pgr_modules`. Registration follows plugin constants and precedes all late lifecycle registration. The six-module manager and bilingual admin/help remain the 4.2.0 authority.
+Localization is cross-cutting infrastructure, outside `PGR_Module_Registry` semantics and never gated by `pgr_modules`. Registration follows plugin constants and precedes all late lifecycle registration. The seven-module manager and bilingual admin/help remain independent from localization provider state.
 
 Decision C: **Shared Core + Declarative Product Manifests + Bounded Adapters**.
 `PGR_Localization` is the single shared core. `includes/localization/products.php`
@@ -197,7 +230,7 @@ Across the exact locked-source censuses, accepted Persian coverage is 5766/8432:
 
 ## Scope
 
-PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases.
+PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases. G-008 V1 does not add Gravity Flow, Print, global WordPress date, ordinary GF Date-field, or cross-repository presentation surfaces.
 
 ## G-007 bounded Gravity Perks family extension
 

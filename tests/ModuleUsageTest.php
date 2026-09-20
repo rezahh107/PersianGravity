@@ -25,6 +25,15 @@ final class ModuleUsageTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
+	public function test_presentation_disable_is_always_safe_without_form_or_entry_scan() {
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
+		$result = PGR_Module_Usage::inspect( 'jalali_presentation' );
+		$this->assertSame( PGR_Module_Usage::UNUSED, $result['status'] );
+		$this->assertSame( 0, $result['count'] );
+	}
+
+	#[RunInSeparateProcess]
 	public function test_digit_normalization_form_use_is_detected() {
 		eval( 'class GFAPI { public static function get_forms($active = null, $trash = false) { return array(array("id"=>2,"pgr_normalize_digits"=>1,"fields"=>array())); } }' );
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
@@ -51,7 +60,7 @@ final class ModuleUsageTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
-	public function test_gravity_forms_unavailable_is_unknown() {
+	public function test_gravity_forms_unavailable_is_unknown_for_form_owned_modules() {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
 		$result = PGR_Module_Usage::inspect( 'national_id' );

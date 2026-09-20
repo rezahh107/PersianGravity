@@ -16,6 +16,7 @@ $GLOBALS['pgr_test_inline_styles']   = array();
 $GLOBALS['pgr_test_style_states']    = array();
 $GLOBALS['pgr_test_locale']          = 'en_US';
 $GLOBALS['pgr_test_is_rtl']          = false;
+$GLOBALS['pgr_test_timezone']        = 'UTC';
 
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_actions'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
 function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_filters'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
@@ -53,4 +54,5 @@ function wp_add_inline_style( $handle, $data ) { $GLOBALS['pgr_test_inline_style
 function wp_style_is( $handle, $status = 'enqueued' ) { return ! empty( $GLOBALS['pgr_test_style_states'][ $handle ][ $status ] ); }
 function determine_locale() { return $GLOBALS['pgr_test_locale']; }
 function is_rtl() { return (bool) $GLOBALS['pgr_test_is_rtl']; }
+function wp_timezone() { return new DateTimeZone( $GLOBALS['pgr_test_timezone'] ); }
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ], $GLOBALS['pgr_test_option_autoload'][ $key ] ); }

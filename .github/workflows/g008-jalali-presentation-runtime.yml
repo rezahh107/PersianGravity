@@ -1,0 +1,218 @@
+name: G008 Jalali Presentation Runtime
+
+on:
+  push:
+    branches:
+      - feat/g008-jalali-presentation-v1-implementation
+    paths:
+      - '.github/workflows/g008-jalali-presentation-runtime.yml'
+      - 'persian-gravityforms.php'
+      - 'includes/class-pgr-core.php'
+      - 'includes/class-pgr-module-registry.php'
+      - 'includes/class-pgr-module-usage.php'
+      - 'includes/class-pgr-gregorian-jalali-converter.php'
+      - 'includes/class-pgr-jalali-presentation.php'
+      - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
+      - 'tests/real-integration/g008-*'
+      - 'tests/g008/**'
+      - 'tests/js/g008-jalali-oracles.test.js'
+      - 'tests/G008JalaliPresentationTest.php'
+      - 'tests/JalaliPresentationArchitectureTest.php'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/g008-jalali-presentation-runtime.yml'
+      - 'persian-gravityforms.php'
+      - 'includes/class-pgr-core.php'
+      - 'includes/class-pgr-module-registry.php'
+      - 'includes/class-pgr-module-usage.php'
+      - 'includes/class-pgr-gregorian-jalali-converter.php'
+      - 'includes/class-pgr-jalali-presentation.php'
+      - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
+      - 'tests/real-integration/g008-*'
+      - 'tests/g008/**'
+      - 'tests/js/g008-jalali-oracles.test.js'
+      - 'tests/G008JalaliPresentationTest.php'
+      - 'tests/JalaliPresentationArchitectureTest.php'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-runtime:
+    name: Exact GF 3.1.1.1 Entries List
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: g008-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -pg008-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      G008_WP_PATH: /tmp/g008-wordpress
+      G008_PACKAGE_DIR: /tmp/g008-packages
+      G008_ARTIFACT_DIR: /tmp/g008-artifacts
+      G008_BASE_URL: http://127.0.0.1:8080
+      G008_WP_CLI: /tmp/wp-cli.phar
+      G008_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
+      G008_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      G008_GF_SIZE: '5300290'
+      G008_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
+      G008_GF_VERSION: 3.1.1.1
+
+    steps:
+      - name: Checkout exact tested Head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prepare isolated paths and admin credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
+          mkdir -p "$G008_WP_PATH" "$G008_PACKAGE_DIR" "$G008_ARTIFACT_DIR"
+          admin_password="$(openssl rand -hex 24)"
+          echo "::add-mask::$admin_password"
+          printf 'G008_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
+
+      - name: Set up PHP 8.2.33
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.2.33'
+          coverage: none
+          extensions: mysqli
+          tools: composer:2.8.12
+
+      - name: Validate G-008 development oracles and harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          composer install --no-interaction --no-progress --prefer-dist
+          composer test -- --filter 'JalaliPresentation|ModuleRegistry|ModuleRuntimeGating|ModuleUsage|RuntimeBootstrap'
+          node --test tests/js/g008-jalali-oracles.test.js
+          php -l tests/real-integration/g008-jalali-presentation-runtime.php
+          php -l tests/real-integration/g008-disabled-runtime.php
+          node --check tests/real-integration/g008-browser.mjs
+          bash -n tests/real-integration/verify-package.sh
+          test -z "$(git ls-files '*.zip')"
+
+      - name: Install disposable WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$G008_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $G008_WP_CLI" | sha256sum -c -
+          php "$G008_WP_CLI" core download --path="$G008_WP_PATH" --version=6.8.3 --force --skip-content
+          php "$G008_WP_CLI" config create --path="$G008_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=g008-root --dbhost=127.0.0.1:3306 --skip-check
+          php "$G008_WP_CLI" core install --path="$G008_WP_PATH" --url="$G008_BASE_URL" --title='G008 Runtime' --admin_user=runtime_admin --admin_password="$G008_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$G008_WP_CLI" language core install fa_IR --activate --path="$G008_WP_PATH"
+
+      - name: Download and verify exact Gravity Forms package
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --retry-connrefused --connect-timeout 20 --max-time 180 \
+            -o "$G008_PACKAGE_DIR/$G008_GF_FILE" \
+            "https://drive.usercontent.google.com/download?id=$G008_GF_FILE_ID&export=download&confirm=t"
+          evidence="$G008_ARTIFACT_DIR/package-verification.jsonl"
+          : > "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Forms" "$G008_GF_FILE_ID" "$G008_PACKAGE_DIR/$G008_GF_FILE" "$G008_GF_FILE" "$G008_GF_SIZE" "$G008_GF_SHA256" "gravityforms/gravityforms.php" "$G008_GF_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 1
+          unzip -q "$G008_PACKAGE_DIR/$G008_GF_FILE" -d "$G008_WP_PATH/wp-content/plugins"
+
+      - name: Install tested PersianGravity Head and enable only G-008 presentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          pgr="$G008_WP_PATH/wp-content/plugins/persian-gravityforms"
+          mkdir -p "$pgr"
+          tar --exclude=.git -cf - . | tar -xf - -C "$pgr"
+          php "$G008_WP_CLI" option update pgr_modules '{"schema_version":1,"states":{"national_id":false,"jalali_date":false,"jalali_presentation":true,"iranian_address":false,"digit_normalization":false,"iranian_currency":false,"structured_scanner":false}}' --format=json --path="$G008_WP_PATH"
+          php "$G008_WP_CLI" plugin activate gravityforms persian-gravityforms --path="$G008_WP_PATH"
+          test "$(php "$G008_WP_CLI" plugin get gravityforms --field=version --path="$G008_WP_PATH")" = "$G008_GF_VERSION"
+          test "$(php "$G008_WP_CLI" plugin get persian-gravityforms --field=version --path="$G008_WP_PATH")" = "4.5.0"
+
+      - name: Execute exact-host data and display-seam assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          G008_ARTIFACT_DIR="$G008_ARTIFACT_DIR" php "$G008_WP_CLI" --path="$G008_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g008-jalali-presentation-runtime.php" --use-include
+          test -s "$G008_ARTIFACT_DIR/g008-runtime.json"
+
+      - name: Set up exact browser runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.19.0'
+
+      - name: Install exact Playwright and Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22.19.0"
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node -e "const p=require('playwright/package.json'); if(p.version!=='1.55.0') process.exit(1);"
+
+      - name: Start disposable WordPress HTTP server
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$G008_WP_CLI" server --path="$G008_WP_PATH" --host=127.0.0.1 --port=8080 >/tmp/g008-wp-server.log 2>&1 &
+          echo $! >/tmp/g008-wp-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS "$G008_BASE_URL/" >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/g008-wp-server.log >&2
+          exit 1
+
+      - name: Prove enabled Entries List presentation in Chromium
+        shell: bash
+        env:
+          G008_BROWSER_MODE: enabled
+        run: node tests/real-integration/g008-browser.mjs
+
+      - name: Disable G-008 without changing stored entry data
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$G008_WP_CLI" --path="$G008_WP_PATH" eval 'if (!PGR_Module_Registry::set_enabled("jalali_presentation", false)) { exit(1); }'
+          test "$(php "$G008_WP_CLI" --path="$G008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled("jalali_presentation") ? "1" : "0";')" = "0"
+
+      - name: Prove disabled module is absent from the display pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$(G008_ARTIFACT_DIR="$G008_ARTIFACT_DIR" php "$G008_WP_CLI" --path="$G008_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g008-disabled-runtime.php" --use-include)"
+          test "$result" = "G008_DISABLED_NATIVE_PASS"
+
+      - name: Prove disabled Entries List returns to native presentation in Chromium
+        shell: bash
+        env:
+          G008_BROWSER_MODE: disabled
+        run: node tests/real-integration/g008-browser.mjs
+
+      - name: Upload bounded G-008 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g008-jalali-presentation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/g008-artifacts
+            /tmp/g008-wp-server.log
+          if-no-files-found: ignore
+          retention-days: 30
