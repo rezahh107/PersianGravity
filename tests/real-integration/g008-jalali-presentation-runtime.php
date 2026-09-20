@@ -119,13 +119,31 @@ if ( $raw_newer !== rgar( $newer, 'date_created' ) || $raw_older !== rgar( $olde
 	$fail( 'GFAPI raw date_created did not preserve the supplied UTC values.' );
 }
 
-$display = apply_filters( 'gform_entries_field_value', 'native', $form_id, 'date_created', $newer );
+$display          = apply_filters( 'gform_entries_field_value', 'native', $form_id, 'date_created', $newer );
 $expected_display = '۱۴۰۵/۰۱/۰۱، ۰۰:۰۰';
 if ( $expected_display !== $display ) {
 	$fail( 'Entries List filter did not produce the expected site-timezone Jalali value: ' . (string) $display );
 }
 if ( $raw_newer !== rgar( GFAPI::get_entry( $newer_id ), 'date_created' ) ) {
 	$fail( 'Presentation mutated GFAPI date_created.' );
+}
+
+$webapi_file = GFCommon::get_base_path() . '/includes/webapi/webapi.php';
+if ( ! is_readable( $webapi_file ) ) {
+	$fail( 'Exact GF webapi.php source is unavailable.' );
+}
+$webapi_source = file_get_contents( $webapi_file );
+if (
+	! is_string( $webapi_source ) ||
+	false === strpos( $webapi_source, 'gravityformsaddon_gravityformswebapi_settings' ) ||
+	false === strpos( $webapi_source, 'is_v2_enabled' ) ||
+	false === strpos( $webapi_source, "get_setting( 'enabled'" )
+) {
+	$fail( 'Exact GF 3.1.1.1 source does not prove the REST v2 enablement contract.' );
+}
+$rest_settings = get_option( 'gravityformsaddon_gravityformswebapi_settings', array() );
+if ( ! is_array( $rest_settings ) || empty( $rest_settings['enabled'] ) ) {
+	$fail( 'Gravity Forms REST API v2 was not explicitly enabled for the runtime proof.' );
 }
 
 wp_set_current_user( 1 );
@@ -166,30 +184,31 @@ if ( is_wp_error( $filtered ) || 1 !== count( $filtered ) || $newer_id !== (int)
 }
 
 global $wpdb;
-$table = GFFormsModel::get_entry_table_name();
+$table      = GFFormsModel::get_entry_table_name();
 $stored_raw = $wpdb->get_var( $wpdb->prepare( "SELECT date_created FROM {$table} WHERE id = %d", $newer_id ) );
 if ( $raw_newer !== $stored_raw ) {
 	$fail( 'Database date_created storage was mutated.' );
 }
 
 $manifest = array(
-	'gravity_forms_version' => GFForms::$version,
-	'persian_gravity_version' => defined( 'PGR_VERSION' ) ? PGR_VERSION : null,
-	'wordpress_version' => get_bloginfo( 'version' ),
-	'php_version' => PHP_VERSION,
-	'site_timezone' => wp_timezone_string(),
-	'form_id' => $form_id,
-	'entry_id' => $newer_id,
-	'raw_date_created' => $raw_newer,
-	'display_date_created' => $display,
-	'expected_display' => $expected_display,
-	'database_raw_date_created' => $stored_raw,
-	'sorted_entry_ids' => array( (int) $sorted[0]['id'], (int) $sorted[1]['id'] ),
-	'filtered_entry_ids' => array_map( 'intval', wp_list_pluck( $filtered, 'id' ) ),
-	'gf_entries_list_seam_file' => $entry_list_file,
+	'gravity_forms_version'             => GFForms::$version,
+	'persian_gravity_version'           => defined( 'PGR_VERSION' ) ? PGR_VERSION : null,
+	'wordpress_version'                 => get_bloginfo( 'version' ),
+	'php_version'                       => PHP_VERSION,
+	'site_timezone'                     => wp_timezone_string(),
+	'form_id'                           => $form_id,
+	'entry_id'                          => $newer_id,
+	'raw_date_created'                  => $raw_newer,
+	'display_date_created'              => $display,
+	'expected_display'                  => $expected_display,
+	'database_raw_date_created'         => $stored_raw,
+	'sorted_entry_ids'                  => array( (int) $sorted[0]['id'], (int) $sorted[1]['id'] ),
+	'filtered_entry_ids'                => array_map( 'intval', wp_list_pluck( $filtered, 'id' ) ),
+	'gf_entries_list_seam_file'         => $entry_list_file,
 	'gf_entries_list_filter_registered' => true,
-	'adapter_registered_hooks' => $adapter_hooks,
-	'rest_raw_date_created' => (string) $rest_data['date_created'],
+	'adapter_registered_hooks'          => $adapter_hooks,
+	'rest_api_enabled'                  => true,
+	'rest_raw_date_created'             => (string) $rest_data['date_created'],
 );
 
 if ( false === file_put_contents( $artifact_dir . '/g008-runtime.json', wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ) ) ) {
