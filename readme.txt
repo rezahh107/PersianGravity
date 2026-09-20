@@ -11,10 +11,11 @@ Focused Persian and Iranian capabilities for Gravity Forms with runtime module c
 
 Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
 
-Version 4.5.0 exposes six bounded source-defined modules, all enabled by default for backward compatibility:
+Version 4.5.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
+* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; V1 presents only Gravity Forms Entries List `date_created` and does not change stored/native values.
 * Iranian Address type and province choices.
 * Form-level Persian/Arabic digit normalization (`pgr_normalize_digits`).
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
@@ -22,11 +23,21 @@ Version 4.5.0 exposes six bounded source-defined modules, all enabled by default
 
 The Module Manager affects real runtime participation. Disabled modules do not register their owned Gravity Forms fields/hooks and do not enqueue their owned frontend assets. Core administration, Settings, System Status, Help, translation bootstrap, dependency notices, Module Registry, and Scanner Profiles administration remain available.
 
-Before disable, PersianGravity performs a bounded Gravity Forms form-metadata usage check. Confirmed use blocks disable. When safe non-use cannot be established, the state is UNKNOWN and a second explicit confirmation is required. No Entries are scanned and no direct SQL is used.
+The existing six modules retain their previous default-enabled behavior. `jalali_presentation` defaults disabled, including on upgrades whose schema-v1 module option predates G-008, so installing/upgrading PersianGravity cannot silently change system-date presentation.
+
+Before disable, PersianGravity performs a bounded Gravity Forms form-metadata usage check. Confirmed use blocks disable. When safe non-use cannot be established, the state is UNKNOWN and a second explicit confirmation is required. No Entries are scanned and no direct SQL is used. `jalali_presentation` owns no persisted form configuration and is therefore safe to disable.
 
 Overview always presents capability names and concise descriptions in Persian and English. Ordinary application UI remains WordPress-gettext based with the `persian-gravityforms` text domain.
 
 The complete Help & Documentation Center ships locally with Persian and English content and native WordPress contextual help links.
+
+= Jalali System-Date Presentation =
+
+`jalali_presentation` is separate from the dedicated `pgr_jalali_date` field. The field keeps true Jalali-domain storage semantics; the presentation module converts only explicitly known Gregorian/system sources for display.
+
+V1 uses a source-owned Borkowski-lineage Gregorian→Jalali engine, a typed `DateTimeInterface` presentation facade, and the display-only Gravity Forms `gform_entries_field_value` seam for Entries List `date_created`. Gravity Forms `date_created` is treated as UTC, converted to the WordPress/site timezone first, and only then calendar-converted. The raw Entry/database/REST/query value remains Gregorian UTC.
+
+The V1 `VALIDATED_PRODUCT_RANGE` is Gregorian `1800-01-01..2124-03-19`. Outside that evidence-backed range, native presentation is retained. Full provenance, MIT attribution, official University of Tehran golden cases, ICU/reference differential evidence, timezone behavior and known limitations are documented in `docs/G008_JALALI_PRESENTATION.md`.
 
 = Structured Scanner =
 
@@ -36,7 +47,7 @@ Built-in `sayad_v01` uses structural `segments_v1` parsing with exactly these or
 
 = Gravity ecosystem localization foundation =
 
-The shared generic `fa_IR` provider overlay is cross-cutting infrastructure outside the six modules. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
+The shared generic `fa_IR` provider overlay is cross-cutting infrastructure outside the module registry. Resolvers register immediately after constants without loading foreign catalogs. Provider translations win only where supplied; upstream/vendor/TranslationsPress remains fallback. No vendor files or updaters are changed.
 
 The existing locked Gravity products remain Gravity Forms 3.1.1.1 at 4207/4207 accepted source-backed identities, Gravity Flow 3.1.0 at 1098/1098, and GravityView 3.3.4 at 461/3127. Exactly 2666 GravityView identities remain mandatory under G-006; its partial authority is not broadened by this release checkpoint.
 
@@ -56,16 +67,17 @@ Exact package/source/build evidence exists for G-007, but exact-package browser 
 2. Upload and activate Persian Gravity Forms.
 3. Open Persian Gravity > Overview to review module state.
 4. Open a Gravity Forms Form Editor and use enabled PersianGravity fields/features.
-5. Use Persian Gravity > Help & Documentation for the complete bilingual guide.
+5. Explicitly enable Jalali System-Date Presentation only if you want bounded system-date Jalali display.
+6. Use Persian Gravity > Help & Documentation for the complete bilingual guide.
 
 == Persistence ==
 
-* `pgr_modules` stores schema version 1 and boolean module state only.
+* `pgr_modules` stores schema version 1 and boolean module state only; legacy module states are preserved and `jalali_presentation` defaults false when absent.
 * `pgr_settings` stores plugin settings such as `default_force_english`.
 * `pgr_scanner_profiles` stores Custom Scanner Profiles.
 * Field configuration, `pgr_normalize_digits`, Scanner Profile selection, and Scanner mappings remain Gravity Forms form metadata.
 
-Disabling a module does not delete Entries, form definitions, settings, Profiles, or mappings.
+Disabling a module does not delete Entries, form definitions, settings, Profiles, or mappings. G-008 adds no data migration and does not rewrite existing Entry dates.
 
 == Development ==
 
@@ -76,6 +88,7 @@ Run the repository validation commands:
 `composer cs`
 `composer compat`
 `node --test tests/js/structured-scanner.test.js`
+`node --test tests/js/g008-jalali-oracles.test.js`
 `composer i18n:check`
 `PGR_WP_CORE=/path/to/pinned/core composer i18n:test`
 
@@ -88,6 +101,9 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Added opt-in `jalali_presentation` as a module independent from the existing `jalali_date` field.
+* Added a source-owned Borkowski-lineage Gregorian→Jalali presentation engine, typed timezone-aware facade, bounded Gravity Forms Entries List `date_created` adapter, exhaustive ICU/reference verification, official-calendar golden fixtures, and native fallback outside the validated range.
+* Preserved Gregorian/UTC Entry storage, API, sorting and filtering semantics; no version/tag/release change is part of G-008 implementation.
 
 = 4.5.0 =
 * Added bounded Persian localization support for exact Gravity Perks 2.3.16, GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21, covering 127 reviewed source-backed primary-domain identities.
