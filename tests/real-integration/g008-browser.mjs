@@ -56,6 +56,9 @@ if (mode === 'enabled') {
   if (bodyText.includes(manifest.expected_display)) {
     throw new Error('Disabled Entries List still contains PersianGravity Jalali presentation.');
   }
+  if (!bodyText.includes(manifest.expected_native_display)) {
+    throw new Error(`Disabled Entries List did not visibly restore native Gravity Forms presentation: ${manifest.expected_native_display}`);
+  }
 }
 
 await browser.close();

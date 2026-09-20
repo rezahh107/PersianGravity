@@ -125,8 +125,12 @@ if ( $raw_newer !== rgar( $newer, 'date_created' ) || $raw_older !== rgar( $olde
 	$fail( 'GFAPI raw date_created did not preserve the supplied UTC values.' );
 }
 
-$display = apply_filters( 'gform_entries_field_value', 'native', $form_id, 'date_created', $newer );
-$expected_display = '۱۴۰۵/۰۱/۰۱، ۰۰:۰۰';
+$display                 = apply_filters( 'gform_entries_field_value', 'native', $form_id, 'date_created', $newer );
+$expected_display        = '۱۴۰۵/۰۱/۰۱، ۰۰:۰۰';
+$expected_native_display = GFCommon::format_date( $raw_newer, false );
+if ( ! is_string( $expected_native_display ) || '' === $expected_native_display ) {
+	$fail( 'Could not derive the exact native Gravity Forms Entries List display value.' );
+}
 if ( $expected_display !== $display ) {
 	$fail( 'Entries List filter did not produce the expected site-timezone Jalali value: ' . (string) $display );
 }
@@ -207,6 +211,7 @@ $manifest = array(
 	'raw_date_created' => $raw_newer,
 	'display_date_created' => $display,
 	'expected_display' => $expected_display,
+	'expected_native_display' => $expected_native_display,
 	'database_raw_date_created' => $stored_raw,
 	'sorted_entry_ids' => array( (int) $sorted[0]['id'], (int) $sorted[1]['id'] ),
 	'filtered_entry_ids' => array_map( 'intval', wp_list_pluck( $filtered, 'id' ) ),
