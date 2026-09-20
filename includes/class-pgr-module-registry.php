@@ -41,6 +41,16 @@ final class PGR_Module_Registry {
 				'help_topic'      => 'jalali-date',
 				'field_types'     => array( 'pgr_jalali_date' ),
 			),
+			'jalali_presentation' => array(
+				'id'              => 'jalali_presentation',
+				'default_enabled' => false,
+				'label_fa'        => 'نمایش جلالی تاریخ‌های سیستمی',
+				'label_en'        => 'System-date Jalali Presentation',
+				'description_fa'  => 'نمایش اختیاری تاریخ‌های Gregorian سیستمی به‌صورت جلالی، بدون تغییر مقدار ذخیره‌شده یا semantics ماشینی.',
+				'description_en'  => 'Opt-in Jalali presentation for Gregorian system dates without changing stored values or machine semantics.',
+				'help_topic'      => 'jalali-presentation',
+				'field_types'     => array(),
+			),
 			'iranian_address'     => array(
 				'id'              => 'iranian_address',
 				'default_enabled' => true,
