@@ -29,6 +29,13 @@ final class PGR_Module_Usage {
 			);
 		}
 
+		if ( 'jalali_presentation' === $module_id ) {
+			return array(
+				'status' => self::UNUSED,
+				'count'  => 0,
+			);
+		}
+
 		if ( 'iranian_currency' === $module_id ) {
 			return array(
 				'status' => self::UNKNOWN,
