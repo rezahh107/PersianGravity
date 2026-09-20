@@ -172,10 +172,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          php "$G008_WP_CLI" server --path="$G008_WP_PATH" --host=127.0.0.1 --port=8080 >/tmp/g008-wp-server.log 2>&1 &
+          php -S 127.0.0.1:8080 -t "$G008_WP_PATH" >/tmp/g008-wp-server.log 2>&1 &
           echo $! >/tmp/g008-wp-server.pid
           for i in $(seq 1 30); do
-            if curl -fsS "$G008_BASE_URL/" >/dev/null; then exit 0; fi
+            if curl -fsS "$G008_BASE_URL/wp-login.php" >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/g008-wp-server.log >&2
