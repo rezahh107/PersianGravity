@@ -2,7 +2,7 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.5.0
+Stable tag: 4.6.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
@@ -11,7 +11,7 @@ Focused Persian and Iranian capabilities for Gravity Forms with runtime module c
 
 Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
 
-Version 4.5.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
+Version 4.6.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
@@ -101,6 +101,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+
+= 4.6.0 =
 * Added opt-in `jalali_presentation` as a module independent from the existing `jalali_date` field.
 * Added a source-owned Borkowski-lineage Gregorian→Jalali presentation engine, typed timezone-aware facade, bounded Gravity Forms Entries List `date_created` adapter, exhaustive ICU/reference verification, official-calendar golden fixtures, and native fallback outside the validated range.
 * Preserved Gregorian/UTC Entry storage, API, sorting and filtering semantics; no version/tag/release change is part of G-008 implementation.
