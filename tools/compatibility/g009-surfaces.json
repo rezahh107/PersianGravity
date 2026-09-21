@@ -24,8 +24,8 @@
           "expected_native_behavior": "WordPress fa_IR/is_rtl() drives RTL; en_US control remains LTR",
           "style_handles": [],
           "dom_state_signature": "#gform_{form_id} inside the published runtime fixture",
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Requires current-PersianGravity-Head WU008 G009 browser qualification; historical 4.2.0 evidence is not promoted.",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact Gravity Forms 3.1.1.1, fa_IR RTL and en_US LTR control, desktop+narrow computed direction/geometry plus mixed-token focus/keyboard checks.",
           "drift_behavior": "Exact Gravity Forms version/package mismatch invalidates the claim."
         },
         {
@@ -36,7 +36,7 @@
           "style_handles": ["gform_admin"],
           "dom_state_signature": "frontend Gravity Flow Inbox shortcode page with gform_admin present",
           "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Qualification target for current-Head WU008 source/runtime/browser evidence.",
+          "evidence_provenance": "Exact source reachability and current-Head browser CSS causality are supported; disabling only the loaded stylesheet restores root RTL, but no material defect was observed on the exercised visible Inbox/AG Grid surface and no safe permanent repair seam is admitted.",
           "drift_behavior": "Handle/version/surface mismatch invalidates any later finding or adapter authority."
         }
       ]
@@ -55,8 +55,8 @@
           "expected_native_behavior": "Visible Inbox/AG Grid presentation follows RTL without PersianGravity replacing search/sort/filter/paging/state behavior.",
           "style_handles": [],
           "dom_state_signature": "Gravity Flow Inbox shortcode root plus rendered grid/list controls when present",
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Current-Head WU008 qualification including gform_admin causality and material-effect checks.",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact Gravity Flow 3.1.0 authentic frontend Inbox/AG Grid at desktop+narrow viewports, computed RTL on the visible grid surface, bounded geometry and basic focus; root gform_admin interaction remains independently NOT_PROVEN.",
           "drift_behavior": "Exact Gravity Flow version/package or observed DOM/state seam drift invalidates the claim."
         }
       ]
@@ -75,8 +75,8 @@
           "expected_native_behavior": "Native WordPress/GravityView RTL remains usable without PersianGravity presentation adapter.",
           "style_handles": [],
           "dom_state_signature": "body.wp-admin with post_type=gravityview and native list-table/search controls",
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Requires strengthened current-Head WU008 browser qualification beyond html dir/page-load evidence.",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact GravityView 3.3.4 native list table at desktop+narrow viewports with computed RTL table direction and bounded product-table geometry; host wp-admin horizontal chrome overflow is recorded separately and is not promoted to a GravityView defect.",
           "drift_behavior": "Exact GravityView version/package or surface-signature drift invalidates the claim."
         }
       ]
@@ -96,7 +96,7 @@
           "style_handles": [],
           "dom_state_signature": null,
           "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "G-007 localization/source evidence does not equal browser RTL proof.",
+          "evidence_provenance": "G-007 localization/source evidence does not equal browser RTL proof; WU008 has no authenticated exact-package provisioning for this package.",
           "drift_behavior": "Any package/version drift remains fail-closed."
         }
       ]
@@ -136,7 +136,7 @@
           "style_handles": ["gp-advanced-select-tom-select"],
           "dom_state_signature": ".ts-wrapper.rtl containing .ts-control",
           "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Existing G-007 source/unit evidence proves the bounded adapter contract but not current exact-package browser qualification.",
+          "evidence_provenance": "Existing G-007 source/unit evidence proves the bounded adapter contract but not current exact-package browser qualification; exact GP Advanced Select 1.1.21 package bytes are not available to the WU008 CI lane.",
           "drift_behavior": "Exact package/version, handle or required DOM/state-signature drift invalidates browser qualification and requires re-admission."
         }
       ]
