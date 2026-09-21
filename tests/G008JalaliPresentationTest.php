@@ -68,6 +68,19 @@ final class G008JalaliPresentationTest extends TestCase {
 		$this->assertNull( PGR_Jalali_Presentation::format_date( 2026, 2, 30 ) );
 	}
 
+	public function test_existing_facade_is_the_typed_feature_detectable_consumer_contract(): void {
+		$this->assertTrue( class_exists( 'PGR_Jalali_Presentation', false ) );
+		$this->assertTrue( is_callable( array( 'PGR_Jalali_Presentation', 'format_datetime' ) ) );
+		$this->assertTrue( is_callable( array( 'PGR_Jalali_Presentation', 'format_date' ) ) );
+
+		$method = new ReflectionMethod( 'PGR_Jalali_Presentation', 'format_datetime' );
+		$parameters = $method->getParameters();
+		$this->assertCount( 2, $parameters );
+		$this->assertSame( 'DateTimeInterface', (string) $parameters[0]->getType() );
+		$this->assertSame( '?DateTimeZone', (string) $parameters[1]->getType() );
+		$this->assertSame( '?string', (string) $method->getReturnType() );
+	}
+
 	public function test_repeatability_is_deterministic(): void {
 		$first = PGR_Gregorian_Jalali_Converter::to_jalali( 2026, 3, 21 );
 		for ( $index = 0; $index < 100; $index++ ) {
@@ -125,6 +138,21 @@ final class G008JalaliPresentationTest extends TestCase {
 		);
 		$this->assertSame( 'native-field', PGR_GF_Jalali_Presentation_Adapter::filter_entry_list_value( 'native-field', 1, '1', $entry ) );
 		$this->assertSame( $original, $entry );
+	}
+
+	public function test_adapter_never_reinterprets_jalali_domain_field_values_as_gregorian(): void {
+		$entry = array(
+			'date_created' => '2026-03-21 00:00:00',
+			'7'            => '1405-01-01',
+		);
+		$this->assertSame(
+			'1405-01-01',
+			PGR_GF_Jalali_Presentation_Adapter::filter_entry_list_value( '1405-01-01', 1, '7', $entry )
+		);
+		$this->assertSame(
+			'1405-01-01',
+			PGR_GF_Jalali_Presentation_Adapter::filter_entry_list_value( '1405-01-01', 1, 'pgr_jalali_date', $entry )
+		);
 	}
 
 	public function test_adapter_falls_back_for_malformed_or_out_of_range_raw_values(): void {
