@@ -10,39 +10,52 @@ This harness is the repository-owned, fail-closed CI path for real WordPress/bro
 | Gravity Flow | `3.1.0` | `1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf` | `2603034` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` |
 | GravityView | `3.3.4` | `16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1` | `7569755` | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` |
 
-PersianGravity itself is installed into the disposable WordPress site from exact commit `a92a09cd5ef21456c56d95726e325b545d893592` and must report plugin version `4.2.0`.
+PersianGravity is no longer fetched from the historical 4.2.0 commit. The workflow checks out the exact PR/workflow source SHA, builds the repository's deterministic production ZIP through `tools/build-production-package.sh`, installs that ZIP into the disposable WordPress site, and verifies the package's generated `release-manifest.json` source commit/tree against the checkout. Plugin version is derived from the same release authority used by the package builder; there is no separately synchronized WU008 PersianGravity version literal.
 
 ## Verification boundary
 
-All three downloads must pass before any licensed ZIP is extracted into WordPress. The package verifier requires the expected filename, ZIP signature, ZIP MIME/type inspection, full archive integrity, exact byte size, exact SHA-256, expected plugin main file, and exact plugin version header. Any permission/login HTML response, corrupt archive, changed bytes, changed version, unavailable download, or wrong file fails the job. There is no substitute package or cache bypass.
+All three licensed downloads must pass before extraction. The package verifier requires expected filename, ZIP signature, ZIP MIME/type inspection, full archive integrity, exact byte size, exact SHA-256, expected plugin main file, and exact plugin version header. Any permission/login HTML response, corrupt archive, changed bytes, changed version, unavailable download, or wrong file fails the job. There is no substitute package or cache bypass.
 
-The uploaded evidence is intentionally bounded to verification metadata, runtime manifests, browser result JSON, screenshots, and the disposable server log. Package ZIPs and extracted vendor source are outside the artifact path and must never be uploaded.
+The PersianGravity package is independently bound to exact checked-out commit/tree, derived version and built ZIP SHA-256. The runtime manifest records those identities together with the exact licensed vendor versions and package hashes.
+
+The uploaded evidence is intentionally bounded to verification metadata, runtime manifests, source-discovery metadata, browser result JSON, screenshots, and the disposable server log. Package ZIPs and extracted vendor source are outside the artifact path and must never be uploaded.
 
 ## Canonical browser navigation and authentication
 
-WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, and `gravityflow_inbox_url`; the Playwright browser must consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`. `WU008_BASE_URL` remains only the disposable server/site-origin input used while provisioning the runtime.
+WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, `gravityflow_inbox_url`, and the authentic frontend `gravityflow_frontend_inbox_url`; browser tests consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`.
 
-The login step is a first-class diagnostics-gated browser operation. The manifest-derived login URL carries the manifest admin URL as its redirect target. After login, the harness proves that the browser landed inside that authenticated WordPress admin boundary before Flow or GravityView assertions run, without issuing a redundant second navigation that could abort in-flight admin requests. Each product admin check repeats that authenticated-admin predicate after navigation. GravityView's product URL is discovered from the authenticated admin navigation, including the exact plugin's runtime `gravityview_all_views` redirect entry when present, and the loaded destination is then verified as the `post_type=gravityview` surface.
+The login step is a first-class diagnostics-gated browser operation. After login, the harness proves the authenticated WordPress admin boundary before product admin assertions run. GravityView's product URL is discovered from native authenticated admin navigation and the destination is verified as the exact `post_type=gravityview` surface.
 
 ## Diagnostics fail-closed contract
 
-`browser-results.json` retains the full observed diagnostics stream. Every gated browser operation snapshots diagnostics before it starts and evaluates only the newly observed diagnostics before recording PASS. A new uncaught `pageerror`, or a failed request to the disposable WordPress runtime origin that was started by that operation, fails that same operation. Request start order is tracked so a request already in flight before the operation baseline remains in the full evidence but is not misattributed to the next navigation when the browser aborts the old document. Diagnostics that existed before the operation baseline are retained as evidence but do not retroactively fail the next operation. External request failures are retained but are not treated as WordPress-runtime blockers.
+`browser-results.json` and the G-009 evidence files retain observed diagnostics. Every gated browser operation snapshots diagnostics before it starts and evaluates only newly observed diagnostics before recording its result. A new uncaught `pageerror`, or a failed request to the disposable WordPress runtime origin that was started by that operation, fails the operation. External request failures remain evidence but do not automatically become Persian/RTL compatibility defects.
 
-The deterministic Node diagnostics test guards this per-operation behavior so a suite-global synthetic failure cannot leave the affected operation falsely marked PASS.
+The deterministic Node diagnostics test guards per-operation attribution so a suite-global synthetic failure cannot leave an affected operation falsely marked PASS.
 
 ## Real-runtime checks
 
-The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, `fa_IR`, Playwright `1.55.0`, and Chromium. It checks:
+The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, Playwright `1.55.0`, Chromium, and the exact PersianGravity source Head under test. It preserves the original WU008 checks for:
 
-- exact runtime versions for all four plugins;
+- exact runtime versions and package identities;
 - Persian provider resolution for admitted Gravity Forms, Gravity Flow, and GravityView strings;
 - provider precedence plus deterministic upstream-only fallback through WordPress' real translation loader without modifying vendor files;
-- authentic Gravity Forms frontend validation in a real browser;
+- authentic Gravity Forms frontend validation;
 - manifest-derived authentication and authenticated WordPress admin identity;
-- authentic Gravity Flow Inbox rendering in the real admin UI;
-- an authentic GravityView admin surface loading without fatal/critical runtime failure;
-- per-operation fail-closed browser diagnostics;
-- RTL direction in frontend/admin runtime;
-- screenshot and structured JSON evidence.
+- authentic Gravity Flow Inbox rendering;
+- authentic GravityView admin navigation;
+- per-operation fail-closed browser diagnostics.
 
-A green workflow can support the automatable real-browser/runtime portion of WU-008 for the exact pinned environment. It does not replace residual human/perceptual UI judgment, and it does not prove any package or commit other than the exact hashes/versions/commit recorded above.
+G-009 extends the same lab rather than duplicating it. It runs:
+
+- an exact `fa_IR` / WordPress RTL profile;
+- an `en_US` LTR control profile;
+- representative `1280x900` and `390x844` browser geometry checks;
+- computed direction/alignment/padding/overflow evidence;
+- basic focus/keyboard/input checks where a deterministic control exists;
+- an authentic frontend Gravity Flow Inbox shortcode request;
+- a disposable disable/restore experiment for the observed `gform_admin` stylesheet, when present, to separate CSS causality from production repair authorization;
+- strengthened GravityView native list-table/search-control evidence rather than page-load/`html dir` alone.
+
+G-008 source discovery also reuses the exact installed vendor packages. `source-discovery.json` records only product/package identity plus normalized file/line references and candidate classifications; licensed source content itself is not uploaded. G-008 support/admission remains separate from source discovery.
+
+A green workflow can support only the exact scenarios it actually ran. It does not prove future vendor versions, absent AG Grid states, unprovisioned Gravity Perks packages, exhaustive accessibility, or a production repair for `gform_admin`.
