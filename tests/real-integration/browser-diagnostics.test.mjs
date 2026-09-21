@@ -94,6 +94,47 @@ test('a request started before the baseline is retained but not attributed to th
   assert.equal(state.requestFailures.length, 1);
 });
 
+test('the observed WordPress compression capability probe abort is retained but non-blocking', () => {
+  const state = diagnostics();
+  const baseline = snapshotDiagnostics(state);
+  state.requestsStarted = 1;
+  state.requestFailures.push({
+    url: 'http://127.0.0.1:8080/wp-admin/admin-ajax.php?action=wp-compression-test&test=yes&_ajax_nonce=fixture',
+    method: 'GET',
+    error: 'net::ERR_ABORTED',
+    requestSequence: 1,
+  });
+
+  const gate = evaluateOperationDiagnostics('op-wordpress-compression-probe', state, baseline, runtimeOrigins);
+  assert.equal(gate.ok, true);
+  assert.equal(state.requestFailures.length, 1);
+});
+
+test('the compression endpoint still blocks when the failure shape differs from the observed benign abort', () => {
+  for (const failure of [
+    {
+      url: 'http://127.0.0.1:8080/wp-admin/admin-ajax.php?action=wp-compression-test&test=yes',
+      method: 'GET',
+      error: 'net::ERR_FAILED',
+      requestSequence: 1,
+    },
+    {
+      url: 'http://127.0.0.1:8080/wp-admin/admin-ajax.php?action=another-action&test=yes',
+      method: 'GET',
+      error: 'net::ERR_ABORTED',
+      requestSequence: 1,
+    },
+  ]) {
+    const state = diagnostics();
+    const baseline = snapshotDiagnostics(state);
+    state.requestsStarted = 1;
+    state.requestFailures.push(failure);
+    const gate = evaluateOperationDiagnostics('op-not-whitelisted', state, baseline, runtimeOrigins);
+    assert.equal(gate.ok, false);
+    assert.equal(gate.blocking.requestFailures.length, 1);
+  }
+});
+
 test('a blocking diagnostic cannot be deferred to a suite-global synthetic failure', () => {
   const state = diagnostics();
   const firstBaseline = snapshotDiagnostics(state);
