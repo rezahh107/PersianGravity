@@ -30,7 +30,7 @@ The login step is a first-class diagnostics-gated browser operation. After login
 
 `browser-results.json` and the G-009 evidence files retain observed diagnostics. Every gated browser operation snapshots diagnostics before it starts and evaluates only newly observed diagnostics before recording its result. A new uncaught `pageerror`, or a failed request to the disposable WordPress runtime origin that was started by that operation, fails the operation. External request failures remain evidence but do not automatically become Persian/RTL compatibility defects.
 
-The deterministic Node diagnostics test guards per-operation attribution so a suite-global synthetic failure cannot leave an affected operation falsely marked PASS.
+One exact WordPress capability probe is classified separately: `/wp-admin/admin-ajax.php?action=wp-compression-test&test=yes` may be aborted by a browser navigation with exactly `net::ERR_ABORTED`. That observed navigation-abort shape remains recorded but is non-blocking. The same endpoint with another error, or another action with `ERR_ABORTED`, still blocks. Deterministic Node tests guard this narrow exception and the ordinary fail-closed behavior.
 
 ## Real-runtime checks
 
@@ -48,13 +48,15 @@ The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, Play
 G-009 extends the same lab rather than duplicating it. It runs:
 
 - an exact `fa_IR` / WordPress RTL profile;
-- an `en_US` LTR control profile;
+- an effective WordPress `en_US` / LTR control profile;
 - representative `1280x900` and `390x844` browser geometry checks;
 - computed direction/alignment/padding/overflow evidence;
 - basic focus/keyboard/input checks where a deterministic control exists;
 - an authentic frontend Gravity Flow Inbox shortcode request;
 - a disposable disable/restore experiment for the observed `gform_admin` stylesheet, when present, to separate CSS causality from production repair authorization;
 - strengthened GravityView native list-table/search-control evidence rather than page-load/`html dir` alone.
+
+The LTR control intentionally asserts WordPress' effective `get_locale()` and `is_rtl()` values rather than requiring a literal `WPLANG=en_US` option. WordPress represents its default English locale without that stored literal. The control removes the Persian locale option, proves effective `en_US`/LTR, runs the browser profile, and an `always()` restore step reactivates `fa_IR`/RTL and rechecks every plugin version so test state cannot leak across the lane.
 
 G-008 source discovery also reuses the exact installed vendor packages. `source-discovery.json` records only product/package identity plus normalized file/line references and candidate classifications; licensed source content itself is not uploaded. G-008 support/admission remains separate from source discovery.
 
