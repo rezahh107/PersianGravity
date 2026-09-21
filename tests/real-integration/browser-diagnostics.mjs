@@ -6,6 +6,21 @@ export function snapshotDiagnostics(diagnostics) {
   };
 }
 
+function isKnownNonBlockingRuntimeAbort(failure) {
+  if (!failure || failure.error !== 'net::ERR_ABORTED' || typeof failure.url !== 'string') return false;
+
+  let url;
+  try {
+    url = new URL(failure.url);
+  } catch {
+    return false;
+  }
+
+  return url.pathname.endsWith('/wp-admin/admin-ajax.php')
+    && url.searchParams.get('action') === 'wp-compression-test'
+    && url.searchParams.get('test') === 'yes';
+}
+
 function isMaterialRuntimeRequestFailure(failure, runtimeOrigins) {
   if (!failure || typeof failure.url !== 'string') return true;
 
@@ -16,7 +31,10 @@ function isMaterialRuntimeRequestFailure(failure, runtimeOrigins) {
     return true;
   }
 
-  return runtimeOrigins.includes(origin);
+  if (!runtimeOrigins.includes(origin)) return false;
+  if (isKnownNonBlockingRuntimeAbort(failure)) return false;
+
+  return true;
 }
 
 export function evaluateOperationDiagnostics(operationId, diagnostics, baseline, runtimeOrigins) {
