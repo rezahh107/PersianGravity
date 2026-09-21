@@ -290,7 +290,8 @@ jobs:
           WU008_G009_PROFILE: rtl
         run: |
           set -euo pipefail
-          test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
           node tests/real-integration/g009-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g009-evidence-rtl.json"
 
@@ -300,17 +301,20 @@ jobs:
           WU008_G009_PROFILE: ltr
         run: |
           set -euo pipefail
-          php "$WU008_WP_CLI" option update WPLANG en_US --path="$WU008_WP_PATH"
-          test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "en_US"
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
           node tests/real-integration/g009-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g009-evidence-ltr.json"
 
       - name: Restore Persian locale and prove the control did not mutate product state
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
-          test "$(php "$WU008_WP_CLI" option get WPLANG --path="$WU008_WP_PATH")" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
           test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_PGR_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
