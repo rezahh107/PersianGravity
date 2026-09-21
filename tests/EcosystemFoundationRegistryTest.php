@@ -32,7 +32,8 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			'GP Advanced Select'  => array( '1.1.21', 'd83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2' ),
 		);
 
-		$seen = array();
+		$seen   = array();
+		$states = array();
 		foreach ( $registry['products'] as $product ) {
 			$this->assertArrayHasKey( $product['product'], $expected );
 			$this->assertSame( $expected[ $product['product'] ][0], $product['version'] );
@@ -45,19 +46,23 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 				}
 				$this->assertContains( $surface['evidence_state'], self::G009_STATES );
 				$this->assertArrayNotHasKey( $surface['id'], $seen );
-				$seen[ $surface['id'] ] = true;
+				$seen[ $surface['id'] ]   = true;
+				$states[ $surface['id'] ] = $surface['evidence_state'];
 			}
 		}
 		$this->assertSame( array_keys( $expected ), array_column( $registry['products'], 'product' ) );
-		$this->assertArrayHasKey( 'gravityflow.frontend-inbox-ag-grid', $seen );
-		$this->assertArrayHasKey( 'gravityforms.gform-admin-frontend-reachability', $seen );
-		$this->assertArrayHasKey( 'gravityview.admin-list', $seen );
-		$this->assertArrayHasKey( 'gp-advanced-select.tom-select', $seen );
+		$this->assertSame( 'NATIVE_PASS', $states['gravityforms.frontend-form'] );
+		$this->assertSame( 'NOT_PROVEN', $states['gravityforms.gform-admin-frontend-reachability'] );
+		$this->assertSame( 'NATIVE_PASS', $states['gravityflow.frontend-inbox-ag-grid'] );
+		$this->assertSame( 'NATIVE_PASS', $states['gravityview.admin-list'] );
+		$this->assertSame( 'NOT_PROVEN', $states['gravityperks.family-baseline'] );
+		$this->assertSame( 'NOT_PROVEN', $states['gp-file-upload-pro.frontend'] );
+		$this->assertSame( 'NOT_PROVEN', $states['gp-advanced-select.tom-select'] );
 	}
 
 	public function test_g009_claim_resolution_fails_closed_on_version_package_handle_or_signature_drift(): void {
 		$registry = $this->load_registry( 'tools/compatibility/g009-surfaces.json' );
-		$record = null;
+		$record   = null;
 		foreach ( $registry['products'] as $product ) {
 			foreach ( $product['surfaces'] as $surface ) {
 				if ( 'gp-advanced-select.tom-select' === $surface['id'] ) {
@@ -93,7 +98,7 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( array( 'RUNTIME_PROVEN', 'SOURCE_PROVEN', 'NOT_PROVEN' ), $registry['discovery_states'] );
 
 		$required = array( 'id', 'ui_surface', 'raw_source', 'source_calendar', 'source_timezone', 'presentation_seam', 'semantic_dependencies', 'fallback', 'discovery_state', 'support_state', 'adapter_identity', 'evidence', 'drift_behavior' );
-		$states = array();
+		$states   = array();
 		foreach ( $registry['products'] as $product ) {
 			$this->assertMatchesRegularExpression( '/^[a-f0-9]{64}$/', $product['package_sha256'] );
 			$this->assertSame( 'FAIL_CLOSED_VERSION_DRIFT', $product['version_drift'] );
@@ -107,13 +112,49 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			}
 		}
 
+		$this->assertSame( 'RUNTIME_PROVEN', $states['gravityforms.entries-list.date-created']['discovery_state'] );
 		$this->assertSame( 'ADMITTED_VERIFIED', $states['gravityforms.entries-list.date-created']['support_state'] );
 		$this->assertSame( 'PGR_GF_Jalali_Presentation_Adapter', $states['gravityforms.entries-list.date-created']['adapter_identity'] );
+
+		foreach ( array(
+			'gravityflow.inbox.date-created',
+			'gravityflow.inbox.last-updated',
+			'gravityflow.inbox.due-date',
+			'gravityflow.status.date-created',
+			'gravityflow.status.workflow-timestamp',
+		) as $source_proven_id ) {
+			$this->assertSame( 'SOURCE_PROVEN', $states[ $source_proven_id ]['discovery_state'], $source_proven_id );
+		}
+
 		foreach ( $states as $id => $surface ) {
 			if ( 'gravityforms.entries-list.date-created' !== $id ) {
 				$this->assertSame( 'NOT_PROVEN', $surface['support_state'], $id );
 				$this->assertNull( $surface['adapter_identity'], $id );
 			}
+		}
+	}
+
+	public function test_g008_claim_resolution_fails_closed_on_host_version_package_or_seam_drift(): void {
+		$registry = $this->load_registry( 'tools/jalali/g008-system-date-surfaces.json' );
+		$record   = array(
+			'product' => $registry['products'][0],
+			'surface' => $registry['products'][0]['surfaces'][0],
+		);
+		$this->assertSame( 'gravityforms.entries-list.date-created', $record['surface']['id'] );
+
+		$exact = array(
+			'version'           => '3.1.1.1',
+			'package_sha256'    => '542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b',
+			'presentation_seam' => 'gform_entries_field_value when field/property id is date_created',
+		);
+		$this->assertSame( 'ADMITTED_VERIFIED', $this->resolve_g008_claim( $record, $exact ) );
+
+		foreach ( array(
+			array_replace( $exact, array( 'version' => '3.1.2' ) ),
+			array_replace( $exact, array( 'package_sha256' => str_repeat( 'f', 64 ) ) ),
+			array_replace( $exact, array( 'presentation_seam' => 'changed_host_filter' ) ),
+		) as $drifted ) {
+			$this->assertSame( 'FAIL_CLOSED_VERSION_DRIFT', $this->resolve_g008_claim( $record, $drifted ) );
 		}
 	}
 
@@ -132,5 +173,18 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			return 'FAIL_CLOSED_VERSION_DRIFT';
 		}
 		return $qualified_state;
+	}
+
+	private function resolve_g008_claim( array $record, array $observed ): string {
+		$product = $record['product'];
+		$surface = $record['surface'];
+		if (
+			$product['version'] !== $observed['version'] ||
+			$product['package_sha256'] !== $observed['package_sha256'] ||
+			$surface['presentation_seam'] !== $observed['presentation_seam']
+		) {
+			return 'FAIL_CLOSED_VERSION_DRIFT';
+		}
+		return $surface['support_state'];
 	}
 }
