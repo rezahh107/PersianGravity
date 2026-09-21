@@ -10,8 +10,10 @@ import {
 const artifactDir = process.env.WU008_ARTIFACT_DIR;
 const manifestPath = process.env.WU008_MANIFEST_PATH;
 const adminPassword = process.env.WU008_ADMIN_PASSWORD;
-if (!artifactDir || !manifestPath || !adminPassword) {
-  throw new Error('WU008_ARTIFACT_DIR, WU008_MANIFEST_PATH, and WU008_ADMIN_PASSWORD are required.');
+const expectedPgrVersion = process.env.WU008_PGR_VERSION;
+const expectedPgrSha = process.env.WU008_PGR_SHA;
+if (!artifactDir || !manifestPath || !adminPassword || !expectedPgrVersion || !expectedPgrSha) {
+  throw new Error('WU008 artifact/manifest/admin password and current PersianGravity version/SHA are required.');
 }
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -223,19 +225,27 @@ try {
     if (manifest.versions.gravityforms !== '3.1.1.1') throw new Error('Manifest Gravity Forms version mismatch.');
     if (manifest.versions.gravityflow !== '3.1.0') throw new Error('Manifest Gravity Flow version mismatch.');
     if (manifest.versions.gravityview !== '3.3.4') throw new Error('Manifest GravityView version mismatch.');
-    if (manifest.versions.persiangravity !== '4.2.0') throw new Error('Manifest PersianGravity version mismatch.');
+    if (manifest.versions.persiangravity !== expectedPgrVersion) throw new Error('Manifest PersianGravity version mismatch.');
+    if (manifest.persiangravity_source_commit !== expectedPgrSha) throw new Error('Manifest PersianGravity source commit mismatch.');
     if (manifest.fallback.provider_collision !== 'مشکلی با این ارسال پیش آمده است.') throw new Error('Provider precedence evidence mismatch.');
     if (manifest.fallback.upstream_only !== 'WU008_UPSTREAM_ONLY_PASS') throw new Error('Upstream-only fallback evidence mismatch.');
     if (manifest.provider.gravityview !== 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.') throw new Error('GravityView provider runtime evidence mismatch.');
     if (manifest.rtl !== true || manifest.locale !== 'fa_IR') throw new Error('Runtime locale/RTL evidence mismatch.');
-    return { versions: manifest.versions, fallback: manifest.fallback, provider: manifest.provider };
+    return {
+      versions: manifest.versions,
+      sourceCommit: manifest.persiangravity_source_commit,
+      packageSha256: manifest.package_sha256,
+      fallback: manifest.fallback,
+      provider: manifest.provider,
+    };
   });
 } finally {
   const failed = results.filter((result) => result.status !== 'PASS');
   fs.writeFileSync(path.join(artifactDir, 'browser-results.json'), JSON.stringify({
-    schema_version: '1.1.0',
+    schema_version: '1.2.0',
     suite: 'WU008 real licensed integration',
-    exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
+    exact_persiangravity_commit: expectedPgrSha,
+    exact_persiangravity_version: expectedPgrVersion,
     results,
     diagnostics,
   }, null, 2) + '\n');
