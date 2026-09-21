@@ -34,19 +34,31 @@ Each surface records:
 
 Gravity Forms 3.1.1.1 Entries List `date_created` remains the only admitted verified system-date surface. Its adapter reads the raw UTC Entry property, never the already-formatted display value, and changes only `gform_entries_field_value`. Storage, API, query, sort and filter semantics remain native.
 
-## Gravity Flow discovery boundaries
+The registry and regression tests fail closed if the exact host version, package identity or admitted presentation seam drifts. Native display remains the fallback.
 
-Exact Gravity Flow 3.1.0 source/runtime discovery is collected in the existing WU008 exact-package lane. The discovery target includes Inbox `date_created`, `last_updated`, `due_date`; Status `date_created`, `workflow_timestamp`, `due_date`; Entry Detail schedule/due/expiration; Timeline/history; and Print.
+## Gravity Flow discovery results
 
-Inbox and Status display-hook candidates are not admitted merely because a filter name or a `*_human_readable` value exists. Qualification must prove that the proposed presentation seam is distinct from raw compare/sort/filter/query/workflow values and must establish source timezone semantics.
+Exact Gravity Flow 3.1.0 source discovery runs inside the existing current-Head WU008 exact-package lane. It does not modify vendor files and uploads only normalized source-reference metadata.
 
-Workflow due/schedule/expiration timestamps remain workflow-owned operational data. No adapter may alter raw timestamps, chronological comparisons, deadlines, schedules or expiration semantics.
+The following candidates are now `SOURCE_PROVEN` while support remains `NOT_PROVEN`:
 
-Print does not get a print-specific calendar engine. It remains `NOT_PROVEN` until an admitted underlying Entry Detail/Timeline presentation seam is shown to propagate correctly through authentic print rendering.
+- Inbox `date_created`: exact source contains a distinct raw/compare value and `date_created_human_readable`; `gravityflow_inbox_field_value` is a display filter receiving value/form/id/entry context.
+- Inbox `last_updated`: exact source contains a distinct raw/compare value and `last_updated_human_readable` through the same display filter.
+- Inbox `due_date`: exact source contains raw due/compare data and `due_date_human_readable` through the same display filter. This does **not** authorize conversion of workflow-owned operational timestamps.
+- Status `date_created`: exact source exposes the formatted display through `gravityflow_field_value_status_table` while raw/sort identity remains separately represented.
+- Status `workflow_timestamp`: exact source exposes the formatted display through the same Status filter while the workflow timestamp remains a distinct underlying field.
 
-## GravityView discovery boundaries
+Those source results are promising presentation-only seams, but they do not yet establish every authoritative timezone transformation or authentic Jalali browser/runtime behavior. No production adapter is admitted by this batch.
 
-GravityView 3.3.4 `date_created` and `date_updated` are candidates only. Exact source/runtime discovery must identify a supported output-only filter/context, establish timezone semantics, and prove that query/search/sort/filter continue using raw host fields. Browser proof is required before support is admitted.
+Status `due_date`, Entry Detail due/schedule/expiration, Timeline/history and Print remain `NOT_PROVEN`. Discovery found related references, but not a sufficiently narrow, side-effect-free date-presentation seam for those surfaces. Workflow due/schedule/expiration timestamps remain workflow-owned operational data; no adapter may alter raw timestamps, chronological comparisons, deadlines, schedules or expiration semantics.
+
+Print does not get a print-specific calendar engine. The observed `gravityflow_print_styles` hook is a print asset seam, not a date-conversion seam. Print remains `NOT_PROVEN` until an admitted underlying Entry Detail/Timeline presentation adapter is shown to propagate correctly through authentic print rendering.
+
+## GravityView discovery results
+
+Exact GravityView 3.3.4 source contains implementations for `date_created` and `date_updated` and exposes output-filter/context infrastructure. That is not yet enough to identify the safest supported field-specific output-only seam, and `date_updated` source timezone semantics also remain unresolved.
+
+Therefore both GravityView system-date candidates remain `NOT_PROVEN`. Admission still requires a supported output seam, explicit timezone semantics, evidence that query/search/sort/filter stay bound to raw host fields, and authentic exact-version browser/runtime proof.
 
 ## Independent evidence
 
