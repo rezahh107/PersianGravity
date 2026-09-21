@@ -156,8 +156,12 @@ async function qualifyGravityForms(browser, viewport) {
     const focusAdvanced = await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== document.documentElement);
     return { viewport, doc, form: formState, input: inputState, focusAdvanced, typedValue: await input.inputValue() };
   });
-  const directionPass = observed.doc.htmlDirAttribute === expectedDirection
+  const dirAttributePass = profile === 'rtl'
+    ? observed.doc.htmlDirAttribute === 'rtl'
+    : observed.doc.htmlDirAttribute === null || observed.doc.htmlDirAttribute === 'ltr';
+  const directionPass = dirAttributePass
     && observed.doc.htmlDirection === expectedDirection
+    && observed.doc.bodyDirection === expectedDirection
     && observed.doc.lang.toLowerCase().startsWith(expectedLocale.split('-')[0].toLowerCase())
     && observed.form.direction === expectedDirection;
   const geometryPass = rectVisible(observed.form) && observed.doc.scrollWidth <= observed.doc.clientWidth + 2;
