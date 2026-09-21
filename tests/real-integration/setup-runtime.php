@@ -44,19 +44,22 @@ wu008_assert( 'fa_IR' === determine_locale(), 'Effective runtime locale must be 
 wu008_assert( class_exists( 'GFAPI' ), 'Gravity Forms runtime API is unavailable.' );
 wu008_assert( class_exists( 'Gravity_Flow_API' ), 'Gravity Flow runtime API is unavailable.' );
 
+$expected_pgr_version = getenv( 'WU008_PGR_VERSION' );
+wu008_assert( is_string( $expected_pgr_version ) && '' !== $expected_pgr_version, 'WU008_PGR_VERSION is required.' );
+
 $versions = array(
-	'gravityforms' => wu008_plugin_version( 'gravityforms/gravityforms.php' ),
-	'gravityflow'  => wu008_plugin_version( 'gravityflow/gravityflow.php' ),
-	'gravityview'  => wu008_plugin_version( 'gravityview/gravityview.php' ),
+	'gravityforms'   => wu008_plugin_version( 'gravityforms/gravityforms.php' ),
+	'gravityflow'    => wu008_plugin_version( 'gravityflow/gravityflow.php' ),
+	'gravityview'    => wu008_plugin_version( 'gravityview/gravityview.php' ),
 	'persiangravity' => wu008_plugin_version( 'persian-gravityforms/persian-gravityforms.php' ),
 );
 wu008_assert( '3.1.1.1' === $versions['gravityforms'], 'Gravity Forms runtime version mismatch.' );
 wu008_assert( '3.1.0' === $versions['gravityflow'], 'Gravity Flow runtime version mismatch.' );
 wu008_assert( '3.3.4' === $versions['gravityview'], 'GravityView runtime version mismatch.' );
-wu008_assert( '4.2.0' === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
+wu008_assert( $expected_pgr_version === $versions['persiangravity'], 'PersianGravity current-Head runtime version mismatch.' );
 
 // Exercise the actual product domains after all exact products are active.
-$gf_key = 'There was a problem with your submission.';
+$gf_key   = 'There was a problem with your submission.';
 $flow_key = 'No Pending Tasks';
 $view_key = 'This View is in the Trash. %1$sClick to restore the View%2$s.';
 
@@ -67,7 +70,7 @@ $provider = array(
 );
 wu008_assert( 'مشکلی با این ارسال پیش آمده است.' === $provider['gravityforms'], 'Gravity Forms provider translation did not resolve.' );
 wu008_assert( 'کاری در انتظار نیست' === $provider['gravityflow'], 'Gravity Flow provider translation did not resolve.' );
-wu008_assert( 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.' === $provider['gravityview'], 'GravityView provider translation did not resolve.' );
+wu008_assert( 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.' === $provider['gravityview'], 'GravityView provider runtime evidence mismatch.' );
 
 // Exercise provider-over-upstream precedence and upstream-only fallback through
 // WordPress' real JIT registry path without changing any licensed vendor package.
