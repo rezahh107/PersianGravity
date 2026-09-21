@@ -88,6 +88,25 @@ async function computed(page, selector) {
   });
 }
 
+async function computedLocator(locator) {
+  return locator.first().evaluate((el) => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return {
+      tagName: el.tagName.toLowerCase(),
+      id: el.id || null,
+      className: typeof el.className === 'string' ? el.className.slice(0, 300) : null,
+      direction: style.direction,
+      textAlign: style.textAlign,
+      paddingInlineStart: style.paddingInlineStart,
+      paddingInlineEnd: style.paddingInlineEnd,
+      unicodeBidi: style.unicodeBidi,
+      rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height },
+      viewport: { width: innerWidth, height: innerHeight },
+    };
+  });
+}
+
 function rectVisible(state) {
   return state.rect.width > 0 && state.rect.left >= -1 && state.rect.right <= state.viewport.width + 1;
 }
@@ -129,12 +148,17 @@ async function qualifyGravityForms(browser, viewport) {
     await input.focus();
     await input.fill('شناسه ID-1234 user@example.invalid');
     if (!(await input.evaluate((el) => el === document.activeElement))) throw new Error('GF text control did not retain focus.');
+    const inputState = await input.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { direction: style.direction, textAlign: style.textAlign, unicodeBidi: style.unicodeBidi };
+    });
     await page.keyboard.press('Tab');
     const focusAdvanced = await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== document.documentElement);
-    return { viewport, doc, form: formState, focusAdvanced, typedValue: await input.inputValue() };
+    return { viewport, doc, form: formState, input: inputState, focusAdvanced, typedValue: await input.inputValue() };
   });
   const directionPass = observed.doc.htmlDirAttribute === expectedDirection
     && observed.doc.htmlDirection === expectedDirection
+    && observed.doc.lang.toLowerCase().startsWith(expectedLocale.split('-')[0].toLowerCase())
     && observed.form.direction === expectedDirection;
   const geometryPass = rectVisible(observed.form) && observed.doc.scrollWidth <= observed.doc.clientWidth + 2;
   const focusPass = observed.focusAdvanced && observed.typedValue.includes('ID-1234') && observed.typedValue.includes('user@example.invalid');
@@ -143,8 +167,8 @@ async function qualifyGravityForms(browser, viewport) {
     directionPass && geometryPass && focusPass ? 'NATIVE_PASS' : 'NOT_PROVEN',
     `Authentic Gravity Forms frontend at ${viewport.width}x${viewport.height} under ${profile}`,
     observed,
-    'Computed document/form direction, bounded responsive geometry, and basic focus/keyboard/input behavior for the exact runtime.',
-    'Full accessibility conformance, every Gravity Forms field type, or unrelated admin surfaces.',
+    'Computed document/form direction, bounded responsive geometry, exact preservation of mixed Persian/technical tokens, and basic focus/keyboard/input behavior for the exact runtime.',
+    'Full accessibility conformance, every Gravity Forms field type, or visual BiDi ordering for every possible technical token.',
   );
   await page.screenshot({ path: path.join(artifactDir, `g009-${profile}-gravityforms-${viewport.width}.png`), fullPage: true });
   await page.close();
@@ -163,10 +187,11 @@ async function qualifyFlow(browser, viewport) {
     if (/There has been a critical error|Fatal error/i.test(bodyText)) throw new Error('Flow frontend Inbox contains a fatal/critical error.');
     const styleLink = page.locator('link#gform_admin-css, link[href*="gravityforms"][href*="admin.min.css"]').first();
     const gformAdminPresent = await styleLink.count() > 0;
-    const visibleCandidates = page.locator('main, .gravityflow-inbox, .gravityflow-workflow-ui, .ag-root, .ag-root-wrapper, body').filter({ visible: true });
-    const candidate = visibleCandidates.first();
-    const visibleBefore = await computed(page, await candidate.evaluate((el) => el.tagName.toLowerCase() === 'body' ? 'body' : el.id ? `#${CSS.escape(el.id)}` : 'body')).catch(() => computed(page, 'body'));
     const gridPresent = await page.locator('.ag-root, .ag-root-wrapper').count() > 0;
+    const surface = gridPresent
+      ? page.locator('.ag-root-wrapper:visible, .ag-root:visible').first()
+      : page.locator('.gravityflow-inbox:visible, .gravityflow-workflow-ui:visible, main:visible, body').first();
+    const visibleBefore = await computedLocator(surface);
     let experiment = null;
     if (profile === 'rtl' && gformAdminPresent) {
       experiment = await styleLink.evaluate(async (link) => {
@@ -199,11 +224,10 @@ async function qualifyFlow(browser, viewport) {
     return { viewport, docBefore, docAfter, bodyText, gformAdminPresent, gridPresent, visibleBefore, experiment, focusPass };
   });
 
-  const visibleRtl = profile === 'rtl'
-    ? observed.visibleBefore.direction === 'rtl'
-    : observed.visibleBefore.direction === 'ltr';
+  const visibleDirectionPass = observed.visibleBefore.direction === expectedDirection;
+  const localePass = observed.docBefore.lang.toLowerCase().startsWith(expectedLocale.split('-')[0].toLowerCase());
   const geometryPass = rectVisible(observed.visibleBefore) && observed.docAfter.scrollWidth <= observed.docAfter.clientWidth + 2;
-  const state = visibleRtl && geometryPass && observed.focusPass !== false ? 'NATIVE_PASS' : 'NOT_PROVEN';
+  const state = visibleDirectionPass && localePass && geometryPass && observed.focusPass !== false ? 'NATIVE_PASS' : 'NOT_PROVEN';
   result(
     'gravityflow.frontend-inbox-ag-grid',
     observed.gridPresent ? state : 'NOT_PROVEN',
@@ -211,34 +235,38 @@ async function qualifyFlow(browser, viewport) {
     observed,
     observed.gridPresent
       ? 'Visible Inbox/AG Grid direction, responsive geometry and basic focus behavior without replacing vendor-owned grid state.'
-      : 'Authentic frontend Inbox request and shell behavior; no AG Grid rows/grid were deterministically present in this fixture.',
+      : 'Authentic frontend Inbox request and shell behavior; no AG Grid instance was deterministically present in this fixture.',
     observed.gridPresent
       ? 'Workflow semantics, exhaustive grid interactions, or every dynamically inserted control.'
-      : 'AG Grid-specific geometry/search/sort/filter/pager behavior because the deterministic fixture did not render the grid.',
+      : 'AG Grid-specific geometry/search/sort/filter/pager behavior because the deterministic fixture did not render a grid instance.',
   );
 
   if (profile === 'rtl') {
-    let causality = 'NOT_PROVEN';
-    if (observed.gformAdminPresent && observed.experiment
+    const causalitySupported = Boolean(
+      observed.gformAdminPresent
+      && observed.experiment
       && observed.experiment.before.html === 'ltr'
       && observed.experiment.disabled.html === 'rtl'
-      && observed.experiment.restored.html === 'ltr') {
-      causality = 'NATIVE_PASS';
-    }
+      && observed.experiment.restored.html === 'ltr'
+    );
+    const visibleMaterialDefectObserved = !visibleDirectionPass || !geometryPass || observed.focusPass === false;
     result(
       'gravityforms.gform-admin-frontend-reachability',
-      causality,
+      'NOT_PROVEN',
       'Disposable browser experiment disables and restores only the loaded gform_admin stylesheet link on the authentic Flow frontend request.',
       {
         gformAdminPresent: observed.gformAdminPresent,
+        cssCausality: causalitySupported ? 'SUPPORTED' : 'NOT_PROVEN',
         experiment: observed.experiment,
         visibleSurfaceDirection: observed.visibleBefore.direction,
         gridPresent: observed.gridPresent,
+        materialVisibleDefectInExercisedSurface: visibleMaterialDefectObserved ? 'OBSERVED_OR_UNRESOLVED' : 'NOT_OBSERVED',
+        productionDisposition: 'NOT_PROVEN',
       },
-      causality === 'NATIVE_PASS'
-        ? 'Runtime CSS causality for html direction on this exact request; the experiment is not a production repair.'
-        : 'No causal direction claim when the exact stylesheet/flip was not observed.',
-      'That the stylesheet can safely be dequeued, that it is unnecessary, or that a material user-visible defect exists.',
+      causalitySupported
+        ? 'Runtime CSS causality for root direction on this exact request while keeping production behavior untouched.'
+        : 'Only the exact request/style presence and exercised visible-surface observations; root-direction causality was not established.',
+      'That gform_admin is unnecessary, that it can safely be dequeued, that every dynamic control is unaffected, or that a supported permanent repair seam exists.',
     );
   }
   await page.screenshot({ path: path.join(artifactDir, `g009-${profile}-gravityflow-inbox-${viewport.width}.png`), fullPage: true });
@@ -271,30 +299,41 @@ async function qualifyGravityView(browser, viewport) {
     const search = page.locator('#post-search-input').first();
     let searchState = null;
     let focusPass = null;
+    let searchValue = null;
     if (await search.count()) {
       searchState = await search.evaluate((el) => {
         const style = getComputedStyle(el);
         const rect = el.getBoundingClientRect();
-        return { direction: style.direction, textAlign: style.textAlign, rect: { left: rect.left, right: rect.right, width: rect.width }, viewportWidth: innerWidth };
+        return {
+          direction: style.direction,
+          textAlign: style.textAlign,
+          unicodeBidi: style.unicodeBidi,
+          rect: { left: rect.left, right: rect.right, width: rect.width },
+          viewportWidth: innerWidth,
+        };
       });
       await search.focus();
       await search.fill('View-ID-123 user@example.invalid');
+      searchValue = await search.inputValue();
       await page.keyboard.press('Tab');
       focusPass = await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== document.documentElement);
     }
-    return { viewport, target: page.url(), doc, table: tableState, search: searchState, focusPass };
+    return { viewport, target: page.url(), doc, table: tableState, search: searchState, searchValue, focusPass };
   });
-  const directionPass = observed.doc.htmlDirection === expectedDirection && observed.table.direction === expectedDirection;
+  const directionPass = observed.doc.htmlDirection === expectedDirection
+    && observed.doc.lang.toLowerCase().startsWith(expectedLocale.split('-')[0].toLowerCase())
+    && observed.table.direction === expectedDirection;
   const tableHasGeometry = observed.table.rect.width > 0;
   const searchVisible = !observed.search || (observed.search.rect.width > 0 && observed.search.rect.left >= -1 && observed.search.rect.right <= observed.search.viewportWidth + 1);
-  const state = directionPass && tableHasGeometry && searchVisible && observed.focusPass !== false ? 'NATIVE_PASS' : 'NOT_PROVEN';
+  const technicalTokenPass = !observed.searchValue || (observed.searchValue.includes('View-ID-123') && observed.searchValue.includes('user@example.invalid'));
+  const state = directionPass && tableHasGeometry && searchVisible && technicalTokenPass && observed.focusPass !== false ? 'NATIVE_PASS' : 'NOT_PROVEN';
   result(
     'gravityview.admin-list',
     state,
     `Authentic GravityView native admin list at ${viewport.width}x${viewport.height} under ${profile}`,
     observed,
-    'Native list-table direction and geometry plus search-control visibility and basic keyboard focus progression.',
-    'GravityView frontend templates, all admin screens, business/query behavior, or complete accessibility conformance.',
+    'Native list-table direction and geometry plus search-control visibility, exact technical-token preservation, and basic keyboard focus progression.',
+    'GravityView frontend templates, all admin screens, business/query behavior, complete accessibility conformance, or visual BiDi ordering for every technical token.',
   );
   await page.screenshot({ path: path.join(artifactDir, `g009-${profile}-gravityview-${viewport.width}.png`), fullPage: true });
   await page.close();
