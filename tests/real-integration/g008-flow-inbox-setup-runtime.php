@@ -114,6 +114,12 @@ foreach ( $fixtures as $fixture ) {
 	);
 	sort( $assignee_keys );
 
+	$native_last_updated_source = date( 'Y-m-d H:i:s', $fixture['workflow_timestamp'] );
+	$native_date_created        = Gravity_Flow_Common::format_date( $fixture['date_created'], '', true, true );
+	$native_last_updated        = $fixture['date_created'] !== $native_last_updated_source
+		? Gravity_Flow_Common::format_date( $native_last_updated_source, '', true, true )
+		: '-';
+
 	$runtime_entries[] = array(
 		'key'                     => $fixture['key'],
 		'id'                      => (int) $entry_id,
@@ -124,6 +130,8 @@ foreach ( $fixtures as $fixture ) {
 		'assignees'               => $assignee_keys,
 		'expected_created_jalali' => $fixture['expected_created'],
 		'expected_updated_jalali' => $fixture['expected_updated'],
+		'expected_created_native' => $native_date_created,
+		'expected_updated_native' => $native_last_updated,
 	);
 }
 
@@ -133,7 +141,7 @@ $page_id = wp_insert_post(
 		'post_status'  => 'publish',
 		'post_title'   => 'G008 Gravity Flow Inbox System Dates',
 		'post_name'    => 'g008-gravityflow-inbox-system-dates',
-		'post_content' => sprintf( '[gravityflow page="inbox" form="%d" fields="1" last_updated="true" due_date="false" display_filter="true"]', (int) $form_id ),
+		'post_content' => sprintf( '[gravityflow page="inbox" form="%d" last_updated="true" due_date="false" display_filter="true"]', (int) $form_id ),
 	),
 	true
 );
@@ -147,7 +155,7 @@ if ( ! PGR_Module_Registry::set_enabled( 'jalali_presentation', true ) ) {
 }
 
 $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512, JSON_THROW_ON_ERROR );
-$manifest['schema_version']                 = '1.3.0';
+$manifest['schema_version']                 = '1.4.0';
 $manifest['g008_flow_inbox_url']            = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
 $manifest['g008_flow_form_id']              = (int) $form_id;
 $manifest['g008_flow_step_id']              = (int) $step_id;
