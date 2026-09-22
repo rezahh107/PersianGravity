@@ -9,6 +9,18 @@
     "NOT_APPLICABLE",
     "FAIL_CLOSED_VERSION_DRIFT"
   ],
+  "native_pass_runtime_requirements": {
+    "profiles": {
+      "rtl": [
+        { "width": 1280, "height": 900 },
+        { "width": 390, "height": 844 }
+      ],
+      "ltr": [
+        { "width": 1280, "height": 900 },
+        { "width": 390, "height": 844 }
+      ]
+    }
+  },
   "products": [
     {
       "product": "Gravity Forms",
