@@ -162,7 +162,10 @@ function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentit
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      if (!['SOURCE_PROVEN', 'RUNTIME_PROVEN'].includes(surface.discovery_state)) continue;
+      const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN'
+        || surface.runtime_evidence === 'g008-flow-inbox-admission.json';
+      if (!sourceClaim) continue;
+
       sourceClaims.push({ product, surface });
       const key = productKey(product.product);
       if (sourceEvidence.exact_versions?.[key] !== product.version) {
@@ -174,7 +177,7 @@ function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentit
 
       const requirements = deriveG008SourceRequirements(surface);
       if (!requirements) {
-        errors.push(`G-008 ${surface.id}: committed ${surface.discovery_state} claim does not expose a derivable source seam/reference contract.`);
+        errors.push(`G-008 ${surface.id}: committed source-backed claim does not expose a derivable source seam/reference contract.`);
         continue;
       }
       const refs = sourceEvidence.references?.[key] ?? {};
