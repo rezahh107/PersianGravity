@@ -84,22 +84,41 @@ async function assertSort(rows, columnId) {
 }
 
 await login();
-const inboxResponsePromise = page.waitForResponse(
-  (response) => response.url().includes('/wp-json/gravityflow/internal/inbox/entries') && response.request().method() === 'POST',
-  { timeout: 15000 },
-);
 const navigation = await page.goto(manifest.g008_flow_inbox_url, { waitUntil: 'domcontentloaded' });
 if (!navigation?.ok()) throw new Error(`G008 Inbox request failed: ${navigation?.status()}`);
-const inboxResponse = await inboxResponsePromise;
-if (!inboxResponse.ok()) throw new Error(`G008 Inbox data endpoint failed: ${inboxResponse.status()}`);
-const payload = await inboxResponse.json();
+const grid = page.locator('[data-js="gflow-inbox"]').first();
+await grid.waitFor({ timeout: 15000 });
 await page.locator('.ag-root-wrapper, .ag-root').first().waitFor({ timeout: 15000 });
 await page.waitForTimeout(300);
 
-if (!Array.isArray(payload.rows) || payload.rows.length !== manifest.g008_flow_entries.length) {
-  throw new Error(`Expected ${manifest.g008_flow_entries.length} Inbox rows, received ${payload.rows?.length}.`);
+const embedded = await page.evaluate(() => {
+  const gridElement = document.querySelector('[data-js="gflow-inbox"]');
+  const gridId = gridElement?.dataset?.gridId || 'inbox_default';
+  const gridConfig = window.gflow_config?.grids?.[gridId]?.grid_options;
+  return {
+    gridId,
+    rows: Array.isArray(gridConfig?.rowData) ? gridConfig.rowData : null,
+    columnDefs: Array.isArray(gridConfig?.columnDefs)
+      ? gridConfig.columnDefs.map((column) => ({ field: column.field ?? null, displayKey: column.displayKey ?? null }))
+      : null,
+  };
+});
+if (!Array.isArray(embedded.rows) || embedded.rows.length !== manifest.g008_flow_entries.length) {
+  throw new Error(`Expected ${manifest.g008_flow_entries.length} embedded Inbox rows, received ${embedded.rows?.length}.`);
 }
-const rows = payload.rows.map((row) => ({ ...row, id: Number(row.id), date_created: Number(row.date_created), last_updated: Number(row.last_updated) }));
+if (!Array.isArray(embedded.columnDefs)) {
+  throw new Error('Exact Gravity Flow Inbox column definitions were not embedded in gflow_config.');
+}
+const dateCreatedColumn = embedded.columnDefs.find((column) => column.field === 'date_created');
+const lastUpdatedColumn = embedded.columnDefs.find((column) => column.field === 'last_updated');
+if (dateCreatedColumn?.displayKey !== 'date_created_human_readable') {
+  throw new Error(`date_created display seam drifted: ${JSON.stringify(dateCreatedColumn)}`);
+}
+if (lastUpdatedColumn?.displayKey !== 'last_updated_human_readable') {
+  throw new Error(`last_updated display seam drifted: ${JSON.stringify(lastUpdatedColumn)}`);
+}
+
+const rows = embedded.rows.map((row) => ({ ...row, id: Number(row.id), date_created: Number(row.date_created), last_updated: Number(row.last_updated) }));
 for (const row of rows) {
   const fixture = expectedById.get(row.id);
   if (!fixture) throw new Error(`Unexpected Inbox row ${row.id}.`);
@@ -145,7 +164,7 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.0.0',
+  schema_version: '1.1.0',
   evidence_class: 'AUTHENTIC_GRAVITY_FLOW_INBOX_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
@@ -154,6 +173,8 @@ const evidence = {
   exact_gravityflow_package_sha256: process.env.WU008_FLOW_SHA256 || null,
   site_timezone: manifest.g008_flow_site_timezone,
   php_default_timezone: manifest.g008_flow_php_default_timezone,
+  grid_id: embedded.gridId,
+  column_defs: embedded.columnDefs,
   rows,
   sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort },
   quick_filter: { query: 'beta', visible_entry_ids: filteredIds },
