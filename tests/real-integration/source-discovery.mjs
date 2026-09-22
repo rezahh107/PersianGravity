@@ -75,6 +75,7 @@ const flowNeedles = [
   'gravityflow_field_value_status_table',
   'workflow_timestamp',
   'date_created',
+  'last_updated',
   'due_date',
   'gravityflow_print_styles',
   'timeline',
