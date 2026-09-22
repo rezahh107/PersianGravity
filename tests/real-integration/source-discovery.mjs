@@ -7,6 +7,21 @@ if (!wpPath || !artifactDir) {
   throw new Error('WU008_WP_PATH and WU008_ARTIFACT_DIR are required.');
 }
 
+const exactPersianGravityIdentity = {
+  commit: process.env.WU008_PGR_SHA || null,
+  tree: process.env.WU008_PGR_TREE || null,
+  package_sha256: process.env.WU008_PGR_PACKAGE_SHA256 || null,
+};
+if (!/^[a-f0-9]{40}$/.test(exactPersianGravityIdentity.commit ?? '')) {
+  throw new Error('WU008_PGR_SHA must bind source discovery to the exact PersianGravity Head.');
+}
+if (!/^[a-f0-9]{40}$/.test(exactPersianGravityIdentity.tree ?? '')) {
+  throw new Error('WU008_PGR_TREE must bind source discovery to the exact PersianGravity tree.');
+}
+if (!/^[a-f0-9]{64}$/.test(exactPersianGravityIdentity.package_sha256 ?? '')) {
+  throw new Error('WU008_PGR_PACKAGE_SHA256 must bind source discovery to the exact PersianGravity package.');
+}
+
 const roots = {
   gravityforms: path.join(wpPath, 'wp-content/plugins/gravityforms'),
   gravityflow: path.join(wpPath, 'wp-content/plugins/gravityflow'),
@@ -136,8 +151,11 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.0.0',
+  schema_version: '1.1.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
+  exact_persiangravity_commit: exactPersianGravityIdentity.commit,
+  exact_persiangravity_tree: exactPersianGravityIdentity.tree,
+  exact_persiangravity_package_sha256: exactPersianGravityIdentity.package_sha256,
   exact_versions: {
     gravityforms: process.env.WU008_GF_VERSION || null,
     gravityflow: process.env.WU008_FLOW_VERSION || null,
