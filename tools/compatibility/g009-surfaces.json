@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "program": "G-009",
+  "authority": "PersianGravity bounded Persian/RTL compatibility evidence registry",
+  "allowed_evidence_states": [
+    "NATIVE_PASS",
+    "ADAPTER_REQUIRED_AND_VERIFIED",
+    "NOT_PROVEN",
+    "NOT_APPLICABLE",
+    "FAIL_CLOSED_VERSION_DRIFT"
+  ],
+  "native_pass_runtime_requirements": {
+    "profiles": {
+      "rtl": [
+        { "width": 1280, "height": 900 },
+        { "width": 390, "height": 844 }
+      ],
+      "ltr": [
+        { "width": 1280, "height": 900 },
+        { "width": 390, "height": 844 }
+      ]
+    }
+  },
+  "products": [
+    {
+      "product": "Gravity Forms",
+      "version": "3.1.1.1",
+      "package_sha256": "542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gravityforms.frontend-form",
+          "request_identity": "published WordPress page rendering an authentic Gravity Forms shortcode",
+          "rtl_relevance": "form shell, labels, validation summary, inputs, controls and technical-value BiDi islands",
+          "expected_native_behavior": "WordPress fa_IR/is_rtl() drives RTL; en_US control remains LTR",
+          "style_handles": [],
+          "dom_state_signature": "#gform_{form_id} inside the published runtime fixture",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact Gravity Forms 3.1.1.1, fa_IR RTL and en_US LTR control, desktop+narrow computed direction/geometry plus mixed-token focus/keyboard checks.",
+          "drift_behavior": "Exact Gravity Forms version/package mismatch invalidates the claim."
+        },
+        {
+          "id": "gravityforms.gform-admin-frontend-reachability",
+          "request_identity": "authentic Gravity Flow frontend Inbox request where Gravity Forms admin CSS is observed",
+          "rtl_relevance": "global direction rules can influence html/body and dynamically inserted descendants",
+          "expected_native_behavior": "No PersianGravity repair is admitted until source/runtime reachability and material effect are proven.",
+          "style_handles": ["gform_admin"],
+          "dom_state_signature": "frontend Gravity Flow Inbox shortcode page with gform_admin present",
+          "evidence_state": "NOT_PROVEN",
+          "evidence_provenance": "Exact source reachability and current-Head browser CSS causality are supported; disabling only the loaded stylesheet restores root RTL, but no material defect was observed on the exercised visible Inbox/AG Grid surface and no safe permanent repair seam is admitted.",
+          "drift_behavior": "Handle/version/surface mismatch invalidates any later finding or adapter authority."
+        }
+      ]
+    },
+    {
+      "product": "Gravity Flow",
+      "version": "3.1.0",
+      "package_sha256": "ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gravityflow.frontend-inbox-ag-grid",
+          "request_identity": "published WordPress page containing [gravityflow page=\"inbox\"]",
+          "rtl_relevance": "Inbox shell and vendor-owned AG Grid presentation only; workflow/grid state remains vendor-owned",
+          "expected_native_behavior": "Visible Inbox/AG Grid presentation follows RTL without PersianGravity replacing search/sort/filter/paging/state behavior.",
+          "style_handles": [],
+          "dom_state_signature": "Gravity Flow Inbox shortcode root plus rendered grid/list controls when present",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact Gravity Flow 3.1.0 authentic frontend Inbox/AG Grid at desktop+narrow viewports, computed RTL on the visible grid surface, bounded geometry and basic focus; root gform_admin interaction remains independently NOT_PROVEN.",
+          "drift_behavior": "Exact Gravity Flow version/package or observed DOM/state seam drift invalidates the claim."
+        }
+      ]
+    },
+    {
+      "product": "GravityView",
+      "version": "3.3.4",
+      "package_sha256": "af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gravityview.admin-list",
+          "request_identity": "authenticated GravityView post_type=gravityview admin list reached from native admin navigation",
+          "rtl_relevance": "table/list geometry, search/actions, focus order and technical-token BiDi isolation",
+          "expected_native_behavior": "Native WordPress/GravityView RTL remains usable without PersianGravity presentation adapter.",
+          "style_handles": [],
+          "dom_state_signature": "body.wp-admin with post_type=gravityview and native list-table/search controls",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 G009 browser qualification: exact GravityView 3.3.4 native list table at desktop+narrow viewports with computed RTL table direction and bounded product-table geometry; host wp-admin horizontal chrome overflow is recorded separately and is not promoted to a GravityView defect.",
+          "drift_behavior": "Exact GravityView version/package or surface-signature drift invalidates the claim."
+        }
+      ]
+    },
+    {
+      "product": "Gravity Perks",
+      "version": "2.3.16",
+      "package_sha256": "a160d166fb7894b0dfc558ae92e0c230a1336ed2a81e78fa1216be72b1024e7c",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gravityperks.family-baseline",
+          "request_identity": "only exact admitted Gravity Perks family packages; no automatic future/perk expansion",
+          "rtl_relevance": "family registration only",
+          "expected_native_behavior": "No executable RTL claim without exact-package surface evidence.",
+          "style_handles": [],
+          "dom_state_signature": null,
+          "evidence_state": "NOT_PROVEN",
+          "evidence_provenance": "G-007 localization/source evidence does not equal browser RTL proof; WU008 has no authenticated exact-package provisioning for this package.",
+          "drift_behavior": "Any package/version drift remains fail-closed."
+        }
+      ]
+    },
+    {
+      "product": "GP File Upload Pro",
+      "version": "1.5.13",
+      "package_sha256": "fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gp-file-upload-pro.frontend",
+          "request_identity": "authentic field runtime when exact package bytes are provisioned",
+          "rtl_relevance": "upload controls, progress/actions and technical filename BiDi islands",
+          "expected_native_behavior": "No RTL claim until exact-package browser evidence exists.",
+          "style_handles": [],
+          "dom_state_signature": null,
+          "evidence_state": "NOT_PROVEN",
+          "evidence_provenance": "Exact package is admitted for G-007 localization but is not provisioned by WU008 today.",
+          "drift_behavior": "Any package/version drift remains fail-closed."
+        }
+      ]
+    },
+    {
+      "product": "GP Advanced Select",
+      "version": "1.1.21",
+      "package_sha256": "d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2",
+      "package_authority": "OWNER_SUPPLIED_EXACT_PACKAGE",
+      "version_drift": "FAIL_CLOSED_VERSION_DRIFT",
+      "surfaces": [
+        {
+          "id": "gp-advanced-select.tom-select",
+          "request_identity": "authentic GP Advanced Select field with the exact vendor Tom Select style handle",
+          "rtl_relevance": "caret placement, inline/start/end padding, direction, search/selection and keyboard/focus behavior",
+          "expected_native_behavior": "Existing bounded PersianGravity adapter may run only for fa_IR + WordPress RTL + exact registered vendor handle; no future-version claim is implied.",
+          "style_handles": ["gp-advanced-select-tom-select"],
+          "dom_state_signature": ".ts-wrapper.rtl containing .ts-control",
+          "evidence_state": "NOT_PROVEN",
+          "evidence_provenance": "Existing G-007 source/unit evidence proves the bounded adapter contract but not current exact-package browser qualification; exact GP Advanced Select 1.1.21 package bytes are not available to the WU008 CI lane.",
+          "drift_behavior": "Exact package/version, handle or required DOM/state-signature drift invalidates browser qualification and requires re-admission."
+        }
+      ]
+    }
+  ]
+}

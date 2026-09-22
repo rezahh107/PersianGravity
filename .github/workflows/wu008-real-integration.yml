@@ -6,7 +6,19 @@ on:
     paths:
       - '.github/workflows/wu008-real-integration.yml'
       - 'tests/real-integration/**'
+      - 'tests/EcosystemFoundationRegistryTest.php'
+      - 'tools/compatibility/**'
+      - 'tools/jalali/**'
+      - 'tools/build-production-package.sh'
+      - 'tools/release/**'
+      - 'includes/class-pgr-gravity-perks-rtl.php'
+      - 'includes/class-pgr-gregorian-jalali-converter.php'
+      - 'includes/class-pgr-jalali-presentation.php'
+      - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
       - 'docs/WU008_REAL_INTEGRATION.md'
+      - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
+      - 'docs/G008_JALALI_PRESENTATION.md'
+      - 'docs/G008_SYSTEM_DATE_EXPANSION.md'
   workflow_dispatch:
 
 permissions:
@@ -14,9 +26,9 @@ permissions:
 
 jobs:
   real-integration:
-    name: Exact GF 3.1.1.1 + Flow 3.1.0 + View 3.3.4
+    name: Exact current Head + GF 3.1.1.1 + Flow 3.1.0 + View 3.3.4
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     services:
       database:
         image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
@@ -37,7 +49,6 @@ jobs:
       WU008_MANIFEST_PATH: /tmp/wu008-artifacts/runtime-manifest.json
       WU008_BASE_URL: http://127.0.0.1:8080
       WU008_WP_CLI: /tmp/wp-cli.phar
-      WU008_PGR_SHA: a92a09cd5ef21456c56d95726e325b545d893592
 
       WU008_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
       WU008_GF_FILE: gravityforms-3.1.1.1-source-package.zip
@@ -58,13 +69,13 @@ jobs:
       WU008_VIEW_VERSION: 3.3.4
 
     steps:
-      - name: Checkout harness branch exactly
+      - name: Checkout harness and PersianGravity source exactly
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Assert harness identity and prepare isolated paths
+      - name: Assert current-Head identity and prepare isolated paths
         shell: bash
         run: |
           set -euo pipefail
@@ -72,6 +83,8 @@ jobs:
           actual="$(git rev-parse HEAD)"
           expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           test "$actual" = "$expected"
+          tree="$(git rev-parse HEAD^{tree})"
+          printf 'WU008_PGR_SHA=%s\nWU008_PGR_TREE=%s\n' "$actual" "$tree" >> "$GITHUB_ENV"
           mkdir -p "$WU008_WP_PATH" "$WU008_PACKAGE_DIR" "$WU008_ARTIFACT_DIR"
           : > "$WU008_ARTIFACT_DIR/package-verification.jsonl"
           admin_password="$(openssl rand -hex 24)"
@@ -94,13 +107,47 @@ jobs:
           composer validate --strict
           bash -n tests/real-integration/verify-package.sh
           php -l tests/real-integration/setup-runtime.php
+          php -l tests/real-integration/g009-setup-runtime.php
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
+          node --check tests/real-integration/source-discovery.mjs
+          node --check tests/real-integration/g009-browser.mjs
+          node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/real-integration/qualification-reconciliation.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
             exit 1
           fi
+
+      - name: Build and bind installable PersianGravity package from exact current Head
+        id: pgr_package
+        shell: bash
+        env:
+          PGR_PACKAGE_SOURCE_SHA: ${{ env.WU008_PGR_SHA }}
+          PGR_PACKAGE_OUTPUT_FILE: ${{ github.output }}
+        run: |
+          set -euo pipefail
+          PGR_PACKAGE_OUTPUT_FILE="$GITHUB_OUTPUT" bash tools/build-production-package.sh
+
+      - name: Export current-Head PersianGravity package identity
+        shell: bash
+        env:
+          PGR_VERSION: ${{ steps.pgr_package.outputs.version }}
+          PGR_ZIP_NAME: ${{ steps.pgr_package.outputs.zip_name }}
+          PGR_ZIP_SHA: ${{ steps.pgr_package.outputs.zip_sha }}
+          PGR_SOURCE_HEAD: ${{ steps.pgr_package.outputs.source_head }}
+          PGR_SOURCE_TREE: ${{ steps.pgr_package.outputs.source_tree }}
+        run: |
+          set -euo pipefail
+          test "$PGR_SOURCE_HEAD" = "$WU008_PGR_SHA"
+          test "$PGR_SOURCE_TREE" = "$WU008_PGR_TREE"
+          test -n "$PGR_VERSION"
+          test -n "$PGR_ZIP_NAME"
+          test -f "dist/$PGR_ZIP_NAME"
+          echo "$PGR_ZIP_SHA  dist/$PGR_ZIP_NAME" | sha256sum -c -
+          printf 'WU008_PGR_VERSION=%s\nWU008_PGR_ZIP_NAME=%s\nWU008_PGR_PACKAGE_SHA256=%s\n' \
+            "$PGR_VERSION" "$PGR_ZIP_NAME" "$PGR_ZIP_SHA" >> "$GITHUB_ENV"
 
       - name: Install exact WP-CLI and disposable WordPress
         shell: bash
@@ -161,7 +208,7 @@ jobs:
           download "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE"
           download "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE"
 
-      - name: Fail-closed verify all packages before installation
+      - name: Fail-closed verify all licensed packages before installation
         shell: bash
         run: |
           set -euo pipefail
@@ -171,32 +218,39 @@ jobs:
           tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
           test "$(wc -l < "$evidence")" -eq 3
 
-      - name: Install verified packages and exact PersianGravity tested commit
+      - name: Install verified vendors and exact current-Head PersianGravity package
         shell: bash
         run: |
           set -euo pipefail
           unzip -q "$WU008_PACKAGE_DIR/$WU008_GF_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "dist/$WU008_PGR_ZIP_NAME" -d "$WU008_WP_PATH/wp-content/plugins"
 
-          pgr="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms"
-          git init "$pgr"
-          git -C "$pgr" remote add origin https://github.com/rezahh107/PersianGravity.git
-          git -C "$pgr" fetch --depth=1 origin "$WU008_PGR_SHA"
-          git -C "$pgr" checkout --detach FETCH_HEAD
-          test "$(git -C "$pgr" rev-parse HEAD)" = "$WU008_PGR_SHA"
+          manifest="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms/release-manifest.json"
+          test -f "$manifest"
+          test "$(php -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); echo $m["source_commit"];' "$manifest")" = "$WU008_PGR_SHA"
+          test "$(php -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); echo $m["source_tree"];' "$manifest")" = "$WU008_PGR_TREE"
 
           php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
-          test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "4.2.0"
+          test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_PGR_VERSION"
+
+      - name: Discover exact vendor source seams without mutating vendors
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/source-discovery.mjs
+          test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
 
       - name: Create deterministic runtime fixtures and assert provider/fallback semantics
         shell: bash
         run: |
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g009-setup-runtime.php
           test -s "$WU008_MANIFEST_PATH"
 
       - name: Set up exact browser runtime
@@ -226,11 +280,53 @@ jobs:
           cat /tmp/wu008-wp-server.log >&2
           exit 1
 
-      - name: Execute real Chromium integration checks
+      - name: Execute existing WU008 provider/fallback regression on current Head
         shell: bash
         run: |
           set -euo pipefail
           node tests/real-integration/browser-tests.mjs
+
+      - name: Execute current-Head fa_IR RTL qualification
+        shell: bash
+        env:
+          WU008_G009_PROFILE: rtl
+        run: |
+          set -euo pipefail
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
+          node tests/real-integration/g009-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g009-evidence-rtl.json"
+
+      - name: Execute LTR control qualification
+        shell: bash
+        env:
+          WU008_G009_PROFILE: ltr
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
+          node tests/real-integration/g009-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g009-evidence-ltr.json"
+
+      - name: Restore Persian locale and prove the control did not mutate product state
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
+          test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_PGR_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+
+      - name: Reconcile committed qualification claims with exact-run evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/reconcile-qualification-evidence.mjs
 
       - name: Upload bounded runtime evidence only
         if: always()
