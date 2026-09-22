@@ -115,15 +115,15 @@ foreach ( $fixtures as $fixture ) {
 	sort( $assignee_keys );
 
 	$runtime_entries[] = array(
-		'key'                       => $fixture['key'],
-		'id'                        => (int) $entry_id,
-		'date_created'              => (string) $entry['date_created'],
-		'workflow_timestamp'        => (int) gform_get_meta( $entry_id, 'workflow_timestamp' ),
-		'workflow_step'             => (int) gform_get_meta( $entry_id, 'workflow_step' ),
-		'workflow_final_status'     => (string) gform_get_meta( $entry_id, 'workflow_final_status' ),
-		'assignees'                 => $assignee_keys,
-		'expected_created_jalali'   => $fixture['expected_created'],
-		'expected_updated_jalali'   => $fixture['expected_updated'],
+		'key'                     => $fixture['key'],
+		'id'                      => (int) $entry_id,
+		'date_created'            => (string) $entry['date_created'],
+		'workflow_timestamp'      => (int) gform_get_meta( $entry_id, 'workflow_timestamp' ),
+		'workflow_step'           => (int) gform_get_meta( $entry_id, 'workflow_step' ),
+		'workflow_final_status'   => (string) gform_get_meta( $entry_id, 'workflow_final_status' ),
+		'assignees'               => $assignee_keys,
+		'expected_created_jalali' => $fixture['expected_created'],
+		'expected_updated_jalali' => $fixture['expected_updated'],
 	);
 }
 
@@ -133,7 +133,7 @@ $page_id = wp_insert_post(
 		'post_status'  => 'publish',
 		'post_title'   => 'G008 Gravity Flow Inbox System Dates',
 		'post_name'    => 'g008-gravityflow-inbox-system-dates',
-		'post_content' => sprintf( '[gravityflow page="inbox" form="%d" last_updated="true" due_date="false" display_filter="true"]', (int) $form_id ),
+		'post_content' => sprintf( '[gravityflow page="inbox" form="%d" fields="1" last_updated="true" due_date="false" display_filter="true"]', (int) $form_id ),
 	),
 	true
 );
@@ -147,14 +147,13 @@ if ( ! PGR_Module_Registry::set_enabled( 'jalali_presentation', true ) ) {
 }
 
 $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512, JSON_THROW_ON_ERROR );
-$manifest['schema_version']                       = '1.3.0';
-$manifest['g008_flow_inbox_url']                  = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
-$manifest['g008_flow_form_id']                    = (int) $form_id;
-$manifest['g008_flow_step_id']                    = (int) $step_id;
-$manifest['g008_flow_site_timezone']              = wp_timezone_string();
-$manifest['g008_flow_php_default_timezone']       = date_default_timezone_get();
-$manifest['g008_flow_adapter_filter_registered']  = has_filter( 'gravityflow_inbox_field_value', array( 'PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter', 'filter_inbox_value' ) );
-$manifest['g008_flow_entries']                    = $runtime_entries;
+$manifest['schema_version']                 = '1.3.0';
+$manifest['g008_flow_inbox_url']            = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
+$manifest['g008_flow_form_id']              = (int) $form_id;
+$manifest['g008_flow_step_id']              = (int) $step_id;
+$manifest['g008_flow_site_timezone']        = wp_timezone_string();
+$manifest['g008_flow_php_default_timezone'] = date_default_timezone_get();
+$manifest['g008_flow_entries']              = $runtime_entries;
 file_put_contents(
 	$manifest_path,
 	wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n"
