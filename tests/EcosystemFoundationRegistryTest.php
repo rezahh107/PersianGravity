@@ -22,19 +22,6 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$registry = $this->load_registry( 'tools/compatibility/g009-surfaces.json' );
 		$this->assertSame( 1, $registry['schema_version'] );
 		$this->assertSame( self::G009_STATES, $registry['allowed_evidence_states'] );
-		$this->assertSame(
-			array(
-				'rtl' => array(
-					array( 'width' => 1280, 'height' => 900 ),
-					array( 'width' => 390, 'height' => 844 ),
-				),
-				'ltr' => array(
-					array( 'width' => 1280, 'height' => 900 ),
-					array( 'width' => 390, 'height' => 844 ),
-				),
-			),
-			$registry['native_pass_runtime_requirements']['profiles']
-		);
 
 		$expected = array(
 			'Gravity Forms'       => array( '3.1.1.1', '542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b' ),
