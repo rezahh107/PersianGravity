@@ -15,8 +15,11 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/** Gravity Flow's display-only companion for the raw Last Updated compare value. */
 	private const LAST_UPDATED_DISPLAY_ID = 'last_updated_human_readable';
 
-	/** Exact host-owned runtime version authority admitted by the product registry. */
+	/** Host-owned runtime version authority. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
+
+	/** Host-owned plugin identity authority. */
+	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
 	/**
 	 * Register only the documented Gravity Flow Inbox presentation seam.
@@ -127,15 +130,20 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Admit only the exact runtime version already owned by the repository's
-	 * product registry. The manifest binds its target version to the host's
-	 * version constant without duplicating the foreign product domain here.
-	 * Missing or drifted authority is always native fallback.
+	 * Admit only the exact host product/version already owned by the existing
+	 * product registry. The host supplies both its version and plugin basename;
+	 * the basename resolves the matching manifest product without duplicating a
+	 * foreign product domain in production code. Missing or drifted authority is
+	 * always native fallback.
 	 *
 	 * @return bool
 	 */
 	private function is_exact_supported_host() {
-		if ( ! defined( self::HOST_VERSION_CONSTANT ) || ! defined( 'PGR_PATH' ) ) {
+		if (
+			! defined( self::HOST_VERSION_CONSTANT ) ||
+			! defined( self::HOST_BASENAME_CONSTANT ) ||
+			! defined( 'PGR_PATH' )
+		) {
 			return false;
 		}
 
@@ -144,10 +152,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			return false;
 		}
 
+		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
+		$product_slug    = dirname( $plugin_basename );
+		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
+			return false;
+		}
+
 		$products = require $registry_path;
 		$target   = '';
 		foreach ( $products as $product ) {
-			if ( self::HOST_VERSION_CONSTANT !== ( $product['runtime_version_constant'] ?? '' ) ) {
+			if ( $product_slug !== ( $product['product'] ?? '' ) ) {
 				continue;
 			}
 			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
