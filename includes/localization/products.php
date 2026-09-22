@@ -18,11 +18,10 @@ return array(
 		'scripts'        => array(),
 	),
 	'gravityflow'    => array(
-		'product'                  => 'gravityflow',
-		'target_version'           => '3.1.0',
-		'runtime_version_constant' => 'GRAVITY_FLOW_VERSION',
-		'prefix'                   => 'gravityflow',
-		'scripts'                  => array(),
+		'product'        => 'gravityflow',
+		'target_version' => '3.1.0',
+		'prefix'         => 'gravityflow',
+		'scripts'        => array(),
 	),
 	'gk-gravityview' => array(
 		'product'        => 'gravityview',
