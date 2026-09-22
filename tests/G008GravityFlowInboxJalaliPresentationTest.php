@@ -8,6 +8,9 @@ if ( ! defined( 'PGR_PATH' ) ) {
 if ( ! defined( 'GRAVITY_FLOW_VERSION' ) ) {
 	define( 'GRAVITY_FLOW_VERSION', '3.1.0' );
 }
+if ( ! defined( 'GRAVITY_FLOW_PLUGIN_BASENAME' ) ) {
+	define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
+}
 
 require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
@@ -102,15 +105,17 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertArrayNotHasKey( 'gravityflow_inbox_filter', $GLOBALS['pgr_test_filters'] );
 	}
 
-	public function test_runtime_version_gate_reuses_the_existing_product_registry_authority(): void {
+	public function test_runtime_version_gate_reuses_existing_product_registry_and_host_identity_authorities(): void {
 		$products = require dirname( __DIR__ ) . '/includes/localization/products.php';
 		$this->assertSame( '3.1.0', $products['gravityflow']['target_version'] );
-		$this->assertSame( 'GRAVITY_FLOW_VERSION', $products['gravityflow']['runtime_version_constant'] );
+		$this->assertSame( 'gravityflow', $products['gravityflow']['product'] );
 		$this->assertSame( $products['gravityflow']['target_version'], GRAVITY_FLOW_VERSION );
+		$this->assertSame( $products['gravityflow']['product'], dirname( GRAVITY_FLOW_PLUGIN_BASENAME ) );
 
 		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source );
 		$this->assertStringContainsString( "constant( self::HOST_VERSION_CONSTANT )", $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
 		$this->assertStringNotContainsString( "'gravityflow'", $source );
