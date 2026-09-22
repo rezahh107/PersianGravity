@@ -161,7 +161,7 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 		$products = require $registry_path;
 		$target   = '';
 		foreach ( $products as $product ) {
-			if ( $product_slug !== ( $product['product'] ?? '' ) ) {
+			if ( ( $product['product'] ?? '' ) !== $product_slug ) {
 				continue;
 			}
 			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
