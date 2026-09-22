@@ -105,11 +105,14 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 	public function test_runtime_version_gate_reuses_the_existing_product_registry_authority(): void {
 		$products = require dirname( __DIR__ ) . '/includes/localization/products.php';
 		$this->assertSame( '3.1.0', $products['gravityflow']['target_version'] );
+		$this->assertSame( 'GRAVITY_FLOW_VERSION', $products['gravityflow']['runtime_version_constant'] );
 		$this->assertSame( $products['gravityflow']['target_version'], GRAVITY_FLOW_VERSION );
 
 		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
-		$this->assertStringContainsString( "defined( 'GRAVITY_FLOW_VERSION' )", $source );
+		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source );
+		$this->assertStringContainsString( "constant( self::HOST_VERSION_CONSTANT )", $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
+		$this->assertStringNotContainsString( "'gravityflow'", $source );
 	}
 }
