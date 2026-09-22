@@ -67,6 +67,34 @@ function find(root, needles) {
   return results;
 }
 
+function inspectSemanticTokens(file, needles, tokens, radius = 12) {
+  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+  const result = {};
+
+  for (const needle of needles) {
+    const occurrences = [];
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!lines[i].includes(needle)) continue;
+      const start = Math.max(0, i - radius);
+      const end = Math.min(lines.length, i + radius + 1);
+      const window = lines.slice(start, end).join('\n');
+      const present = {};
+      for (const token of tokens) {
+        present[token] = window.includes(token);
+      }
+      occurrences.push({
+        line: i + 1,
+        window_start: start + 1,
+        window_end: end,
+        tokens: present,
+      });
+    }
+    result[needle] = occurrences;
+  }
+
+  return result;
+}
+
 const flowNeedles = [
   'gravityflow_inbox_field_value',
   'date_created_human_readable',
@@ -103,6 +131,37 @@ function found(product, needle) {
   return (raw[product][needle] || []).length > 0;
 }
 
+const flowInboxTaskFile = path.join(roots.gravityflow, 'includes/inbox/models/class-task.php');
+if (!fs.existsSync(flowInboxTaskFile)) {
+  throw new Error('Exact Gravity Flow 3.1.0 Inbox task model path drifted; qualification must fail closed.');
+}
+
+const flowInboxSemanticTokens = [
+  "$entry['date_created']",
+  "$entry['workflow_timestamp']",
+  "$entry['date_updated']",
+  'date_created_human_readable',
+  'last_updated_human_readable',
+  'GFCommon::format_date',
+  'get_date_from_gmt',
+  'get_gmt_from_date',
+  'wp_date',
+  'date_i18n',
+  'gmdate',
+  'current_time',
+  'strtotime',
+  "get_option( 'date_format'",
+  "get_option( 'time_format'",
+  'get_date_format',
+  'get_time_format',
+  'gravityflow_inbox_field_value',
+];
+const flowInboxSourceProbe = inspectSemanticTokens(
+  flowInboxTaskFile,
+  ['date_created_human_readable', 'last_updated_human_readable', 'gravityflow_inbox_field_value'],
+  flowInboxSemanticTokens
+);
+
 const classifications = {
   gform_admin: {
     gravityflow_source_reference: found('gravityflow', 'gform_admin'),
@@ -118,6 +177,8 @@ const classifications = {
       date_created_human_readable: found('gravityflow', 'date_created_human_readable'),
       last_updated_human_readable: found('gravityflow', 'last_updated_human_readable'),
       due_date_human_readable: found('gravityflow', 'due_date_human_readable'),
+      task_model_path: 'includes/inbox/models/class-task.php',
+      source_semantics_probe: flowInboxSourceProbe,
       discovery_state: found('gravityflow', 'gravityflow_inbox_field_value')
         && found('gravityflow', 'date_created_human_readable')
         && found('gravityflow', 'last_updated_human_readable')
@@ -152,7 +213,7 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.1.0',
+  schema_version: '1.2.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
   exact_persiangravity_commit: exactPersianGravityIdentity.commit,
   exact_persiangravity_tree: exactPersianGravityIdentity.tree,
