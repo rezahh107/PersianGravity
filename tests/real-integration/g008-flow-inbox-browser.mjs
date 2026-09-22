@@ -116,15 +116,11 @@ if (!Array.isArray(embedded.columnDefs)) {
 }
 const dateCreatedColumn = embedded.columnDefs.find((column) => column.field === 'date_created');
 const lastUpdatedColumn = embedded.columnDefs.find((column) => column.field === 'last_updated');
-const markerColumn = embedded.columnDefs.find((column) => String(column.field) === '1');
 if (dateCreatedColumn?.displayKey !== 'date_created_human_readable') {
   throw new Error(`date_created display seam drifted: ${JSON.stringify(dateCreatedColumn)}`);
 }
 if (lastUpdatedColumn?.displayKey !== 'last_updated_human_readable') {
   throw new Error(`last_updated display seam drifted: ${JSON.stringify(lastUpdatedColumn)}`);
-}
-if (!markerColumn) {
-  throw new Error('Qualification Marker field is not an authentic Inbox column; quick-filter proof cannot run.');
 }
 
 const rows = embedded.rows.map((row) => ({ ...row, id: Number(row.id), date_created: Number(row.date_created), last_updated: Number(row.last_updated) }));
@@ -137,9 +133,6 @@ for (const row of rows) {
   if (row.last_updated !== Number(fixture.workflow_timestamp)) {
     throw new Error(`last_updated raw compare value changed for entry ${row.id}.`);
   }
-  if (row['1'] !== fixture.key) {
-    throw new Error(`Qualification Marker value changed for entry ${row.id}: ${row['1']}`);
-  }
   if (mode === 'enabled') {
     if (row.date_created_human_readable !== fixture.expected_created_jalali) {
       throw new Error(`Enabled date_created display mismatch for entry ${row.id}: ${row.date_created_human_readable}`);
@@ -148,11 +141,11 @@ for (const row of rows) {
       throw new Error(`Enabled last_updated display mismatch for entry ${row.id}: ${row.last_updated_human_readable}`);
     }
   } else {
-    if (!row.date_created_human_readable || row.date_created_human_readable === fixture.expected_created_jalali) {
-      throw new Error(`Disabled date_created did not return native Gravity Flow presentation for entry ${row.id}.`);
+    if (row.date_created_human_readable !== fixture.expected_created_native) {
+      throw new Error(`Disabled date_created native display mismatch for entry ${row.id}: ${row.date_created_human_readable}`);
     }
-    if (!row.last_updated_human_readable || row.last_updated_human_readable === fixture.expected_updated_jalali) {
-      throw new Error(`Disabled last_updated did not return native Gravity Flow presentation for entry ${row.id}.`);
+    if (row.last_updated_human_readable !== fixture.expected_updated_native) {
+      throw new Error(`Disabled last_updated native display mismatch for entry ${row.id}: ${row.last_updated_human_readable}`);
     }
   }
 }
@@ -161,13 +154,15 @@ const dateCreatedSort = await assertSort(rows, 'date_created');
 const lastUpdatedSort = await assertSort(rows, 'last_updated');
 const search = page.locator('[data-js="gflow-inbox-search"]').first();
 await search.waitFor({ timeout: 10000 });
+const betaFixture = manifest.g008_flow_entries.find((entry) => entry.key === 'beta');
+const betaId = Number(betaFixture.id);
+const betaRawDateCreated = String(rawCreatedTimestamp(betaFixture.date_created));
 await search.click();
-await search.pressSequentially('beta');
+await search.pressSequentially(betaRawDateCreated);
 await page.waitForTimeout(150);
-const betaId = Number(manifest.g008_flow_entries.find((entry) => entry.key === 'beta').id);
 const filteredIds = await visibleRowIds();
 if (JSON.stringify(filteredIds) !== JSON.stringify([betaId])) {
-  throw new Error(`Quick filter changed unexpectedly: ${JSON.stringify(filteredIds)}`);
+  throw new Error(`Raw date_created quick filter did not isolate beta: ${JSON.stringify({ query: betaRawDateCreated, filteredIds })}`);
 }
 await search.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
 await search.press('Backspace');
@@ -182,7 +177,7 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.3.0',
+  schema_version: '1.4.0',
   evidence_class: 'AUTHENTIC_GRAVITY_FLOW_INBOX_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
@@ -195,7 +190,7 @@ const evidence = {
   column_defs: embedded.columnDefs,
   rows,
   sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort },
-  quick_filter: { query: 'beta', visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
+  quick_filter: { raw_field: 'date_created', query: betaRawDateCreated, visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
   diagnostics,
 };
 fs.writeFileSync(path.join(artifactDir, `g008-flow-inbox-browser-${mode}.json`), `${JSON.stringify(evidence, null, 2)}\n`);
