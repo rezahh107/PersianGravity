@@ -45,12 +45,17 @@ function rawCreatedTimestamp(dateCreated) {
 
 async function visibleRowIds() {
   return page.locator('.ag-center-cols-container .ag-row').evaluateAll((nodes) => nodes
-    .filter((node) => {
+    .map((node) => {
       const rect = node.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
+      return {
+        id: Number(node.getAttribute('row-id')),
+        top: rect.top,
+        visible: rect.width > 0 && rect.height > 0,
+      };
     })
-    .map((node) => Number(node.getAttribute('row-id')))
-    .filter(Number.isFinite));
+    .filter((row) => row.visible && Number.isFinite(row.id) && Number.isFinite(row.top))
+    .sort((a, b) => a.top - b.top)
+    .map((row) => row.id));
 }
 
 function sortedIds(rows, key, direction) {
@@ -74,11 +79,11 @@ async function assertSort(rows, columnId) {
   const firstIsAsc = JSON.stringify(first) === JSON.stringify(asc);
   const firstIsDesc = JSON.stringify(first) === JSON.stringify(desc);
   if (!firstIsAsc && !firstIsDesc) {
-    throw new Error(`${columnId} first sort order does not follow raw compare values: ${JSON.stringify({ first, asc, desc })}`);
+    throw new Error(`${columnId} first visual sort order does not follow raw compare values: ${JSON.stringify({ first, asc, desc })}`);
   }
   const expectedSecond = firstIsAsc ? desc : asc;
   if (JSON.stringify(second) !== JSON.stringify(expectedSecond)) {
-    throw new Error(`${columnId} reverse sort order does not follow raw compare values.`);
+    throw new Error(`${columnId} reverse visual sort order does not follow raw compare values.`);
   }
   return { first, second, first_direction: firstIsAsc ? 'asc' : 'desc' };
 }
@@ -164,7 +169,7 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.1.0',
+  schema_version: '1.2.0',
   evidence_class: 'AUTHENTIC_GRAVITY_FLOW_INBOX_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
