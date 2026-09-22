@@ -67,6 +67,46 @@ function find(root, needles) {
   return results;
 }
 
+function inspectSemanticTokens(file, needles, tokens, radius = 12) {
+  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+  const result = {};
+
+  for (const needle of needles) {
+    const occurrences = [];
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!lines[i].includes(needle)) continue;
+      const start = Math.max(0, i - radius);
+      const end = Math.min(lines.length, i + radius + 1);
+      const window = lines.slice(start, end).join('\n');
+      const present = {};
+      for (const token of tokens) {
+        present[token] = window.includes(token);
+      }
+      occurrences.push({
+        line: i + 1,
+        window_start: start + 1,
+        window_end: end,
+        tokens: present,
+      });
+    }
+    result[needle] = occurrences;
+  }
+
+  return result;
+}
+
+function requireSourceFile(root, relative, label) {
+  const file = path.join(root, relative);
+  if (!fs.existsSync(file)) throw new Error(`${label} path drifted: ${relative}`);
+  return { file, relative, content: fs.readFileSync(file, 'utf8') };
+}
+
+function allContractValuesTrue(value) {
+  if (typeof value === 'boolean') return value;
+  if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
+  return true;
+}
+
 const flowNeedles = [
   'gravityflow_inbox_field_value',
   'date_created_human_readable',
@@ -103,6 +143,74 @@ function found(product, needle) {
   return (raw[product][needle] || []).length > 0;
 }
 
+const flowInboxTask = requireSourceFile(roots.gravityflow, 'includes/inbox/models/class-task.php', 'Exact Gravity Flow Inbox task model');
+const flowCommon = requireSourceFile(roots.gravityflow, 'includes/class-common.php', 'Exact Gravity Flow common formatter');
+const flowMain = requireSourceFile(roots.gravityflow, 'class-gravity-flow.php', 'Exact Gravity Flow entry-meta authority');
+const gfApi = requireSourceFile(roots.gravityforms, 'includes/api.php', 'Exact Gravity Forms Entry API contract');
+const gfCommon = requireSourceFile(roots.gravityforms, 'common.php', 'Exact Gravity Forms date formatter');
+
+const flowInboxSemanticTokens = [
+  "$entry['date_created']",
+  "$entry['workflow_timestamp']",
+  "$entry['date_updated']",
+  'date_created_human_readable',
+  'last_updated_human_readable',
+  'Gravity_Flow_Common::format_date',
+  'get_date_from_gmt',
+  'get_gmt_from_date',
+  'wp_date',
+  'date_i18n',
+  'gmdate',
+  'current_time',
+  'strtotime',
+  "get_option( 'date_format'",
+  "get_option( 'time_format'",
+  'get_date_format',
+  'get_time_format',
+  'gravityflow_inbox_field_value',
+];
+const flowInboxSourceProbe = inspectSemanticTokens(
+  flowInboxTask.file,
+  ['date_created_human_readable', 'last_updated_human_readable', 'gravityflow_inbox_field_value'],
+  flowInboxSemanticTokens
+);
+
+const flowInboxSourceContract = {
+  paths: {
+    inbox_task_model: flowInboxTask.relative,
+    flow_common_formatter: flowCommon.relative,
+    flow_entry_meta_authority: flowMain.relative,
+    gravityforms_entry_api: gfApi.relative,
+    gravityforms_common_formatter: gfCommon.relative,
+  },
+  date_created: {
+    gravityforms_entry_contract_is_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
+    inbox_display_reads_entry_date_created: /case\s+'date_created_human_readable':[\s\S]{0,260}Gravity_Flow_Common::format_date\(\s*\$entry\['date_created'\]/.test(flowInboxTask.content),
+    inbox_raw_compare_reads_same_entry_date_created: /case\s+'date_created':[\s\S]{0,180}strtotime\(\s*\$entry\['date_created'\]\s*\)/.test(flowInboxTask.content),
+    raw_and_display_are_separate_column_identities: /'date_created'[\s\S]{0,180}'displayKey'\s*=>\s*'date_created_human_readable'/.test(flowInboxTask.content),
+  },
+  last_updated: {
+    workflow_timestamp_is_numeric_entry_meta: /\$entry_meta\['workflow_timestamp'\]\s*=\s*array\([\s\S]{0,260}'is_numeric'\s*=>\s*true/.test(flowMain.content),
+    workflow_timestamp_callback_returns_epoch: /function\s+callback_update_entry_meta_timestamp[\s\S]{0,500}strtotime\(\s*\$entry\['date_created'\]\s*\)\s*:\s*time\(\)/.test(flowMain.content),
+    inbox_display_reads_workflow_timestamp: /case\s+'last_updated_human_readable':[\s\S]{0,220}date\(\s*'Y-m-d H:i:s',\s*\$entry\['workflow_timestamp'\]\s*\)/.test(flowInboxTask.content),
+    inbox_raw_compare_reads_same_workflow_timestamp: /case\s+'last_updated':[\s\S]{0,160}\(int\)\s*\$entry\['workflow_timestamp'\]/.test(flowInboxTask.content),
+    raw_and_display_are_separate_column_identities: /'last_updated'[\s\S]{0,180}'displayKey'\s*=>\s*'last_updated_human_readable'/.test(flowInboxTask.content),
+  },
+  timezone_and_formatting: {
+    flow_numeric_timestamp_uses_php_date_intermediate: /is_numeric\(\s*\$date_or_timestamp\s*\)\s*\?\s*date\(\s*'Y-m-d H:i:s',\s*\$date_or_timestamp\s*\)/.test(flowCommon.content),
+    flow_delegates_to_gravityforms_formatter: flowCommon.content.includes('return GFCommon::format_date( $date_time, $is_human, $format, $include_time );'),
+    gravityforms_formatter_declares_utc_input: gfCommon.content.includes('@param string $gmt_datetime The UTC date/time value to be formatted.'),
+    gravityforms_formatter_localizes_before_display: gfCommon.content.includes('$local_time = self::get_local_timestamp( $gmt_time );'),
+  },
+  presentation_seam: {
+    filter_receives_display_form_id_field_id_and_entry: /apply_filters\(\s*'gravityflow_inbox_field_value',\s*\$value,\s*\$form\['id'\],\s*\$id,\s*\$entry\s*\)/.test(flowInboxTask.content),
+  },
+};
+
+if (!allContractValuesTrue(flowInboxSourceContract)) {
+  throw new Error(`Exact Gravity Flow Inbox source/timezone contract drifted: ${JSON.stringify(flowInboxSourceContract)}`);
+}
+
 const classifications = {
   gform_admin: {
     gravityflow_source_reference: found('gravityflow', 'gform_admin'),
@@ -118,6 +226,9 @@ const classifications = {
       date_created_human_readable: found('gravityflow', 'date_created_human_readable'),
       last_updated_human_readable: found('gravityflow', 'last_updated_human_readable'),
       due_date_human_readable: found('gravityflow', 'due_date_human_readable'),
+      task_model_path: flowInboxTask.relative,
+      source_semantics_probe: flowInboxSourceProbe,
+      source_contract: flowInboxSourceContract,
       discovery_state: found('gravityflow', 'gravityflow_inbox_field_value')
         && found('gravityflow', 'date_created_human_readable')
         && found('gravityflow', 'last_updated_human_readable')
@@ -152,7 +263,7 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.1.0',
+  schema_version: '1.3.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
   exact_persiangravity_commit: exactPersianGravityIdentity.commit,
   exact_persiangravity_tree: exactPersianGravityIdentity.tree,

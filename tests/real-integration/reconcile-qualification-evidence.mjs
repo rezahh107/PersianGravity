@@ -61,7 +61,6 @@ function validateRegistryRuntimeRequirements(registry) {
 
 function validateG009(registry, artifacts, expectedIdentity) {
   const errors = [];
-  const requirements = validateRegistryRuntimeRequirements(registry);
   const claims = [];
 
   for (const product of registry.products ?? []) {
@@ -70,6 +69,7 @@ function validateG009(registry, artifacts, expectedIdentity) {
     }
   }
 
+  const requirements = validateRegistryRuntimeRequirements(registry);
   for (const [profile, requiredViewports] of Object.entries(requirements)) {
     const evidence = artifacts[profile];
     if (!isObject(evidence)) {
@@ -120,36 +120,67 @@ export function deriveG008SourceRequirements(surface) {
   return { seam, needles };
 }
 
-function validateG008(registry, evidence, expectedIdentity) {
+function validateG008RuntimeClaim(product, surface, runtimeEvidence, expectedIdentity) {
   const errors = [];
-  const claims = [];
-
-  if (!isObject(evidence)) {
-    return { errors: ['G-008 source-discovery evidence artifact is missing.'], claims: 0 };
+  if (surface.runtime_evidence !== 'g008-flow-inbox-admission.json') {
+    return [`G-008 ${surface.id}: unsupported runtime evidence reference ${surface.runtime_evidence ?? 'MISSING'}.`];
   }
-  if (evidence.evidence_class !== 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY') {
+  if (!isObject(runtimeEvidence)) {
+    return [`G-008 ${surface.id}: required runtime admission evidence is missing.`];
+  }
+  if (runtimeEvidence.evidence_class !== 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION') {
+    errors.push(`G-008 ${surface.id}: runtime admission evidence class mismatch.`);
+  }
+  if (runtimeEvidence.hard_gate_result !== 'PASS') {
+    errors.push(`G-008 ${surface.id}: runtime admission hard gate is not PASS.`);
+  }
+  errors.push(...exactIdentityErrors(runtimeEvidence, expectedIdentity, `G-008 ${surface.id} runtime admission`));
+  if (runtimeEvidence.exact_gravityflow_version !== product.version) {
+    errors.push(`G-008 ${surface.id}: runtime Gravity Flow version identity mismatch.`);
+  }
+  if (runtimeEvidence.exact_gravityflow_package_sha256 !== product.package_sha256) {
+    errors.push(`G-008 ${surface.id}: runtime Gravity Flow package SHA-256 mismatch.`);
+  }
+  if (runtimeEvidence.surfaces?.[surface.id] !== 'ADMITTED_VERIFIED') {
+    errors.push(`G-008 ${surface.id}: runtime evidence did not admit the committed surface claim.`);
+  }
+  return errors;
+}
+
+function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentity) {
+  const errors = [];
+  const sourceClaims = [];
+  const runtimeClaims = [];
+
+  if (!isObject(sourceEvidence)) {
+    return { errors: ['G-008 source-discovery evidence artifact is missing.'], sourceClaims: 0, runtimeClaims: 0 };
+  }
+  if (sourceEvidence.evidence_class !== 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY') {
     errors.push('G-008 source-discovery evidence class mismatch.');
   }
-  errors.push(...exactIdentityErrors(evidence, expectedIdentity, 'G-008 source discovery'));
+  errors.push(...exactIdentityErrors(sourceEvidence, expectedIdentity, 'G-008 source discovery'));
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      if (surface.discovery_state !== 'SOURCE_PROVEN') continue;
-      claims.push({ product, surface });
+      const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN'
+        || surface.runtime_evidence === 'g008-flow-inbox-admission.json';
+      if (!sourceClaim) continue;
+
+      sourceClaims.push({ product, surface });
       const key = productKey(product.product);
-      if (evidence.exact_versions?.[key] !== product.version) {
+      if (sourceEvidence.exact_versions?.[key] !== product.version) {
         errors.push(`G-008 ${surface.id}: ${product.product} version identity mismatch.`);
       }
-      if (evidence.exact_package_sha256?.[key] !== product.package_sha256) {
+      if (sourceEvidence.exact_package_sha256?.[key] !== product.package_sha256) {
         errors.push(`G-008 ${surface.id}: ${product.product} package SHA-256 mismatch.`);
       }
 
       const requirements = deriveG008SourceRequirements(surface);
       if (!requirements) {
-        errors.push(`G-008 ${surface.id}: committed SOURCE_PROVEN claim does not expose a derivable source seam/reference contract.`);
+        errors.push(`G-008 ${surface.id}: committed source-backed claim does not expose a derivable source seam/reference contract.`);
         continue;
       }
-      const refs = evidence.references?.[key] ?? {};
+      const refs = sourceEvidence.references?.[key] ?? {};
       const seamRefs = refs[requirements.seam];
       if (!Array.isArray(seamRefs) || !seamRefs.some((ref) => ref?.operation === 'apply_filters')) {
         errors.push(`G-008 ${surface.id}: required apply_filters seam ${requirements.seam} is missing from exact source discovery.`);
@@ -159,10 +190,15 @@ function validateG008(registry, evidence, expectedIdentity) {
           errors.push(`G-008 ${surface.id}: required source reference ${needle} is missing from exact source discovery.`);
         }
       }
+
+      if (surface.support_state === 'ADMITTED_VERIFIED' && surface.runtime_evidence) {
+        runtimeClaims.push({ product, surface });
+        errors.push(...validateG008RuntimeClaim(product, surface, runtimeEvidence, expectedIdentity));
+      }
     }
   }
 
-  return { errors, claims: claims.length };
+  return { errors, sourceClaims: sourceClaims.length, runtimeClaims: runtimeClaims.length };
 }
 
 export function reconcileQualificationEvidence({
@@ -171,6 +207,7 @@ export function reconcileQualificationEvidence({
   g009RtlEvidence,
   g009LtrEvidence,
   sourceDiscoveryEvidence,
+  g008FlowInboxAdmissionEvidence,
   expectedIdentity,
 }) {
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
@@ -184,19 +221,24 @@ export function reconcileQualificationEvidence({
   }
 
   const g009 = validateG009(g009Registry, { rtl: g009RtlEvidence, ltr: g009LtrEvidence }, expectedIdentity);
-  const g008 = validateG008(g008Registry, sourceDiscoveryEvidence, expectedIdentity);
+  const g008 = validateG008(g008Registry, sourceDiscoveryEvidence, g008FlowInboxAdmissionEvidence, expectedIdentity);
   const errors = [...g009.errors, ...g008.errors];
   if (errors.length > 0) throw new EvidenceReconciliationError(errors);
 
   return {
     status: 'PASS',
     g009_native_pass_claims_reconciled: g009.claims,
-    g008_source_proven_claims_reconciled: g008.claims,
+    g008_source_proven_claims_reconciled: g008.sourceClaims,
+    g008_runtime_admitted_claims_reconciled: g008.runtimeClaims,
   };
 }
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function readJsonIfPresent(file) {
+  return fs.existsSync(file) ? readJson(file) : null;
 }
 
 function runCli() {
@@ -209,6 +251,7 @@ function runCli() {
     g009RtlEvidence: readJson(path.join(artifactDir, 'g009-evidence-rtl.json')),
     g009LtrEvidence: readJson(path.join(artifactDir, 'g009-evidence-ltr.json')),
     sourceDiscoveryEvidence: readJson(path.join(artifactDir, 'source-discovery.json')),
+    g008FlowInboxAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-inbox-admission.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,

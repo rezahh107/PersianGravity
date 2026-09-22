@@ -89,7 +89,36 @@ function fixtures() {
     }
   }
 
-  return { g009Registry, g008Registry, g009RtlEvidence, g009LtrEvidence, sourceDiscoveryEvidence, expectedIdentity: structuredClone(identity) };
+  return {
+    g009Registry,
+    g008Registry,
+    g009RtlEvidence,
+    g009LtrEvidence,
+    sourceDiscoveryEvidence,
+    g008FlowInboxAdmissionEvidence: null,
+    expectedIdentity: structuredClone(identity),
+  };
+}
+
+function admitFlowInbox(input) {
+  const targets = input.g008Registry.products[0].surfaces.filter((surface) => [
+    'gravityflow.inbox.date-created',
+    'gravityflow.inbox.last-updated',
+  ].includes(surface.id));
+  for (const surface of targets) {
+    surface.discovery_state = 'RUNTIME_PROVEN';
+    surface.support_state = 'ADMITTED_VERIFIED';
+    surface.runtime_evidence = 'g008-flow-inbox-admission.json';
+  }
+  input.g008FlowInboxAdmissionEvidence = {
+    evidence_class: 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
+    hard_gate_result: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    surfaces: Object.fromEntries(targets.map((surface) => [surface.id, 'ADMITTED_VERIFIED'])),
+  };
 }
 
 function expectFailure(input, pattern) {
@@ -105,7 +134,12 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
   const beforeG009 = structuredClone(input.g009Registry);
   const beforeG008 = structuredClone(input.g008Registry);
   const result = reconcileQualificationEvidence(input);
-  assert.deepEqual(result, { status: 'PASS', g009_native_pass_claims_reconciled: 3, g008_source_proven_claims_reconciled: 5 });
+  assert.deepEqual(result, {
+    status: 'PASS',
+    g009_native_pass_claims_reconciled: 3,
+    g008_source_proven_claims_reconciled: 5,
+    g008_runtime_admitted_claims_reconciled: 0,
+  });
   assert.deepEqual(input.g009Registry, beforeG009);
   assert.deepEqual(input.g008Registry, beforeG008);
   assert.equal(input.g008Registry.products[0].surfaces.every((surface) => surface.support_state === 'NOT_PROVEN'), true);
@@ -129,6 +163,24 @@ test('G-008 discovery-regression falsification rejects a lost asserted source se
   expectFailure(input, /gravityflow\.inbox\.date-created.*required apply_filters seam gravityflow_inbox_field_value is missing/);
 });
 
+test('G-008 runtime admission claims require exact matching admission evidence', () => {
+  const input = fixtures();
+  admitFlowInbox(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_source_proven_claims_reconciled, 5);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 2);
+
+  const downgraded = fixtures();
+  admitFlowInbox(downgraded);
+  downgraded.g008FlowInboxAdmissionEvidence.surfaces['gravityflow.inbox.last-updated'] = 'NOT_PROVEN';
+  expectFailure(downgraded, /gravityflow\.inbox\.last-updated.*did not admit the committed surface claim/);
+
+  const missing = fixtures();
+  admitFlowInbox(missing);
+  missing.g008FlowInboxAdmissionEvidence = null;
+  expectFailure(missing, /gravityflow\.inbox\.date-created.*required runtime admission evidence is missing/);
+});
+
 test('exact identity mismatch rejects both vendor package drift and PersianGravity source drift', () => {
   const packageMismatch = fixtures();
   packageMismatch.g009RtlEvidence.exact_package_sha256.gravityforms = '0'.repeat(64);
@@ -137,6 +189,11 @@ test('exact identity mismatch rejects both vendor package drift and PersianGravi
   const sourceMismatch = fixtures();
   sourceMismatch.sourceDiscoveryEvidence.exact_persiangravity_commit = '9'.repeat(40);
   expectFailure(sourceMismatch, /G-008 source discovery: PersianGravity source commit mismatch/);
+
+  const runtimeMismatch = fixtures();
+  admitFlowInbox(runtimeMismatch);
+  runtimeMismatch.g008FlowInboxAdmissionEvidence.exact_gravityflow_package_sha256 = '0'.repeat(64);
+  expectFailure(runtimeMismatch, /gravityflow\.inbox\.date-created.*runtime Gravity Flow package SHA-256 mismatch/);
 });
 
 test('deliberate NOT_PROVEN claims remain legal and are not promoted by reconciliation', () => {

@@ -112,6 +112,7 @@ function pgr_initialize() {
 		require_once PGR_PATH . 'includes/class-pgr-gregorian-jalali-converter.php';
 		require_once PGR_PATH . 'includes/class-pgr-jalali-presentation.php';
 		require_once PGR_PATH . 'includes/class-pgr-gf-jalali-presentation-adapter.php';
+		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php';
 	}
 	if ( $scanner_enabled ) {
 		require_once PGR_PATH . 'includes/class-pgr-scanner-profile-registry.php';
