@@ -112,7 +112,9 @@ jobs:
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
           node --check tests/real-integration/g009-browser.mjs
+          node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/real-integration/qualification-reconciliation.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
             exit 1
@@ -319,6 +321,12 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+
+      - name: Reconcile committed qualification claims with exact-run evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/reconcile-qualification-evidence.mjs
 
       - name: Upload bounded runtime evidence only
         if: always()
