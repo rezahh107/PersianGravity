@@ -31,6 +31,12 @@ function rawRows(evidence) {
     .sort((a, b) => a.id - b.id);
 }
 
+function allContractValuesTrue(value) {
+  if (typeof value === 'boolean') return value;
+  if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
+  return true;
+}
+
 const baselineEntries = canonicalEntries(baseline.entries);
 const enabledEntries = canonicalEntries(enabledState.entries);
 const disabledEntries = canonicalEntries(disabledState.entries);
@@ -51,11 +57,18 @@ if (JSON.stringify(enabledBrowser.quick_filter.visible_entry_ids) !== JSON.strin
 if (JSON.stringify(enabledBrowser.sort.date_created) !== JSON.stringify(disabledBrowser.sort.date_created)) failures.push('date_created AG Grid sort behavior changed');
 if (JSON.stringify(enabledBrowser.sort.last_updated) !== JSON.stringify(disabledBrowser.sort.last_updated)) failures.push('last_updated AG Grid sort behavior changed');
 
-const semanticProbe = source?.classifications?.g008?.flow_inbox?.source_semantics_probe;
+const flowInboxEvidence = source?.classifications?.g008?.flow_inbox;
+const semanticProbe = flowInboxEvidence?.source_semantics_probe;
+const sourceContract = flowInboxEvidence?.source_contract;
 if (!semanticProbe) failures.push('exact-package source semantic probe is missing');
+if (!sourceContract) {
+  failures.push('exact-package source/timezone contract is missing');
+} else if (!allContractValuesTrue(sourceContract)) {
+  failures.push('exact-package source/timezone contract contains an unproven requirement');
+}
 
 const result = {
-  schema_version: '1.0.0',
+  schema_version: '1.1.0',
   evidence_class: 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: enabledBrowser.exact_persiangravity_commit,
   exact_persiangravity_package_sha256: enabledBrowser.exact_persiangravity_package_sha256,
@@ -67,6 +80,7 @@ const result = {
     native_flow_intermediate_timezone: 'UTC_PHP_DEFAULT_PROVEN_AT_RUNTIME',
     target_timezone: 'WORDPRESS_SITE_TIMEZONE_ASIA_TEHRAN_FIXTURE',
   },
+  source_contract_proven: Boolean(sourceContract && allContractValuesTrue(sourceContract)),
   presentation_isolation: {
     raw_state_equal: JSON.stringify(enabledEntries) === JSON.stringify(disabledEntries),
     ag_grid_compare_values_equal: JSON.stringify(rawRows(enabledBrowser)) === JSON.stringify(rawRows(disabledBrowser)),
