@@ -116,11 +116,15 @@ if (!Array.isArray(embedded.columnDefs)) {
 }
 const dateCreatedColumn = embedded.columnDefs.find((column) => column.field === 'date_created');
 const lastUpdatedColumn = embedded.columnDefs.find((column) => column.field === 'last_updated');
+const markerColumn = embedded.columnDefs.find((column) => String(column.field) === '1');
 if (dateCreatedColumn?.displayKey !== 'date_created_human_readable') {
   throw new Error(`date_created display seam drifted: ${JSON.stringify(dateCreatedColumn)}`);
 }
 if (lastUpdatedColumn?.displayKey !== 'last_updated_human_readable') {
   throw new Error(`last_updated display seam drifted: ${JSON.stringify(lastUpdatedColumn)}`);
+}
+if (!markerColumn) {
+  throw new Error('Qualification Marker field is not an authentic Inbox column; quick-filter proof cannot run.');
 }
 
 const rows = embedded.rows.map((row) => ({ ...row, id: Number(row.id), date_created: Number(row.date_created), last_updated: Number(row.last_updated) }));
@@ -132,6 +136,9 @@ for (const row of rows) {
   }
   if (row.last_updated !== Number(fixture.workflow_timestamp)) {
     throw new Error(`last_updated raw compare value changed for entry ${row.id}.`);
+  }
+  if (row['1'] !== fixture.key) {
+    throw new Error(`Qualification Marker value changed for entry ${row.id}: ${row['1']}`);
   }
   if (mode === 'enabled') {
     if (row.date_created_human_readable !== fixture.expected_created_jalali) {
@@ -154,22 +161,28 @@ const dateCreatedSort = await assertSort(rows, 'date_created');
 const lastUpdatedSort = await assertSort(rows, 'last_updated');
 const search = page.locator('[data-js="gflow-inbox-search"]').first();
 await search.waitFor({ timeout: 10000 });
-await search.fill('beta');
+await search.click();
+await search.pressSequentially('beta');
 await page.waitForTimeout(150);
 const betaId = Number(manifest.g008_flow_entries.find((entry) => entry.key === 'beta').id);
 const filteredIds = await visibleRowIds();
 if (JSON.stringify(filteredIds) !== JSON.stringify([betaId])) {
   throw new Error(`Quick filter changed unexpectedly: ${JSON.stringify(filteredIds)}`);
 }
-await search.fill('');
+await search.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+await search.press('Backspace');
 await page.waitForTimeout(100);
+const clearedFilterIds = await visibleRowIds();
+if (clearedFilterIds.length !== rows.length) {
+  throw new Error(`Quick filter did not restore all rows after keyboard clearing: ${JSON.stringify(clearedFilterIds)}`);
+}
 
 if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
   throw new Error(`Browser diagnostics failed: ${JSON.stringify(diagnostics)}`);
 }
 
 const evidence = {
-  schema_version: '1.2.0',
+  schema_version: '1.3.0',
   evidence_class: 'AUTHENTIC_GRAVITY_FLOW_INBOX_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
@@ -182,7 +195,7 @@ const evidence = {
   column_defs: embedded.columnDefs,
   rows,
   sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort },
-  quick_filter: { query: 'beta', visible_entry_ids: filteredIds },
+  quick_filter: { query: 'beta', visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
   diagnostics,
 };
 fs.writeFileSync(path.join(artifactDir, `g008-flow-inbox-browser-${mode}.json`), `${JSON.stringify(evidence, null, 2)}\n`);
