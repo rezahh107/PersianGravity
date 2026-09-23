@@ -38,6 +38,27 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		Gravity_Flow_API::$current_step = null;
 	}
 
+	private function due_step( $timestamps, $enabled = true ) {
+		$sequence = is_array( $timestamps ) ? array_values( $timestamps ) : array( $timestamps );
+
+		return new class( $sequence, $enabled ) {
+			public $due_date;
+			public $calls = 0;
+			private $timestamps;
+
+			public function __construct( $timestamps, $enabled ) {
+				$this->timestamps = $timestamps;
+				$this->due_date   = $enabled;
+			}
+
+			public function get_due_date_timestamp() {
+				$index = min( $this->calls, count( $this->timestamps ) - 1 );
+				++$this->calls;
+				return $this->timestamps[ $index ];
+			}
+		};
+	}
+
 	public function test_date_created_uses_authoritative_utc_entry_value_and_preserves_entry(): void {
 		$entry = array(
 			'id'                 => 9,
