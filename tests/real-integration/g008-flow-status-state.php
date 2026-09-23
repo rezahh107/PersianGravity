@@ -219,80 +219,80 @@ $late_table_to_csv_native = false;
 $late_csv_to_table_jalali = false;
 $late_csv_to_table_native = false;
 
+$late_table_to_csv_name = 'g008-flow-status-late-table-to-csv-' . $mode;
+$late_table_to_csv_args = Gravity_Flow_Status::get_defaults();
+$late_table_to_csv_args['format']             = 'table';
+$late_table_to_csv_args['file_name']          = $late_table_to_csv_name;
+$late_table_to_csv_args['display_all']        = true;
+$late_table_to_csv_args['last_updated']       = true;
+$late_table_to_csv_args['due_date']           = false;
+$late_table_to_csv_args['constraint_filters'] = array(
+	'form_id'    => $form_id,
+	'start_date' => '',
+	'end_date'   => '',
+);
+
+$table_to_csv_mutator = static function ( $args ) {
+	if ( is_array( $args ) ) {
+		$args['format'] = 'csv';
+	}
+	return $args;
+};
+add_filter( 'gravityflow_status_args', $table_to_csv_mutator, PHP_INT_MAX, 1 );
+try {
+	Gravity_Flow_Status::render( $late_table_to_csv_args );
+} finally {
+	remove_filter( 'gravityflow_status_args', $table_to_csv_mutator, PHP_INT_MAX );
+}
+
+$late_table_to_csv_path = trailingslashit( $upload_dir['basedir'] ) . $late_table_to_csv_name . '.csv';
+if ( ! is_readable( $late_table_to_csv_path ) ) {
+	throw new RuntimeException( 'Late table-to-csv mutation did not reach authentic CSV export.' );
+}
+$late_table_to_csv = (string) file_get_contents( $late_table_to_csv_path );
+@unlink( $late_table_to_csv_path );
+
+$late_table_to_csv_native = true;
+foreach ( $manifest['g008_flow_entries'] as $fixture ) {
+	if (
+		false === strpos( $late_table_to_csv, (string) $fixture['date_created'] ) ||
+		false === strpos( $late_table_to_csv, (string) $fixture['workflow_timestamp'] ) ||
+		false !== strpos( $late_table_to_csv, (string) $fixture['expected_created_jalali'] ) ||
+		false !== strpos( $late_table_to_csv, (string) $fixture['expected_updated_jalali'] )
+	) {
+		$late_table_to_csv_native = false;
+		break;
+	}
+}
+
+$late_csv_to_table_args = Gravity_Flow_Status::get_defaults();
+$late_csv_to_table_args['format']             = 'csv';
+$late_csv_to_table_args['display_all']        = true;
+$late_csv_to_table_args['last_updated']       = true;
+$late_csv_to_table_args['due_date']           = false;
+$late_csv_to_table_args['constraint_filters'] = array(
+	'form_id'    => $form_id,
+	'start_date' => '',
+	'end_date'   => '',
+);
+
+$csv_to_table_mutator = static function ( $args ) {
+	if ( is_array( $args ) ) {
+		$args['format'] = 'table';
+	}
+	return $args;
+};
+add_filter( 'gravityflow_status_args', $csv_to_table_mutator, PHP_INT_MAX, 1 );
+ob_start();
+try {
+	Gravity_Flow_Status::render( $late_csv_to_table_args );
+	$late_csv_to_table_html = (string) ob_get_contents();
+} finally {
+	ob_end_clean();
+	remove_filter( 'gravityflow_status_args', $csv_to_table_mutator, PHP_INT_MAX );
+}
+
 if ( 'enabled' === $mode ) {
-	$late_table_to_csv_name = 'g008-flow-status-late-table-to-csv';
-	$late_table_to_csv_args = Gravity_Flow_Status::get_defaults();
-	$late_table_to_csv_args['format']             = 'table';
-	$late_table_to_csv_args['file_name']          = $late_table_to_csv_name;
-	$late_table_to_csv_args['display_all']        = true;
-	$late_table_to_csv_args['last_updated']       = true;
-	$late_table_to_csv_args['due_date']           = false;
-	$late_table_to_csv_args['constraint_filters'] = array(
-		'form_id'    => $form_id,
-		'start_date' => '',
-		'end_date'   => '',
-	);
-
-	$table_to_csv_mutator = static function ( $args ) {
-		if ( is_array( $args ) ) {
-			$args['format'] = 'csv';
-		}
-		return $args;
-	};
-	add_filter( 'gravityflow_status_args', $table_to_csv_mutator, PHP_INT_MAX, 1 );
-	try {
-		Gravity_Flow_Status::render( $late_table_to_csv_args );
-	} finally {
-		remove_filter( 'gravityflow_status_args', $table_to_csv_mutator, PHP_INT_MAX );
-	}
-
-	$late_table_to_csv_path = trailingslashit( $upload_dir['basedir'] ) . $late_table_to_csv_name . '.csv';
-	if ( ! is_readable( $late_table_to_csv_path ) ) {
-		throw new RuntimeException( 'Late table-to-csv mutation did not reach authentic CSV export.' );
-	}
-	$late_table_to_csv = (string) file_get_contents( $late_table_to_csv_path );
-	@unlink( $late_table_to_csv_path );
-
-	$late_table_to_csv_native = true;
-	foreach ( $manifest['g008_flow_entries'] as $fixture ) {
-		if (
-			false === strpos( $late_table_to_csv, (string) $fixture['date_created'] ) ||
-			false === strpos( $late_table_to_csv, (string) $fixture['workflow_timestamp'] ) ||
-			false !== strpos( $late_table_to_csv, (string) $fixture['expected_created_jalali'] ) ||
-			false !== strpos( $late_table_to_csv, (string) $fixture['expected_updated_jalali'] )
-		) {
-			$late_table_to_csv_native = false;
-			break;
-		}
-	}
-
-	$late_csv_to_table_args = Gravity_Flow_Status::get_defaults();
-	$late_csv_to_table_args['format']             = 'csv';
-	$late_csv_to_table_args['display_all']        = true;
-	$late_csv_to_table_args['last_updated']       = true;
-	$late_csv_to_table_args['due_date']           = false;
-	$late_csv_to_table_args['constraint_filters'] = array(
-		'form_id'    => $form_id,
-		'start_date' => '',
-		'end_date'   => '',
-	);
-
-	$csv_to_table_mutator = static function ( $args ) {
-		if ( is_array( $args ) ) {
-			$args['format'] = 'table';
-		}
-		return $args;
-	};
-	add_filter( 'gravityflow_status_args', $csv_to_table_mutator, PHP_INT_MAX, 1 );
-	ob_start();
-	try {
-		Gravity_Flow_Status::render( $late_csv_to_table_args );
-		$late_csv_to_table_html = (string) ob_get_contents();
-	} finally {
-		ob_end_clean();
-		remove_filter( 'gravityflow_status_args', $csv_to_table_mutator, PHP_INT_MAX );
-	}
-
 	$late_csv_to_table_jalali = true;
 	foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		if (
@@ -303,13 +303,27 @@ if ( 'enabled' === $mode ) {
 			break;
 		}
 	}
-
-	if ( ! $late_table_to_csv_native || ! $late_csv_to_table_jalali ) {
-		throw new RuntimeException( 'Late Status format mutation falsification failed in enabled mode.' );
-	}
 } else {
-	$late_table_to_csv_native = true;
 	$late_csv_to_table_native = true;
+	foreach ( $manifest['g008_flow_entries'] as $fixture ) {
+		if (
+			false !== strpos( $late_csv_to_table_html, (string) $fixture['expected_created_jalali'] ) ||
+			false !== strpos( $late_csv_to_table_html, (string) $fixture['expected_updated_jalali'] ) ||
+			false === strpos( $late_csv_to_table_html, (string) $fixture['expected_created_native'] ) ||
+			false === strpos( $late_csv_to_table_html, (string) $fixture['expected_updated_native'] )
+		) {
+			$late_csv_to_table_native = false;
+			break;
+		}
+	}
+}
+
+if (
+	! $late_table_to_csv_native ||
+	( 'enabled' === $mode && ! $late_csv_to_table_jalali ) ||
+	( 'disabled' === $mode && ! $late_csv_to_table_native )
+) {
+	throw new RuntimeException( 'Late Status format mutation falsification failed.' );
 }
 
 $state = array(
