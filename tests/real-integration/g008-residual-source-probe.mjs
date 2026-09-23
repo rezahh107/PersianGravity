@@ -136,6 +136,10 @@ const expirationGetterMethod = methodSource(step, 'get_expiration_timestamp');
 const overdueMethod = methodSource(step, 'is_overdue');
 const expiredMethod = methodSource(step, 'is_expired');
 const validateScheduleMethod = methodSource(step, 'validate_schedule');
+const timestampDateMethod = methodSource(step, 'get_timestamp_date');
+const timestampDateFieldMethod = methodSource(step, 'get_timestamp_date_field');
+const timestampDelayMethod = methodSource(step, 'get_timestamp_delay');
+const entryStepStatusMethod = methodSource(flowMain, 'maybe_display_entry_detail_step_status');
 const noteHeaderMethod = methodSource(entryDetail, 'get_note_header');
 const noteBodyMethod = methodSource(entryDetail, 'get_note_body');
 const timelineNotesMethod = methodSource(common, 'get_timeline_notes');
@@ -203,6 +207,17 @@ const sourceContract = {
       && entryQueuedMethod.includes("case 'delay':")
       && entryQueuedMethod.includes("date( 'Y-m-d H:i:s', $scheduled_timestamp )")
       && entryQueuedMethod.includes('get_date_from_gmt( $scheduled_date_str )'),
+    schedule_date_timestamp_reads_configured_date: timestampDateMethod.includes("$property = $setting_type . '_date'"),
+    schedule_date_field_timestamp_reads_configured_field_and_offset:
+      timestampDateFieldMethod.includes("$property = $setting_type . '_date_field'")
+      && timestampDateFieldMethod.includes("_date_field_offset")
+      && timestampDateFieldMethod.includes("_date_field_before_after"),
+    schedule_delay_timestamp_uses_step_timestamp_and_offset:
+      timestampDelayMethod.includes('get_step_timestamp()')
+      && timestampDelayMethod.includes("_delay_offset")
+      && timestampDelayMethod.includes("_delay_unit"),
+    queued_step_status_calls_schedule_renderer:
+      entryStepStatusMethod.includes('display_queued_step_details') && entryStepStatusMethod.includes('queued'),
   },
   timeline_history: {
     header_formats_note_date_directly: noteHeaderMethod.includes('Gravity_Flow_Common::format_date( $date_created') && !noteHeaderMethod.includes('apply_filters('),
@@ -231,7 +246,7 @@ const sourceContract = {
 };
 
 const evidence = {
-  schema_version: '1.3.0',
+  schema_version: '1.4.0',
   evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
   exact,
   source_contract: sourceContract,
@@ -252,6 +267,10 @@ const evidence = {
     flow_format_date: flowFormatDateMethod,
     gravityforms_format_date: gfFormatDateMethod,
     wordpress_date_i18n: wpDateI18nMethod,
+    step_get_timestamp_date: timestampDateMethod,
+    step_get_timestamp_date_field: timestampDateFieldMethod,
+    step_get_timestamp_delay: timestampDelayMethod,
+    entry_step_status: entryStepStatusMethod,
   },
   targets: {
     status_due_date: {
