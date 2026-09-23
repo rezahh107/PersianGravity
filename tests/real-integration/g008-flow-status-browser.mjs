@@ -87,10 +87,10 @@ for (const row of defaultRows) {
   if (row.workflow_timestamp !== expectedUpdated) {
     throw new Error(`${mode} Status workflow_timestamp mismatch for ${row.id}: ${row.workflow_timestamp}`);
   }
-  if (row.due_date !== fixture.expected_due_native) {
-    throw new Error(`${mode} Status due_date must remain native for exact Flow 3.1.0 no-admission: ${JSON.stringify({ id: row.id, actual: row.due_date, expected: fixture.expected_due_native })}`);
+  if (row.due_date !== fixture.expected_status_due_native) {
+    throw new Error(`${mode} Status due_date must remain native for exact Flow 3.1.0 no-admission: ${JSON.stringify({ id: row.id, actual: row.due_date, expected: fixture.expected_status_due_native })}`);
   }
-  if (fixture.expected_due_native !== '-' && row.due_date === fixture.expected_due_jalali) {
+  if (fixture.expected_status_due_native !== '-' && row.due_date === fixture.expected_due_jalali) {
     throw new Error(`${mode} Status due_date unexpectedly crossed the admitted Jalali boundary for ${row.id}.`);
   }
 }
