@@ -59,6 +59,20 @@ function rawRows(evidence) {
     .sort((a, b) => a.id - b.id);
 }
 
+function dueInvocationEvidence(evidence) {
+  const raw = evidence?.operational_due_filter_invocations;
+  if (!raw || typeof raw !== 'object') return null;
+  const byEntry = Object.entries(raw.by_entry ?? {})
+    .map(([entryId, count]) => ({ entry_id: Number(entryId), count: Number(count) }))
+    .sort((a, b) => a.entry_id - b.entry_id);
+  return {
+    mode: String(raw.mode ?? ''),
+    total: Number(raw.total),
+    nested_inbox_presentation: Number(raw.nested_inbox_presentation),
+    by_entry: byEntry,
+  };
+}
+
 function allContractValuesTrue(value) {
   if (typeof value === 'boolean') return value;
   if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
@@ -124,6 +138,9 @@ function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
     },
     presentation_seam: {
       exact_filter_apply_site_present: taskFilterLine > 0,
+      raw_due_passes_presentation_filter: Boolean(exactDueContract?.presentation_seam?.raw_due_passes_presentation_filter),
+      raw_due_column_precedes_display_column: Boolean(exactDueContract?.presentation_seam?.raw_due_column_precedes_display_column),
+      row_values_follow_column_iteration_order: Boolean(exactDueContract?.presentation_seam?.row_values_follow_column_iteration_order),
       display_is_computed_before_presentation_filter: taskDueDisplayLine > 0 && taskFilterLine > taskDueDisplayLine,
       filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_field_id_and_entry),
     },
@@ -135,6 +152,8 @@ const enabledEntries = canonicalEntries(enabledState.entries);
 const disabledEntries = canonicalEntries(disabledState.entries);
 const enabledDueOperational = dueOperationalState(enabledState.entries);
 const disabledDueOperational = dueOperationalState(disabledState.entries);
+const enabledDueInvocations = dueInvocationEvidence(enabledBrowser);
+const disabledDueInvocations = dueInvocationEvidence(disabledBrowser);
 const expectedIds = baselineEntries.map((entry) => entry.id).sort((a, b) => a - b);
 const baseFailures = [];
 const dueFailures = [];
@@ -153,6 +172,23 @@ if (JSON.stringify(enabledBrowser.quick_filter.visible_entry_ids) !== JSON.strin
 if (JSON.stringify(enabledBrowser.sort.date_created) !== JSON.stringify(disabledBrowser.sort.date_created)) baseFailures.push('date_created AG Grid sort behavior changed');
 if (JSON.stringify(enabledBrowser.sort.last_updated) !== JSON.stringify(disabledBrowser.sort.last_updated)) baseFailures.push('last_updated AG Grid sort behavior changed');
 if (JSON.stringify(enabledBrowser.sort.due_date) !== JSON.stringify(disabledBrowser.sort.due_date)) dueFailures.push('due_date AG Grid sort behavior changed');
+if (!enabledDueInvocations || !disabledDueInvocations) {
+  dueFailures.push('request-local operational due-date invocation evidence is missing');
+} else {
+  if (enabledDueInvocations.mode !== 'enabled' || disabledDueInvocations.mode !== 'disabled') dueFailures.push('due-date invocation evidence mode identity drifted');
+  if (!Number.isInteger(enabledDueInvocations.total) || enabledDueInvocations.total <= 0 || !Number.isInteger(disabledDueInvocations.total) || disabledDueInvocations.total <= 0) {
+    dueFailures.push('due-date invocation totals are invalid');
+  }
+  if (enabledDueInvocations.total !== disabledDueInvocations.total) {
+    dueFailures.push(`presentation module added operational due-date filter executions: enabled=${enabledDueInvocations.total}, disabled=${disabledDueInvocations.total}`);
+  }
+  if (JSON.stringify(enabledDueInvocations.by_entry) !== JSON.stringify(disabledDueInvocations.by_entry)) {
+    dueFailures.push('per-entry operational due-date filter invocation counts changed with presentation module state');
+  }
+  if (enabledDueInvocations.nested_inbox_presentation !== 0 || disabledDueInvocations.nested_inbox_presentation !== 0) {
+    dueFailures.push(`operational due-date filter re-entered from Inbox presentation seam: ${JSON.stringify({ enabled: enabledDueInvocations, disabled: disabledDueInvocations })}`);
+  }
+}
 if (JSON.stringify(enabledDueOperational) !== JSON.stringify(disabledDueOperational)) dueFailures.push('due-date timing/support/highlight/schedule state changed across module modes');
 if (!enabledDueOperational.some((entry) => entry.due_date_enabled && entry.due_date_type === 'delay' && entry.due_date_delay_offset === 1 && entry.due_date_delay_unit === 'days' && entry.workflow_step_timestamp > 0 && entry.supports_due_date && !entry.scheduled && entry.schedule_timestamp === 0)) {
   dueFailures.push('deterministic delay step-timing/support/schedule fixture is missing or drifted');
@@ -186,7 +222,7 @@ if (!dueSourceContract) {
 
 const failures = [...baseFailures, ...dueFailures];
 const result = {
-  schema_version: '1.4.0',
+  schema_version: '1.5.0',
   evidence_class: 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: enabledBrowser.exact_persiangravity_commit,
   exact_persiangravity_package_sha256: enabledBrowser.exact_persiangravity_package_sha256,
@@ -202,6 +238,12 @@ const result = {
   source_contract_proven: Boolean(sourceContract && allContractValuesTrue(sourceContract)),
   due_date_source_contract: dueSourceContract,
   due_date_contract_proven: Boolean(dueSourceContract && allContractValuesTrue(dueSourceContract)),
+  operational_due_filter_invocations: {
+    enabled: enabledDueInvocations,
+    disabled: disabledDueInvocations,
+    equal_total: Boolean(enabledDueInvocations && disabledDueInvocations && enabledDueInvocations.total === disabledDueInvocations.total),
+    added_by_presentation: enabledDueInvocations && disabledDueInvocations ? enabledDueInvocations.total - disabledDueInvocations.total : null,
+  },
   presentation_isolation: {
     raw_state_equal: JSON.stringify(enabledEntries) === JSON.stringify(disabledEntries),
     due_timestamp_and_overdue_equal: JSON.stringify(enabledDue) === JSON.stringify(disabledDue),
@@ -210,6 +252,8 @@ const result = {
     query_ids_equal: JSON.stringify(enabledState.query_ids) === JSON.stringify(disabledState.query_ids),
     sort_equal: JSON.stringify(enabledBrowser.sort) === JSON.stringify(disabledBrowser.sort),
     filter_equal: JSON.stringify(enabledBrowser.quick_filter) === JSON.stringify(disabledBrowser.quick_filter),
+    operational_due_filter_invocation_count_equal: Boolean(enabledDueInvocations && disabledDueInvocations && enabledDueInvocations.total === disabledDueInvocations.total),
+    zero_nested_operational_reentry: Boolean(enabledDueInvocations && disabledDueInvocations && enabledDueInvocations.nested_inbox_presentation === 0 && disabledDueInvocations.nested_inbox_presentation === 0),
   },
   surfaces: {
     'gravityflow.inbox.date-created': baseFailures.length ? 'NOT_PROVEN' : 'ADMITTED_VERIFIED',
