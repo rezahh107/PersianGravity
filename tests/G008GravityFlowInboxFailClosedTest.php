@@ -29,6 +29,10 @@ final class G008GravityFlowInboxFailClosedTest extends TestCase {
 				array( 'date_created' => '2026-03-20 22:15:00' )
 			)
 		);
+		$this->assertSame(
+			'native due',
+			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', array( 'id' => 9 ) )
+		);
 	}
 
 	#[RunInSeparateProcess]
@@ -54,6 +58,10 @@ final class G008GravityFlowInboxFailClosedTest extends TestCase {
 				array( 'workflow_timestamp' => '1774132200' )
 			)
 		);
+		$this->assertSame(
+			'native due',
+			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', array( 'id' => 9 ) )
+		);
 	}
 
 	#[RunInSeparateProcess]
@@ -76,6 +84,10 @@ final class G008GravityFlowInboxFailClosedTest extends TestCase {
 				'last_updated_human_readable',
 				array( 'workflow_timestamp' => '1774132200' )
 			)
+		);
+		$this->assertSame(
+			'native due',
+			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', array( 'id' => 9 ) )
 		);
 	}
 }
