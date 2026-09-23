@@ -86,6 +86,8 @@ const evidence = {
   exact_persiangravity_package_sha256: process.env.WU008_PGR_PACKAGE_SHA256 || null,
   exact_gravityflow_version: process.env.WU008_FLOW_VERSION || null,
   exact_gravityflow_package_sha256: process.env.WU008_FLOW_SHA256 || null,
+  site_timezone: manifest.g008_flow_site_timezone || null,
+  php_default_timezone: manifest.g008_flow_php_default_timezone || null,
   entry_id: Number(manifest.g008_flow_residual_entry_id),
   entry_detail: {
     url: manifest.g008_flow_entry_detail_url,
