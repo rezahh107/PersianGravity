@@ -70,6 +70,7 @@ const result = {
   schema_version: '1.0.0',
   evidence_class: 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: source.exact.pgr_sha,
+  exact_persiangravity_package_sha256: enabled.exact_persiangravity_package_sha256,
   exact_gravityflow_version: flow.version,
   exact_gravityflow_package_sha256: flow.package_sha256,
   surfaces: Object.fromEntries(ids.map((id) => [id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
