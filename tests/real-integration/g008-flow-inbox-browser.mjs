@@ -89,7 +89,9 @@ async function assertSort(rows, columnId) {
 }
 
 await login();
-const navigation = await page.goto(manifest.g008_flow_inbox_url, { waitUntil: 'domcontentloaded' });
+const inboxUrl = new URL(manifest.g008_flow_inbox_url);
+inboxUrl.searchParams.set('pgr_g008_mode', mode);
+const navigation = await page.goto(inboxUrl.toString(), { waitUntil: 'domcontentloaded' });
 if (!navigation?.ok()) throw new Error(`G008 Inbox request failed: ${navigation?.status()}`);
 const grid = page.locator('[data-js="gflow-inbox"]').first();
 await grid.waitFor({ timeout: 15000 });
@@ -106,6 +108,7 @@ const embedded = await page.evaluate(() => {
     columnDefs: Array.isArray(gridConfig?.columnDefs)
       ? gridConfig.columnDefs.map((column) => ({ field: column.field ?? null, displayKey: column.displayKey ?? null, compareType: column.compareType ?? null }))
       : null,
+    dueInvocationEvidence: window.pgrG008DueInvocationEvidence ?? null,
   };
 });
 if (!Array.isArray(embedded.rows) || embedded.rows.length !== manifest.g008_flow_entries.length) {
@@ -113,6 +116,12 @@ if (!Array.isArray(embedded.rows) || embedded.rows.length !== manifest.g008_flow
 }
 if (!Array.isArray(embedded.columnDefs)) {
   throw new Error('Exact Gravity Flow Inbox column definitions were not embedded in gflow_config.');
+}
+if (!embedded.dueInvocationEvidence || embedded.dueInvocationEvidence.mode !== mode) {
+  throw new Error(`Missing request-local due-date invocation evidence for ${mode} render.`);
+}
+if (!Number.isInteger(Number(embedded.dueInvocationEvidence.total)) || Number(embedded.dueInvocationEvidence.total) <= 0) {
+  throw new Error(`Invalid due-date invocation count evidence: ${JSON.stringify(embedded.dueInvocationEvidence)}`);
 }
 const dateCreatedColumn = embedded.columnDefs.find((column) => column.field === 'date_created');
 const lastUpdatedColumn = embedded.columnDefs.find((column) => column.field === 'last_updated');
@@ -125,6 +134,12 @@ if (lastUpdatedColumn?.displayKey !== 'last_updated_human_readable') {
 }
 if (dueDateColumn?.displayKey !== 'due_date_human_readable' || dueDateColumn?.compareType !== 'date') {
   throw new Error(`due_date raw/display compare contract drifted: ${JSON.stringify(dueDateColumn)}`);
+}
+
+for (const row of embedded.rows) {
+  if (typeof row.due_date !== 'number' || !Number.isInteger(row.due_date) || row.due_date < 0) {
+    throw new Error(`due_date raw compare value is not the qualified native integer epoch/0 representation: ${JSON.stringify(row)}`);
+  }
 }
 
 const rows = embedded.rows.map((row) => ({
@@ -211,6 +226,7 @@ const evidence = {
   rows,
   sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort, due_date: dueDateSort },
   quick_filter: { raw_field: 'due_date', query: betaRawDueDate, visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
+  operational_due_filter_invocations: embedded.dueInvocationEvidence,
   diagnostics,
 };
 fs.writeFileSync(path.join(artifactDir, `g008-flow-inbox-browser-${mode}.json`), `${JSON.stringify(evidence, null, 2)}\n`);
