@@ -67,8 +67,8 @@ await page.screenshot({ path: path.join(artifactDir, `g008-flow-residual-entry-d
 
 const printResponse = await page.goto(manifest.g008_flow_print_url, { waitUntil: 'domcontentloaded' });
 if (!printResponse?.ok()) throw new Error(`Gravity Flow Print request failed: ${printResponse?.status()}`);
-await page.locator('.gravityflow-timeline').first().waitFor({ timeout: 15000 });
-const printTimeline = normalize(await page.locator('.gravityflow-timeline .gravityflow-note-meta').allTextContents());
+await page.locator('#view-container .gravityflow-note-meta').first().waitFor({ timeout: 15000 });
+const printTimeline = normalize(await page.locator('#view-container .gravityflow-note-meta').allTextContents());
 if (JSON.stringify(printTimeline) !== JSON.stringify(manifest.g008_flow_timeline_native)) {
   throw new Error(`Print timeline native timestamps drifted: ${JSON.stringify({ printTimeline, expected: manifest.g008_flow_timeline_native })}`);
 }
