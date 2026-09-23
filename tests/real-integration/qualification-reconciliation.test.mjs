@@ -195,10 +195,66 @@ function closeFlowResiduals(input) {
       sha256: 'b'.repeat(64),
     },
     source_contract: {
-      status_due_date: { direct_operational_render: true },
-      entry_detail_schedule_due_expiration: { direct_operational_render: true },
-      timeline_history: { no_date_only_seam: true },
-      print: { dependent_render_only: true },
+      status_due_date: Object.fromEntries([
+        'table_reads_operational_due_getter_directly',
+        'table_formats_due_inside_column_method',
+        'table_echoes_direct_output',
+        'table_native_empty_uses_dash_entity',
+        'table_has_no_status_value_filter',
+        'table_has_no_entry_url_proof_seam',
+        'export_has_separate_due_branch',
+        'export_uses_generic_status_filter',
+        'due_getter_is_operational_filter',
+        'overdue_uses_same_due_getter',
+      ].map((key) => [key, true])),
+      entry_detail_schedule_due_expiration: Object.fromEntries([
+        'workflow_info_exposes_format_pattern_filter_only',
+        'format_pattern_filter_precedes_due_and_expiration',
+        'due_is_direct_operational_getter_render',
+        'expiration_is_direct_operational_getter_render',
+        'below_workflow_hook_is_after_direct_date_output',
+        'date_format_hook_is_format_string_only_and_precedes_operational_values',
+        'due_has_no_downstream_value_filter',
+        'expiration_has_no_downstream_value_filter',
+        'schedule_reads_operational_getter_directly',
+        'schedule_prints_directly',
+        'schedule_has_no_value_filter',
+        'schedule_getter_is_operational_filter',
+        'expiration_getter_is_operational_filter',
+        'schedule_validation_uses_same_getter',
+        'expiration_state_uses_same_getter',
+        'shared_format_hook_scopes_submitted_last_updated_due_expiration',
+        'flow_format_date_delegates_to_gravityforms',
+        'gravityforms_format_date_reaches_date_i18n',
+        'wordpress_date_i18n_exposes_supported_filter',
+        'wordpress_date_i18n_treats_numeric_input_as_local_timestamp_with_offset',
+        'schedule_date_branch_uses_configured_civil_date',
+        'schedule_date_field_and_delay_localize_operational_timestamp',
+        'schedule_date_timestamp_reads_configured_date',
+        'schedule_date_field_timestamp_reads_configured_field_and_offset',
+        'schedule_delay_timestamp_uses_step_timestamp_and_offset',
+        'queued_step_status_calls_schedule_renderer',
+      ].map((key) => [key, true])),
+      timeline_history: Object.fromEntries([
+        'header_formats_note_date_directly',
+        'note_body_is_separate_escaped_content',
+        'timeline_reads_gravityforms_notes',
+        'timeline_inserts_initial_entry_event',
+        'initial_event_uses_entry_date_created',
+        'timeline_order_is_host_owned',
+        'timeline_full_array_filter_runs_after_host_reverse',
+        'only_timeline_data_filter_mutates_note_array',
+        'common_text_timeline_reuses_note_dates',
+        'gravityforms_notes_are_persisted_in_utc',
+        'gravityforms_notes_return_raw_date_created',
+      ].map((key) => [key, true])),
+      print: Object.fromEntries([
+        'reuses_entry_detail_grid',
+        'optional_timeline_reuses_entry_detail_timeline',
+        'no_print_specific_date_formatter',
+        'print_style_hook_is_not_date_seam',
+        'workflow_sidebar_not_rendered_by_print',
+      ].map((key) => [key, true])),
     },
   };
   input.g008ResidualNoAdmissionEvidence = {
@@ -208,6 +264,10 @@ function closeFlowResiduals(input) {
     exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
     exact_gravityflow_version: '3.1.0',
     exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    source_contract_proven: true,
+    browser_modes: { enabled: 'enabled', disabled: 'disabled' },
     surfaces: Object.fromEntries(residuals.map((surface) => [surface.id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
   };
 
@@ -365,35 +425,35 @@ test('G-008 final no-admission claims require exact source plus enabled/disabled
 
   const driftedSource = fixtures();
   closeFlowResiduals(driftedSource);
-  driftedSource.g008ResidualSourceEvidence.source_contract.timeline_history.no_date_only_seam = false;
-  expectFailure(driftedSource, /gravityflow\.timeline-history.*residual source no-admission contract is missing, empty, non-boolean, or not fully proven/);
+  driftedSource.g008ResidualSourceEvidence.source_contract.timeline_history.header_formats_note_date_directly = false;
+  expectFailure(driftedSource, /gravityflow\.timeline-history.*required source flag header_formats_note_date_directly is false/);
 });
 
 test('G-008 residual source contract gate rejects missing, empty, missing-flag, false and non-boolean evidence', () => {
   const missing = fixtures();
   closeFlowResiduals(missing);
   delete missing.g008ResidualSourceEvidence.source_contract;
-  expectFailure(missing, /gravityflow\.status\.due-date.*residual source no-admission contract is missing/);
+  expectFailure(missing, /gravityflow\.status\.due-date.*source contract is missing or empty/);
 
   const empty = fixtures();
   closeFlowResiduals(empty);
   empty.g008ResidualSourceEvidence.source_contract.status_due_date = {};
-  expectFailure(empty, /gravityflow\.status\.due-date.*residual source no-admission contract is missing/);
+  expectFailure(empty, /gravityflow\.status\.due-date.*source contract is missing or empty/);
 
   const flagMissing = fixtures();
   closeFlowResiduals(flagMissing);
-  delete flagMissing.g008ResidualSourceEvidence.source_contract.timeline_history.no_date_only_seam;
-  expectFailure(flagMissing, /gravityflow\.timeline-history.*residual source no-admission contract is missing/);
+  delete flagMissing.g008ResidualSourceEvidence.source_contract.timeline_history.timeline_reads_gravityforms_notes;
+  expectFailure(flagMissing, /gravityflow\.timeline-history.*required source flag timeline_reads_gravityforms_notes is missing/);
 
   const falseFlag = fixtures();
   closeFlowResiduals(falseFlag);
-  falseFlag.g008ResidualSourceEvidence.source_contract.print.dependent_render_only = false;
-  expectFailure(falseFlag, /gravityflow\.print.*residual source no-admission contract is missing/);
+  falseFlag.g008ResidualSourceEvidence.source_contract.print.workflow_sidebar_not_rendered_by_print = false;
+  expectFailure(falseFlag, /gravityflow\.print.*required source flag workflow_sidebar_not_rendered_by_print is false/);
 
   const nonBoolean = fixtures();
   closeFlowResiduals(nonBoolean);
-  nonBoolean.g008ResidualSourceEvidence.source_contract.entry_detail_schedule_due_expiration.direct_operational_render = 'true';
-  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule-due-expiration.*residual source no-admission contract is missing/);
+  nonBoolean.g008ResidualSourceEvidence.source_contract.entry_detail_schedule_due_expiration.schedule_has_no_value_filter = 'true';
+  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule-due-expiration.*required source flag schedule_has_no_value_filter must be boolean/);
 });
 
 test('G-008 residual browser gate rejects missing or duplicated mode evidence', () => {
