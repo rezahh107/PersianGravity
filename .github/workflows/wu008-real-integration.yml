@@ -122,6 +122,8 @@ jobs:
           node --check tests/real-integration/g008-flow-inbox-reconcile.mjs
           node --check tests/real-integration/g008-flow-status-browser.mjs
           node --check tests/real-integration/g008-flow-status-reconcile.mjs
+          node --check tests/real-integration/g008-flow-residual-browser.mjs
+          node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/qualification-reconciliation.test.mjs
@@ -351,10 +353,12 @@ jobs:
           node tests/real-integration/g008-flow-inbox-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
           node tests/real-integration/g008-flow-status-browser.mjs
+          node tests/real-integration/g008-flow-residual-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-browser-enabled.json"
 
       - name: Prove module-disabled native Gravity Flow fallback
         shell: bash
@@ -367,10 +371,12 @@ jobs:
           node tests/real-integration/g008-flow-inbox-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
           node tests/real-integration/g008-flow-status-browser.mjs
+          node tests/real-integration/g008-flow-residual-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-browser-disabled.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
 
       - name: Reconcile G008 Flow Inbox admission evidence
@@ -386,6 +392,13 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-flow-status-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-admission.json"
+
+      - name: Reconcile residual G008 no-admission evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-residual-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-no-admission.json"
 
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
