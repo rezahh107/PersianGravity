@@ -65,44 +65,66 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 		}
 
 		if ( self::DUE_DATE_RAW_ID === $field_id ) {
-			$this->capture_due_date_raw( $value, $form_id, $entry );
+			$key = $this->due_date_capture_key( $form_id, $entry );
+			$this->pending_due_date_raw = null === $key
+				? null
+				: array(
+					'key' => $key,
+					'raw' => $this->qualified_due_date_raw( $value ),
+				);
 			return $value;
 		}
 
 		if ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
-			$raw_due_date = $this->consume_due_date_raw( $form_id, $entry );
-			if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
-				return $value;
-			}
-
-			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
-			// date. Consume any matching raw 0 proof, but preserve the native value.
-			if ( '-' === $value || null === $raw_due_date || 0 === $raw_due_date ) {
-				return $value;
-			}
-
-			$source = $this->absolute_timestamp_source( $raw_due_date );
-		} else {
-			// Exact 3.1.0 emits due_date immediately before its display companion.
-			// Any intervening identity invalidates the one-shot authority.
+			$key     = $this->due_date_capture_key( $form_id, $entry );
+			$pending = $this->pending_due_date_raw;
 			$this->pending_due_date_raw = null;
 
-			if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
+			if (
+				null === $key ||
+				! is_array( $pending ) ||
+				$pending['key'] !== $key ||
+				! class_exists( 'PGR_Jalali_Presentation', false )
+			) {
 				return $value;
 			}
 
-			if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
-				$source = $this->date_created_source( $entry );
-			} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
-				// Gravity Flow uses this sentinel when the workflow timestamp still
-				// represents the original submission instant. Preserve that contract.
-				if ( '-' === $value ) {
-					return $value;
-				}
-				$source = $this->last_updated_source( $entry );
-			} else {
+			$raw = $pending['raw'];
+
+			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
+			// date. Raw 0 is the matching no-due compare value.
+			if ( '-' === $value || null === $raw || 0 === $raw ) {
 				return $value;
 			}
+
+			$source = $this->absolute_timestamp_source( $raw );
+			if ( null === $source ) {
+				return $value;
+			}
+
+			$formatted = PGR_Jalali_Presentation::format_datetime( $source );
+			return null === $formatted ? $value : $formatted;
+		}
+
+		// Exact Flow 3.1.0 emits due_date_human_readable immediately after raw
+		// due_date. Any intervening identity invalidates the ordering authority.
+		$this->pending_due_date_raw = null;
+
+		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
+			return $value;
+		}
+
+		if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
+			$source = $this->date_created_source( $entry );
+		} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
+			// Gravity Flow uses this sentinel when the workflow timestamp still
+			// represents the original submission instant. Preserve that contract.
+			if ( '-' === $value ) {
+				return $value;
+			}
+			$source = $this->last_updated_source( $entry );
+		} else {
+			return $value;
 		}
 
 		if ( null === $source ) {
@@ -208,10 +230,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @return string|null
 	 */
 	private function due_date_capture_key( $form_id, $entry ) {
-		$form_identity  = $this->positive_integer_identity( $form_id );
-		$entry_identity = isset( $entry['id'] ) ? $this->positive_integer_identity( $entry['id'] ) : null;
+		$form_identity       = $this->positive_integer_identity( $form_id );
+		$entry_identity      = isset( $entry['id'] ) ? $this->positive_integer_identity( $entry['id'] ) : null;
+		$entry_form_identity = isset( $entry['form_id'] ) ? $this->positive_integer_identity( $entry['form_id'] ) : null;
 
-		if ( null === $form_identity || null === $entry_identity ) {
+		if (
+			null === $form_identity ||
+			null === $entry_identity ||
+			null === $entry_form_identity ||
+			$form_identity !== $entry_form_identity
+		) {
 			return null;
 		}
 
