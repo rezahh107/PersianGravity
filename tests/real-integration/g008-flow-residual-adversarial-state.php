@@ -25,6 +25,7 @@ if ( 'UTC' !== date_default_timezone_get() || 'Asia/Tehran' !== wp_timezone_stri
 }
 
 $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512, JSON_THROW_ON_ERROR );
+wp_set_current_user( 1 );
 $form_id  = (int) $manifest['g008_flow_form_id'];
 $entry_id = (int) $manifest['g008_flow_entry_detail_candidate_entry_id'];
 $entry    = GFAPI::get_entry( $entry_id );
