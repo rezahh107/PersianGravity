@@ -148,6 +148,7 @@ const flowCommon = requireSourceFile(roots.gravityflow, 'includes/class-common.p
 const flowMain = requireSourceFile(roots.gravityflow, 'class-gravity-flow.php', 'Exact Gravity Flow entry-meta authority');
 const gfApi = requireSourceFile(roots.gravityforms, 'includes/api.php', 'Exact Gravity Forms Entry API contract');
 const gfCommon = requireSourceFile(roots.gravityforms, 'common.php', 'Exact Gravity Forms date formatter');
+const flowStatus = requireSourceFile(roots.gravityflow, 'includes/pages/class-status.php', 'Exact Gravity Flow Status table');
 
 const flowInboxSemanticTokens = [
   "$entry['date_created']",
@@ -211,6 +212,43 @@ if (!allContractValuesTrue(flowInboxSourceContract)) {
   throw new Error(`Exact Gravity Flow Inbox source/timezone contract drifted: ${JSON.stringify(flowInboxSourceContract)}`);
 }
 
+const flowStatusSourceContract = {
+  paths: {
+    status_table: flowStatus.relative,
+    flow_common_formatter: flowCommon.relative,
+    flow_entry_meta_authority: flowMain.relative,
+    gravityforms_entry_api: gfApi.relative,
+    gravityforms_common_formatter: gfCommon.relative,
+  },
+  date_created: {
+    gravityforms_entry_contract_is_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
+    status_column_reads_entry_date_created: /function\s+column_date_created[\s\S]{0,650}\$item\['date_created'\][\s\S]{0,350}Gravity_Flow_Common::format_date/.test(flowStatus.content),
+    status_column_filters_as_date_created: /function\s+column_date_created[\s\S]{0,900}filter_field_value\(\s*\$label,\s*\$item,\s*'date_created'\s*\)/.test(flowStatus.content),
+  },
+  workflow_timestamp: {
+    workflow_timestamp_is_numeric_entry_meta: /\$entry_meta\['workflow_timestamp'\]\s*=\s*array\([\s\S]{0,260}'is_numeric'\s*=>\s*true/.test(flowMain.content),
+    workflow_timestamp_callback_returns_epoch: /function\s+callback_update_entry_meta_timestamp[\s\S]{0,500}strtotime\(\s*\$entry\['date_created'\]\s*\)\s*:\s*time\(\)/.test(flowMain.content),
+    status_column_reads_workflow_timestamp: /function\s+column_workflow_timestamp[\s\S]{0,700}\$item\['workflow_timestamp'\][\s\S]{0,350}Gravity_Flow_Common::format_date/.test(flowStatus.content),
+    status_column_filters_as_workflow_timestamp: /function\s+column_workflow_timestamp[\s\S]{0,1000}filter_field_value\(\s*\$label,\s*\$item,\s*'workflow_timestamp'\s*\)/.test(flowStatus.content),
+  },
+  timezone_and_formatting: {
+    flow_numeric_timestamp_uses_php_date_intermediate: /is_numeric\(\s*\$date_or_timestamp\s*\)\s*\?\s*date\(\s*'Y-m-d H:i:s',\s*\$date_or_timestamp\s*\)/.test(flowCommon.content),
+    flow_delegates_to_gravityforms_formatter: flowCommon.content.includes('return GFCommon::format_date( $date_time, $is_human, $format, $include_time );'),
+    gravityforms_formatter_declares_utc_input: gfCommon.content.includes('@param string $gmt_datetime The UTC date/time value to be formatted.'),
+    gravityforms_formatter_localizes_before_display: gfCommon.content.includes('$local_time = self::get_local_timestamp( $gmt_time );'),
+  },
+  presentation_vs_export_context: {
+    table_wrapper_applies_status_filter: /function\s+filter_field_value[\s\S]{0,700}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$value,\s*\$form_id,\s*\$column_name,\s*\$entry\s*\)/.test(flowStatus.content),
+    export_applies_status_filter_directly: /function\s+export\s*\([\s\S]{0,9000}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$col_val,\s*\$item\['form_id'\],\s*\$column_key,\s*\$item\s*\)/.test(flowStatus.content),
+    exact_status_filter_apply_sites: (flowStatus.content.match(/apply_filters\(\s*'gravityflow_field_value_status_table'/g) || []).length === 2,
+    ajax_export_selects_csv_format: /function\s+ajax_export_status[\s\S]{0,1800}\$args\['format'\]\s*=\s*'csv'[\s\S]{0,800}Gravity_Flow_Status::render\(\s*\$args\s*\)/.test(flowMain.content),
+  },
+};
+
+if (!allContractValuesTrue(flowStatusSourceContract)) {
+  throw new Error(`Exact Gravity Flow Status source/timezone/context contract drifted: ${JSON.stringify(flowStatusSourceContract)}`);
+}
+
 const classifications = {
   gform_admin: {
     gravityflow_source_reference: found('gravityflow', 'gform_admin'),
@@ -239,6 +277,8 @@ const classifications = {
       display_filter: found('gravityflow', 'gravityflow_field_value_status_table'),
       workflow_timestamp: found('gravityflow', 'workflow_timestamp'),
       date_created: found('gravityflow', 'date_created'),
+      status_table_path: flowStatus.relative,
+      source_contract: flowStatusSourceContract,
       discovery_state: found('gravityflow', 'gravityflow_field_value_status_table')
         && found('gravityflow', 'workflow_timestamp')
         && found('gravityflow', 'date_created')
@@ -263,7 +303,7 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.3.0',
+  schema_version: '1.4.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
   exact_persiangravity_commit: exactPersianGravityIdentity.commit,
   exact_persiangravity_tree: exactPersianGravityIdentity.tree,
