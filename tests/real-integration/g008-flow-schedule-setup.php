@@ -183,10 +183,11 @@ $GLOBALS['pgr_wu008_g008_schedule_probe'] = array(
 add_filter(
 	'gravityflow_step_schedule_timestamp',
 	static function ( $timestamp, $type, $step ) {
-		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry_id' ) ) ) {
+		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry' ) ) ) {
 			return $timestamp;
 		}
-		$entry_id = (int) $step->get_entry_id();
+		$step_entry = $step->get_entry();
+		$entry_id   = is_array( $step_entry ) ? absint( rgar( $step_entry, 'id' ) ) : 0;
 		$map = get_option( 'pgr_wu008_g008_schedule_entry_map', array() );
 		if ( ! isset( $map[ $entry_id ] ) ) {
 			return $timestamp;
