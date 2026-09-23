@@ -81,16 +81,8 @@ $build = static function ( $key, $schedule_settings, $date_field_value = '' ) us
 		throw new RuntimeException( 'Schedule branch current step did not resolve for ' . $key );
 	}
 
-	// Pin the delay source timestamp after authentic workflow initialization.
-	if ( 'delay' === $current_step->schedule_type ) {
-		$fixed_step_timestamp = 1774038600; // 2026-03-20 20:30:00 UTC.
-		$step_timestamp_meta = 'workflow_step_' . (int) $step_id . '_timestamp';
-		gform_update_meta( (int) $entry_id, $step_timestamp_meta, $fixed_step_timestamp );
-		$current_step = $api->get_current_step( GFAPI::get_entry( (int) $entry_id ) );
-		if ( (int) $current_step->get_step_timestamp() !== $fixed_step_timestamp ) {
-			throw new RuntimeException( 'Could not pin delay branch workflow step timestamp.' );
-		}
-	}
+	// Keep the host-owned step timestamp established by the authentic
+	// workflow transition. Both module modes exercise this same persisted fixture.
 
 	$schedule_timestamp = $current_step->get_schedule_timestamp();
 	$is_queued          = (bool) $current_step->is_queued();
