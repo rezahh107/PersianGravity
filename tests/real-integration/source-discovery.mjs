@@ -112,6 +112,7 @@ const flowNeedles = [
   'date_created_human_readable',
   'last_updated_human_readable',
   'due_date_human_readable',
+  'gravityflow_status_args',
   'gravityflow_field_value_status_table',
   'workflow_timestamp',
   'date_created',
@@ -239,6 +240,8 @@ const flowStatusSourceContract = {
   },
   presentation_vs_export_context: {
     exact_status_table_class: /class\s+Gravity_Flow_Status_Table\s+extends\s+WP_List_Table/.test(flowStatus.content),
+    status_args_filter_receives_normalized_defaults: /function\s+render\s*\(\s*\$args\s*=\s*array\(\)\s*\)[\s\S]{0,1200}\$args\s*=\s*array_merge\(\s*self::get_defaults\(\),\s*\$args\s*\)[\s\S]{0,1800}\$args\s*=\s*apply_filters\(\s*'gravityflow_status_args',\s*\$args\s*\)/.test(flowStatus.content),
+    status_format_branches_table_vs_export_after_context_filter: /apply_filters\(\s*'gravityflow_status_args',\s*\$args\s*\)[\s\S]{0,1200}if\s*\(\s*\$args\['format'\]\s*==\s*'table'\s*\)[\s\S]{0,400}self::status_page\(\s*\$args\s*\)[\s\S]{0,400}self::process_export\(\s*\$args\s*\)/.test(flowStatus.content),
     table_wrapper_applies_status_filter: /function\s+filter_field_value[\s\S]{0,700}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$value,\s*\$form_id,\s*\$column_name,\s*\$entry\s*\)/.test(flowStatus.content),
     export_applies_status_filter_directly: /function\s+export\s*\([\s\S]{0,9000}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$col_val,\s*\$item\['form_id'\],\s*\$column_key,\s*\$item\s*\)/.test(flowStatus.content),
     exact_status_filter_apply_sites: (flowStatus.content.match(/apply_filters\(\s*'gravityflow_field_value_status_table'/g) || []).length === 2,
@@ -313,7 +316,7 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.5.0',
+  schema_version: '1.6.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
   exact_persiangravity_commit: exactPersianGravityIdentity.commit,
   exact_persiangravity_tree: exactPersianGravityIdentity.tree,
