@@ -45,6 +45,43 @@ for (const key of requiredContractFlags) {
 }
 
 const fields = ['submitted', 'last_updated', 'due', 'expiration'];
+const enabledProduction = enabled.production;
+const disabledProduction = disabled.production;
+if (!enabledProduction || !disabledProduction) failures.push('production browser observations are missing');
+if (enabledProduction?.marker_leaked !== false || disabledProduction?.marker_leaked !== false) failures.push('production marker leaked into visible output');
+if (enabledProduction?.candidateEvidence?.marker_date_i18n_calls !== 0) failures.push('production request used isolated prototype marker');
+if (enabledProduction?.candidateEvidence?.production_marker_date_i18n_calls !== 4) failures.push('production adapter did not consume exactly four workflow-info dates');
+if (disabledProduction?.candidateEvidence?.production_marker_date_i18n_calls !== 0) failures.push('disabled production request reached production marker path');
+if (JSON.stringify(enabledProduction?.fields) !== JSON.stringify(enabled.exact?.fields)) {
+  failures.push('production adapter output differs from qualified prototype output');
+}
+if (JSON.stringify(disabledProduction?.fields) !== JSON.stringify(disabled.exact?.fields)) {
+  failures.push('disabled production output differs from exact native output');
+}
+if (
+  enabledProduction?.candidateEvidence?.due_getter_calls !== disabledProduction?.candidateEvidence?.due_getter_calls
+  || enabledProduction?.candidateEvidence?.expiration_getter_calls !== disabledProduction?.candidateEvidence?.expiration_getter_calls
+) {
+  failures.push('production adapter changed operational due/expiration getter invocation counts');
+}
+if (
+  enabledProduction?.candidateEvidence?.nested_due_getter_calls !== 0
+  || enabledProduction?.candidateEvidence?.nested_expiration_getter_calls !== 0
+  || disabledProduction?.candidateEvidence?.nested_due_getter_calls !== 0
+  || disabledProduction?.candidateEvidence?.nested_expiration_getter_calls !== 0
+) {
+  failures.push('production adapter nested operational getter through date_i18n');
+}
+if (
+  enabledProduction?.candidateEvidence?.unrelated_wp_date_i18n !== disabledProduction?.candidateEvidence?.unrelated_wp_date_i18n
+  || enabledProduction?.candidateEvidence?.unrelated_gf_format_date !== disabledProduction?.candidateEvidence?.unrelated_gf_format_date
+) {
+  failures.push('production adapter changed unrelated WordPress/Gravity Forms date formatting');
+}
+
+const productionObservations = enabledProduction?.candidateEvidence?.production_observations ?? [];
+if (productionObservations.length !== 4) failures.push('production marker observation count is not four');
+
 const enabledObservations = enabled.exact?.candidateEvidence?.observations ?? [];
 if (enabledObservations.length !== 4) failures.push('enabled exact marker observation count is not four');
 if (enabled.exact?.candidateEvidence?.marker_date_i18n_calls !== 4) failures.push('enabled exact marker call count is not four');
@@ -76,7 +113,12 @@ for (let index = 0; index < fields.length; index += 1) {
   }
 }
 
-const boundaryCivils = enabledObservations.map((item) => item.local_civil);
+const prototypeCivils = enabledObservations.map((item) => item.local_civil);
+const productionCivils = productionObservations.map((item) => item.local_civil);
+if (JSON.stringify(productionCivils) !== JSON.stringify(prototypeCivils)) {
+  failures.push(`production timestamp-with-offset civil dates differ from qualified prototype: ${JSON.stringify({ productionCivils, prototypeCivils })}`);
+}
+const boundaryCivils = prototypeCivils;
 if (
   boundaryCivils[0] !== '2030-03-20 23:59:00'
   || boundaryCivils[1] !== '2030-03-21 00:01:00'
@@ -184,5 +226,41 @@ const result = {
   failures,
 };
 fs.writeFileSync(path.join(artifactDir, 'g008-entry-detail-two-hook-prototype.json'), `${JSON.stringify(result, null, 2)}\n`);
-if (failures.length) throw new Error(`Entry Detail two-hook prototype failed: ${failures.join('; ')}`);
+
+const admittedSurfaces = {
+  'gravityflow.entry-detail.submitted': 'ADMITTED_VERIFIED',
+  'gravityflow.entry-detail.last-updated': 'ADMITTED_VERIFIED',
+  'gravityflow.entry-detail.due-date': 'ADMITTED_VERIFIED',
+  'gravityflow.entry-detail.expiration': 'ADMITTED_VERIFIED',
+};
+const admission = {
+  schema_version: '1.0.0',
+  evidence_class: 'G008_GRAVITY_FLOW_ENTRY_DETAIL_ADMISSION_RECONCILIATION',
+  exact_persiangravity_commit: pgrHead,
+  exact_persiangravity_package_sha256: pgrPackageHash,
+  exact_gravityflow_version: '3.1.0',
+  exact_gravityflow_package_sha256: flowHash,
+  site_timezone: 'Asia/Tehran',
+  php_default_timezone: 'UTC',
+  affected_workflow_info_family: Object.keys(admittedSurfaces),
+  surfaces: admittedSurfaces,
+  source_contract_proven: requiredContractFlags.every((key) => contract?.[key] === true),
+  production_browser_enabled_mode: enabled.mode,
+  production_browser_disabled_mode: disabled.mode,
+  native_time_preserved: result.native_time_preserved,
+  unrelated_date_formatting_unchanged: result.unrelated_date_formatting_unchanged,
+  raw_db_gfapi_rest_equal: !failures.some((failure) => failure.includes('DB/GFAPI/REST')),
+  workflow_deadline_expiration_state_equal: result.operational_state_equal,
+  operational_getter_counts_equal: !failures.some((failure) => failure.includes('getter invocation counts')),
+  zero_nested_operational_reentry: !failures.some((failure) => failure.includes('nested operational getter')),
+  csv_export_isolated: !failures.some((failure) => failure.includes('CSV/export')),
+  repeated_rendering_deterministic: !failures.some((failure) => failure.includes('Repeated rendering')),
+  marker_leak_free: !failures.some((failure) => failure.includes('marker leaked')),
+  hard_gate_result: failures.length ? 'FAIL' : 'PASS',
+  failures,
+};
+fs.writeFileSync(path.join(artifactDir, 'g008-entry-detail-admission.json'), `${JSON.stringify(admission, null, 2)}\n`);
+
+if (failures.length) throw new Error(`Entry Detail two-hook prototype/production qualification failed: ${failures.join('; ')}`);
 console.log('G008_ENTRY_DETAIL_TWO_HOOK_PROTOTYPE QUALIFIED');
+console.log('G008_ENTRY_DETAIL_PRODUCTION_ADMISSION PASS');
