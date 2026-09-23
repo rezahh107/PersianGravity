@@ -106,6 +106,9 @@ if (JSON.stringify(disabledBrowser.civil_day_filter?.visible_entry_ids) !== JSON
 if (!enabledState.csv_raw_sources_present || !disabledState.csv_raw_sources_present) failures.push('Status CSV lost raw source values');
 if (!enabledState.csv_jalali_absent || !disabledState.csv_jalali_absent) failures.push('Status CSV contains Jalali presentation values');
 if (enabledState.csv_sha256 !== disabledState.csv_sha256) failures.push('Status CSV changed with presentation module state');
+if (!enabledState.late_table_to_csv_native || !disabledState.late_table_to_csv_native) failures.push('late table-to-csv mutation did not remain native');
+if (!enabledState.late_csv_to_table_jalali) failures.push('late csv-to-table mutation did not reach admitted Jalali table presentation');
+if (!disabledState.late_csv_to_table_native) failures.push('late csv-to-table mutation did not preserve module-disabled native table presentation');
 
 const enabledRows = rowMap(enabledBrowser.rows);
 const disabledRows = rowMap(disabledBrowser.rows);
@@ -164,6 +167,9 @@ const result = {
     civil_day_filter_equal: JSON.stringify(enabledBrowser.civil_day_filter) === JSON.stringify(disabledBrowser.civil_day_filter),
     csv_equal: enabledState.csv_sha256 === disabledState.csv_sha256,
     csv_native_raw: enabledState.csv_raw_sources_present && enabledState.csv_jalali_absent,
+    late_table_to_csv_native: enabledState.late_table_to_csv_native && disabledState.late_table_to_csv_native,
+    late_csv_to_table_jalali: enabledState.late_csv_to_table_jalali,
+    late_csv_to_table_disabled_native: disabledState.late_csv_to_table_native,
   },
   surfaces: {
     'gravityflow.status.date-created': failures.length ? 'NOT_PROVEN' : 'ADMITTED_VERIFIED',
