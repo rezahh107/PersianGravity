@@ -15,6 +15,9 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/** Gravity Flow's display-only companion for the raw Last Updated compare value. */
 	private const LAST_UPDATED_DISPLAY_ID = 'last_updated_human_readable';
 
+	/** Gravity Flow's raw Due Date compare-value identity. */
+	private const DUE_DATE_RAW_ID = 'due_date';
+
 	/** Gravity Flow's display-only companion for the raw Due Date compare value. */
 	private const DUE_DATE_DISPLAY_ID = 'due_date_human_readable';
 
@@ -23,6 +26,13 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
+
+	/**
+	 * One-shot raw due-date values already computed by Gravity Flow for this request.
+	 *
+	 * @var array<string,int>
+	 */
+	private $due_date_raw_by_entry = array();
 
 	/**
 	 * Register only the documented Gravity Flow Inbox presentation seam.
@@ -51,6 +61,11 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			return $value;
 		}
 
+		if ( self::DUE_DATE_RAW_ID === $field_id ) {
+			$this->capture_due_date_raw( $value, $form_id, $entry );
+			return $value;
+		}
+
 		if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
 			$source = $this->date_created_source( $entry );
 		} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
@@ -61,12 +76,19 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			}
 			$source = $this->last_updated_source( $entry );
 		} elseif ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
+			$raw_due_date = $this->consume_due_date_raw( $form_id, $entry );
+
 			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
-			// date. Never turn that operational absence state into a calendar date.
+			// date. Consume any matching raw 0 proof, but preserve the native value.
 			if ( '-' === $value ) {
 				return $value;
 			}
-			$source = $this->due_date_source( $form_id, $entry );
+
+			if ( null === $raw_due_date || 0 === $raw_due_date ) {
+				return $value;
+			}
+
+			$source = $this->absolute_timestamp_source( $raw_due_date );
 		} else {
 			return $value;
 		}
@@ -120,42 +142,96 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Resolve the current step's authoritative Gravity Flow due-date timestamp.
+	 * Capture the exact raw Inbox due-date value already computed by Gravity Flow.
 	 *
-	 * Exact Gravity Flow 3.1.0 uses this same get_due_date_timestamp() result as
-	 * its raw Inbox compare value and overdue/deadline authority. Reading it here
-	 * avoids reparsing the already formatted display string and does not replace
-	 * or persist any workflow value.
+	 * Exact Gravity Flow 3.1.0 emits the raw due_date column before its
+	 * due_date_human_readable companion and sends both through the same Inbox
+	 * presentation filter. Only the native integer epoch/0 representation is
+	 * admitted here; malformed or ambiguous values invalidate any stale proof.
+	 *
+	 * @param mixed        $value   Native raw due-date compare value.
+	 * @param mixed        $form_id Current form ID.
+	 * @param array<mixed> $entry   Current entry.
+	 * @return void
+	 */
+	private function capture_due_date_raw( $value, $form_id, $entry ) {
+		$key = $this->due_date_capture_key( $form_id, $entry );
+		if ( null === $key ) {
+			return;
+		}
+
+		unset( $this->due_date_raw_by_entry[ $key ] );
+
+		if ( ! is_int( $value ) || $value < 0 ) {
+			return;
+		}
+
+		$this->due_date_raw_by_entry[ $key ] = $value;
+	}
+
+	/**
+	 * Consume one raw due-date proof for the same form/entry display callback.
+	 *
+	 * One-shot consumption prevents a later direct/out-of-order display filter
+	 * call from reusing stale authority from an earlier row render.
 	 *
 	 * @param mixed        $form_id Current form ID.
 	 * @param array<mixed> $entry   Current entry.
-	 * @return DateTimeImmutable|null
+	 * @return int|null
 	 */
-	private function due_date_source( $form_id, $entry ) {
-		if ( ! class_exists( 'Gravity_Flow_API' ) || ! is_numeric( $form_id ) || (int) $form_id <= 0 ) {
+	private function consume_due_date_raw( $form_id, $entry ) {
+		$key = $this->due_date_capture_key( $form_id, $entry );
+		if ( null === $key || ! array_key_exists( $key, $this->due_date_raw_by_entry ) ) {
 			return null;
 		}
 
-		try {
-			$api  = new Gravity_Flow_API( (int) $form_id );
-			$step = $api->get_current_step( $entry );
-		} catch ( Throwable $throwable ) {
-			unset( $throwable );
+		$value = $this->due_date_raw_by_entry[ $key ];
+		unset( $this->due_date_raw_by_entry[ $key ] );
+
+		return $value;
+	}
+
+	/**
+	 * Build the request-local due-date proof key without coercing loose IDs.
+	 *
+	 * @param mixed        $form_id Current form ID.
+	 * @param array<mixed> $entry   Current entry.
+	 * @return string|null
+	 */
+	private function due_date_capture_key( $form_id, $entry ) {
+		$form_id  = $this->positive_decimal_id( $form_id );
+		$entry_id = isset( $entry['id'] ) ? $this->positive_decimal_id( $entry['id'] ) : null;
+
+		if ( null === $form_id || null === $entry_id ) {
 			return null;
 		}
 
-		if ( ! is_object( $step ) || empty( $step->due_date ) || ! is_callable( array( $step, 'get_due_date_timestamp' ) ) ) {
+		if ( isset( $entry['form_id'] ) ) {
+			$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
+			if ( null === $entry_form_id || $entry_form_id !== $form_id ) {
+				return null;
+			}
+		}
+
+		return $form_id . ':' . $entry_id;
+	}
+
+	/**
+	 * Normalize only canonical positive integer IDs used by the qualified host.
+	 *
+	 * @param mixed $value Candidate ID.
+	 * @return string|null
+	 */
+	private function positive_decimal_id( $value ) {
+		if ( is_int( $value ) ) {
+			return $value > 0 ? (string) $value : null;
+		}
+
+		if ( ! is_string( $value ) || 1 !== preg_match( '/^[1-9][0-9]*$/', $value ) ) {
 			return null;
 		}
 
-		try {
-			$timestamp = $step->get_due_date_timestamp();
-		} catch ( Throwable $throwable ) {
-			unset( $throwable );
-			return null;
-		}
-
-		return $this->absolute_timestamp_source( $timestamp );
+		return $value;
 	}
 
 	/**
