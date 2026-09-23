@@ -123,18 +123,21 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			$this->assertSame( 'g008-flow-inbox-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
 
-		foreach ( array(
-			'gravityflow.inbox.due-date',
-			'gravityflow.status.date-created',
-			'gravityflow.status.workflow-timestamp',
-		) as $source_proven_id ) {
-			$this->assertSame( 'SOURCE_PROVEN', $states[ $source_proven_id ]['discovery_state'], $source_proven_id );
+		foreach ( array( 'gravityflow.status.date-created', 'gravityflow.status.workflow-timestamp' ) as $admitted_id ) {
+			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
+			$this->assertSame( 'ADMITTED_VERIFIED', $states[ $admitted_id ]['support_state'], $admitted_id );
+			$this->assertSame( 'PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
+			$this->assertSame( 'g008-flow-status-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
+
+		$this->assertSame( 'SOURCE_PROVEN', $states['gravityflow.inbox.due-date']['discovery_state'] );
 
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
 			'gravityflow.inbox.date-created',
 			'gravityflow.inbox.last-updated',
+			'gravityflow.status.date-created',
+			'gravityflow.status.workflow-timestamp',
 		);
 		foreach ( $states as $id => $surface ) {
 			if ( ! in_array( $id, $admitted_ids, true ) ) {
