@@ -4,6 +4,17 @@ use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
+if ( ! function_exists( 'add_filter' ) ) {
+	function add_filter() {}
+}
+if ( ! class_exists( 'GFCommon', false ) ) {
+	final class GFCommon {
+		public static function get_default_date_format() {
+			return 'F j, Y';
+		}
+	}
+}
+
 final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 
 	#[RunInSeparateProcess]
@@ -14,16 +25,6 @@ final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 		define( 'GRAVITY_FLOW_VERSION', '3.1.1' );
 		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
 
-		if ( ! function_exists( 'add_filter' ) ) {
-			function add_filter() {}
-		}
-		if ( ! class_exists( 'GFCommon', false ) ) {
-			final class GFCommon {
-				public static function get_default_date_format() {
-					return 'F j, Y';
-				}
-			}
-		}
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
@@ -41,16 +42,6 @@ final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 		define( 'GRAVITY_FLOW_VERSION', '3.1.0' );
 		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow-next/gravityflow.php' );
 
-		if ( ! function_exists( 'add_filter' ) ) {
-			function add_filter() {}
-		}
-		if ( ! class_exists( 'GFCommon', false ) ) {
-			final class GFCommon {
-				public static function get_default_date_format() {
-					return 'F j, Y';
-				}
-			}
-		}
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
