@@ -148,7 +148,11 @@ $prototype_plugin = <<<'PHP'
 defined( 'ABSPATH' ) || exit;
 
 function pgr_wu008_ed_candidate_exact_host() {
-	if ( isset( $_GET['pgr_g008_candidate_case'] ) && 'drift' === (string) $_GET['pgr_g008_candidate_case'] ) {
+	if ( ! isset( $_GET['pgr_g008_candidate_case'] ) ) {
+		return false;
+	}
+	$case = (string) $_GET['pgr_g008_candidate_case'];
+	if ( ! in_array( $case, array( 'exact', 'failure', 'range' ), true ) ) {
 		return false;
 	}
 	if (
