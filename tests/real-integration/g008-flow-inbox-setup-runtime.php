@@ -255,12 +255,15 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 		? Gravity_Flow_Common::format_date( $native_last_updated_source, '', true, true )
 		: '-';
 
-	$due_enabled = ! empty( $current_step->due_date );
-	$due_raw     = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
-	$due_native  = $due_enabled
+	$due_enabled       = ! empty( $current_step->due_date );
+	$due_raw           = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
+	$due_native        = $due_enabled
 		? Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $due_raw ), '', true, true )
 		: '-';
-	$overdue     = $due_enabled ? (bool) $current_step->is_overdue() : false;
+	$status_due_native = $due_enabled
+		? Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $due_raw ), '', false, false )
+		: html_entity_decode( '&dash;', ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$overdue           = $due_enabled ? (bool) $current_step->is_overdue() : false;
 
 	if ( $due_raw !== (int) $runtime_entry['expected_due_timestamp'] ) {
 		throw new RuntimeException( 'Host due-date raw authority did not match deterministic fixture for entry ' . $entry['id'] . '.' );
@@ -277,7 +280,8 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 	$runtime_entry['overdue']                 = $overdue;
 	$runtime_entry['expected_created_native'] = $native_date_created;
 	$runtime_entry['expected_updated_native'] = $native_last_updated;
-	$runtime_entry['expected_due_native']     = $due_native;
+	$runtime_entry['expected_due_native']        = $due_native;
+	$runtime_entry['expected_status_due_native'] = $status_due_native;
 }
 unset( $runtime_entry );
 remove_filter( 'gravityflow_step_due_date_timestamp', $runtime_due_filter, PHP_INT_MAX );
