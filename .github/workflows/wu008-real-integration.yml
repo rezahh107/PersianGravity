@@ -139,6 +139,7 @@ jobs:
           node --check tests/real-integration/source-discovery.mjs
           node --check tests/real-integration/g008-residual-source-probe.mjs
           node --check tests/real-integration/g009-browser.mjs
+          node --check tests/real-integration/g009-perks-source-probe.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
           node --check tests/real-integration/g008-flow-inbox-reconcile.mjs
           node --check tests/real-integration/g008-flow-status-browser.mjs
@@ -296,8 +297,10 @@ jobs:
           set -euo pipefail
           node tests/real-integration/source-discovery.mjs
           node tests/real-integration/g008-residual-source-probe.mjs
+          node tests/real-integration/g009-perks-source-probe.mjs
           test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
           test -s "$WU008_ARTIFACT_DIR/g008-residual-source-probe.json"
+          test -s "$WU008_ARTIFACT_DIR/g009-perks-source-probe.json"
 
       - name: Create deterministic runtime fixtures and assert provider/fallback semantics
         shell: bash
