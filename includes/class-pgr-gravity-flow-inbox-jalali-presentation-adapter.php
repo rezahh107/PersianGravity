@@ -28,11 +28,11 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
 	/**
-	 * One-shot raw due-date values already computed by Gravity Flow for this request.
+	 * One-shot raw due-date authority for the immediately following display value.
 	 *
-	 * @var array<string,int>
+	 * @var array{key:string,value:int}|null
 	 */
-	private $due_date_raw_by_entry = array();
+	private $pending_due_date_raw = null;
 
 	/**
 	 * Register only the documented Gravity Flow Inbox presentation seam.
@@ -58,6 +58,7 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 */
 	public function filter_inbox_value( $value, $form_id, $field_id, $entry ) {
 		if ( ! $this->is_exact_supported_host() || ! class_exists( 'PGR_Jalali_Presentation', false ) || ! is_array( $entry ) ) {
+			$this->pending_due_date_raw = null;
 			return $value;
 		}
 
@@ -66,16 +67,7 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			return $value;
 		}
 
-		if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
-			$source = $this->date_created_source( $entry );
-		} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
-			// Gravity Flow uses this sentinel when the workflow timestamp still
-			// represents the original submission instant. Preserve that contract.
-			if ( '-' === $value ) {
-				return $value;
-			}
-			$source = $this->last_updated_source( $entry );
-		} elseif ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
+		if ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
 			$raw_due_date = $this->consume_due_date_raw( $form_id, $entry );
 
 			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
@@ -90,7 +82,23 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 
 			$source = $this->absolute_timestamp_source( $raw_due_date );
 		} else {
-			return $value;
+			// In exact 3.1.0 raw due_date is immediately followed by its display
+			// companion for the same row. Any intervening identity invalidates
+			// the one-shot authority and therefore fails closed.
+			$this->pending_due_date_raw = null;
+
+			if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
+				$source = $this->date_created_source( $entry );
+			} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
+				// Gravity Flow uses this sentinel when the workflow timestamp still
+				// represents the original submission instant. Preserve that contract.
+				if ( '-' === $value ) {
+					return $value;
+				}
+				$source = $this->last_updated_source( $entry );
+			} else {
+				return $value;
+			}
 		}
 
 		if ( null === $source ) {
@@ -155,40 +163,43 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @return void
 	 */
 	private function capture_due_date_raw( $value, $form_id, $entry ) {
+		$this->pending_due_date_raw = null;
+
 		$key = $this->due_date_capture_key( $form_id, $entry );
-		if ( null === $key ) {
+		if ( null === $key || ! is_int( $value ) || $value < 0 ) {
 			return;
 		}
 
-		unset( $this->due_date_raw_by_entry[ $key ] );
-
-		if ( ! is_int( $value ) || $value < 0 ) {
-			return;
-		}
-
-		$this->due_date_raw_by_entry[ $key ] = $value;
+		$this->pending_due_date_raw = array(
+			'key'   => $key,
+			'value' => $value,
+		);
 	}
 
 	/**
-	 * Consume one raw due-date proof for the same form/entry display callback.
-	 *
-	 * One-shot consumption prevents a later direct/out-of-order display filter
-	 * call from reusing stale authority from an earlier row render.
+	 * Consume one raw due-date proof only for the immediately following display
+	 * callback of the same form/entry row.
 	 *
 	 * @param mixed        $form_id Current form ID.
 	 * @param array<mixed> $entry   Current entry.
 	 * @return int|null
 	 */
 	private function consume_due_date_raw( $form_id, $entry ) {
-		$key = $this->due_date_capture_key( $form_id, $entry );
-		if ( null === $key || ! array_key_exists( $key, $this->due_date_raw_by_entry ) ) {
+		$pending                    = $this->pending_due_date_raw;
+		$this->pending_due_date_raw = null;
+		$key                        = $this->due_date_capture_key( $form_id, $entry );
+
+		if (
+			! is_array( $pending ) ||
+			! isset( $pending['key'], $pending['value'] ) ||
+			null === $key ||
+			$pending['key'] !== $key ||
+			! is_int( $pending['value'] )
+		) {
 			return null;
 		}
 
-		$value = $this->due_date_raw_by_entry[ $key ];
-		unset( $this->due_date_raw_by_entry[ $key ] );
-
-		return $value;
+		return $pending['value'];
 	}
 
 	/**
@@ -199,18 +210,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @return string|null
 	 */
 	private function due_date_capture_key( $form_id, $entry ) {
-		$form_id  = $this->positive_decimal_id( $form_id );
-		$entry_id = isset( $entry['id'] ) ? $this->positive_decimal_id( $entry['id'] ) : null;
-
-		if ( null === $form_id || null === $entry_id ) {
+		if ( ! isset( $entry['id'], $entry['form_id'] ) ) {
 			return null;
 		}
 
-		if ( isset( $entry['form_id'] ) ) {
-			$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
-			if ( null === $entry_form_id || $entry_form_id !== $form_id ) {
-				return null;
-			}
+		$form_id       = $this->positive_decimal_id( $form_id );
+		$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
+		$entry_id      = $this->positive_decimal_id( $entry['id'] );
+
+		if ( null === $form_id || null === $entry_form_id || null === $entry_id || $entry_form_id !== $form_id ) {
+			return null;
 		}
 
 		return $form_id . ':' . $entry_id;

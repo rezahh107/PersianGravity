@@ -126,18 +126,12 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertSame( '1405-01-01', $adapter->filter_inbox_value( '1405-01-01', 1, 'pgr_jalali_date', $entry ) );
 	}
 
-	public function test_due_date_capture_is_one_shot_and_keyed_by_form_and_entry(): void {
+	public function test_due_date_capture_is_one_shot_row_bound_and_exact_order_bound(): void {
 		$adapter = new PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter();
 		$entry_a = array( 'id' => 9, 'form_id' => 1 );
 		$entry_b = array( 'id' => 10, 'form_id' => 1 );
 
 		$this->assertSame( 1774044900, $adapter->filter_inbox_value( 1774044900, 1, 'due_date', $entry_a ) );
-		$this->assertSame( 1774132200, $adapter->filter_inbox_value( 1774132200, 1, 'due_date', $entry_b ) );
-
-		$this->assertSame(
-			'۱۴۰۵/۰۱/۰۲، ۰۲:۰۰',
-			$adapter->filter_inbox_value( 'native b', 1, 'due_date_human_readable', $entry_b )
-		);
 		$this->assertSame(
 			'۱۴۰۵/۰۱/۰۱، ۰۱:۴۵',
 			$adapter->filter_inbox_value( 'native a', 1, 'due_date_human_readable', $entry_a )
@@ -145,7 +139,27 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertSame(
 			'native a second',
 			$adapter->filter_inbox_value( 'native a second', 1, 'due_date_human_readable', $entry_a ),
-			'Consumed raw authority must not be reused by an out-of-order/direct display call.'
+			'Consumed raw authority must not be reusable.'
+		);
+
+		$this->assertSame( 1774044900, $adapter->filter_inbox_value( 1774044900, 1, 'due_date', $entry_a ) );
+		$this->assertSame( 1774132200, $adapter->filter_inbox_value( 1774132200, 1, 'due_date', $entry_b ) );
+		$this->assertSame(
+			'۱۴۰۵/۰۱/۰۲، ۰۲:۰۰',
+			$adapter->filter_inbox_value( 'native b', 1, 'due_date_human_readable', $entry_b )
+		);
+		$this->assertSame(
+			'native a after reorder',
+			$adapter->filter_inbox_value( 'native a after reorder', 1, 'due_date_human_readable', $entry_a ),
+			'Row-reordered capture must fail closed instead of retaining stale authority.'
+		);
+
+		$this->assertSame( 1774044900, $adapter->filter_inbox_value( 1774044900, 1, 'due_date', $entry_a ) );
+		$this->assertSame( 'native unrelated', $adapter->filter_inbox_value( 'native unrelated', 1, 'unrelated', $entry_a ) );
+		$this->assertSame(
+			'native after intervening identity',
+			$adapter->filter_inbox_value( 'native after intervening identity', 1, 'due_date_human_readable', $entry_a ),
+			'Any identity between raw due_date and its display companion invalidates the proof.'
 		);
 	}
 
