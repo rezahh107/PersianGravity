@@ -15,6 +15,9 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/** Gravity Flow's display-only companion for the raw Last Updated compare value. */
 	private const LAST_UPDATED_DISPLAY_ID = 'last_updated_human_readable';
 
+	/** Gravity Flow's display-only companion for the raw Due Date compare value. */
+	private const DUE_DATE_DISPLAY_ID = 'due_date_human_readable';
+
 	/** Host-owned runtime version authority. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
@@ -31,11 +34,11 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Convert only the two admitted human-readable Inbox system-date values.
+	 * Convert only the admitted human-readable Inbox system-date values.
 	 *
-	 * Gravity Flow keeps the corresponding `date_created` and `last_updated`
-	 * values as independent AG Grid compare values. This callback intentionally
-	 * never touches those raw identities.
+	 * Gravity Flow keeps the corresponding raw values as independent AG Grid
+	 * compare values. This callback intentionally never touches those raw
+	 * identities or workflow-owned due-date state.
 	 *
 	 * @param mixed        $value    Native display value.
 	 * @param int          $form_id  Current Gravity Forms form ID.
@@ -44,8 +47,6 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_inbox_value( $value, $form_id, $field_id, $entry ) {
-		unset( $form_id );
-
 		if ( ! $this->is_exact_supported_host() || ! class_exists( 'PGR_Jalali_Presentation', false ) || ! is_array( $entry ) ) {
 			return $value;
 		}
@@ -59,6 +60,13 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 				return $value;
 			}
 			$source = $this->last_updated_source( $entry );
+		} elseif ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
+			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
+			// date. Never turn that operational absence state into a calendar date.
+			if ( '-' === $value ) {
+				return $value;
+			}
+			$source = $this->due_date_source( $form_id, $entry );
 		} else {
 			return $value;
 		}
@@ -108,7 +116,55 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			return null;
 		}
 
-		$raw = $entry['workflow_timestamp'];
+		return $this->absolute_timestamp_source( $entry['workflow_timestamp'] );
+	}
+
+	/**
+	 * Resolve the current step's authoritative Gravity Flow due-date timestamp.
+	 *
+	 * Exact Gravity Flow 3.1.0 uses this same get_due_date_timestamp() result as
+	 * its raw Inbox compare value and overdue/deadline authority. Reading it here
+	 * avoids reparsing the already formatted display string and does not replace
+	 * or persist any workflow value.
+	 *
+	 * @param mixed        $form_id Current form ID.
+	 * @param array<mixed> $entry   Current entry.
+	 * @return DateTimeImmutable|null
+	 */
+	private function due_date_source( $form_id, $entry ) {
+		if ( ! class_exists( 'Gravity_Flow_API' ) || ! is_numeric( $form_id ) || (int) $form_id <= 0 ) {
+			return null;
+		}
+
+		try {
+			$api  = new Gravity_Flow_API( (int) $form_id );
+			$step = $api->get_current_step( $entry );
+		} catch ( Throwable $throwable ) {
+			unset( $throwable );
+			return null;
+		}
+
+		if ( ! is_object( $step ) || empty( $step->due_date ) || ! is_callable( array( $step, 'get_due_date_timestamp' ) ) ) {
+			return null;
+		}
+
+		try {
+			$timestamp = $step->get_due_date_timestamp();
+		} catch ( Throwable $throwable ) {
+			unset( $throwable );
+			return null;
+		}
+
+		return $this->absolute_timestamp_source( $timestamp );
+	}
+
+	/**
+	 * Strictly convert a positive Unix timestamp to an absolute instant.
+	 *
+	 * @param mixed $raw Host-owned timestamp value.
+	 * @return DateTimeImmutable|null
+	 */
+	private function absolute_timestamp_source( $raw ) {
 		if ( is_int( $raw ) ) {
 			$timestamp = $raw;
 		} elseif ( is_string( $raw ) && 1 === preg_match( '/^[1-9][0-9]*$/', $raw ) ) {
