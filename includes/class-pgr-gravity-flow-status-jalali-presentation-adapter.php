@@ -15,54 +15,87 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/** Exact Status-table workflow timestamp column identity. */
 	private const WORKFLOW_TIMESTAMP_COLUMN = 'workflow_timestamp';
 
-	/** Exact Gravity Flow browser-table output format. */
-	private const STATUS_TABLE_FORMAT = 'table';
-
 	/** Host-owned runtime version authority. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
-	/** @var string|null Exact render format observed through gravityflow_status_args. */
-	private $status_format = null;
+	/**
+	 * One-shot proof that the next matching value filter originated from the
+	 * actual Status-table column path.
+	 *
+	 * @var array<string,string>|null
+	 */
+	private $status_table_entry_token = null;
 
 	/**
-	 * Register the exact Status render-context observer and presentation seam.
+	 * Register the render reset, table-only proof seam and presentation seam.
 	 *
 	 * @return void
 	 */
 	public function hooks() {
-		add_filter( 'gravityflow_status_args', array( $this, 'capture_status_context' ), 20, 1 );
+		add_filter( 'gravityflow_status_args', array( $this, 'reset_status_context' ), 20, 1 );
+		add_filter( 'gravityflow_entry_url_status_table', array( $this, 'mark_status_table_entry' ), 20, 4 );
 		add_filter( 'gravityflow_field_value_status_table', array( $this, 'filter_status_value' ), 20, 4 );
 	}
 
 	/**
-	 * Capture only Gravity Flow's explicit Status render format.
+	 * Clear any stale table proof whenever a new Status render begins.
 	 *
-	 * Gravity Flow 3.1.0 normalizes defaults before this filter and branches on
-	 * the resulting format: table renders the browser Status table while csv
-	 * enters the export path. Missing or unfamiliar context stays fail-closed.
+	 * The final table-vs-export decision is intentionally not inferred here:
+	 * later gravityflow_status_args callbacks can still change format after
+	 * this callback returns.
 	 *
 	 * @param mixed $args Native Status render arguments.
 	 * @return mixed
 	 */
-	public function capture_status_context( $args ) {
-		$this->status_format = null;
+	public function reset_status_context( $args ) {
+		$this->status_table_entry_token = null;
+		return $args;
+	}
 
-		if ( is_array( $args ) && isset( $args['format'] ) && is_string( $args['format'] ) ) {
-			$this->status_format = $args['format'];
+	/**
+	 * Mark the exact table entry immediately before table column value filtering.
+	 *
+	 * Gravity Flow 3.1.0 calls get_entry_url() in both admitted table column
+	 * methods before their gravityflow_field_value_status_table call. Its CSV
+	 * exporter uses the value filter directly and never calls this seam.
+	 *
+	 * @param mixed        $entry_url Native Status entry URL.
+	 * @param mixed        $form_id   Current form ID.
+	 * @param mixed        $entry_id  Current entry ID.
+	 * @param array<mixed> $entry     Current entry.
+	 * @return mixed
+	 */
+	public function mark_status_table_entry( $entry_url, $form_id, $entry_id, $entry ) {
+		$this->status_table_entry_token = null;
+
+		if (
+			! is_array( $entry ) ||
+			! isset( $entry['form_id'], $entry['id'] ) ||
+			(int) $form_id <= 0 ||
+			(int) $entry_id <= 0 ||
+			(string) $form_id !== (string) $entry['form_id'] ||
+			(string) $entry_id !== (string) $entry['id']
+		) {
+			return $entry_url;
 		}
 
-		return $args;
+		$this->status_table_entry_token = array(
+			'form_id'  => (string) $form_id,
+			'entry_id' => (string) $entry_id,
+		);
+
+		return $entry_url;
 	}
 
 	/**
 	 * Convert only the two admitted Status-table system-date presentation values.
 	 *
-	 * CSV/export uses the same value filter, but Gravity Flow marks that render
-	 * as format=csv through gravityflow_status_args first. The adapter therefore
-	 * returns native export/raw values unchanged.
+	 * Table authority is a one-shot token emitted by the exact table column path
+	 * after Gravity Flow has already taken its final render branch. Export and
+	 * unknown/direct value-filter calls therefore remain native.
 	 *
 	 * @param mixed        $value       Native display value.
 	 * @param int          $form_id     Current Gravity Forms form ID.
@@ -71,11 +104,11 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_status_value( $value, $form_id, $column_name, $entry ) {
-		unset( $form_id );
+		$is_status_table = $this->consume_status_table_entry_token( $form_id, $entry );
 
 		if (
+			! $is_status_table ||
 			! $this->is_exact_supported_host() ||
-			self::STATUS_TABLE_FORMAT !== $this->status_format ||
 			! class_exists( 'PGR_Jalali_Presentation', false ) ||
 			! is_array( $entry )
 		) {
@@ -102,6 +135,32 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 		}
 
 		return null === $formatted ? $value : $formatted;
+	}
+
+	/**
+	 * Consume table proof exactly once and bind it to the same form/entry.
+	 *
+	 * @param mixed $form_id Current form ID.
+	 * @param mixed $entry   Current entry.
+	 * @return bool
+	 */
+	private function consume_status_table_entry_token( $form_id, $entry ) {
+		$token                          = $this->status_table_entry_token;
+		$this->status_table_entry_token = null;
+
+		if (
+			! is_array( $token ) ||
+			! is_array( $entry ) ||
+			! isset( $entry['form_id'], $entry['id'] )
+		) {
+			return false;
+		}
+
+		return (
+			$token['form_id'] === (string) $form_id &&
+			$token['form_id'] === (string) $entry['form_id'] &&
+			$token['entry_id'] === (string) $entry['id']
+		);
 	}
 
 	/**
