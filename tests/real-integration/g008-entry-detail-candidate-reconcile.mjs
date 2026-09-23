@@ -78,10 +78,10 @@ for (let index = 0; index < fields.length; index += 1) {
 
 const boundaryCivils = enabledObservations.map((item) => item.local_civil);
 if (
-  boundaryCivils[0] !== '2026-03-20 23:59:00'
-  || boundaryCivils[1] !== '2026-03-21 00:01:00'
-  || boundaryCivils[2] !== '2026-03-21 00:03:00'
-  || boundaryCivils[3] !== '2026-03-21 23:59:00'
+  boundaryCivils[0] !== '2030-03-20 23:59:00'
+  || boundaryCivils[1] !== '2030-03-21 00:01:00'
+  || boundaryCivils[2] !== '2030-03-21 00:03:00'
+  || boundaryCivils[3] !== '2030-03-21 23:59:00'
 ) {
   failures.push(`Tehran local-midnight boundary fixture drifted: ${JSON.stringify(boundaryCivils)}`);
 }
