@@ -58,6 +58,6 @@ final class PGR_Gravity_Perks_RTL {
 	 */
 	public static function css() {
 		return '.ts-wrapper.rtl .ts-control,.ts-wrapper.rtl .ts-control>input{direction:rtl;text-align:right;}'
-			. '.ts-wrapper.rtl:not(.form-control):not(.form-select).single .ts-control{background-position:left .75rem center;padding-left:max(var(--ts-pr-min),var(--ts-pr-clear-button) + var(--ts-pr-caret))!important;padding-right:var(--ts-pr-min)!important;}';
+			. '.ts-wrapper.rtl:not(.form-control):not(.form-select).single .ts-control{background-position:left .75rem center;padding-left:max(var(--ts-pr-min),calc(var(--ts-pr-clear-button) + var(--ts-pr-caret)))!important;padding-right:var(--ts-pr-min)!important;}';
 	}
 }
