@@ -113,6 +113,7 @@ const flowNeedles = [
   'last_updated_human_readable',
   'due_date_human_readable',
   'gravityflow_status_args',
+  'gravityflow_entry_url_status_table',
   'gravityflow_field_value_status_table',
   'workflow_timestamp',
   'date_created',
@@ -213,6 +214,15 @@ if (!allContractValuesTrue(flowInboxSourceContract)) {
   throw new Error(`Exact Gravity Flow Inbox source/timezone contract drifted: ${JSON.stringify(flowInboxSourceContract)}`);
 }
 
+const flowStatusExportStart = flowStatus.content.indexOf('public function export()');
+const flowStatusExportEnd = flowStatus.content.indexOf('public function sanitize_date', flowStatusExportStart);
+const flowStatusExportSource = (
+  flowStatusExportStart >= 0 &&
+  flowStatusExportEnd > flowStatusExportStart
+)
+  ? flowStatus.content.slice(flowStatusExportStart, flowStatusExportEnd)
+  : '';
+
 const flowStatusSourceContract = {
   paths: {
     status_table: flowStatus.relative,
@@ -242,8 +252,12 @@ const flowStatusSourceContract = {
     exact_status_table_class: /class\s+Gravity_Flow_Status_Table\s+extends\s+WP_List_Table/.test(flowStatus.content),
     status_args_filter_receives_normalized_defaults: /function\s+render\s*\(\s*\$args\s*=\s*array\(\)\s*\)[\s\S]{0,1200}\$args\s*=\s*array_merge\(\s*self::get_defaults\(\),\s*\$args\s*\)[\s\S]{0,1800}\$args\s*=\s*apply_filters\(\s*'gravityflow_status_args',\s*\$args\s*\)/.test(flowStatus.content),
     status_format_branches_table_vs_export_after_context_filter: /apply_filters\(\s*'gravityflow_status_args',\s*\$args\s*\)[\s\S]{0,1200}if\s*\(\s*\$args\['format'\]\s*==\s*'table'\s*\)[\s\S]{0,400}self::status_page\(\s*\$args\s*\)[\s\S]{0,400}self::process_export\(\s*\$args\s*\)/.test(flowStatus.content),
+    entry_url_filter_is_table_only_proof_seam: /function\s+get_entry_url\s*\([\s\S]{0,700}apply_filters\(\s*'gravityflow_entry_url_status_table',\s*\$entry_url,\s*\$entry\['form_id'\],\s*\$entry\['id'\],\s*\$entry\s*\)/.test(flowStatus.content),
+    date_created_entry_url_precedes_value_filter: /function\s+column_date_created[\s\S]{0,500}get_entry_url\(\s*\$item\s*\)[\s\S]{0,500}filter_field_value\(\s*\$label,\s*\$item,\s*'date_created'\s*\)/.test(flowStatus.content),
+    workflow_timestamp_entry_url_precedes_value_filter: /function\s+column_workflow_timestamp[\s\S]{0,700}get_entry_url\(\s*\$item\s*\)[\s\S]{0,500}filter_field_value\(\s*\$last_updated,\s*\$item,\s*'workflow_timestamp'\s*\)/.test(flowStatus.content),
     table_wrapper_applies_status_filter: /function\s+filter_field_value[\s\S]{0,700}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$value,\s*\$form_id,\s*\$column_name,\s*\$entry\s*\)/.test(flowStatus.content),
     export_applies_status_filter_directly: /function\s+export\s*\([\s\S]{0,9000}apply_filters\(\s*'gravityflow_field_value_status_table',\s*\$col_val,\s*\$item\['form_id'\],\s*\$column_key,\s*\$item\s*\)/.test(flowStatus.content),
+    export_value_apply_has_no_entry_url: flowStatusExportSource.includes("apply_filters( 'gravityflow_field_value_status_table'") && !flowStatusExportSource.includes('get_entry_url('),
     exact_status_filter_apply_sites: (flowStatus.content.match(/apply_filters\(\s*'gravityflow_field_value_status_table'/g) || []).length === 2,
     ajax_export_selects_csv_format: /function\s+ajax_export_status[\s\S]{0,1800}\$args\['format'\]\s*=\s*'csv'[\s\S]{0,800}Gravity_Flow_Status::render\(\s*\$args\s*\)/.test(flowMain.content),
   },
