@@ -44,7 +44,8 @@ foreach ( $expected_versions as $product => $expected_version ) {
 	if ( $actual_version !== $expected_version ) {
 		throw new RuntimeException( sprintf( '%s runtime version mismatch: expected %s, got %s.', $product, $expected_version, $actual_version ) );
 	}
-	$manifest['versions'][ $product ] = $actual_version;
+	$evidence_key = str_replace( '-', '', $product );
+	$manifest['versions'][ $evidence_key ] = $actual_version;
 }
 if ( ! class_exists( 'GravityPerks' ) || ! class_exists( 'GP_File_Upload_Pro' ) || ! class_exists( 'GP_Advanced_Select' ) ) {
 	throw new RuntimeException( 'Expected Gravity Perks family runtime classes are not active.' );
@@ -126,8 +127,8 @@ $manifest['package_sha256']                    = array(
 	'gravityflow'        => (string) getenv( 'WU008_FLOW_SHA256' ),
 	'gravityview'        => (string) getenv( 'WU008_VIEW_SHA256' ),
 	'gravityperks'       => (string) getenv( 'WU008_PERKS_SHA256' ),
-	'gp-file-upload-pro' => (string) getenv( 'WU008_FUP_SHA256' ),
-	'gp-advanced-select' => (string) getenv( 'WU008_ADVS_SHA256' ),
+	'gpfileuploadpro'     => (string) getenv( 'WU008_FUP_SHA256' ),
+	'gpadvancedselect'    => (string) getenv( 'WU008_ADVS_SHA256' ),
 	'persiangravity'     => (string) getenv( 'WU008_PGR_PACKAGE_SHA256' ),
 );
 $manifest['persiangravity_source_commit']      = (string) getenv( 'WU008_PGR_SHA' );
