@@ -216,7 +216,7 @@ function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, residualS
   const finalNoAdmissionClaims = [];
 
   if (!isObject(sourceEvidence)) {
-    return { errors: ['G-008 source-discovery evidence artifact is missing.'], sourceClaims: 0, runtimeClaims: 0 };
+    return { errors: ['G-008 source-discovery evidence artifact is missing.'], sourceClaims: 0, runtimeClaims: 0, finalNoAdmissionClaims: 0 };
   }
   if (sourceEvidence.evidence_class !== 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY') {
     errors.push('G-008 source-discovery evidence class mismatch.');
