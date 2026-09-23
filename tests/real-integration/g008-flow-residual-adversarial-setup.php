@@ -70,13 +70,13 @@ $make_candidate_entry = static function ( $key, $date_created, $workflow_timesta
 	return (int) $entry_id;
 };
 
-$candidate_entry_id = $make_candidate_entry( 'entry-detail-candidate', '2026-03-20 20:29:00', 1774038660 );
+$candidate_entry_id = $make_candidate_entry( 'entry-detail-candidate', '2030-03-20 20:29:00', 1900269060 );
 $range_entry_id     = $make_candidate_entry( 'entry-detail-range-fallback', '2124-03-20 00:00:00', 4866580800 );
 
 $candidate_map = array(
 	$candidate_entry_id => array(
-		'due'        => 1774038660 + 120,
-		'expiration' => 1774124940,
+		'due'        => 1900269180,
+		'expiration' => 1900355340,
 	),
 	$range_entry_id => array(
 		'due'        => 4866584400,
@@ -89,17 +89,17 @@ update_option( 'pgr_wu008_entry_detail_candidate_map', $candidate_map, false );
 // their stored UTC timestamps for deterministic order/header assertions.
 $note_specs = array(
 	array(
-		'date_created' => '2026-03-20 19:58:00',
+		'date_created' => '2030-03-20 19:58:00',
 		'value'        => 'Stored event A; user text contains date-looking 2026-03-20 and 1405/01/01.',
 		'user_name'    => 'Runtime Admin',
 	),
 	array(
-		'date_created' => '2026-03-20 20:31:00',
+		'date_created' => '2030-03-20 20:31:00',
 		'value'        => 'Stored event B; body must remain byte-for-byte unchanged.',
 		'user_name'    => 'Runtime Admin',
 	),
 	array(
-		'date_created' => '2026-03-21 20:29:00',
+		'date_created' => '2030-03-21 20:29:00',
 		'value'        => 'Stored event C; another date-looking token 2030-03-21 must stay text.',
 		'user_name'    => 'Runtime Admin',
 	),
