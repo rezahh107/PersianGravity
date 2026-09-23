@@ -97,6 +97,8 @@ function fixtures() {
     sourceDiscoveryEvidence,
     g008FlowInboxAdmissionEvidence: null,
     g008FlowStatusAdmissionEvidence: null,
+    g008ResidualSourceEvidence: null,
+    g008ResidualNoAdmissionEvidence: null,
     expectedIdentity: structuredClone(identity),
   };
 }
@@ -143,6 +145,69 @@ function admitFlowStatus(input) {
   };
 }
 
+function closeFlowResiduals(input) {
+  const flow = input.g008Registry.products[0];
+  const existingStatusDue = flow.surfaces.find((surface) => surface.id === 'gravityflow.status.due-date');
+  const residuals = [
+    existingStatusDue,
+    {
+      id: 'gravityflow.entry-detail.schedule-due-expiration',
+      raw_source: 'workflow-owned operational timestamps',
+      presentation_seam: 'FINAL_NO_ADMISSION direct operational render',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+    {
+      id: 'gravityflow.timeline-history',
+      raw_source: 'history timestamps',
+      presentation_seam: 'FINAL_NO_ADMISSION direct history render',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+    {
+      id: 'gravityflow.print',
+      raw_source: 'dependent Entry Detail/Timeline rendering',
+      presentation_seam: 'FINAL_NO_ADMISSION dependent rendering only',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+  ];
+  for (const surface of residuals) {
+    surface.discovery_state = 'SOURCE_PROVEN';
+    surface.support_state = 'NOT_PROVEN';
+    surface.adapter_identity = null;
+    surface.exact_version_disposition = 'FINAL_NO_ADMISSION';
+    surface.runtime_evidence = 'g008-flow-residual-no-admission.json';
+    if (!flow.surfaces.includes(surface)) flow.surfaces.push(surface);
+  }
+  input.g008ResidualSourceEvidence = {
+    evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
+    exact: {
+      pgr_sha: identity.head,
+      version: '3.1.0',
+      sha256: 'b'.repeat(64),
+    },
+    source_contract: {
+      status_due_date: { direct_operational_render: true },
+      entry_detail_schedule_due_expiration: { direct_operational_render: true },
+      timeline_history: { no_date_only_seam: true },
+      print: { dependent_render_only: true },
+    },
+  };
+  input.g008ResidualNoAdmissionEvidence = {
+    evidence_class: 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION',
+    status: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    surfaces: Object.fromEntries(residuals.map((surface) => [surface.id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
+  };
+}
+
 function expectFailure(input, pattern) {
   assert.throws(() => reconcileQualificationEvidence(input), (error) => {
     assert.equal(error instanceof EvidenceReconciliationError, true);
@@ -161,6 +226,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
     g009_native_pass_claims_reconciled: 3,
     g008_source_proven_claims_reconciled: 5,
     g008_runtime_admitted_claims_reconciled: 0,
+    g008_final_no_admission_claims_reconciled: 0,
   });
   assert.deepEqual(input.g009Registry, beforeG009);
   assert.deepEqual(input.g008Registry, beforeG008);
@@ -227,6 +293,29 @@ test('combined Inbox and Status admissions reconcile four bounded runtime claims
   admitFlowStatus(input);
   const result = reconcileQualificationEvidence(input);
   assert.equal(result.g008_runtime_admitted_claims_reconciled, 4);
+});
+
+test('G-008 final no-admission claims require exact source plus enabled/disabled runtime reconciliation', () => {
+  const input = fixtures();
+  closeFlowResiduals(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_final_no_admission_claims_reconciled, 4);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 0);
+
+  const sourceOnly = fixtures();
+  closeFlowResiduals(sourceOnly);
+  sourceOnly.g008ResidualNoAdmissionEvidence = null;
+  expectFailure(sourceOnly, /gravityflow\.status\.due-date.*residual enabled\/disabled runtime reconciliation evidence is missing/);
+
+  const promoted = fixtures();
+  closeFlowResiduals(promoted);
+  promoted.g008Registry.products[0].surfaces.find((surface) => surface.id === 'gravityflow.timeline-history').support_state = 'ADMITTED_VERIFIED';
+  expectFailure(promoted, /gravityflow\.timeline-history.*FINAL_NO_ADMISSION must retain support_state NOT_PROVEN/);
+
+  const driftedSource = fixtures();
+  closeFlowResiduals(driftedSource);
+  driftedSource.g008ResidualSourceEvidence.source_contract.timeline_history.no_date_only_seam = false;
+  expectFailure(driftedSource, /gravityflow\.status\.due-date.*residual source no-admission contract is not fully proven/);
 });
 
 test('exact identity mismatch rejects both vendor package drift and PersianGravity source drift', () => {
