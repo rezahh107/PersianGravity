@@ -282,6 +282,31 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 unset( $runtime_entry );
 remove_filter( 'gravityflow_step_due_date_timestamp', $runtime_due_filter, PHP_INT_MAX );
 
+$residual_entry_fixture = null;
+foreach ( $runtime_entries as $candidate ) {
+	if ( 'alpha' === $candidate['key'] ) {
+		$residual_entry_fixture = $candidate;
+		break;
+	}
+}
+if ( ! is_array( $residual_entry_fixture ) ) {
+	throw new RuntimeException( 'Missing residual Entry Detail fixture.' );
+}
+$residual_entry = GFAPI::get_entry( $residual_entry_fixture['id'] );
+if ( is_wp_error( $residual_entry ) ) {
+	throw new RuntimeException( $residual_entry->get_error_message() );
+}
+$residual_timeline_native = array();
+foreach ( Gravity_Flow_Common::get_timeline_notes( $residual_entry ) as $note ) {
+	if ( ! isset( $note->date_created ) ) {
+		throw new RuntimeException( 'Timeline note is missing authoritative date_created.' );
+	}
+	$residual_timeline_native[] = Gravity_Flow_Common::format_date( $note->date_created, '', false, true );
+}
+if ( empty( $residual_timeline_native ) ) {
+	throw new RuntimeException( 'Residual timeline fixture produced no notes.' );
+}
+
 $page_id = wp_insert_post(
 	array(
 		'post_type'    => 'page',
@@ -319,6 +344,24 @@ $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512
 $manifest['schema_version']                 = '1.6.0';
 $manifest['g008_flow_inbox_url']            = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
 $manifest['g008_flow_status_url']           = add_query_arg( 'page_id', (int) $status_page_id, home_url( '/' ) );
+$manifest['g008_flow_residual_entry_id']    = (int) $residual_entry_fixture['id'];
+$manifest['g008_flow_entry_detail_url']     = add_query_arg(
+	array(
+		'page_id' => (int) $page_id,
+		'view'    => 'entry',
+		'lid'     => (int) $residual_entry_fixture['id'],
+	),
+	home_url( '/' )
+);
+$manifest['g008_flow_print_url']            = add_query_arg(
+	array(
+		'action'    => 'gravityflow_print_entries',
+		'lid'       => (int) $residual_entry_fixture['id'],
+		'timelines' => 1,
+	),
+	admin_url( 'admin-ajax.php' )
+);
+$manifest['g008_flow_timeline_native']      = $residual_timeline_native;
 $manifest['g008_flow_form_id']              = (int) $form_id;
 $manifest['g008_flow_step_id']              = (int) $step_id;
 $manifest['g008_flow_no_due_step_id']       = (int) $no_due_step_id;
