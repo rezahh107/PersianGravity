@@ -7,6 +7,7 @@ if (!wpPath || !artifactDir) throw new Error('WU008_WP_PATH and WU008_ARTIFACT_D
 
 const root = path.join(wpPath, 'wp-content/plugins/gravityflow');
 const gfRoot = path.join(wpPath, 'wp-content/plugins/gravityforms');
+const wpRoot = wpPath;
 const exact = {
   version: process.env.WU008_FLOW_VERSION || null,
   sha256: process.env.WU008_FLOW_SHA256 || null,
@@ -70,6 +71,23 @@ function searchPhp(base, needle, radius = 16) {
   return result;
 }
 
+function sourceContaining(base, needle) {
+  const matches = [];
+  for (const file of walkPhp(base)) {
+    const content = fs.readFileSync(file, 'utf8');
+    if (content.includes(needle)) {
+      matches.push({
+        relative: path.relative(base, file).replaceAll(path.sep, '/'),
+        content,
+      });
+    }
+  }
+  if (matches.length !== 1) {
+    throw new Error(`Expected exactly one PHP source containing ${needle}, found ${matches.length}: ${matches.map((item) => item.relative).join(', ')}`);
+  }
+  return matches[0];
+}
+
 function methodSource(source, methodName) {
   const pattern = new RegExp('(?:public\\s+|protected\\s+|private\\s+)?(?:static\\s+)?function\\s+' + methodName + '\\s*\\(');
   const match = pattern.exec(source.content);
@@ -104,6 +122,8 @@ const step = read('includes/steps/class-step.php');
 const common = read('includes/class-common.php');
 const flowMain = read('class-gravity-flow.php');
 const gfFormsModel = readFrom(gfRoot, 'forms_model.php');
+const gfCommonSource = sourceContaining(gfRoot, 'function format_date(');
+const wpFunctions = readFrom(wpRoot, 'wp-includes/functions.php');
 
 const statusDueMethod = methodSource(status, 'column_due_date');
 const statusExportMethod = methodSource(status, 'export');
@@ -122,6 +142,9 @@ const timelineNotesMethod = methodSource(common, 'get_timeline_notes');
 const initialNoteMethod = methodSource(common, 'get_initial_note');
 const commonTimelineMethod = methodSource(common, 'get_timeline');
 const printRenderMethod = methodSource(printEntries, 'render');
+const flowFormatDateMethod = methodSource(common, 'format_date');
+const gfFormatDateMethod = methodSource(gfCommonSource, 'format_date');
+const wpDateI18nMethod = methodSource(wpFunctions, 'date_i18n');
 
 const sourceContract = {
   status_due_date: {
@@ -162,6 +185,24 @@ const sourceContract = {
     expiration_getter_is_operational_filter: expirationGetterMethod.includes("apply_filters( 'gravityflow_step_expiration_timestamp'"),
     schedule_validation_uses_same_getter: validateScheduleMethod.includes('get_schedule_timestamp()') && validateScheduleMethod.includes('time()'),
     expiration_state_uses_same_getter: expiredMethod.includes('get_expiration_timestamp()') && expiredMethod.includes('time()'),
+    shared_format_hook_scopes_submitted_last_updated_due_expiration:
+      entryWorkflowInfoMethod.includes("Gravity_Flow_Common::format_date( $entry['date_created'], $date_format, false, true )")
+      && entryWorkflowInfoMethod.includes("Gravity_Flow_Common::format_date( $entry['workflow_timestamp'], $date_format, false, true )")
+      && entryWorkflowInfoMethod.includes('Gravity_Flow_Common::format_date( $current_step->get_due_date_timestamp(), $date_format, false, false )')
+      && entryWorkflowInfoMethod.includes('Gravity_Flow_Common::format_date( $current_step->get_expiration_timestamp(), $date_format, false, true )'),
+    flow_format_date_delegates_to_gravityforms: flowFormatDateMethod.includes('GFCommon::format_date'),
+    gravityforms_format_date_reaches_date_i18n: gfFormatDateMethod.includes('date_i18n('),
+    wordpress_date_i18n_exposes_supported_filter: wpDateI18nMethod.includes("apply_filters( 'date_i18n'"),
+    wordpress_date_i18n_treats_numeric_input_as_local_timestamp_with_offset:
+      wpDateI18nMethod.includes("gmdate( 'Y-m-d H:i:s', $timestamp )")
+      && wpDateI18nMethod.includes('date_create( $local_time, $timezone )')
+      && wpDateI18nMethod.includes('wp_timezone()'),
+    schedule_date_branch_uses_configured_civil_date: entryQueuedMethod.includes("case 'date':") && entryQueuedMethod.includes('$scheduled_date = $current_step->schedule_date;'),
+    schedule_date_field_and_delay_localize_operational_timestamp:
+      entryQueuedMethod.includes("case 'date_field':")
+      && entryQueuedMethod.includes("case 'delay':")
+      && entryQueuedMethod.includes("date( 'Y-m-d H:i:s', $scheduled_timestamp )")
+      && entryQueuedMethod.includes('get_date_from_gmt( $scheduled_date_str )'),
   },
   timeline_history: {
     header_formats_note_date_directly: noteHeaderMethod.includes('Gravity_Flow_Common::format_date( $date_created') && !noteHeaderMethod.includes('apply_filters('),
@@ -182,11 +223,15 @@ const sourceContract = {
     optional_timeline_reuses_entry_detail_timeline: printRenderMethod.includes('Gravity_Flow_Entry_Detail::timeline'),
     no_print_specific_date_formatter: !printRenderMethod.includes('format_date('),
     print_style_hook_is_not_date_seam: printEntries.content.includes("apply_filters( 'gravityflow_print_styles'") && !printRenderMethod.includes('gravityflow_print_styles'),
+    workflow_sidebar_not_rendered_by_print:
+      !printRenderMethod.includes('workflow_entry_detail_status_box')
+      && !printRenderMethod.includes('maybe_display_entry_detail_workflow_info')
+      && !printRenderMethod.includes('display_queued_step_details'),
   },
 };
 
 const evidence = {
-  schema_version: '1.2.0',
+  schema_version: '1.3.0',
   evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
   exact,
   source_contract: sourceContract,
@@ -204,6 +249,9 @@ const evidence = {
     initial_note: initialNoteMethod,
     common_timeline: commonTimelineMethod,
     print_render: printRenderMethod,
+    flow_format_date: flowFormatDateMethod,
+    gravityforms_format_date: gfFormatDateMethod,
+    wordpress_date_i18n: wpDateI18nMethod,
   },
   targets: {
     status_due_date: {
@@ -222,6 +270,9 @@ const evidence = {
       due_date_label_sites: searchPhp(root, "'Due Date'", 16),
       schedule_label_sites: searchPhp(root, "'Schedule'", 16),
       expiration_label_sites: searchPhp(root, "'Expiration'", 16),
+      date_format_hook_sites: searchPhp(root, 'gravityflow_date_format_entry_detail', 24),
+      gravityforms_date_i18n_sites: searchPhp(gfRoot, 'date_i18n(', 24),
+      wordpress_date_i18n: windows(wpFunctions, "function date_i18n", 60),
       step_due_date: windows(step, 'get_due_date_timestamp', 24),
       step_schedule: windows(step, 'get_schedule_timestamp', 24),
       step_expiration: windows(step, 'get_expiration_timestamp', 24),
