@@ -50,6 +50,7 @@ function withCase(url, candidateCase) {
 
 function withProductionProbe(url) {
   const target = new URL(url);
+  target.searchParams.delete('pgr_g008_candidate_case');
   target.searchParams.set('pgr_g008_production_probe', '1');
   return target.toString();
 }
