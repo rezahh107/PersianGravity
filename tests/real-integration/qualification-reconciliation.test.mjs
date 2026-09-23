@@ -233,6 +233,7 @@ function closeFlowResiduals(input) {
         'schedule_date_timestamp_reads_configured_date',
         'schedule_date_field_timestamp_reads_configured_field_and_offset',
         'schedule_delay_timestamp_uses_step_timestamp_and_offset',
+        'step_timestamp_reads_step_scoped_entry_meta',
         'queued_step_status_calls_schedule_renderer',
       ].map((key) => [key, true])),
       timeline_history: Object.fromEntries([
