@@ -53,6 +53,9 @@ final class G007GravityPerksLocalizationTest extends TestCase {
 	}
 
 	public function test_rtl_adapter_attaches_only_to_exact_registered_vendor_handle(): void {
+		if ( ! defined( 'GP_ADVANCED_SELECT_VERSION' ) ) {
+			define( 'GP_ADVANCED_SELECT_VERSION', '1.1.21' );
+		}
 		$GLOBALS['pgr_test_locale'] = 'fa_IR';
 		$GLOBALS['pgr_test_is_rtl'] = true;
 		$GLOBALS['pgr_test_style_states']['gp-advanced-select-tom-select']['registered'] = true;
