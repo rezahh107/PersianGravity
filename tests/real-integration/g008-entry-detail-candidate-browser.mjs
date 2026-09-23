@@ -48,6 +48,12 @@ function withCase(url, candidateCase) {
   return target.toString();
 }
 
+function withProductionProbe(url) {
+  const target = new URL(url);
+  target.searchParams.set('pgr_g008_production_probe', '1');
+  return target.toString();
+}
+
 async function readField(selector) {
   const locator = page.locator(selector);
   if (await locator.count() !== 1) throw new Error(`Expected exactly one ${selector} field.`);
@@ -73,9 +79,31 @@ async function capture(url, candidateCase) {
   return { url: page.url(), fields, candidateEvidence, marker_leaked: false };
 }
 
+async function captureProduction(url) {
+  const response = await page.goto(withProductionProbe(url), { waitUntil: 'domcontentloaded' });
+  if (!response?.ok()) throw new Error(`Entry Detail production request failed: ${response?.status()}`);
+  await page.locator('.gravityflow-status-box-field-submitted-time').waitFor({ timeout: 15000 });
+  const bodyText = await page.locator('body').innerText();
+  if (bodyText.includes('PGRG008ENTRYDETAILMARKER') || bodyText.includes('PGRJALALIENTRYDETAIL:')) {
+    throw new Error('Entry Detail production request leaked a presentation marker.');
+  }
+  const fields = {
+    submitted: await readField('.gravityflow-status-box-field-submitted-time .gravityflow-status-box-field-value'),
+    last_updated: await readField('.gravityflow-status-box-field-last-updated .gravityflow-status-box-field-value'),
+    due: await readField('.gravityflow-status-box-field-due-date .gravityflow-status-box-field-value'),
+    expiration: await readField('.gravityflow-status-box-field-expires .gravityflow-status-box-field-value'),
+  };
+  const candidateEvidence = await page.evaluate(() => window.pgrG008EntryDetailCandidateEvidence ?? null);
+  if (!candidateEvidence || candidateEvidence.case !== 'production') {
+    throw new Error('Entry Detail production instrumentation evidence is missing.');
+  }
+  return { url: page.url(), fields, candidateEvidence, marker_leaked: false };
+}
+
 await login();
 
 const exact = await capture(manifest.g008_flow_entry_detail_candidate_url, 'exact');
+const production = await captureProduction(manifest.g008_flow_entry_detail_candidate_url);
 if (mode === 'enabled') {
   if (exact.candidateEvidence.marker_date_i18n_calls !== 4) {
     throw new Error(`Expected four workflow-info marker date calls, got ${exact.candidateEvidence.marker_date_i18n_calls}.`);
@@ -94,6 +122,21 @@ if (mode === 'enabled') {
   if (exact.candidateEvidence.nested_due_getter_calls !== 0 || exact.candidateEvidence.nested_expiration_getter_calls !== 0) {
     throw new Error('Presentation callback re-entered an operational due/expiration getter.');
   }
+  if (production.candidateEvidence.marker_date_i18n_calls !== 0) {
+    throw new Error('Production request unexpectedly used the isolated prototype marker.');
+  }
+  if (production.candidateEvidence.production_marker_date_i18n_calls !== 4) {
+    throw new Error(`Production adapter did not consume exactly four workflow-info date calls: ${production.candidateEvidence.production_marker_date_i18n_calls}`);
+  }
+  if (JSON.stringify(production.fields) !== JSON.stringify(exact.fields)) {
+    throw new Error(`Production adapter output differs from the qualified prototype: ${JSON.stringify({ production: production.fields, prototype: exact.fields })}`);
+  }
+  if ((production.candidateEvidence.production_observations ?? []).length !== 4) {
+    throw new Error('Production marker observations are incomplete.');
+  }
+  if (production.candidateEvidence.nested_due_getter_calls !== 0 || production.candidateEvidence.nested_expiration_getter_calls !== 0) {
+    throw new Error('Production presentation re-entered an operational due/expiration getter.');
+  }
 } else {
   const native = [
     fixture.expected_submitted_native,
@@ -106,6 +149,12 @@ if (mode === 'enabled') {
   }
   if (exact.candidateEvidence.marker_date_i18n_calls !== 0) {
     throw new Error('Module-disabled request unexpectedly used the marker path.');
+  }
+  if (JSON.stringify(Object.values(production.fields)) !== JSON.stringify(native)) {
+    throw new Error(`Module-disabled production request was not exact native fallback: ${JSON.stringify({ actual: production.fields, native })}`);
+  }
+  if (production.candidateEvidence.production_marker_date_i18n_calls !== 0) {
+    throw new Error('Module-disabled production request unexpectedly used the production marker path.');
   }
 }
 
@@ -211,6 +260,7 @@ const evidence = {
   site_timezone: manifest.g008_flow_site_timezone || null,
   php_default_timezone: manifest.g008_flow_php_default_timezone || null,
   exact,
+  production,
   failure,
   drift,
   range,
