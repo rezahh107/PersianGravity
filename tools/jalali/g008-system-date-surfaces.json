@@ -174,7 +174,7 @@
           "raw_source": "Initial timeline event uses Gravity Forms Entry date_created UTC Y-m-d H:i:s; workflow note/event timestamps are Gravity Forms note date_created values stored with utc_timestamp() and returned raw by get_lead_notes()",
           "source_calendar": "Gregorian UTC date/time strings representing authoritative history event instants",
           "source_timezone": "UTC for Entry date_created and Gravity Forms note date_created; Gravity_Flow_Common::format_date() performs the native display localization",
-          "presentation_seam": "FINAL_NO_ADMISSION: Entry Detail get_note_header() directly formats note date_created with no date-only output filter. gravityflow_timeline_notes is upstream of ordering/rendering and permits mutation of the full note array; using it for Jalali presentation would take ownership of history records/order/content. Common text timeline rendering also formats the same note dates directly",
+          "presentation_seam": "FINAL_NO_ADMISSION: Entry Detail get_note_header() directly formats note date_created with no date-only output filter. gravityflow_timeline_notes runs after Gravity Flow's array_reverse() ordering step but before rendering and permits mutation or reordering of the full note array; using it for Jalali presentation would take ownership of history records/order/content. Common text timeline rendering also formats the same note dates directly",
           "semantic_dependencies": [
             "timeline event ordering",
             "initial-entry event identity",
@@ -186,7 +186,7 @@
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact Flow/GF source proves UTC raw authority, host-owned array_reverse ordering, direct date formatting in the note header, escaped note-body separation, and only an upstream full-note-array filter rather than a bounded date-only output seam. Authentic Entry Detail browser evidence keeps timeline timestamps native with the module enabled and disabled.",
+          "evidence": "Exact Flow/GF source proves UTC raw authority, host-owned array_reverse ordering before the full-note-array filter, direct date formatting in the note header, escaped note-body separation, and no bounded date-only output seam. Authentic Entry Detail browser evidence keeps timeline timestamps native with the module enabled and disabled.",
           "drift_behavior": "Final no-admission for exact Gravity Flow 3.1.0. A future dedicated date-only presentation hook may be requalified without mutating note/history arrays.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
           "runtime_evidence": "g008-flow-residual-no-admission.json"
