@@ -302,7 +302,7 @@ $status_page_id = wp_insert_post(
 		'post_status'  => 'publish',
 		'post_title'   => 'G008 Gravity Flow Status System Dates',
 		'post_name'    => 'g008-gravityflow-status-system-dates',
-		'post_content' => sprintf( '[gravityflow page="status" form="%d" last_updated="true" due_date="false"]', (int) $form_id ),
+		'post_content' => sprintf( '[gravityflow page="status" form="%d" last_updated="true" due_date="true"]', (int) $form_id ),
 	),
 	true
 );
