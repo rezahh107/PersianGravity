@@ -139,7 +139,14 @@ const sourceContract = {
     due_is_direct_operational_getter_render: entryWorkflowInfoMethod.includes('get_due_date_timestamp()') && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-due-date') && entryWorkflowInfoMethod.includes("'Due Date'"),
     expiration_is_direct_operational_getter_render: entryWorkflowInfoMethod.includes('get_expiration_timestamp()') && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-expires') && entryWorkflowInfoMethod.includes("'Expires'"),
     below_workflow_hook_is_after_direct_date_output: entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()') >= 0 && entryWorkflowInfoMethod.indexOf("do_action( 'gravityflow_below_workflow_info_entry_detail'") > entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()'),
-    due_and_expiration_have_no_value_filter: !entryWorkflowInfoMethod.includes('apply_filters('),
+    due_has_no_downstream_value_filter: !entryWorkflowInfoMethod.slice(
+      entryWorkflowInfoMethod.indexOf('get_due_date_timestamp()'),
+      entryWorkflowInfoMethod.indexOf("'Due Date'")
+    ).includes('apply_filters('),
+    expiration_has_no_downstream_value_filter: !entryWorkflowInfoMethod.slice(
+      entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()'),
+      entryWorkflowInfoMethod.indexOf("'Expires'")
+    ).includes('apply_filters('),
     schedule_reads_operational_getter_directly: entryQueuedMethod.includes('get_schedule_timestamp()'),
     schedule_prints_directly: entryQueuedMethod.includes('gravityflow-status-box-field-scheduled-date') && entryQueuedMethod.includes("'Scheduled'"),
     schedule_has_no_value_filter: !entryQueuedMethod.includes('apply_filters('),
