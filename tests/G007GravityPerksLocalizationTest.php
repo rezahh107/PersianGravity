@@ -68,7 +68,7 @@ final class G007GravityPerksLocalizationTest extends TestCase {
 		$this->assertSame( 'gp-advanced-select-tom-select', $GLOBALS['pgr_test_inline_styles'][0]['handle'] );
 		$this->assertStringContainsString( '.ts-wrapper.rtl', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
 		$this->assertStringContainsString( 'background-position:left .75rem center', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
-		$this->assertStringContainsString( 'padding-left:max(var(--ts-pr-min),var(--ts-pr-clear-button) + var(--ts-pr-caret))!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
+		$this->assertStringContainsString( 'padding-left:max(var(--ts-pr-min),calc(var(--ts-pr-clear-button) + var(--ts-pr-caret)))!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
 		$this->assertStringContainsString( 'padding-right:var(--ts-pr-min)!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
 	}
 
