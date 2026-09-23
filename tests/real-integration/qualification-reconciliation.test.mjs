@@ -99,6 +99,10 @@ function fixtures() {
     g008FlowStatusAdmissionEvidence: null,
     g008ResidualSourceEvidence: null,
     g008ResidualNoAdmissionEvidence: null,
+    g008ResidualBrowserEnabledEvidence: null,
+    g008ResidualBrowserDisabledEvidence: null,
+    g008FlowStatusBrowserEnabledEvidence: null,
+    g008FlowStatusBrowserDisabledEvidence: null,
     expectedIdentity: structuredClone(identity),
   };
 }
@@ -206,6 +210,53 @@ function closeFlowResiduals(input) {
     exact_gravityflow_package_sha256: 'b'.repeat(64),
     surfaces: Object.fromEntries(residuals.map((surface) => [surface.id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
   };
+
+  const residualDispositions = {
+    'gravityflow.entry-detail.schedule-due-expiration': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+    'gravityflow.timeline-history': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+    'gravityflow.print': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+  };
+  const makeResidualBrowser = (mode) => ({
+    evidence_class: 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
+    mode,
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    entry_detail: {
+      url: 'https://example.test/entry',
+      due_date_native: 'March 21, 2026',
+      timeline_native: ['March 21, 2026 at 1:45 am'],
+    },
+    print: {
+      url: 'https://example.test/print',
+      timeline_native: ['March 21, 2026 at 1:45 am'],
+    },
+    dispositions: structuredClone(residualDispositions),
+  });
+  input.g008ResidualBrowserEnabledEvidence = makeResidualBrowser('enabled');
+  input.g008ResidualBrowserDisabledEvidence = makeResidualBrowser('disabled');
+
+  const makeStatusBrowser = (mode) => ({
+    evidence_class: 'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER',
+    mode,
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    rows: [{ id: 1, due_date: 'March 21, 2026' }],
+    residual_no_admission: {
+      surface: 'gravityflow.status.due-date',
+      disposition: 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+      enabled_and_disabled_expect_native: true,
+    },
+  });
+  input.g008FlowStatusBrowserEnabledEvidence = makeStatusBrowser('enabled');
+  input.g008FlowStatusBrowserDisabledEvidence = makeStatusBrowser('disabled');
 }
 
 function expectFailure(input, pattern) {
@@ -315,7 +366,94 @@ test('G-008 final no-admission claims require exact source plus enabled/disabled
   const driftedSource = fixtures();
   closeFlowResiduals(driftedSource);
   driftedSource.g008ResidualSourceEvidence.source_contract.timeline_history.no_date_only_seam = false;
-  expectFailure(driftedSource, /gravityflow\.status\.due-date.*residual source no-admission contract is not fully proven/);
+  expectFailure(driftedSource, /gravityflow\.timeline-history.*residual source no-admission contract is missing, empty, non-boolean, or not fully proven/);
+});
+
+test('G-008 residual source contract gate rejects missing, empty, missing-flag, false and non-boolean evidence', () => {
+  const missing = fixtures();
+  closeFlowResiduals(missing);
+  delete missing.g008ResidualSourceEvidence.source_contract;
+  expectFailure(missing, /gravityflow\.status\.due-date.*residual source no-admission contract is missing/);
+
+  const empty = fixtures();
+  closeFlowResiduals(empty);
+  empty.g008ResidualSourceEvidence.source_contract.status_due_date = {};
+  expectFailure(empty, /gravityflow\.status\.due-date.*residual source no-admission contract is missing/);
+
+  const flagMissing = fixtures();
+  closeFlowResiduals(flagMissing);
+  delete flagMissing.g008ResidualSourceEvidence.source_contract.timeline_history.no_date_only_seam;
+  expectFailure(flagMissing, /gravityflow\.timeline-history.*residual source no-admission contract is missing/);
+
+  const falseFlag = fixtures();
+  closeFlowResiduals(falseFlag);
+  falseFlag.g008ResidualSourceEvidence.source_contract.print.dependent_render_only = false;
+  expectFailure(falseFlag, /gravityflow\.print.*residual source no-admission contract is missing/);
+
+  const nonBoolean = fixtures();
+  closeFlowResiduals(nonBoolean);
+  nonBoolean.g008ResidualSourceEvidence.source_contract.entry_detail_schedule_due_expiration.direct_operational_render = 'true';
+  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule-due-expiration.*residual source no-admission contract is missing/);
+});
+
+test('G-008 residual browser gate rejects missing or duplicated mode evidence', () => {
+  const missingEnabled = fixtures();
+  closeFlowResiduals(missingEnabled);
+  missingEnabled.g008ResidualBrowserEnabledEvidence = null;
+  expectFailure(missingEnabled, /enabled residual browser: browser evidence is missing/);
+
+  const missingDisabled = fixtures();
+  closeFlowResiduals(missingDisabled);
+  missingDisabled.g008ResidualBrowserDisabledEvidence = null;
+  expectFailure(missingDisabled, /disabled residual browser: browser evidence is missing/);
+
+  const enabledCopiedToDisabled = fixtures();
+  closeFlowResiduals(enabledCopiedToDisabled);
+  enabledCopiedToDisabled.g008ResidualBrowserDisabledEvidence = structuredClone(enabledCopiedToDisabled.g008ResidualBrowserEnabledEvidence);
+  expectFailure(enabledCopiedToDisabled, /disabled residual browser: mode must be disabled/);
+
+  const disabledCopiedToEnabled = fixtures();
+  closeFlowResiduals(disabledCopiedToEnabled);
+  disabledCopiedToEnabled.g008ResidualBrowserEnabledEvidence = structuredClone(disabledCopiedToEnabled.g008ResidualBrowserDisabledEvidence);
+  expectFailure(disabledCopiedToEnabled, /enabled residual browser: mode must be enabled/);
+
+  const wrongMode = fixtures();
+  closeFlowResiduals(wrongMode);
+  wrongMode.g008FlowStatusBrowserDisabledEvidence.mode = 'enabled';
+  expectFailure(wrongMode, /disabled Status browser: mode must be disabled/);
+});
+
+test('G-008 residual browser gate rejects empty observations and target identity drift', () => {
+  const emptyObservation = fixtures();
+  closeFlowResiduals(emptyObservation);
+  emptyObservation.g008ResidualBrowserEnabledEvidence.entry_detail = {};
+  expectFailure(emptyObservation, /Entry Detail observation is empty/);
+
+  const missingTarget = fixtures();
+  closeFlowResiduals(missingTarget);
+  delete missingTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.timeline-history'];
+  expectFailure(missingTarget, /residual target identity set is missing, duplicated, or unexpected/);
+
+  const wrongTarget = fixtures();
+  closeFlowResiduals(wrongTarget);
+  delete wrongTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.print'];
+  wrongTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.print-wrong'] = 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0';
+  expectFailure(wrongTarget, /residual target identity set is missing, duplicated, or unexpected/);
+});
+
+test('G-008 residual browser gate rejects package drift and source-only runtime promotion', () => {
+  const wrongHash = fixtures();
+  closeFlowResiduals(wrongHash);
+  wrongHash.g008ResidualBrowserDisabledEvidence.exact_gravityflow_package_sha256 = '0'.repeat(64);
+  expectFailure(wrongHash, /disabled residual browser: Gravity Flow package SHA-256 mismatch/);
+
+  const sourceOnly = fixtures();
+  closeFlowResiduals(sourceOnly);
+  sourceOnly.g008ResidualBrowserEnabledEvidence = null;
+  sourceOnly.g008ResidualBrowserDisabledEvidence = null;
+  sourceOnly.g008FlowStatusBrowserEnabledEvidence = null;
+  sourceOnly.g008FlowStatusBrowserDisabledEvidence = null;
+  expectFailure(sourceOnly, /browser evidence is missing/);
 });
 
 test('exact identity mismatch rejects both vendor package drift and PersianGravity source drift', () => {
