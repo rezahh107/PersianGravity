@@ -95,6 +95,24 @@ function inspectSemanticTokens(file, needles, tokens, radius = 12) {
   return result;
 }
 
+function inspectSourceWindows(source, needle = 'due_date', radius = 14) {
+  const lines = source.content.split(/\r?\n/);
+  const occurrences = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!lines[i].includes(needle)) continue;
+    const start = Math.max(0, i - radius);
+    const end = Math.min(lines.length, i + radius + 1);
+    occurrences.push({
+      file: source.relative,
+      line: i + 1,
+      window_start: start + 1,
+      window_end: end,
+      source: lines.slice(start, end).map((text, index) => ({ line: start + index + 1, text })),
+    });
+  }
+  return occurrences;
+}
+
 function requireSourceFile(root, relative, label) {
   const file = path.join(root, relative);
   if (!fs.existsSync(file)) throw new Error(`${label} path drifted: ${relative}`);
@@ -146,6 +164,10 @@ function found(product, needle) {
 }
 
 const flowInboxTask = requireSourceFile(roots.gravityflow, 'includes/inbox/models/class-task.php', 'Exact Gravity Flow Inbox task model');
+const flowInboxPage = requireSourceFile(roots.gravityflow, 'includes/pages/class-inbox.php', 'Exact Gravity Flow Inbox page');
+const flowDueDateSetting = requireSourceFile(roots.gravityflow, 'includes/settings/class-due-date.php', 'Exact Gravity Flow due-date setting');
+const flowScheduleCustom = requireSourceFile(roots.gravityflow, 'includes/settings/class-schedule-custom.php', 'Exact Gravity Flow custom schedule setting');
+const flowStep = requireSourceFile(roots.gravityflow, 'includes/steps/class-step.php', 'Exact Gravity Flow step due-date authority');
 const flowCommon = requireSourceFile(roots.gravityflow, 'includes/class-common.php', 'Exact Gravity Flow common formatter');
 const flowMain = requireSourceFile(roots.gravityflow, 'class-gravity-flow.php', 'Exact Gravity Flow entry-meta authority');
 const gfApi = requireSourceFile(roots.gravityforms, 'includes/api.php', 'Exact Gravity Forms Entry API contract');
@@ -156,8 +178,10 @@ const flowInboxSemanticTokens = [
   "$entry['date_created']",
   "$entry['workflow_timestamp']",
   "$entry['date_updated']",
+  "$entry['due_date']",
   'date_created_human_readable',
   'last_updated_human_readable',
+  'due_date_human_readable',
   'Gravity_Flow_Common::format_date',
   'get_date_from_gmt',
   'get_gmt_from_date',
@@ -174,9 +198,18 @@ const flowInboxSemanticTokens = [
 ];
 const flowInboxSourceProbe = inspectSemanticTokens(
   flowInboxTask.file,
-  ['date_created_human_readable', 'last_updated_human_readable', 'gravityflow_inbox_field_value'],
+  ['date_created_human_readable', 'last_updated_human_readable', 'due_date_human_readable', 'gravityflow_inbox_field_value'],
   flowInboxSemanticTokens
 );
+
+const flowInboxDueDateProbe = {
+  task_model: inspectSourceWindows(flowInboxTask),
+  inbox_page: inspectSourceWindows(flowInboxPage),
+  flow_main: inspectSourceWindows(flowMain),
+  due_date_setting: inspectSourceWindows(flowDueDateSetting),
+  custom_schedule_setting: inspectSourceWindows(flowScheduleCustom),
+  step: inspectSourceWindows(flowStep),
+};
 
 const flowInboxSourceContract = {
   paths: {
@@ -293,6 +326,7 @@ const classifications = {
       due_date_human_readable: found('gravityflow', 'due_date_human_readable'),
       task_model_path: flowInboxTask.relative,
       source_semantics_probe: flowInboxSourceProbe,
+      due_date_source_probe: flowInboxDueDateProbe,
       source_contract: flowInboxSourceContract,
       discovery_state: found('gravityflow', 'gravityflow_inbox_field_value')
         && found('gravityflow', 'date_created_human_readable')
