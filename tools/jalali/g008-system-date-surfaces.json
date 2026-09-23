@@ -205,7 +205,7 @@
           "raw_source": "Current-step workflow-owned operational timestamps: due via get_due_date_timestamp(), schedule via get_schedule_timestamp(), expiration via get_expiration_timestamp(); each getter participates in step timing/state and exposes operational timestamp filters",
           "source_calendar": "Due/expiration/schedule getters resolve to UTC Unix epoch instants; native schedule display additionally has type-specific civil-date behavior (configured date vs date-field/delay localization)",
           "source_timezone": "Operational getters are UTC timestamp authorities; native Entry Detail applies Gravity Flow type-specific formatting/localization, including direct configured schedule_date for date mode and GMT-to-site conversion for date-field/delay modes",
-          "presentation_seam": "FINAL_NO_ADMISSION: maybe_display_entry_detail_workflow_info() directly formats/prints due and expiration from operational getters; its only nearby extension action runs after those values are emitted. display_queued_step_details() directly reads/prints the schedule getter. No supported per-value downstream presentation filter exists; the timestamp filters are operational",
+          "presentation_seam": "FINAL_NO_ADMISSION: maybe_display_entry_detail_workflow_info() exposes gravityflow_date_format_entry_detail only as a shared date-format-pattern filter before native Gravity_Flow_Common::format_date(); it does not expose raw timestamps or a calendar/value replacement contract. Due and expiration then read operational getters and print directly, with the only nearby content action after output. display_queued_step_details() directly reads/prints the schedule getter with no per-value output filter. The due/schedule/expiration timestamp filters are operational.",
           "semantic_dependencies": [
             "workflow schedule validation/start timing",
             "due/deadline authority",
@@ -217,7 +217,7 @@
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact-package call-site census and method assertions prove due/expiration are directly emitted before the post-output action, schedule is directly emitted from the scheduling getter, and the same getters drive operational validation/state. No broad Entry Detail converter is admitted.",
+          "evidence": "Exact-package call-site census proves gravityflow_date_format_entry_detail is format-string-only and upstream of native formatting, due/expiration are directly emitted from operational getters before the post-output action, schedule is directly emitted from the scheduling getter with type-specific native semantics, and the same getters drive operational validation/state. No broad Entry Detail converter is admitted.",
           "drift_behavior": "Final no-admission for exact Gravity Flow 3.1.0. Any future supported per-value downstream seam requires fresh source/runtime qualification; operational timestamp filters remain non-presentation.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
           "runtime_evidence": "g008-flow-residual-no-admission.json"
