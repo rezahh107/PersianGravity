@@ -445,6 +445,7 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-two-hook-prototype.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-admission.json"
 
       - name: Reconcile authentic schedule branch qualification
         shell: bash
