@@ -20,9 +20,8 @@ if ( 'UTC' !== date_default_timezone_get() || 'Asia/Tehran' !== wp_timezone_stri
 }
 
 $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512, JSON_THROW_ON_ERROR );
-$base_entry_url = $manifest['g008_flow_entry_detail_url'];
 
-$build = static function ( $key, $schedule_settings, $date_field_value = '' ) use ( $base_entry_url ) {
+$build = static function ( $key, $schedule_settings, $date_field_value = '' ) {
 	$form = array(
 		'title'  => 'WU008 G008 Schedule ' . $key,
 		'fields' => array(
@@ -42,6 +41,20 @@ $build = static function ( $key, $schedule_settings, $date_field_value = '' ) us
 	$form_id = GFAPI::add_form( $form );
 	if ( is_wp_error( $form_id ) ) {
 		throw new RuntimeException( $form_id->get_error_message() );
+	}
+
+	$page_id = wp_insert_post(
+		array(
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_title'   => 'WU008 G008 Schedule ' . $key,
+			'post_name'    => 'wu008-g008-schedule-' . sanitize_title( $key ),
+			'post_content' => sprintf( '[gravityflow page="inbox" form="%d"]', (int) $form_id ),
+		),
+		true
+	);
+	if ( is_wp_error( $page_id ) ) {
+		throw new RuntimeException( $page_id->get_error_message() );
 	}
 
 	$api = new Gravity_Flow_API( (int) $form_id );
@@ -105,7 +118,14 @@ $build = static function ( $key, $schedule_settings, $date_field_value = '' ) us
 		'form_id'             => (int) $form_id,
 		'entry_id'            => (int) $entry_id,
 		'step_id'             => (int) $step_id,
-		'entry_url'           => add_query_arg( 'lid', (int) $entry_id, $base_entry_url ),
+		'entry_url'           => add_query_arg(
+			array(
+				'page_id' => (int) $page_id,
+				'view'    => 'entry',
+				'lid'     => (int) $entry_id,
+			),
+			home_url( '/' )
+		),
 		'schedule_type'       => (string) $current_step->schedule_type,
 		'scheduled'           => (bool) $current_step->scheduled,
 		'schedule_date'       => isset( $current_step->schedule_date ) ? (string) $current_step->schedule_date : '',
