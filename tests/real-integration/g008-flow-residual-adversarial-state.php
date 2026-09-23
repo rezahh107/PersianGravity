@@ -72,7 +72,13 @@ $rest_request  = new WP_REST_Request( 'GET', '/gf/v2/entries/' . $entry_id );
 $rest_response = rest_do_request( $rest_request );
 $rest_data     = $rest_response->get_data();
 if ( 200 !== $rest_response->get_status() || ! is_array( $rest_data ) ) {
-	throw new RuntimeException( 'Residual candidate REST entry contract could not be proven.' );
+	throw new RuntimeException(
+		sprintf(
+			'Residual candidate REST entry contract could not be proven (status %d, body %s).',
+			(int) $rest_response->get_status(),
+			wp_json_encode( $rest_data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+		)
+	);
 }
 
 $search_criteria = array(
