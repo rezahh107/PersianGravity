@@ -15,7 +15,7 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/** Gravity Flow's display-only companion for the raw Last Updated compare value. */
 	private const LAST_UPDATED_DISPLAY_ID = 'last_updated_human_readable';
 
-	/** Gravity Flow's host-owned raw Due Date compare value. */
+	/** Gravity Flow's raw Due Date compare-value identity. */
 	private const DUE_DATE_RAW_ID = 'due_date';
 
 	/** Gravity Flow's display-only companion for the raw Due Date compare value. */
@@ -30,7 +30,7 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/**
 	 * One-shot raw due-date authority for the immediately following display value.
 	 *
-	 * @var array{key:string,value:int|null}|null
+	 * @var array{key:string,value:int}|null
 	 */
 	private $pending_due_date_raw = null;
 
@@ -44,87 +44,61 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Convert only admitted human-readable Inbox system-date values.
+	 * Convert only the admitted human-readable Inbox system-date values.
 	 *
-	 * Exact Gravity Flow 3.1.0 passes the raw due_date compare value through
-	 * this same seam before due_date_human_readable for the row. PersianGravity
-	 * observes that already-computed raw value without changing it, then consumes
-	 * it only for the later display callback. It never re-enters Flow's operational
-	 * due-date getter.
+	 * Gravity Flow keeps the corresponding raw values as independent AG Grid
+	 * compare values. This callback intentionally never touches those raw
+	 * identities or workflow-owned due-date state.
 	 *
-	 * @param mixed        $value    Native Inbox value.
+	 * @param mixed        $value    Native display value.
 	 * @param int          $form_id  Current Gravity Forms form ID.
 	 * @param int|string   $field_id Gravity Flow Inbox column identity.
 	 * @param array<mixed> $entry    Current Gravity Forms entry with Flow meta.
 	 * @return mixed
 	 */
 	public function filter_inbox_value( $value, $form_id, $field_id, $entry ) {
-		if ( ! $this->is_exact_supported_host() || ! is_array( $entry ) ) {
+		if ( ! $this->is_exact_supported_host() || ! class_exists( 'PGR_Jalali_Presentation', false ) || ! is_array( $entry ) ) {
 			$this->pending_due_date_raw = null;
 			return $value;
 		}
 
 		if ( self::DUE_DATE_RAW_ID === $field_id ) {
-			$key = $this->due_date_capture_key( $form_id, $entry );
-			$this->pending_due_date_raw = null === $key
-				? null
-				: array(
-					'key' => $key,
-					'raw' => $this->qualified_due_date_raw( $value ),
-				);
+			$this->capture_due_date_raw( $value, $form_id, $entry );
 			return $value;
 		}
 
 		if ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
-			$key     = $this->due_date_capture_key( $form_id, $entry );
-			$pending = $this->pending_due_date_raw;
-			$this->pending_due_date_raw = null;
-
-			if (
-				null === $key ||
-				! is_array( $pending ) ||
-				$pending['key'] !== $key ||
-				! class_exists( 'PGR_Jalali_Presentation', false )
-			) {
-				return $value;
-			}
-
-			$raw = $pending['raw'];
+			$raw_due_date = $this->consume_due_date_raw( $form_id, $entry );
 
 			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
-			// date. Raw 0 is the matching no-due compare value.
-			if ( '-' === $value || null === $raw || 0 === $raw ) {
-				return $value;
-			}
-
-			$source = $this->absolute_timestamp_source( $raw );
-			if ( null === $source ) {
-				return $value;
-			}
-
-			$formatted = PGR_Jalali_Presentation::format_datetime( $source );
-			return null === $formatted ? $value : $formatted;
-		}
-
-		// Exact Flow 3.1.0 emits due_date_human_readable immediately after raw
-		// due_date. Any intervening identity invalidates the ordering authority.
-		$this->pending_due_date_raw = null;
-
-		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
-			return $value;
-		}
-
-		if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
-			$source = $this->date_created_source( $entry );
-		} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
-			// Gravity Flow uses this sentinel when the workflow timestamp still
-			// represents the original submission instant. Preserve that contract.
+			// date. Consume any matching raw 0 proof, but preserve the native value.
 			if ( '-' === $value ) {
 				return $value;
 			}
-			$source = $this->last_updated_source( $entry );
+
+			if ( null === $raw_due_date || 0 === $raw_due_date ) {
+				return $value;
+			}
+
+			$source = $this->absolute_timestamp_source( $raw_due_date );
 		} else {
-			return $value;
+			// In exact 3.1.0 raw due_date is immediately followed by its display
+			// companion for the same row. Any intervening identity invalidates
+			// the one-shot authority and therefore fails closed.
+			$this->pending_due_date_raw = null;
+
+			if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
+				$source = $this->date_created_source( $entry );
+			} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
+				// Gravity Flow uses this sentinel when the workflow timestamp still
+				// represents the original submission instant. Preserve that contract.
+				if ( '-' === $value ) {
+					return $value;
+				}
+				$source = $this->last_updated_source( $entry );
+			} else {
+				return $value;
+			}
 		}
 
 		if ( null === $source ) {
@@ -176,7 +150,12 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Capture the already-computed raw due-date value for the next display cell.
+	 * Capture the exact raw Inbox due-date value already computed by Gravity Flow.
+	 *
+	 * Exact Gravity Flow 3.1.0 emits the raw due_date column before its
+	 * due_date_human_readable companion and sends both through the same Inbox
+	 * presentation filter. Only the native integer epoch/0 representation is
+	 * admitted here; malformed or ambiguous values invalidate any stale proof.
 	 *
 	 * @param mixed        $value   Native raw due-date compare value.
 	 * @param mixed        $form_id Current form ID.
@@ -187,18 +166,19 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 		$this->pending_due_date_raw = null;
 
 		$key = $this->due_date_capture_key( $form_id, $entry );
-		if ( null === $key ) {
+		if ( null === $key || ! is_int( $value ) || $value < 0 ) {
 			return;
 		}
 
 		$this->pending_due_date_raw = array(
 			'key'   => $key,
-			'value' => $this->qualified_due_date_raw( $value ),
+			'value' => $value,
 		);
 	}
 
 	/**
-	 * Consume one raw due-date proof for the same form/entry display callback.
+	 * Consume one raw due-date proof only for the immediately following display
+	 * callback of the same form/entry row.
 	 *
 	 * @param mixed        $form_id Current form ID.
 	 * @param array<mixed> $entry   Current entry.
@@ -211,10 +191,10 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 
 		if (
 			! is_array( $pending ) ||
-			! isset( $pending['key'] ) ||
-			! array_key_exists( 'value', $pending ) ||
+			! isset( $pending['key'], $pending['value'] ) ||
 			null === $key ||
-			$pending['key'] !== $key
+			$pending['key'] !== $key ||
+			! is_int( $pending['value'] )
 		) {
 			return null;
 		}
@@ -223,61 +203,44 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Build a request-local due-date capture key from host row identity.
+	 * Build the request-local due-date proof key without coercing loose IDs.
 	 *
 	 * @param mixed        $form_id Current form ID.
 	 * @param array<mixed> $entry   Current entry.
 	 * @return string|null
 	 */
 	private function due_date_capture_key( $form_id, $entry ) {
-		$form_identity       = $this->positive_integer_identity( $form_id );
-		$entry_identity      = isset( $entry['id'] ) ? $this->positive_integer_identity( $entry['id'] ) : null;
-		$entry_form_identity = isset( $entry['form_id'] ) ? $this->positive_integer_identity( $entry['form_id'] ) : null;
-
-		if (
-			null === $form_identity ||
-			null === $entry_identity ||
-			null === $entry_form_identity ||
-			$form_identity !== $entry_form_identity
-		) {
+		if ( ! isset( $entry['id'], $entry['form_id'] ) ) {
 			return null;
 		}
 
-		return $form_identity . ':' . $entry_identity;
-	}
+		$form_id       = $this->positive_decimal_id( $form_id );
+		$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
+		$entry_id      = $this->positive_decimal_id( $entry['id'] );
 
-	/**
-	 * Accept only the qualified raw Gravity Flow due-date representation.
-	 *
-	 * Raw 0 is intentionally retained as the host-owned no-due-date state.
-	 *
-	 * @param mixed $raw Host-owned raw Inbox due_date value.
-	 * @return int|null
-	 */
-	private function qualified_due_date_raw( $raw ) {
-		if ( ! is_int( $raw ) || $raw < 0 ) {
+		if ( null === $form_id || null === $entry_form_id || null === $entry_id || $entry_form_id !== $form_id ) {
 			return null;
 		}
 
-		return $raw;
+		return $form_id . ':' . $entry_id;
 	}
 
 	/**
-	 * Normalize a positive integer identity without loose numeric coercion.
+	 * Normalize only canonical positive integer IDs used by the qualified host.
 	 *
-	 * @param mixed $raw Host-owned identity.
+	 * @param mixed $value Candidate ID.
 	 * @return string|null
 	 */
-	private function positive_integer_identity( $raw ) {
-		if ( is_int( $raw ) && $raw > 0 ) {
-			return (string) $raw;
+	private function positive_decimal_id( $value ) {
+		if ( is_int( $value ) ) {
+			return $value > 0 ? (string) $value : null;
 		}
 
-		if ( is_string( $raw ) && 1 === preg_match( '/^[1-9][0-9]*$/', $raw ) ) {
-			return $raw;
+		if ( ! is_string( $value ) || 1 !== preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return null;
 		}
 
-		return null;
+		return $value;
 	}
 
 	/**
