@@ -116,12 +116,14 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( 'ADMITTED_VERIFIED', $states['gravityforms.entries-list.date-created']['support_state'] );
 		$this->assertSame( 'PGR_GF_Jalali_Presentation_Adapter', $states['gravityforms.entries-list.date-created']['adapter_identity'] );
 
-		foreach ( array( 'gravityflow.inbox.date-created', 'gravityflow.inbox.last-updated' ) as $admitted_id ) {
+		foreach ( array( 'gravityflow.inbox.date-created', 'gravityflow.inbox.last-updated', 'gravityflow.inbox.due-date' ) as $admitted_id ) {
 			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
 			$this->assertSame( 'ADMITTED_VERIFIED', $states[ $admitted_id ]['support_state'], $admitted_id );
 			$this->assertSame( 'PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
 			$this->assertSame( 'g008-flow-inbox-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
+		$this->assertStringContainsString( 'get_due_date_timestamp()', $states['gravityflow.inbox.due-date']['raw_source'] );
+		$this->assertStringContainsString( "raw 0 with native display '-'", $states['gravityflow.inbox.due-date']['raw_source'] );
 
 		foreach ( array( 'gravityflow.status.date-created', 'gravityflow.status.workflow-timestamp' ) as $admitted_id ) {
 			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
@@ -130,12 +132,11 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			$this->assertSame( 'g008-flow-status-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
 
-		$this->assertSame( 'SOURCE_PROVEN', $states['gravityflow.inbox.due-date']['discovery_state'] );
-
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
 			'gravityflow.inbox.date-created',
 			'gravityflow.inbox.last-updated',
+			'gravityflow.inbox.due-date',
 			'gravityflow.status.date-created',
 			'gravityflow.status.workflow-timestamp',
 		);
