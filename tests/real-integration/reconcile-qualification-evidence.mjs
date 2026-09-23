@@ -156,11 +156,141 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expec
 
 function allEvidenceFlagsTrue(value) {
   if (typeof value === 'boolean') return value;
-  if (isObject(value)) return Object.values(value).every(allEvidenceFlagsTrue);
-  return true;
+  if (!isObject(value)) return false;
+  const values = Object.values(value);
+  return values.length > 0 && values.every(allEvidenceFlagsTrue);
 }
 
-function validateG008FinalNoAdmission(product, surface, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity) {
+const residualSourceContractBySurface = {
+  'gravityflow.status.due-date': 'status_due_date',
+  'gravityflow.entry-detail.schedule-due-expiration': 'entry_detail_schedule_due_expiration',
+  'gravityflow.timeline-history': 'timeline_history',
+  'gravityflow.print': 'print',
+};
+
+const residualBrowserTargets = [
+  'gravityflow.entry-detail.schedule-due-expiration',
+  'gravityflow.timeline-history',
+  'gravityflow.print',
+];
+
+function exactStringSet(values, expected) {
+  if (!Array.isArray(values)) return false;
+  const actual = [...values].sort();
+  const wanted = [...expected].sort();
+  return JSON.stringify(actual) === JSON.stringify(wanted);
+}
+
+function browserIdentityErrors(evidence, expectedMode, expectedClass, product, expectedIdentity, label) {
+  const errors = [];
+  if (!isObject(evidence)) return [`${label}: browser evidence is missing.`];
+  if (evidence.evidence_class !== expectedClass) errors.push(`${label}: evidence class mismatch.`);
+  if (evidence.mode !== expectedMode) errors.push(`${label}: mode must be ${expectedMode}.`);
+  errors.push(...exactIdentityErrors(evidence, expectedIdentity, label));
+  if (evidence.exact_gravityflow_version !== product.version) errors.push(`${label}: Gravity Flow version mismatch.`);
+  if (evidence.exact_gravityflow_package_sha256 !== product.package_sha256) errors.push(`${label}: Gravity Flow package SHA-256 mismatch.`);
+  if (evidence.site_timezone !== 'Asia/Tehran') errors.push(`${label}: site timezone identity mismatch.`);
+  if (evidence.php_default_timezone !== 'UTC') errors.push(`${label}: PHP default timezone identity mismatch.`);
+  return errors;
+}
+
+function validateResidualBrowserPair(product, surface, enabled, disabled, expectedIdentity) {
+  const errors = [];
+  errors.push(...browserIdentityErrors(
+    enabled,
+    'enabled',
+    'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
+    product,
+    expectedIdentity,
+    `G-008 ${surface.id} enabled residual browser`
+  ));
+  errors.push(...browserIdentityErrors(
+    disabled,
+    'disabled',
+    'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
+    product,
+    expectedIdentity,
+    `G-008 ${surface.id} disabled residual browser`
+  ));
+  if (!isObject(enabled) || !isObject(disabled)) return errors;
+
+  for (const [label, evidence] of [['enabled', enabled], ['disabled', disabled]]) {
+    if (!isObject(evidence.dispositions) || !exactStringSet(Object.keys(evidence.dispositions), residualBrowserTargets)) {
+      errors.push(`G-008 ${surface.id} ${label}: residual target identity set is missing, duplicated, or unexpected.`);
+      continue;
+    }
+    if (evidence.dispositions[surface.id] !== 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0') {
+      errors.push(`G-008 ${surface.id} ${label}: residual target disposition is missing or wrong.`);
+    }
+    if (!isObject(evidence.entry_detail) || typeof evidence.entry_detail.url !== 'string' || evidence.entry_detail.url.length === 0) {
+      errors.push(`G-008 ${surface.id} ${label}: Entry Detail observation is empty.`);
+    }
+    if (!isObject(evidence.print) || typeof evidence.print.url !== 'string' || evidence.print.url.length === 0) {
+      errors.push(`G-008 ${surface.id} ${label}: Print observation is empty.`);
+    }
+    if (surface.id === 'gravityflow.entry-detail.schedule-due-expiration') {
+      if (typeof evidence.entry_detail.due_date_native !== 'string' || evidence.entry_detail.due_date_native.length === 0) {
+        errors.push(`G-008 ${surface.id} ${label}: required due-date browser observation is empty.`);
+      }
+    } else if (surface.id === 'gravityflow.timeline-history') {
+      if (!Array.isArray(evidence.entry_detail.timeline_native) || evidence.entry_detail.timeline_native.length === 0) {
+        errors.push(`G-008 ${surface.id} ${label}: required Timeline browser observations are empty.`);
+      }
+    } else if (surface.id === 'gravityflow.print') {
+      if (!Array.isArray(evidence.print.timeline_native) || evidence.print.timeline_native.length === 0) {
+        errors.push(`G-008 ${surface.id} ${label}: required Print Timeline observations are empty.`);
+      }
+    }
+  }
+  return errors;
+}
+
+function validateStatusDueBrowserPair(product, surface, enabled, disabled, expectedIdentity) {
+  const errors = [];
+  errors.push(...browserIdentityErrors(
+    enabled,
+    'enabled',
+    'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER',
+    product,
+    expectedIdentity,
+    `G-008 ${surface.id} enabled Status browser`
+  ));
+  errors.push(...browserIdentityErrors(
+    disabled,
+    'disabled',
+    'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER',
+    product,
+    expectedIdentity,
+    `G-008 ${surface.id} disabled Status browser`
+  ));
+  if (!isObject(enabled) || !isObject(disabled)) return errors;
+
+  for (const [label, evidence] of [['enabled', enabled], ['disabled', disabled]]) {
+    if (!Array.isArray(evidence.rows) || evidence.rows.length === 0 || evidence.rows.some((row) => typeof row?.due_date !== 'string')) {
+      errors.push(`G-008 ${surface.id} ${label}: Status due-date browser observations are empty or malformed.`);
+    }
+    if (
+      evidence.residual_no_admission?.surface !== surface.id
+      || evidence.residual_no_admission?.disposition !== 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'
+      || evidence.residual_no_admission?.enabled_and_disabled_expect_native !== true
+    ) {
+      errors.push(`G-008 ${surface.id} ${label}: Status residual target identity/disposition is missing or wrong.`);
+    }
+  }
+  return errors;
+}
+
+function validateG008FinalNoAdmission(
+  product,
+  surface,
+  residualSourceEvidence,
+  residualRuntimeEvidence,
+  residualBrowserEnabledEvidence,
+  residualBrowserDisabledEvidence,
+  statusBrowserEnabledEvidence,
+  statusBrowserDisabledEvidence,
+  expectedIdentity
+) {
   const errors = [];
   if (surface.support_state !== 'NOT_PROVEN') {
     errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must retain support_state NOT_PROVEN.`);
@@ -183,10 +313,30 @@ function validateG008FinalNoAdmission(product, surface, residualSourceEvidence, 
     if (residualSourceEvidence.exact?.sha256 !== product.package_sha256) {
       errors.push(`G-008 ${surface.id}: residual source Gravity Flow package SHA-256 mismatch.`);
     }
-    if (!allEvidenceFlagsTrue(residualSourceEvidence.source_contract)) {
-      errors.push(`G-008 ${surface.id}: residual source no-admission contract is not fully proven.`);
+    const contractKey = residualSourceContractBySurface[surface.id];
+    const targetContract = contractKey ? residualSourceEvidence.source_contract?.[contractKey] : null;
+    if (!contractKey || !isObject(targetContract) || Object.keys(targetContract).length === 0 || !allEvidenceFlagsTrue(targetContract)) {
+      errors.push(`G-008 ${surface.id}: residual source no-admission contract is missing, empty, non-boolean, or not fully proven.`);
     }
   }
+  if (surface.id === 'gravityflow.status.due-date') {
+    errors.push(...validateStatusDueBrowserPair(
+      product,
+      surface,
+      statusBrowserEnabledEvidence,
+      statusBrowserDisabledEvidence,
+      expectedIdentity
+    ));
+  } else {
+    errors.push(...validateResidualBrowserPair(
+      product,
+      surface,
+      residualBrowserEnabledEvidence,
+      residualBrowserDisabledEvidence,
+      expectedIdentity
+    ));
+  }
+
   if (!isObject(residualRuntimeEvidence) || residualRuntimeEvidence.evidence_class !== 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION') {
     errors.push(`G-008 ${surface.id}: residual enabled/disabled runtime reconciliation evidence is missing.`);
   } else {
@@ -209,7 +359,18 @@ function validateG008FinalNoAdmission(product, surface, residualSourceEvidence, 
   return errors;
 }
 
-function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity) {
+function validateG008(
+  registry,
+  sourceEvidence,
+  runtimeEvidenceByFile,
+  residualSourceEvidence,
+  residualRuntimeEvidence,
+  residualBrowserEnabledEvidence,
+  residualBrowserDisabledEvidence,
+  statusBrowserEnabledEvidence,
+  statusBrowserDisabledEvidence,
+  expectedIdentity
+) {
   const errors = [];
   const sourceClaims = [];
   const runtimeClaims = [];
@@ -240,7 +401,17 @@ function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, residualS
 
       if (surface.exact_version_disposition === 'FINAL_NO_ADMISSION') {
         finalNoAdmissionClaims.push({ product, surface });
-        errors.push(...validateG008FinalNoAdmission(product, surface, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity));
+        errors.push(...validateG008FinalNoAdmission(
+          product,
+          surface,
+          residualSourceEvidence,
+          residualRuntimeEvidence,
+          residualBrowserEnabledEvidence,
+          residualBrowserDisabledEvidence,
+          statusBrowserEnabledEvidence,
+          statusBrowserDisabledEvidence,
+          expectedIdentity
+        ));
         continue;
       }
 
@@ -280,6 +451,10 @@ export function reconcileQualificationEvidence({
   g008FlowStatusAdmissionEvidence,
   g008ResidualSourceEvidence,
   g008ResidualNoAdmissionEvidence,
+  g008ResidualBrowserEnabledEvidence,
+  g008ResidualBrowserDisabledEvidence,
+  g008FlowStatusBrowserEnabledEvidence,
+  g008FlowStatusBrowserDisabledEvidence,
   expectedIdentity,
 }) {
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
@@ -302,6 +477,10 @@ export function reconcileQualificationEvidence({
     },
     g008ResidualSourceEvidence,
     g008ResidualNoAdmissionEvidence,
+    g008ResidualBrowserEnabledEvidence,
+    g008ResidualBrowserDisabledEvidence,
+    g008FlowStatusBrowserEnabledEvidence,
+    g008FlowStatusBrowserDisabledEvidence,
     expectedIdentity
   );
   const errors = [...g009.errors, ...g008.errors];
@@ -338,6 +517,10 @@ function runCli() {
     g008FlowStatusAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-admission.json')),
     g008ResidualSourceEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-residual-source-probe.json')),
     g008ResidualNoAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-no-admission.json')),
+    g008ResidualBrowserEnabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-browser-enabled.json')),
+    g008ResidualBrowserDisabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-browser-disabled.json')),
+    g008FlowStatusBrowserEnabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-browser-enabled.json')),
+    g008FlowStatusBrowserDisabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-browser-disabled.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,
