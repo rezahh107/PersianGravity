@@ -125,7 +125,7 @@ function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
     presentation_seam: {
       exact_filter_apply_site_present: taskFilterLine > 0,
       display_is_computed_before_presentation_filter: taskDueDisplayLine > 0 && taskFilterLine > taskDueDisplayLine,
-      filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_and_entry),
+      filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_field_id_and_entry),
     },
   };
 }
