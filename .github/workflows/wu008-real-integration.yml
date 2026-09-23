@@ -443,7 +443,59 @@ jobs:
           node tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-two-hook-prototype.json"
 
-      - name: Reconcile residual G008 no-admission evidence
+      - name: Create isolated residual Entry Detail, Timeline and schedule fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-setup.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-schedule-setup.php
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-adversarial-fixture.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-fixture.json"
+
+      - name: Qualify Entry Detail candidate, schedule, Timeline and Print with module enabled
+        shell: bash
+        env:
+          WU008_G008_MODE: enabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          node tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          node tests/real-integration/g008-flow-schedule-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-enabled.json"
+
+      - name: Qualify Entry Detail candidate, schedule, Timeline and Print with module disabled
+        shell: bash
+        env:
+          WU008_G008_MODE: disabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          node tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          node tests/real-integration/g008-flow-schedule-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-disabled.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+
+      - name: Reconcile Entry Detail two-hook candidate qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-two-hook-prototype.json"
+
+      - name: Reconcile authentic schedule branch qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-schedule-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-qualification.json"
+
+      - name: Reconcile residual G008 evidence
         shell: bash
         run: |
           set -euo pipefail
