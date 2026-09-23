@@ -26,19 +26,21 @@ The existing G-008 V1 runtime workflow remains a mandatory regression lane for l
 
 ## Gravity Flow 3.1.0 Inbox — admitted surfaces
 
-This batch admits exactly two Gravity Flow Inbox system-date presentations:
+The currently admitted Gravity Flow Inbox system-date presentations are exactly:
 
 - `gravityflow.inbox.date-created`
 - `gravityflow.inbox.last-updated`
+- `gravityflow.inbox.due-date`
 
-Both are exact-version support for Gravity Flow `3.1.0` package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`. No compatibility claim is made for later Gravity Flow versions.
+All three are exact-version support for Gravity Flow `3.1.0` package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`. No compatibility claim is made for later Gravity Flow versions.
 
-The production adapter is `PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter`. It hooks only `gravityflow_inbox_field_value` and recognizes only the two human-readable display identities:
+The production adapter is `PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter`. It hooks only `gravityflow_inbox_field_value` and recognizes only these human-readable display identities:
 
 - `date_created_human_readable`
 - `last_updated_human_readable`
+- `due_date_human_readable`
 
-It deliberately ignores raw `date_created`, raw `last_updated`, `due_date`, Status output, Entry Detail, Timeline/history, Print and arbitrary date-looking strings.
+It never modifies raw `date_created`, raw `last_updated`, or raw `due_date`; the exact Flow 3.1.0 Inbox adapter only observes raw `due_date` at the existing presentation filter long enough to bind its already-computed epoch/0 to the same form+entry for the immediately following display callback. Status output is handled only by its separately admitted adapter; Entry Detail, Timeline/history, Print and arbitrary date-looking strings remain outside this Inbox seam.
 
 ### `date_created` source and timezone contract
 
@@ -59,13 +61,30 @@ The human-readable `last_updated` is derived separately from that epoch. In the 
 
 The PersianGravity adapter avoids the intermediate string entirely: it constructs an instant directly from the authoritative Unix epoch and passes it to `PGR_Jalali_Presentation::format_datetime()`. The native `-` sentinel is preserved unchanged.
 
+### `due_date` source, deadline and timezone contract
+
+The exact Gravity Flow 3.1.0 current step owns the due-date authority through `get_due_date_timestamp()`. Its documented result is a UTC timestamp. The Inbox task model uses that same result in two separate channels:
+
+- raw `due_date` is the Unix epoch value used by AG Grid as a `date` compare value;
+- `due_date_human_readable` is formatted separately from the same epoch for display.
+
+When the current step has no due date, the authentic Inbox contract is raw `due_date = 0` and `due_date_human_readable = '-'`. The adapter preserves that sentinel exactly.
+
+The same current-step `get_due_date_timestamp()` drives `is_overdue()`, which compares the due epoch with `time()`. Inbox overdue highlighting is then based on `is_overdue()` plus the host-owned highlight setting. Gravity Flow can derive a due timestamp from configured date, date-field or delay timing; exact-package source qualification binds those modes as well: date/date-field civil values are converted to GMT before epoch conversion, date-field offsets are applied to the epoch, and delay mode starts from the step-scoped `workflow_step_<step_id>_timestamp` before adding the configured unit offset.
+
+Scheduling remains a distinct host-owned channel. Exact Gravity Flow source proves step start gating calls `validate_schedule()`, which reads `get_schedule_timestamp()` using the `schedule` namespace and the separate `gravityflow_step_schedule_timestamp` filter; the schedule getter does not call the due getter and the due getter does not call the schedule getter.
+
+Exact Gravity Flow 3.1.0 source qualification proves `get_columns()` inserts raw `due_date` before `due_date_human_readable`, `get_data_for_row()` iterates those columns in order, and `get_column_value()` sends both results through `gravityflow_inbox_field_value`. The adapter captures only the already-computed raw integer epoch/0 under the current form+entry key, returns it unchanged, then consumes that one-shot authority for `due_date_human_readable`. It never re-runs `get_due_date_timestamp()`, parses the localized display string, writes due state, hooks/bypasses `gravityflow_step_due_date_timestamp`, changes scheduling/deadline calculation, or substitutes Jalali text for the raw compare value. Missing, malformed, mismatched or out-of-order capture returns native display unchanged.
+
 ## Exact runtime/browser qualification
 
 The existing current-Head WU008 WordPress/Playwright lab is reused; no second integration lab exists.
 
 The lane installs and hash-verifies the exact Gravity Flow 3.1.0 package, the exact current PersianGravity production ZIP, Gravity Forms 3.1.1.1 and GravityView 3.3.4. It creates an authentic Gravity Flow approval workflow and three deterministic pending Inbox entries assigned to the authenticated test user.
 
-The site timezone is set to `Asia/Tehran` while PHP/WordPress default timezone is asserted as `UTC`. The fixture intentionally includes timestamps that cross local civil-date boundaries. With `jalali_presentation` enabled, the browser must observe the exact Jalali values generated through the admitted adapter. With the module disabled, the browser must observe the exact Gravity Flow native values generated by the same exact vendor runtime.
+The site timezone is set to `Asia/Tehran` while PHP/WordPress default timezone is asserted as `UTC`. The Inbox fixture includes an overdue due date whose UTC instant crosses into the next Tehran civil day, a future due date and a no-due-date current step. A test-only MU plugin uses Gravity Flow's supported `gravityflow_step_due_date_timestamp` filter to pin the two due epochs and count every operational-filter execution in each browser request. If that filter is re-entered while `gravityflow_inbox_field_value` is active, the probe deliberately returns a different timestamp; this falsifies any adapter that performs an extra operational getter call. Production PersianGravity never registers that hook. The overdue and future epochs are separated by years, so the native host `time()` comparison is not near a boundary during qualification.
+
+With `jalali_presentation` enabled, the browser must observe the exact Jalali values generated through the admitted adapter. With the module disabled, the browser must observe the exact Gravity Flow native values generated by the same exact vendor runtime. The no-due-date row must remain `-` in both modes.
 
 Primary machine-readable evidence is emitted as:
 
@@ -88,24 +107,29 @@ The exact runtime proves equality of:
 - `workflow_timestamp` values;
 - workflow step and final-status metadata;
 - assignees;
+- authoritative current-step due-date epoch and due-date enabled state;
+- step-scoped workflow timestamp used by delay-mode due calculation;
+- due-date type, delay offset/unit and `supports_due_date()` state;
+- overdue classification and due-date highlight configuration;
+- scheduled flag and schedule timestamp state;
 - authentic Inbox query IDs and count;
-- AG Grid raw `date_created` / `last_updated` compare values;
-- visible sort behavior for both target columns;
-- quick-filter behavior using an exact raw `date_created` compare value.
+- AG Grid raw `date_created` / `last_updated` / `due_date` compare values;
+- visible ascending/descending sort behavior for all three admitted Inbox columns;
+- quick-filter behavior using the exact raw `due_date` compare value.
 
-The display and raw channels are distinct in the exact host source: each target column has a raw `field` and a separate `displayKey`. The adapter is invoked only for the human-readable display identity, so no query, workflow, assignment, storage, compare, sort or filter value is replaced by Jalali text.
+The display and raw channels are distinct in the exact host source: each admitted column has a raw `field` and a separate `displayKey`. The adapter is invoked only for the human-readable display identity, so no query, workflow, assignment, storage, deadline, overdue, step-timing, scheduling, compare, sort or filter value is replaced by Jalali text.
 
 ## Fail-closed host/version behavior
 
 Production admission is exact to the existing Gravity Flow version authority in `includes/localization/products.php`; the adapter does not create another version SSOT.
 
-The adapter requires the host's Gravity Flow version/basename authority to resolve to the admitted product/version. Version or host identity drift returns the native value. Display identity or hook/seam drift likewise prevents conversion because the adapter recognizes only the exact admitted human-readable IDs and only runs through the exact Inbox filter.
+The adapter requires the host's Gravity Flow version/basename authority to resolve to the admitted product/version. Version or host identity drift returns the native value. Display identity or hook/seam drift likewise prevents conversion because the adapter recognizes only exact admitted human-readable IDs and only runs through the exact Inbox filter.
 
-Unit coverage also proves native fallback when the facade is unavailable, the source is malformed/missing, the value is outside the validated product range, or the host version/basename drifts. The WU008 registry/evidence reconciliation binds committed runtime-admitted Flow Inbox claims to `g008-flow-inbox-admission.json` and exact current-Head/package identity.
+For `due_date`, native output is retained when the exact host/version/seam is unavailable, the preceding raw value was not captured for the same form+entry, the raw representation is not the qualified integer epoch/0 shape, call ordering is not the qualified Flow 3.1.0 ordering, raw `0` represents no due date, the instant is outside the validated range, or facade/timezone conversion fails. Unit coverage also proves one-shot consumption and cross-row isolation, while existing date-created/last-updated malformed/missing/range fallbacks remain intact. The WU008 registry/evidence reconciliation binds committed runtime-admitted Flow Inbox claims to `g008-flow-inbox-admission.json`, exact current-Head/package identity, and enabled-vs-disabled operational-filter invocation parity.
 
 ## Gravity Flow 3.1.0 Status table — admitted surfaces
 
-This batch additionally admits exactly two browser Status-table system-date presentations:
+The Status-table admissions remain exactly:
 
 - `gravityflow.status.date-created`
 - `gravityflow.status.workflow-timestamp`
@@ -126,13 +150,12 @@ Operational evidence additionally proves enabled/disabled equality for DB, GFAPI
 
 The following remain deliberately outside this production batch:
 
-- Inbox `due_date` — still `SOURCE_PROVEN + NOT_PROVEN`; its deadline/scheduling semantics require independent operational qualification.
 - Status `due_date` — `NOT_PROVEN`.
 - Entry Detail due/schedule/expiration — `NOT_PROVEN`.
 - Timeline/history — `NOT_PROVEN`.
 - Print — `NOT_PROVEN`.
 
-No production adapter for any of those surfaces is introduced here. Workflow due/schedule/expiration timestamps remain workflow-owned operational data.
+No production adapter for any of those surfaces is introduced here. Workflow due/schedule/expiration timestamps outside the admitted Inbox presentation remain workflow-owned operational data.
 
 ## GravityView remains unproven
 

@@ -14,7 +14,7 @@ PersianGravity 4.6.0 exposes six bounded default-enabled modules plus one bounde
 
 - `national_id` — `pgr_national_id`, server-authoritative checksum validation, canonical ten-ASCII-digit storage, native No Duplicates normalization, optional typing normalization.
 - `jalali_date` — `pgr_jalali_date`, server-side Jalali validation and canonical ASCII `YYYY-MM-DD` storage with Jalali semantics.
-- `jalali_presentation` — opt-in Jalali presentation of explicitly admitted authoritative Gregorian/system dates; current verified surfaces are Gravity Forms Entries List `date_created` plus exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated` and Status `date_created`/`workflow_timestamp`, without changing stored/native values.
+- `jalali_presentation` — opt-in Jalali presentation of explicitly admitted authoritative Gregorian/system dates; current verified surfaces are Gravity Forms Entries List `date_created` plus exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp`, without changing stored/native or workflow-owned operational values.
 - `iranian_address` — Iranian Gravity Forms address type (`iran`) plus the 31-province predefined choice list.
 - `digit_normalization` — form-level `pgr_normalize_digits` and server-side `gform_save_field_value` digit normalization.
 - `iranian_currency` — IRR and IRT currency definitions with zero decimal places.
@@ -53,7 +53,7 @@ Disabling a module does not delete Entries, field definitions, settings, Scanner
 
 G-008 adds a source-owned Borkowski-lineage Gregorian→Jalali engine, typed `PGR_Jalali_Presentation` facade, and bounded presentation adapters. The validated product range is Gregorian `1800-01-01..2124-03-19`; dates outside it retain native presentation. Instant conversion applies the target/site timezone before calendar conversion and preserves local time-of-day. Date-only conversion never timezone-shifts.
 
-The original Gravity Forms seam remains `gform_entries_field_value` for `date_created`. Exact Gravity Flow 3.1.0 additionally admits Inbox `date_created`/`last_updated` and Status-table `date_created`/`workflow_timestamp`. These adapters read authoritative raw sources and alter only presentation; DB/GFAPI/REST values, workflow state, Status query/sort/filter behavior, Inbox compare values, and Status CSV/export remain native. Full expansion evidence and remaining gaps are in [`docs/G008_SYSTEM_DATE_EXPANSION.md`](docs/G008_SYSTEM_DATE_EXPANSION.md); converter provenance/range details remain in [`docs/G008_JALALI_PRESENTATION.md`](docs/G008_JALALI_PRESENTATION.md).
+The original Gravity Forms seam remains `gform_entries_field_value` for `date_created`. Exact Gravity Flow 3.1.0 additionally admits Inbox `date_created`/`last_updated`/`due_date` and Status-table `date_created`/`workflow_timestamp`. These adapters read authoritative raw sources and alter only presentation; DB/GFAPI/REST values, workflow/assignment state, Inbox due-date deadline/overdue state, Status query/sort/filter behavior, Inbox raw compare/sort/filter values, and Status CSV/export remain native. Full expansion evidence and remaining gaps are in [`docs/G008_SYSTEM_DATE_EXPANSION.md`](docs/G008_SYSTEM_DATE_EXPANSION.md); converter provenance/range details remain in [`docs/G008_JALALI_PRESENTATION.md`](docs/G008_JALALI_PRESENTATION.md).
 
 ## Structured Scanner contract
 

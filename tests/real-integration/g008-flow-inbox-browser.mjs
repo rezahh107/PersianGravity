@@ -89,7 +89,9 @@ async function assertSort(rows, columnId) {
 }
 
 await login();
-const navigation = await page.goto(manifest.g008_flow_inbox_url, { waitUntil: 'domcontentloaded' });
+const inboxUrl = new URL(manifest.g008_flow_inbox_url);
+inboxUrl.searchParams.set('pgr_g008_mode', mode);
+const navigation = await page.goto(inboxUrl.toString(), { waitUntil: 'domcontentloaded' });
 if (!navigation?.ok()) throw new Error(`G008 Inbox request failed: ${navigation?.status()}`);
 const grid = page.locator('[data-js="gflow-inbox"]').first();
 await grid.waitFor({ timeout: 15000 });
@@ -104,8 +106,9 @@ const embedded = await page.evaluate(() => {
     gridId,
     rows: Array.isArray(gridConfig?.rowData) ? gridConfig.rowData : null,
     columnDefs: Array.isArray(gridConfig?.columnDefs)
-      ? gridConfig.columnDefs.map((column) => ({ field: column.field ?? null, displayKey: column.displayKey ?? null }))
+      ? gridConfig.columnDefs.map((column) => ({ field: column.field ?? null, displayKey: column.displayKey ?? null, compareType: column.compareType ?? null }))
       : null,
+    dueInvocationEvidence: window.pgrG008DueInvocationEvidence ?? null,
   };
 });
 if (!Array.isArray(embedded.rows) || embedded.rows.length !== manifest.g008_flow_entries.length) {
@@ -114,16 +117,38 @@ if (!Array.isArray(embedded.rows) || embedded.rows.length !== manifest.g008_flow
 if (!Array.isArray(embedded.columnDefs)) {
   throw new Error('Exact Gravity Flow Inbox column definitions were not embedded in gflow_config.');
 }
+if (!embedded.dueInvocationEvidence || embedded.dueInvocationEvidence.mode !== mode) {
+  throw new Error(`Missing request-local due-date invocation evidence for ${mode} render.`);
+}
+if (!Number.isInteger(Number(embedded.dueInvocationEvidence.total)) || Number(embedded.dueInvocationEvidence.total) <= 0) {
+  throw new Error(`Invalid due-date invocation count evidence: ${JSON.stringify(embedded.dueInvocationEvidence)}`);
+}
 const dateCreatedColumn = embedded.columnDefs.find((column) => column.field === 'date_created');
 const lastUpdatedColumn = embedded.columnDefs.find((column) => column.field === 'last_updated');
+const dueDateColumn = embedded.columnDefs.find((column) => column.field === 'due_date');
 if (dateCreatedColumn?.displayKey !== 'date_created_human_readable') {
   throw new Error(`date_created display seam drifted: ${JSON.stringify(dateCreatedColumn)}`);
 }
 if (lastUpdatedColumn?.displayKey !== 'last_updated_human_readable') {
   throw new Error(`last_updated display seam drifted: ${JSON.stringify(lastUpdatedColumn)}`);
 }
+if (dueDateColumn?.displayKey !== 'due_date_human_readable' || dueDateColumn?.compareType !== 'date') {
+  throw new Error(`due_date raw/display compare contract drifted: ${JSON.stringify(dueDateColumn)}`);
+}
 
-const rows = embedded.rows.map((row) => ({ ...row, id: Number(row.id), date_created: Number(row.date_created), last_updated: Number(row.last_updated) }));
+for (const row of embedded.rows) {
+  if (typeof row.due_date !== 'number' || !Number.isInteger(row.due_date) || row.due_date < 0) {
+    throw new Error(`due_date raw compare value is not the qualified native integer epoch/0 representation: ${JSON.stringify(row)}`);
+  }
+}
+
+const rows = embedded.rows.map((row) => ({
+  ...row,
+  id: Number(row.id),
+  date_created: Number(row.date_created),
+  last_updated: Number(row.last_updated),
+  due_date: Number(row.due_date),
+}));
 for (const row of rows) {
   const fixture = expectedById.get(row.id);
   if (!fixture) throw new Error(`Unexpected Inbox row ${row.id}.`);
@@ -133,12 +158,18 @@ for (const row of rows) {
   if (row.last_updated !== Number(fixture.workflow_timestamp)) {
     throw new Error(`last_updated raw compare value changed for entry ${row.id}.`);
   }
+  if (row.due_date !== Number(fixture.expected_due_timestamp)) {
+    throw new Error(`due_date raw compare value changed for entry ${row.id}: ${row.due_date}`);
+  }
   if (mode === 'enabled') {
     if (row.date_created_human_readable !== fixture.expected_created_jalali) {
       throw new Error(`Enabled date_created display mismatch for entry ${row.id}: ${row.date_created_human_readable}`);
     }
     if (row.last_updated_human_readable !== fixture.expected_updated_jalali) {
       throw new Error(`Enabled last_updated display mismatch for entry ${row.id}: ${row.last_updated_human_readable}`);
+    }
+    if (row.due_date_human_readable !== fixture.expected_due_jalali) {
+      throw new Error(`Enabled due_date display mismatch for entry ${row.id}: ${row.due_date_human_readable}`);
     }
   } else {
     if (row.date_created_human_readable !== fixture.expected_created_native) {
@@ -147,22 +178,26 @@ for (const row of rows) {
     if (row.last_updated_human_readable !== fixture.expected_updated_native) {
       throw new Error(`Disabled last_updated native display mismatch for entry ${row.id}: ${row.last_updated_human_readable}`);
     }
+    if (row.due_date_human_readable !== fixture.expected_due_native) {
+      throw new Error(`Disabled due_date native display mismatch for entry ${row.id}: ${row.due_date_human_readable}`);
+    }
   }
 }
 
 const dateCreatedSort = await assertSort(rows, 'date_created');
 const lastUpdatedSort = await assertSort(rows, 'last_updated');
+const dueDateSort = await assertSort(rows, 'due_date');
 const search = page.locator('[data-js="gflow-inbox-search"]').first();
 await search.waitFor({ timeout: 10000 });
 const betaFixture = manifest.g008_flow_entries.find((entry) => entry.key === 'beta');
 const betaId = Number(betaFixture.id);
-const betaRawDateCreated = String(rawCreatedTimestamp(betaFixture.date_created));
+const betaRawDueDate = String(Number(betaFixture.expected_due_timestamp));
 await search.click();
-await search.pressSequentially(betaRawDateCreated);
+await search.pressSequentially(betaRawDueDate);
 await page.waitForTimeout(150);
 const filteredIds = await visibleRowIds();
 if (JSON.stringify(filteredIds) !== JSON.stringify([betaId])) {
-  throw new Error(`Raw date_created quick filter did not isolate beta: ${JSON.stringify({ query: betaRawDateCreated, filteredIds })}`);
+  throw new Error(`Raw due_date quick filter did not isolate beta: ${JSON.stringify({ query: betaRawDueDate, filteredIds })}`);
 }
 await search.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
 await search.press('Backspace');
@@ -177,7 +212,7 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.4.0',
+  schema_version: '1.5.0',
   evidence_class: 'AUTHENTIC_GRAVITY_FLOW_INBOX_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
@@ -189,8 +224,9 @@ const evidence = {
   grid_id: embedded.gridId,
   column_defs: embedded.columnDefs,
   rows,
-  sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort },
-  quick_filter: { raw_field: 'date_created', query: betaRawDateCreated, visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
+  sort: { date_created: dateCreatedSort, last_updated: lastUpdatedSort, due_date: dueDateSort },
+  quick_filter: { raw_field: 'due_date', query: betaRawDueDate, visible_entry_ids: filteredIds, cleared_visible_entry_ids: clearedFilterIds },
+  operational_due_filter_invocations: embedded.dueInvocationEvidence,
   diagnostics,
 };
 fs.writeFileSync(path.join(artifactDir, `g008-flow-inbox-browser-${mode}.json`), `${JSON.stringify(evidence, null, 2)}\n`);

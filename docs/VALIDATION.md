@@ -1,5 +1,15 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-008 Gravity Flow Inbox `due_date` admission — 2026-09-23
+
+Planning and actual implementation base were both `main@f8bb09d2fef6458441731c45086de70178db6f09`; no base rebind was required. The admission remains exact to Gravity Flow `3.1.0`, package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`.
+
+Exact-package source provenance establishes that the Inbox task model reads current-step `get_due_date_timestamp()` for both raw AG Grid `due_date` and, separately, native `due_date_human_readable`; the step contract documents that operational result as a UTC timestamp, `is_overdue()` compares the same authority with `time()`, and no-due is raw `0` plus display `-`. The same exact source also proves raw `due_date` is inserted before `due_date_human_readable`, row data is built by iterating those columns in order, and both values pass through `gravityflow_inbox_field_value`. The bounded production adapter now captures that already-computed raw integer epoch/0 by form+entry, returns it unchanged, consumes it only for Jalali display, and never invokes `get_due_date_timestamp()` from presentation processing.
+
+The shared current-Head WU008 exact-package WordPress/Playwright lane contains three authentic assigned Inbox fixtures: an overdue due date crossing the UTC→`Asia/Tehran` civil-day boundary, a future due date, and a no-due current step. Its test-only `gravityflow_step_due_date_timestamp` callback pins deterministic epochs, records per-request/per-entry invocation counts, and returns a deliberately different timestamp if presentation processing re-enters the operational filter. The admission gate requires enabled invocation counts to equal disabled/native counts with zero nested presentation re-entry. It also compares authoritative due timestamp, overdue state, due configuration/highlight, workflow step timestamp/final status, scheduling state, assignments, Inbox IDs/count, AG Grid raw compare values, ascending/descending sort and raw-due quick-filter behavior. PersianGravity production code never registers the operational filter; only `due_date_human_readable` may become Jalali when enabled, while raw `0` and native display `-` stay unchanged.
+
+Primary evidence is `g008-flow-inbox-admission.json` plus the enabled/disabled browser/state artifacts. Registry/evidence reconciliation requires a committed `RUNTIME_PROVEN + ADMITTED_VERIFIED` Flow Inbox surface to name that runtime artifact and requires the artifact to admit the exact surface while binding the exact PersianGravity Head and exact Gravity Flow package. The existing Inbox `date_created`/`last_updated`, Status `date_created`/`workflow_timestamp`, Gravity Forms V1 and G-009 lanes remain separate regression gates. Status `due_date`, Entry Detail due/schedule/expiration, Timeline/history, Print and GravityView system dates remain `NOT_PROVEN`.
+
 ## G-008 Jalali presentation validation — 2026-09-20
 
 Required and observed implementation base: `3c89992ab19482df10bdcba22e00aba62ec0f761`.

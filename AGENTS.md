@@ -64,7 +64,7 @@ Disabling must never delete Entries, form definitions, `pgr_settings`, `pgr_scan
 
 - National ID: `pgr_national_id`; server Mod-11 validation, Persian/Arabic digit normalization, canonical 10 ASCII digits, native No Duplicates normalization. Typing normalization is UX only.
 - Jalali: `pgr_jalali_date`; dedicated field, server Jalali validation, canonical ASCII `YYYY-MM-DD` with Jalali semantics. Never replace native GF Date fields.
-- Jalali system-date presentation: `jalali_presentation`; opt-in presentation of authoritative Gregorian/system dates through the typed `PGR_Jalali_Presentation` facade. V1 owns only Gravity Forms Entries List `date_created`; raw/storage/API/query semantics stay native Gregorian/UTC. It must remain independent from `jalali_date` and never reinterpret `pgr_jalali_date` storage as Gregorian.
+- Jalali system-date presentation: `jalali_presentation`; opt-in presentation of authoritative Gregorian/system dates through the typed `PGR_Jalali_Presentation` facade. Currently admitted bounded surfaces are `gravityforms.entries-list.date-created`, `gravityflow.inbox.date-created`, `gravityflow.inbox.last-updated`, `gravityflow.inbox.due-date`, `gravityflow.status.date-created`, and `gravityflow.status.workflow-timestamp`. These adapters are presentation-only: native raw/storage/API/query/workflow/deadline/schedule semantics remain authoritative. Each host surface requires its exact qualified version/seam and unsupported or version-drift states fail closed to native output. This capability remains independent from `jalali_date` and must never reinterpret `pgr_jalali_date` storage as Gregorian.
 - Address: address type id `iran` and Iranian province choices.
 - Digit normalization: form-level `pgr_normalize_digits` plus authoritative server `gform_save_field_value` normalization; semantically separate from National ID typing UX.
 - Currency: IRR/IRT definitions, zero decimal places in current source; no payment behavior.
@@ -98,8 +98,8 @@ Locked contracts:
 - Domain/handle approval and catalog content require source provenance. Empty scaffolds do not prove product support or translation coverage.
 
 Gravity Forms and Gravity Flow remain data-only for localization. Add executable GravityView handling
-only for a source-proven failure which data cannot express. G-008's bounded Gravity Forms Entries List
-adapter is separate presentation functionality and does not change localization ownership. Do not introduce a service
+only for a source-proven failure which data cannot express. G-008's bounded admitted system-date adapters are separate presentation functionality
+and do not change localization ownership. Do not introduce a service
 container, product-class hierarchy, arbitrary callbacks/DSL, gettext replacement engine,
 translation database/editor, vendor writes or updater disabling, SRWF semantic rewriting,
 or runtime compilation/downloads. `load_textdomain_mofile` remains prohibited.
@@ -113,7 +113,7 @@ See `docs/LOCALIZATION.md` for source-admission and licensed integration gaps.
 
 Prefer documented public APIs/hooks, including `gform_loaded`, `GF_Field`, `GF_Fields::register()`, `GFAPI::get_forms()`, `gform_field_advanced_settings`, `gform_form_settings_fields`, `gform_save_field_value`, `gform_value_pre_duplicate_check`, `gform_enqueue_scripts`, `gform_address_types`, `gform_predefined_choices`, `gform_currencies`, `gform_entries_field_value`, and browser `gform/post_render` where already required.
 
-Do not reintroduce deprecated form-settings paths or private/direct-SQL usage. G-008 may parse host-owned `date_created` only in its bounded adapter, where Gravity Forms defines that property as UTC; the typed presentation facade must not accept arbitrary date-looking strings.
+Do not reintroduce deprecated form-settings paths or private/direct-SQL usage. G-008 may parse host-owned `date_created` only in bounded admitted adapters where the qualified host contract establishes the source semantics; the typed presentation facade must not accept arbitrary date-looking strings.
 
 ## 8. Testing and CI
 
@@ -130,7 +130,7 @@ composer i18n:check
 PGR_WP_CORE=/path/to/pinned/core composer i18n:test
 ```
 
-CI preserves GNU-gettext validation of the own-plugin PO/POT/MO, provider artifact/provenance drift checks, pinned WordPress 6.7.2 and 7.1 localization contracts, PHP syntax, WPCS, PHPCompatibility, Scanner JS, runtime-integrity guards and PHPUnit PHP 8.2–8.5. Repository consistency tests must keep active version declarations, bilingual module metadata, Help coverage and translation assets aligned. G-008 additionally owns exhaustive ICU/reference differential verification and an exact Gravity Forms 3.1.1.1 Entries List runtime gate.
+CI preserves GNU-gettext validation of the own-plugin PO/POT/MO, provider artifact/provenance drift checks, pinned WordPress 6.7.2 and 7.1 localization contracts, PHP syntax, WPCS, PHPCompatibility, Scanner JS, runtime-integrity guards and PHPUnit PHP 8.2–8.5. Repository consistency tests must keep active version declarations, bilingual module metadata, Help coverage and translation assets aligned. G-008 additionally owns exhaustive ICU/reference differential verification, an exact Gravity Forms 3.1.1.1 Entries List runtime gate, and exact Gravity Flow 3.1.0 runtime/browser gates for its admitted Inbox/Status surfaces.
 
 Unit/stub/source tests are not equivalent to a real WordPress + licensed Gravity Forms browser/integration test. Record executed vs unexecuted evidence in `docs/VALIDATION.md`.
 

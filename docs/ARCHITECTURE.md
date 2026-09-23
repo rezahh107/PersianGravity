@@ -75,7 +75,7 @@ At `gform_loaded`, the GF runtime bootstrap loads `PGR_Module_Registry` first, t
 |---|---|
 | `national_id` | `pgr_national_id`, editor setting, duplicate normalization, typing-normalization asset |
 | `jalali_date` | `pgr_jalali_date` and Jalali-domain helper runtime |
-| `jalali_presentation` | source-owned Gregorian→Jalali converter, typed presentation facade, Gravity Forms Entries List `date_created` display adapter |
+| `jalali_presentation` | source-owned Gregorian→Jalali converter, typed presentation facade, bounded Gravity Forms Entries List adapter plus exact Flow 3.1.0 Inbox/Status presentation adapters |
 | `iranian_address` | `gform_address_types`, `gform_predefined_choices` |
 | `digit_normalization` | `pgr_normalize_digits` form setting, `gform_save_field_value` |
 | `iranian_currency` | `gform_currencies` IRR/IRT definitions |
@@ -87,7 +87,7 @@ At `gform_loaded`, the GF runtime bootstrap loads `PGR_Module_Registry` first, t
 
 `jalali_presentation` is deliberately separate from `jalali_date`. `PGR_Persian_Date` and `pgr_jalali_date` continue to own true Jalali-domain user data and canonical Jalali storage. G-008 never activates from field presence and never interprets a `pgr_jalali_date` value as Gregorian.
 
-The V1 production path is intentionally narrow:
+The production path is intentionally narrow:
 
 ```text
 known Gregorian/system source
@@ -98,7 +98,7 @@ PGR_Jalali_Presentation (typed timezone + formatting facade)
         ↓
 bounded presentation adapters
         ├── PGR_GF_Jalali_Presentation_Adapter → Gravity Forms Entries List date_created
-        ├── PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter → exact Flow 3.1.0 Inbox date_created / last_updated
+        ├── PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter → exact Flow 3.1.0 Inbox date_created / last_updated / due_date
         └── PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter → exact Flow 3.1.0 Status date_created / workflow_timestamp
 ```
 
@@ -110,7 +110,9 @@ The upstream reference documents a Gregorian `1800..2256` `Intl` cross-check ran
 
 The V1 Gravity Forms adapter uses `gform_entries_field_value`, acts only on `date_created`, parses `entry['date_created']` under Gravity Forms' documented UTC contract, and never parses arbitrary display strings. It has no save/update/query/global-date hooks. Raw Entry values, database storage, REST/API values, sorting/filtering keys, and chronological comparisons remain Gregorian/native.
 
-See `docs/G008_JALALI_PRESENTATION.md` for detailed provenance, official golden evidence, range distinctions, timezone contract, fallback rules, and exact-package verification.
+The exact Gravity Flow 3.1.0 Inbox adapter uses only `gravityflow_inbox_field_value` and recognizes the separate raw/display identities for `date_created`, `last_updated`, and `due_date`. Exact source qualification proves each row emits raw `due_date` before `due_date_human_readable` through that same filter. The adapter therefore captures the already-computed native integer epoch/0 by form+entry identity, returns raw unchanged, consumes that request-local value only for Jalali display, and never calls `get_due_date_timestamp()` from presentation processing or parses `due_date_human_readable`. Gravity Flow's deadline calculation/filter invocation count, raw `due_date` AG Grid compare value, raw-0/display-`-` no-due sentinel, `is_overdue()` comparison, highlight state, workflow/assignment state, query/sort/filter behavior and date/date-field/delay timing remain host-owned. Missing/malformed/out-of-order capture or exact-version/source drift fails closed to native display.
+
+See `docs/G008_JALALI_PRESENTATION.md` for converter provenance and `docs/G008_SYSTEM_DATE_EXPANSION.md` for the current exact Flow surface/source/operational evidence boundary.
 
 ## Safe disable
 
@@ -231,7 +233,7 @@ Across the exact locked-source censuses, accepted Persian coverage is 5766/8432:
 
 ## Scope
 
-PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases. G-008 owns only explicitly admitted presentation seams. Exact Flow 3.1.0 Inbox/Status system-date display is admitted without owning Flow workflow/query/export semantics; due dates, Entry Detail, Timeline/history, Print, global WordPress dates, ordinary GF Date fields, GravityView dates, and future Flow versions remain outside the admitted boundary.
+PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases. G-008 owns only explicitly admitted presentation seams. Exact Flow 3.1.0 Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp` display are admitted without owning Flow workflow/query/export/deadline semantics; Status `due_date`, Entry Detail due/schedule/expiration, Timeline/history, Print, global WordPress dates, ordinary GF Date fields, GravityView dates, and future Flow versions remain outside the admitted boundary.
 
 ## G-007 bounded Gravity Perks family extension
 

@@ -95,6 +95,32 @@ function inspectSemanticTokens(file, needles, tokens, radius = 12) {
   return result;
 }
 
+function inspectSourceWindows(source, needle = 'due_date', radius = 14) {
+  const lines = source.content.split(/\r?\n/);
+  const occurrences = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!lines[i].includes(needle)) continue;
+    const start = Math.max(0, i - radius);
+    const end = Math.min(lines.length, i + radius + 1);
+    occurrences.push({
+      file: source.relative,
+      line: i + 1,
+      window_start: start + 1,
+      window_end: end,
+      source: lines.slice(start, end).map((text, index) => ({ line: start + index + 1, text })),
+    });
+  }
+  return occurrences;
+}
+
+function methodSource(source, methodName) {
+  const marker = `public function ${methodName}(`;
+  const start = source.content.indexOf(marker);
+  if (start < 0) return '';
+  const next = source.content.indexOf('\n\tpublic function ', start + marker.length);
+  return source.content.slice(start, next >= 0 ? next : source.content.length);
+}
+
 function requireSourceFile(root, relative, label) {
   const file = path.join(root, relative);
   if (!fs.existsSync(file)) throw new Error(`${label} path drifted: ${relative}`);
@@ -146,18 +172,34 @@ function found(product, needle) {
 }
 
 const flowInboxTask = requireSourceFile(roots.gravityflow, 'includes/inbox/models/class-task.php', 'Exact Gravity Flow Inbox task model');
+const flowInboxPage = requireSourceFile(roots.gravityflow, 'includes/pages/class-inbox.php', 'Exact Gravity Flow Inbox page');
+const flowDueDateSetting = requireSourceFile(roots.gravityflow, 'includes/settings/class-due-date.php', 'Exact Gravity Flow due-date setting');
+const flowScheduleCustom = requireSourceFile(roots.gravityflow, 'includes/settings/class-schedule-custom.php', 'Exact Gravity Flow custom schedule setting');
+const flowStep = requireSourceFile(roots.gravityflow, 'includes/steps/class-step.php', 'Exact Gravity Flow step due-date authority');
 const flowCommon = requireSourceFile(roots.gravityflow, 'includes/class-common.php', 'Exact Gravity Flow common formatter');
 const flowMain = requireSourceFile(roots.gravityflow, 'class-gravity-flow.php', 'Exact Gravity Flow entry-meta authority');
 const gfApi = requireSourceFile(roots.gravityforms, 'includes/api.php', 'Exact Gravity Forms Entry API contract');
 const gfCommon = requireSourceFile(roots.gravityforms, 'common.php', 'Exact Gravity Forms date formatter');
 const flowStatus = requireSourceFile(roots.gravityflow, 'includes/pages/class-status.php', 'Exact Gravity Flow Status table');
 
+const flowDueGetterSource = methodSource(flowStep, 'get_due_date_timestamp');
+const flowTimestampDateSource = methodSource(flowStep, 'get_timestamp_date');
+const flowTimestampDateFieldSource = methodSource(flowStep, 'get_timestamp_date_field');
+const flowTimestampDelaySource = methodSource(flowStep, 'get_timestamp_delay');
+const flowStepTimestampSource = methodSource(flowStep, 'get_step_timestamp');
+const flowOverdueSource = methodSource(flowStep, 'is_overdue');
+const flowStartSource = methodSource(flowStep, 'start');
+const flowValidateScheduleSource = methodSource(flowStep, 'validate_schedule');
+const flowScheduleTimestampSource = methodSource(flowStep, 'get_schedule_timestamp');
+
 const flowInboxSemanticTokens = [
   "$entry['date_created']",
   "$entry['workflow_timestamp']",
   "$entry['date_updated']",
+  "$entry['due_date']",
   'date_created_human_readable',
   'last_updated_human_readable',
+  'due_date_human_readable',
   'Gravity_Flow_Common::format_date',
   'get_date_from_gmt',
   'get_gmt_from_date',
@@ -174,9 +216,72 @@ const flowInboxSemanticTokens = [
 ];
 const flowInboxSourceProbe = inspectSemanticTokens(
   flowInboxTask.file,
-  ['date_created_human_readable', 'last_updated_human_readable', 'gravityflow_inbox_field_value'],
+  ['date_created_human_readable', 'last_updated_human_readable', 'due_date_human_readable', 'gravityflow_inbox_field_value'],
   flowInboxSemanticTokens
 );
+
+const flowInboxDueDateProbe = {
+  task_model: inspectSourceWindows(flowInboxTask),
+  inbox_page: inspectSourceWindows(flowInboxPage),
+  flow_main: inspectSourceWindows(flowMain),
+  due_date_setting: inspectSourceWindows(flowDueDateSetting),
+  custom_schedule_setting: inspectSourceWindows(flowScheduleCustom),
+  due_getter: inspectSourceWindows(flowStep, 'get_due_date_timestamp', 18),
+  timestamp_date: inspectSourceWindows(flowStep, 'get_timestamp_date(', 18),
+  timestamp_date_field: inspectSourceWindows(flowStep, 'get_timestamp_date_field(', 22),
+  timestamp_delay: inspectSourceWindows(flowStep, 'get_timestamp_delay(', 22),
+  step_timestamp: inspectSourceWindows(flowStep, 'get_step_timestamp(', 16),
+  schedule_timestamp: inspectSourceWindows(flowStep, 'get_schedule_timestamp(', 18),
+  validate_schedule: inspectSourceWindows(flowStep, 'validate_schedule(', 18),
+  step: inspectSourceWindows(flowStep),
+};
+
+const flowInboxDueDateSourceContract = {
+  raw_representation_and_sentinel: {
+    inbox_raw_reads_current_step_timestamp: /case\s+'due_date':[\s\S]{0,420}\$value\s*=\s*\$step->get_due_date_timestamp\(\)/.test(flowInboxTask.content),
+    inbox_raw_no_due_is_zero: /case\s+'due_date':[\s\S]{0,520}\$value\s*=\s*0\s*;/.test(flowInboxTask.content),
+    inbox_display_reads_same_current_step_timestamp: /case\s+'due_date_human_readable':[\s\S]{0,460}get_due_date_timestamp\(\)/.test(flowInboxTask.content),
+    inbox_display_no_due_is_dash: /case\s+'due_date_human_readable':[\s\S]{0,540}\$value\s*=\s*'-'\s*;/.test(flowInboxTask.content),
+    raw_and_display_are_separate_column_identities: /'due_date'[\s\S]{0,220}'displayKey'\s*=>\s*'due_date_human_readable'/.test(flowInboxTask.content),
+    raw_compare_type_is_date: /'due_date'[\s\S]{0,260}'compareType'\s*=>\s*'date'/.test(flowInboxTask.content),
+  },
+  authoritative_getter_and_timezone: {
+    getter_disabled_state_returns_false: flowDueGetterSource.includes('if ( ! $this->due_date )') && flowDueGetterSource.includes('return false;'),
+    getter_supports_date_date_field_and_delay_modes: flowDueGetterSource.includes("get_timestamp_date( 'due_date' )") && flowDueGetterSource.includes("get_timestamp_date_field( 'due_date' )") && flowDueGetterSource.includes("get_timestamp_delay( 'due_date' )"),
+    getter_filter_declares_utc_timestamp: flowDueGetterSource.includes('The current expiration timestamp (UTC).'),
+    getter_returns_filtered_timestamp: flowDueGetterSource.includes("apply_filters( 'gravityflow_step_due_date_timestamp'") && flowDueGetterSource.includes('return $due_date_timestamp;'),
+    date_mode_converts_site_civil_time_to_gmt_before_epoch: flowTimestampDateSource.includes("$date_gmt  = get_gmt_from_date( $date );") && flowTimestampDateSource.includes('$timestamp = strtotime( $date_gmt );'),
+    date_field_mode_converts_site_civil_time_to_gmt_before_epoch: flowTimestampDateFieldSource.includes("$date_gmt  = get_gmt_from_date( $date );") && flowTimestampDateFieldSource.includes('$timestamp = strtotime( $date_gmt );'),
+    date_field_mode_applies_configured_offset_to_epoch: flowTimestampDateFieldSource.includes("'_date_field_offset_unit'") && flowTimestampDateFieldSource.includes('$timestamp -= $offset;') && flowTimestampDateFieldSource.includes('$timestamp += $offset;'),
+    delay_mode_starts_from_step_timestamp: flowTimestampDelaySource.includes('$timestamp = $this->get_step_timestamp();'),
+    delay_mode_applies_minute_hour_day_week_offsets: ['MINUTE_IN_SECONDS', 'HOUR_IN_SECONDS', 'DAY_IN_SECONDS', 'WEEK_IN_SECONDS'].every((token) => flowTimestampDelaySource.includes(token)),
+    step_timestamp_reads_step_scoped_entry_meta: flowStepTimestampSource.includes("gform_get_meta( $this->get_entry_id(), 'workflow_step_' . $this->get_id() . '_timestamp' )"),
+  },
+  deadline_and_overdue: {
+    overdue_reads_same_due_getter: flowOverdueSource.includes('$step_due_date = $this->get_due_date_timestamp();'),
+    overdue_compares_due_epoch_to_time: flowOverdueSource.includes('if ( (int) $step_due_date < (int) time() )'),
+    inbox_highlight_uses_host_overdue_state: /\$step->is_overdue\(\)[\s\S]{0,220}\$step->due_date_highlight_color/.test(flowInboxTask.content),
+  },
+  scheduling_separation: {
+    step_start_schedule_gate_is_independent: flowStartSource.includes('if ( $this->scheduled && ! $this->validate_schedule() )') && !flowStartSource.includes('get_due_date_timestamp()'),
+    schedule_validation_reads_schedule_timestamp_not_due_timestamp: flowValidateScheduleSource.includes('$schedule_timestamp = $this->get_schedule_timestamp();') && !flowValidateScheduleSource.includes('get_due_date_timestamp()'),
+    schedule_getter_uses_schedule_namespace: flowScheduleTimestampSource.includes("get_timestamp_date( 'schedule' )") && flowScheduleTimestampSource.includes("get_timestamp_date_field( 'schedule' )") && flowScheduleTimestampSource.includes("get_timestamp_delay( 'schedule' )"),
+    schedule_getter_has_distinct_utc_filter: flowScheduleTimestampSource.includes("apply_filters( 'gravityflow_step_schedule_timestamp'") && flowScheduleTimestampSource.includes('The current scheduled timestamp (UTC)'),
+    schedule_getter_does_not_call_due_getter: !flowScheduleTimestampSource.includes('get_due_date_timestamp()'),
+    due_getter_does_not_call_schedule_getter: !flowDueGetterSource.includes('get_schedule_timestamp()'),
+  },
+  presentation_seam: {
+    raw_due_passes_presentation_filter: /case\s+'due_date':[\s\S]{0,1800}apply_filters\(\s*'gravityflow_inbox_field_value'/.test(flowInboxTask.content),
+    raw_due_column_precedes_display_column: /\$columns\['due_date'\][\s\S]{0,220}\$columns\['due_date_human_readable'\]/.test(flowInboxTask.content),
+    row_values_follow_column_iteration_order: /foreach\s*\(\s*\$columns\s+as\s+\$name\s*=>\s*\$label\s*\)[\s\S]{0,260}\$this->get_column_value\(\s*\$name,\s*\$form,\s*\$entry,\s*\$columns\s*\)/.test(flowInboxTask.content),
+    display_is_computed_before_presentation_filter: /case\s+'due_date_human_readable':[\s\S]{0,1800}apply_filters\(\s*'gravityflow_inbox_field_value'/.test(flowInboxTask.content),
+    filter_receives_display_form_id_field_id_and_entry: /apply_filters\(\s*'gravityflow_inbox_field_value',\s*\$value,\s*\$form\['id'\],\s*\$id,\s*\$entry\s*\)/.test(flowInboxTask.content),
+  },
+};
+
+if (!allContractValuesTrue(flowInboxDueDateSourceContract)) {
+  throw new Error(`Exact Gravity Flow Inbox due-date source/deadline/scheduling contract drifted: ${JSON.stringify(flowInboxDueDateSourceContract)}`);
+}
 
 const flowInboxSourceContract = {
   paths: {
@@ -293,6 +398,8 @@ const classifications = {
       due_date_human_readable: found('gravityflow', 'due_date_human_readable'),
       task_model_path: flowInboxTask.relative,
       source_semantics_probe: flowInboxSourceProbe,
+      due_date_source_probe: flowInboxDueDateProbe,
+      due_date_source_contract: flowInboxDueDateSourceContract,
       source_contract: flowInboxSourceContract,
       discovery_state: found('gravityflow', 'gravityflow_inbox_field_value')
         && found('gravityflow', 'date_created_human_readable')
@@ -330,7 +437,7 @@ const classifications = {
 };
 
 const evidence = {
-  schema_version: '1.6.0',
+  schema_version: '1.7.0',
   evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
   exact_persiangravity_commit: exactPersianGravityIdentity.commit,
   exact_persiangravity_tree: exactPersianGravityIdentity.tree,
