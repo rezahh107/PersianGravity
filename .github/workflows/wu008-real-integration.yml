@@ -16,6 +16,7 @@ on:
       - 'includes/class-pgr-jalali-presentation.php'
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'docs/WU008_REAL_INTEGRATION.md'
       - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
       - 'docs/G008_JALALI_PRESENTATION.md'
@@ -111,12 +112,15 @@ jobs:
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-state.php
+          php -l tests/real-integration/g008-flow-status-state.php
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
           node --check tests/real-integration/g009-browser.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
           node --check tests/real-integration/g008-flow-inbox-reconcile.mjs
+          node --check tests/real-integration/g008-flow-status-browser.mjs
+          node --check tests/real-integration/g008-flow-status-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/qualification-reconciliation.test.mjs
@@ -342,8 +346,12 @@ jobs:
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-inbox-state.php
           node tests/real-integration/g008-flow-inbox-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
+          node tests/real-integration/g008-flow-status-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-enabled.json"
 
       - name: Prove module-disabled native Gravity Flow fallback
         shell: bash
@@ -354,8 +362,12 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-inbox-state.php
           node tests/real-integration/g008-flow-inbox-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
+          node tests/real-integration/g008-flow-status-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-disabled.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
 
       - name: Reconcile G008 Flow Inbox admission evidence
@@ -364,6 +376,13 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-flow-inbox-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-admission.json"
+
+      - name: Reconcile G008 Flow Status admission evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-status-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-status-admission.json"
 
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
