@@ -154,10 +154,66 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expec
   return errors;
 }
 
-function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, expectedIdentity) {
+function allEvidenceFlagsTrue(value) {
+  if (typeof value === 'boolean') return value;
+  if (isObject(value)) return Object.values(value).every(allEvidenceFlagsTrue);
+  return true;
+}
+
+function validateG008FinalNoAdmission(product, surface, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity) {
+  const errors = [];
+  if (surface.support_state !== 'NOT_PROVEN') {
+    errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must retain support_state NOT_PROVEN.`);
+  }
+  if (surface.adapter_identity !== null) {
+    errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must not name a production adapter.`);
+  }
+  if (surface.runtime_evidence !== 'g008-flow-residual-no-admission.json') {
+    errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must bind residual runtime reconciliation evidence.`);
+  }
+  if (!isObject(residualSourceEvidence) || residualSourceEvidence.evidence_class !== 'G008_RESIDUAL_EXACT_SOURCE_PROBE') {
+    errors.push(`G-008 ${surface.id}: exact residual source evidence is missing.`);
+  } else {
+    if (residualSourceEvidence.exact?.pgr_sha !== expectedIdentity.head) {
+      errors.push(`G-008 ${surface.id}: residual source PersianGravity Head mismatch.`);
+    }
+    if (residualSourceEvidence.exact?.version !== product.version) {
+      errors.push(`G-008 ${surface.id}: residual source Gravity Flow version mismatch.`);
+    }
+    if (residualSourceEvidence.exact?.sha256 !== product.package_sha256) {
+      errors.push(`G-008 ${surface.id}: residual source Gravity Flow package SHA-256 mismatch.`);
+    }
+    if (!allEvidenceFlagsTrue(residualSourceEvidence.source_contract)) {
+      errors.push(`G-008 ${surface.id}: residual source no-admission contract is not fully proven.`);
+    }
+  }
+  if (!isObject(residualRuntimeEvidence) || residualRuntimeEvidence.evidence_class !== 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION') {
+    errors.push(`G-008 ${surface.id}: residual enabled/disabled runtime reconciliation evidence is missing.`);
+  } else {
+    if (residualRuntimeEvidence.status !== 'PASS') {
+      errors.push(`G-008 ${surface.id}: residual runtime reconciliation is not PASS.`);
+    }
+    if (residualRuntimeEvidence.exact_persiangravity_commit !== expectedIdentity.head) {
+      errors.push(`G-008 ${surface.id}: residual runtime PersianGravity Head mismatch.`);
+    }
+    if (residualRuntimeEvidence.exact_persiangravity_package_sha256 !== expectedIdentity.persiangravityPackageSha256) {
+      errors.push(`G-008 ${surface.id}: residual runtime PersianGravity package SHA-256 mismatch.`);
+    }
+    if (residualRuntimeEvidence.exact_gravityflow_version !== product.version || residualRuntimeEvidence.exact_gravityflow_package_sha256 !== product.package_sha256) {
+      errors.push(`G-008 ${surface.id}: residual runtime exact Gravity Flow identity mismatch.`);
+    }
+    if (residualRuntimeEvidence.surfaces?.[surface.id] !== 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0') {
+      errors.push(`G-008 ${surface.id}: residual runtime evidence does not close the committed no-admission claim.`);
+    }
+  }
+  return errors;
+}
+
+function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity) {
   const errors = [];
   const sourceClaims = [];
   const runtimeClaims = [];
+  const finalNoAdmissionClaims = [];
 
   if (!isObject(sourceEvidence)) {
     return { errors: ['G-008 source-discovery evidence artifact is missing.'], sourceClaims: 0, runtimeClaims: 0 };
@@ -180,6 +236,12 @@ function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, expectedI
       }
       if (sourceEvidence.exact_package_sha256?.[key] !== product.package_sha256) {
         errors.push(`G-008 ${surface.id}: ${product.product} package SHA-256 mismatch.`);
+      }
+
+      if (surface.exact_version_disposition === 'FINAL_NO_ADMISSION') {
+        finalNoAdmissionClaims.push({ product, surface });
+        errors.push(...validateG008FinalNoAdmission(product, surface, residualSourceEvidence, residualRuntimeEvidence, expectedIdentity));
+        continue;
       }
 
       const requirements = deriveG008SourceRequirements(surface);
@@ -205,7 +267,7 @@ function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, expectedI
     }
   }
 
-  return { errors, sourceClaims: sourceClaims.length, runtimeClaims: runtimeClaims.length };
+  return { errors, sourceClaims: sourceClaims.length, runtimeClaims: runtimeClaims.length, finalNoAdmissionClaims: finalNoAdmissionClaims.length };
 }
 
 export function reconcileQualificationEvidence({
@@ -216,6 +278,8 @@ export function reconcileQualificationEvidence({
   sourceDiscoveryEvidence,
   g008FlowInboxAdmissionEvidence,
   g008FlowStatusAdmissionEvidence,
+  g008ResidualSourceEvidence,
+  g008ResidualNoAdmissionEvidence,
   expectedIdentity,
 }) {
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
@@ -236,6 +300,8 @@ export function reconcileQualificationEvidence({
       'g008-flow-inbox-admission.json': g008FlowInboxAdmissionEvidence,
       'g008-flow-status-admission.json': g008FlowStatusAdmissionEvidence,
     },
+    g008ResidualSourceEvidence,
+    g008ResidualNoAdmissionEvidence,
     expectedIdentity
   );
   const errors = [...g009.errors, ...g008.errors];
@@ -246,6 +312,7 @@ export function reconcileQualificationEvidence({
     g009_native_pass_claims_reconciled: g009.claims,
     g008_source_proven_claims_reconciled: g008.sourceClaims,
     g008_runtime_admitted_claims_reconciled: g008.runtimeClaims,
+    g008_final_no_admission_claims_reconciled: g008.finalNoAdmissionClaims,
   };
 }
 
@@ -269,6 +336,8 @@ function runCli() {
     sourceDiscoveryEvidence: readJson(path.join(artifactDir, 'source-discovery.json')),
     g008FlowInboxAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-inbox-admission.json')),
     g008FlowStatusAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-admission.json')),
+    g008ResidualSourceEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-residual-source-probe.json')),
+    g008ResidualNoAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-no-admission.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,
