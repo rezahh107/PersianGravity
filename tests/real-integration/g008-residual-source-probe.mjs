@@ -70,17 +70,100 @@ function searchPhp(base, needle, radius = 16) {
   return result;
 }
 
+function methodSource(source, methodName) {
+  const pattern = new RegExp('(?:public\\s+|protected\\s+|private\\s+)?(?:static\\s+)?function\\s+' + methodName + '\\s*\\(');
+  const match = pattern.exec(source.content);
+  if (!match) return '';
+  const rest = source.content.slice(match.index + match[0].length);
+  const next = /\n\s*(?:public\s+|protected\s+|private\s+)?(?:static\s+)?function\s+[A-Za-z0-9_]+\s*\(/.exec(rest);
+  return source.content.slice(match.index, next ? match.index + match[0].length + next.index : source.content.length);
+}
+
+function allTrue(value) {
+  if (typeof value === 'boolean') return value;
+  if (value && typeof value === 'object') return Object.values(value).every(allTrue);
+  return true;
+}
+
 const status = read('includes/pages/class-status.php');
 const entryDetail = read('includes/pages/class-entry-detail.php');
 const printEntries = read('includes/pages/class-print-entries.php');
 const step = read('includes/steps/class-step.php');
 const common = read('includes/class-common.php');
 const flowMain = read('class-gravity-flow.php');
+const gfFormsModel = readFrom(gfRoot, 'forms_model.php');
+
+const statusDueMethod = methodSource(status, 'column_due_date');
+const statusExportMethod = methodSource(status, 'export');
+const entryWorkflowBoxMethod = methodSource(flowMain, 'workflow_entry_detail_status_box');
+const entryQueuedMethod = methodSource(flowMain, 'display_queued_step_details');
+const dueGetterMethod = methodSource(step, 'get_due_date_timestamp');
+const scheduleGetterMethod = methodSource(step, 'get_schedule_timestamp');
+const expirationGetterMethod = methodSource(step, 'get_expiration_timestamp');
+const overdueMethod = methodSource(step, 'is_overdue');
+const expiredMethod = methodSource(step, 'is_expired');
+const validateScheduleMethod = methodSource(step, 'validate_schedule');
+const noteHeaderMethod = methodSource(entryDetail, 'get_note_header');
+const noteBodyMethod = methodSource(entryDetail, 'get_note_body');
+const timelineNotesMethod = methodSource(common, 'get_timeline_notes');
+const initialNoteMethod = methodSource(common, 'get_initial_note');
+const commonTimelineMethod = methodSource(common, 'get_timeline');
+const printRenderMethod = methodSource(printEntries, 'render');
+
+const sourceContract = {
+  status_due_date: {
+    table_reads_operational_due_getter_directly: statusDueMethod.includes('get_due_date_timestamp()'),
+    table_formats_due_inside_column_method: statusDueMethod.includes('Gravity_Flow_Common::format_date'),
+    table_echoes_direct_output: statusDueMethod.includes('echo $output;'),
+    table_has_no_status_value_filter: !statusDueMethod.includes('gravityflow_field_value_status_table') && !statusDueMethod.includes('filter_field_value('),
+    table_has_no_entry_url_proof_seam: !statusDueMethod.includes('get_entry_url('),
+    export_has_separate_due_branch: statusExportMethod.includes("case 'due_date':") && statusExportMethod.includes('get_due_date_timestamp()'),
+    export_uses_generic_status_filter: statusExportMethod.includes("gravityflow_field_value_status_table"),
+    due_getter_is_operational_filter: dueGetterMethod.includes("apply_filters( 'gravityflow_step_due_date_timestamp'"),
+    overdue_uses_same_due_getter: overdueMethod.includes('get_due_date_timestamp()') && overdueMethod.includes('time()'),
+  },
+  entry_detail_schedule_due_expiration: {
+    due_is_direct_operational_getter_render: entryWorkflowBoxMethod.includes('get_due_date_timestamp()') && entryWorkflowBoxMethod.includes('gravityflow-status-box-field-due-date') && entryWorkflowBoxMethod.includes("'Due Date'"),
+    expiration_is_direct_operational_getter_render: entryWorkflowBoxMethod.includes('get_expiration_timestamp()') && entryWorkflowBoxMethod.includes('gravityflow-status-box-field-expires') && entryWorkflowBoxMethod.includes("'Expires'"),
+    below_workflow_hook_is_after_direct_date_output: entryWorkflowBoxMethod.indexOf('get_expiration_timestamp()') >= 0 && entryWorkflowBoxMethod.indexOf("do_action( 'gravityflow_below_workflow_info_entry_detail'") > entryWorkflowBoxMethod.indexOf('get_expiration_timestamp()'),
+    due_and_expiration_have_no_value_filter: !entryWorkflowBoxMethod.includes('apply_filters('),
+    schedule_reads_operational_getter_directly: entryQueuedMethod.includes('get_schedule_timestamp()'),
+    schedule_prints_directly: entryQueuedMethod.includes('gravityflow-status-box-field-scheduled-date') && entryQueuedMethod.includes("'Scheduled'"),
+    schedule_has_no_value_filter: !entryQueuedMethod.includes('apply_filters('),
+    schedule_getter_is_operational_filter: scheduleGetterMethod.includes("apply_filters( 'gravityflow_step_schedule_timestamp'"),
+    expiration_getter_is_operational_filter: expirationGetterMethod.includes("apply_filters( 'gravityflow_step_expiration_timestamp'"),
+    schedule_validation_uses_same_getter: validateScheduleMethod.includes('get_schedule_timestamp()') && validateScheduleMethod.includes('time()'),
+    expiration_state_uses_same_getter: expiredMethod.includes('get_expiration_timestamp()') && expiredMethod.includes('time()'),
+  },
+  timeline_history: {
+    header_formats_note_date_directly: noteHeaderMethod.includes('Gravity_Flow_Common::format_date( $date_created') && !noteHeaderMethod.includes('apply_filters('),
+    note_body_is_separate_escaped_content: noteBodyMethod.includes('nl2br( esc_html( $note->value ) )'),
+    timeline_reads_gravityforms_notes: timelineNotesMethod.includes('RGFormsModel::get_lead_notes'),
+    timeline_inserts_initial_entry_event: timelineNotesMethod.includes('array_unshift') && timelineNotesMethod.includes('get_initial_note'),
+    initial_event_uses_entry_date_created: initialNoteMethod.includes("$note->date_created = $entry['date_created']"),
+    timeline_order_is_host_owned: timelineNotesMethod.includes('array_reverse'),
+    only_timeline_data_filter_mutates_note_array: timelineNotesMethod.includes("apply_filters( 'gravityflow_timeline_notes'"),
+    common_text_timeline_reuses_note_dates: commonTimelineMethod.includes('get_timeline_notes') && commonTimelineMethod.includes('date_created'),
+    gravityforms_notes_are_persisted_in_utc: gfFormsModel.content.includes('sub_type, date_created) values(%d, %d, %s, %s, %s, %s, utc_timestamp())'),
+    gravityforms_notes_return_raw_date_created: gfFormsModel.content.includes('SELECT n.id, n.user_id, n.date_created, n.value, n.note_type, n.sub_type'),
+  },
+  print: {
+    reuses_entry_detail_grid: printRenderMethod.includes('Gravity_Flow_Entry_Detail::entry_detail_grid'),
+    optional_timeline_reuses_entry_detail_timeline: printRenderMethod.includes('Gravity_Flow_Entry_Detail::timeline'),
+    no_print_specific_date_formatter: !printRenderMethod.includes('format_date('),
+    print_style_hook_is_not_date_seam: printEntries.content.includes("do_action( 'gravityflow_print_styles'") && !printRenderMethod.includes('gravityflow_print_styles'),
+  },
+};
+
+if (!allTrue(sourceContract)) {
+  throw new Error(`Exact Gravity Flow residual no-admission source contract drifted: ${JSON.stringify(sourceContract)}`);
+}
 
 const evidence = {
-  schema_version: '1.1.0',
+  schema_version: '1.2.0',
   evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
   exact,
+  source_contract: sourceContract,
   targets: {
     status_due_date: {
       status_due_date: windows(status, 'due_date', 24),
