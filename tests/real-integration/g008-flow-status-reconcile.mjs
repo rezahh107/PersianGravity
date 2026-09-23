@@ -12,10 +12,55 @@ const enabledBrowser = read('g008-flow-status-browser-enabled.json');
 const disabledBrowser = read('g008-flow-status-browser-disabled.json');
 const source = read('source-discovery.json');
 
-function allContractValuesTrue(value) {
-  if (typeof value === 'boolean') return value;
-  if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
-  return true;
+const requiredStatusSourceFlags = {
+  date_created: [
+    'gravityforms_entry_contract_is_utc_y_m_d_h_i_s',
+    'status_column_reads_entry_date_created',
+    'status_column_filters_as_date_created',
+  ],
+  workflow_timestamp: [
+    'workflow_timestamp_is_numeric_entry_meta',
+    'workflow_timestamp_callback_returns_epoch',
+    'status_column_reads_workflow_timestamp',
+    'status_column_filters_as_workflow_timestamp',
+  ],
+  timezone_and_formatting: [
+    'flow_numeric_timestamp_uses_php_date_intermediate',
+    'flow_delegates_to_gravityforms_formatter',
+    'gravityforms_formatter_declares_utc_input',
+    'gravityforms_formatter_localizes_before_display',
+  ],
+  presentation_vs_export_context: [
+    'exact_status_table_class',
+    'status_args_filter_receives_normalized_defaults',
+    'status_format_branches_table_vs_export_after_context_filter',
+    'entry_url_filter_is_table_only_proof_seam',
+    'date_created_entry_url_precedes_value_filter',
+    'workflow_timestamp_entry_url_precedes_value_filter',
+    'table_wrapper_applies_status_filter',
+    'export_applies_status_filter_directly',
+    'export_value_apply_has_no_entry_url',
+    'exact_status_filter_apply_sites',
+    'ajax_export_selects_csv_format',
+  ],
+  operational_channels: [
+    'date_created_sort_uses_raw_column_key',
+    'workflow_timestamp_sort_uses_raw_meta_key',
+    'sorting_passes_raw_orderby_to_gfapi',
+    'start_filter_compares_raw_date_created',
+    'end_filter_compares_raw_date_created',
+    'start_filter_converts_site_civil_to_gmt',
+    'end_filter_converts_site_civil_to_gmt',
+  ],
+};
+
+function requiredContractFlagsTrue(contract, requiredGroups) {
+  if (!contract || typeof contract !== 'object' || Array.isArray(contract)) return false;
+  return Object.entries(requiredGroups).every(([group, flags]) => {
+    const values = contract[group];
+    return values && typeof values === 'object' && !Array.isArray(values)
+      && flags.every((flag) => Object.hasOwn(values, flag) && values[flag] === true);
+  });
 }
 
 function canonicalBaseline(entries) {
@@ -141,8 +186,8 @@ const statusSource = source?.classifications?.g008?.flow_status;
 const sourceContract = statusSource?.source_contract;
 if (!sourceContract) {
   failures.push('exact-package Status source/timezone/context contract is missing');
-} else if (!allContractValuesTrue(sourceContract)) {
-  failures.push('exact-package Status source/timezone/context contract contains an unproven requirement');
+} else if (!requiredContractFlagsTrue(sourceContract, requiredStatusSourceFlags)) {
+  failures.push('exact-package Status source/timezone/context contract is missing a required boolean proof or contains a false required proof');
 }
 
 const result = {
@@ -158,7 +203,7 @@ const result = {
     native_flow_numeric_intermediate_timezone: 'UTC_PHP_DEFAULT_PROVEN_AT_RUNTIME',
     target_timezone: 'WORDPRESS_SITE_TIMEZONE_ASIA_TEHRAN_FIXTURE',
   },
-  source_contract_proven: Boolean(sourceContract && allContractValuesTrue(sourceContract)),
+  source_contract_proven: Boolean(sourceContract && requiredContractFlagsTrue(sourceContract, requiredStatusSourceFlags)),
   presentation_isolation: {
     gfapi_state_equal: JSON.stringify(enabledEntries) === JSON.stringify(disabledEntries),
     database_and_rest_match_gfapi: failures.every((failure) => !failure.includes('storage/REST mismatch')),

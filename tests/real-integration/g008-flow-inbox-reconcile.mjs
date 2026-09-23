@@ -75,8 +75,43 @@ function dueInvocationEvidence(evidence) {
 
 function allContractValuesTrue(value) {
   if (typeof value === 'boolean') return value;
-  if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
-  return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const entries = Object.entries(value).filter(([key]) => key !== 'paths');
+  return entries.length > 0 && entries.every(([, item]) => allContractValuesTrue(item));
+}
+
+const requiredInboxSourceFlags = {
+  date_created: [
+    'gravityforms_entry_contract_is_utc_y_m_d_h_i_s',
+    'inbox_display_reads_entry_date_created',
+    'inbox_raw_compare_reads_same_entry_date_created',
+    'raw_and_display_are_separate_column_identities',
+  ],
+  last_updated: [
+    'workflow_timestamp_is_numeric_entry_meta',
+    'workflow_timestamp_callback_returns_epoch',
+    'inbox_display_reads_workflow_timestamp',
+    'inbox_raw_compare_reads_same_workflow_timestamp',
+    'raw_and_display_are_separate_column_identities',
+  ],
+  timezone_and_formatting: [
+    'flow_numeric_timestamp_uses_php_date_intermediate',
+    'flow_delegates_to_gravityforms_formatter',
+    'gravityforms_formatter_declares_utc_input',
+    'gravityforms_formatter_localizes_before_display',
+  ],
+  presentation_seam: [
+    'filter_receives_display_form_id_field_id_and_entry',
+  ],
+};
+
+function requiredContractFlagsTrue(contract, requiredGroups) {
+  if (!contract || typeof contract !== 'object' || Array.isArray(contract)) return false;
+  return Object.entries(requiredGroups).every(([group, flags]) => {
+    const values = contract[group];
+    return values && typeof values === 'object' && !Array.isArray(values)
+      && flags.every((flag) => Object.hasOwn(values, flag) && values[flag] === true);
+  });
 }
 
 function probeText(probe, key) {
@@ -211,8 +246,8 @@ const dueSourceContract = deriveDueDateSourceContract(flowInboxEvidence, source)
 if (!semanticProbe) baseFailures.push('exact-package source semantic probe is missing');
 if (!sourceContract) {
   baseFailures.push('exact-package source/timezone contract is missing');
-} else if (!allContractValuesTrue(sourceContract)) {
-  baseFailures.push('existing Inbox source/timezone contract contains an unproven requirement');
+} else if (!requiredContractFlagsTrue(sourceContract, requiredInboxSourceFlags)) {
+  baseFailures.push('existing Inbox source/timezone contract is missing a required boolean proof or contains a false required proof');
 }
 if (!dueSourceContract) {
   dueFailures.push('exact-package due-date source/deadline provenance is missing');
@@ -235,7 +270,7 @@ const result = {
     native_flow_intermediate_timezone: 'UTC_PHP_DEFAULT_PROVEN_AT_RUNTIME',
     target_timezone: 'WORDPRESS_SITE_TIMEZONE_ASIA_TEHRAN_FIXTURE',
   },
-  source_contract_proven: Boolean(sourceContract && allContractValuesTrue(sourceContract)),
+  source_contract_proven: Boolean(sourceContract && requiredContractFlagsTrue(sourceContract, requiredInboxSourceFlags)),
   due_date_source_contract: dueSourceContract,
   due_date_contract_proven: Boolean(dueSourceContract && allContractValuesTrue(dueSourceContract)),
   operational_due_filter_invocations: {

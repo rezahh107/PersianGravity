@@ -97,6 +97,15 @@ function fixtures() {
     sourceDiscoveryEvidence,
     g008FlowInboxAdmissionEvidence: null,
     g008FlowStatusAdmissionEvidence: null,
+    g008EntryDetailAdmissionEvidence: null,
+    g008ResidualSourceEvidence: null,
+    g008ResidualNoAdmissionEvidence: null,
+    g008ResidualBrowserEnabledEvidence: null,
+    g008ResidualBrowserDisabledEvidence: null,
+    g008FlowStatusBrowserEnabledEvidence: null,
+    g008FlowStatusBrowserDisabledEvidence: null,
+    g008FlowScheduleQualificationEvidence: null,
+    g008TimelinePrintQualificationEvidence: null,
     expectedIdentity: structuredClone(identity),
   };
 }
@@ -105,6 +114,7 @@ function admitFlowInbox(input) {
   const targets = input.g008Registry.products[0].surfaces.filter((surface) => [
     'gravityflow.inbox.date-created',
     'gravityflow.inbox.last-updated',
+    'gravityflow.inbox.due-date',
   ].includes(surface.id));
   for (const surface of targets) {
     surface.discovery_state = 'RUNTIME_PROVEN';
@@ -143,6 +153,239 @@ function admitFlowStatus(input) {
   };
 }
 
+function admitFlowEntryDetail(input) {
+  const flow = input.g008Registry.products[0];
+  const ids = [
+    'gravityflow.entry-detail.submitted',
+    'gravityflow.entry-detail.last-updated',
+    'gravityflow.entry-detail.due-date',
+    'gravityflow.entry-detail.expiration',
+  ];
+  const targets = ids.map((id) => {
+    let surface = flow.surfaces.find((item) => item.id === id);
+    if (!surface) {
+      surface = {
+        id,
+        raw_source: id,
+        presentation_seam: 'gravityflow_date_format_entry_detail composed with exact marked date_i18n',
+        discovery_state: 'RUNTIME_PROVEN',
+        support_state: 'ADMITTED_VERIFIED',
+        adapter_identity: 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter',
+        runtime_evidence: 'g008-entry-detail-admission.json',
+      };
+      flow.surfaces.push(surface);
+    }
+    surface.discovery_state = 'RUNTIME_PROVEN';
+    surface.support_state = 'ADMITTED_VERIFIED';
+    surface.adapter_identity = 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter';
+    surface.runtime_evidence = 'g008-entry-detail-admission.json';
+    return surface;
+  });
+
+  input.g008EntryDetailAdmissionEvidence = {
+    evidence_class: 'G008_GRAVITY_FLOW_ENTRY_DETAIL_ADMISSION_RECONCILIATION',
+    hard_gate_result: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    source_contract_proven: true,
+    production_browser_enabled_mode: 'enabled',
+    production_browser_disabled_mode: 'disabled',
+    native_time_preserved: true,
+    unrelated_date_formatting_unchanged: true,
+    raw_db_gfapi_rest_equal: true,
+    workflow_deadline_expiration_state_equal: true,
+    operational_getter_counts_equal: true,
+    zero_nested_operational_reentry: true,
+    csv_export_isolated: true,
+    repeated_rendering_deterministic: true,
+    marker_leak_free: true,
+    surfaces: Object.fromEntries(targets.map((surface) => [surface.id, 'ADMITTED_VERIFIED'])),
+  };
+}
+
+function closeFlowResiduals(input) {
+  const flow = input.g008Registry.products[0];
+  const existingStatusDue = flow.surfaces.find((surface) => surface.id === 'gravityflow.status.due-date');
+  const residuals = [
+    existingStatusDue,
+    {
+      id: 'gravityflow.entry-detail.schedule',
+      raw_source: 'host-owned type-specific schedule authority',
+      presentation_seam: 'FINAL_NO_ADMISSION direct queued-step schedule render',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+    {
+      id: 'gravityflow.timeline-history',
+      raw_source: 'history timestamps',
+      presentation_seam: 'FINAL_NO_ADMISSION direct history render',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+    {
+      id: 'gravityflow.print',
+      raw_source: 'dependent Entry Detail/Timeline rendering',
+      presentation_seam: 'FINAL_NO_ADMISSION dependent rendering only',
+      discovery_state: 'SOURCE_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+    },
+  ];
+  for (const surface of residuals) {
+    surface.discovery_state = 'SOURCE_PROVEN';
+    surface.support_state = 'NOT_PROVEN';
+    surface.adapter_identity = null;
+    surface.exact_version_disposition = 'FINAL_NO_ADMISSION';
+    surface.runtime_evidence = surface.id === 'gravityflow.entry-detail.schedule'
+      ? 'g008-flow-schedule-qualification.json'
+      : 'g008-flow-residual-no-admission.json';
+    if (!flow.surfaces.includes(surface)) flow.surfaces.push(surface);
+  }
+
+  input.g008ResidualSourceEvidence = {
+    evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
+    exact: { pgr_sha: identity.head, version: '3.1.0', sha256: 'b'.repeat(64) },
+    source_contract: {
+      status_due_date: Object.fromEntries([
+        'table_reads_operational_due_getter_directly',
+        'table_formats_due_inside_column_method',
+        'table_echoes_direct_output',
+        'table_native_empty_uses_dash_entity',
+        'table_has_no_status_value_filter',
+        'table_has_no_entry_url_proof_seam',
+        'export_has_separate_due_branch',
+        'export_uses_generic_status_filter',
+        'due_getter_is_operational_filter',
+        'overdue_uses_same_due_getter',
+      ].map((key) => [key, true])),
+      entry_detail_schedule_due_expiration: Object.fromEntries([
+        'schedule_reads_operational_getter_directly',
+        'schedule_prints_directly',
+        'schedule_has_no_value_filter',
+        'schedule_getter_is_operational_filter',
+        'schedule_validation_uses_same_getter',
+        'schedule_date_branch_uses_configured_civil_date',
+        'schedule_date_field_and_delay_localize_operational_timestamp',
+        'schedule_date_timestamp_reads_configured_date',
+        'schedule_date_field_timestamp_reads_configured_field_and_offset',
+        'schedule_delay_timestamp_uses_step_timestamp_and_offset',
+        'step_timestamp_reads_step_scoped_entry_meta',
+        'queued_step_status_calls_schedule_renderer',
+      ].map((key) => [key, true])),
+      timeline_history: Object.fromEntries([
+        'header_formats_note_date_directly',
+        'note_body_is_separate_escaped_content',
+        'timeline_reads_gravityforms_notes',
+        'timeline_inserts_initial_entry_event',
+        'initial_event_uses_entry_date_created',
+        'timeline_order_is_host_owned',
+        'timeline_full_array_filter_runs_after_host_reverse',
+        'only_timeline_data_filter_mutates_note_array',
+        'common_text_timeline_reuses_note_dates',
+        'gravityforms_notes_are_persisted_in_utc',
+        'gravityforms_notes_return_raw_date_created',
+      ].map((key) => [key, true])),
+      print: Object.fromEntries([
+        'reuses_entry_detail_grid',
+        'optional_timeline_reuses_entry_detail_timeline',
+        'no_print_specific_date_formatter',
+        'print_style_hook_is_not_date_seam',
+        'workflow_sidebar_not_rendered_by_print',
+      ].map((key) => [key, true])),
+    },
+  };
+
+  input.g008ResidualNoAdmissionEvidence = {
+    evidence_class: 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION',
+    status: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    source_contract_proven: true,
+    browser_modes: { enabled: 'enabled', disabled: 'disabled' },
+    surfaces: Object.fromEntries(residuals.map((surface) => [surface.id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
+  };
+
+  const residualDispositions = {
+    'gravityflow.timeline-history': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+    'gravityflow.print': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+  };
+  const makeResidualBrowser = (mode) => ({
+    evidence_class: 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
+    mode,
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    entry_detail: { url: 'https://example.test/entry', timeline_native: ['March 21, 2030 at 1:45 am'] },
+    print: { url: 'https://example.test/print', timeline_native: ['March 21, 2030 at 1:45 am'] },
+    dispositions: structuredClone(residualDispositions),
+  });
+  input.g008ResidualBrowserEnabledEvidence = makeResidualBrowser('enabled');
+  input.g008ResidualBrowserDisabledEvidence = makeResidualBrowser('disabled');
+
+  const makeStatusBrowser = (mode) => ({
+    evidence_class: 'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER',
+    mode,
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    site_timezone: 'Asia/Tehran',
+    php_default_timezone: 'UTC',
+    rows: [{ id: 1, due_date: 'March 21, 2030' }],
+    residual_no_admission: {
+      surface: 'gravityflow.status.due-date',
+      disposition: 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+      enabled_and_disabled_expect_native: true,
+    },
+  });
+  input.g008FlowStatusBrowserEnabledEvidence = makeStatusBrowser('enabled');
+  input.g008FlowStatusBrowserDisabledEvidence = makeStatusBrowser('disabled');
+
+  input.g008FlowScheduleQualificationEvidence = {
+    evidence_class: 'G008_FLOW_SCHEDULE_BRANCH_QUALIFICATION_RECONCILIATION',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    source_contract_proven: true,
+    enabled_disabled_native_equality: true,
+    operational_getter_counts_equal: true,
+    disposition: 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+  };
+
+  input.g008TimelinePrintQualificationEvidence = {
+    evidence_class: 'G008_TIMELINE_PRINT_QUALIFICATION_RECONCILIATION',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    timeline: {
+      initial_entry_disposition: 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+      stored_note_event_disposition: 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+      storage_unchanged: true,
+      ids_order_bodies_unchanged: true,
+      separate_display_property_consumed: false,
+      date_created_representation_consumed_by_renderer: true,
+    },
+    print: {
+      independent_date_seam_disposition: 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+      stored_note_event_propagation_disposition: 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+      workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
+    },
+  };
+}
+
 function expectFailure(input, pattern) {
   assert.throws(() => reconcileQualificationEvidence(input), (error) => {
     assert.equal(error instanceof EvidenceReconciliationError, true);
@@ -161,6 +404,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
     g009_native_pass_claims_reconciled: 3,
     g008_source_proven_claims_reconciled: 5,
     g008_runtime_admitted_claims_reconciled: 0,
+    g008_final_no_admission_claims_reconciled: 0,
   });
   assert.deepEqual(input.g009Registry, beforeG009);
   assert.deepEqual(input.g008Registry, beforeG008);
@@ -190,7 +434,7 @@ test('G-008 runtime admission claims require exact matching admission evidence',
   admitFlowInbox(input);
   const result = reconcileQualificationEvidence(input);
   assert.equal(result.g008_source_proven_claims_reconciled, 5);
-  assert.equal(result.g008_runtime_admitted_claims_reconciled, 2);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 3);
 
   const downgraded = fixtures();
   admitFlowInbox(downgraded);
@@ -221,12 +465,145 @@ test('G-008 Status runtime admission claims require exact matching Status eviden
   expectFailure(missing, /gravityflow\.status\.date-created.*required runtime admission evidence is missing/);
 });
 
-test('combined Inbox and Status admissions reconcile four bounded runtime claims', () => {
+test('G-008 Entry Detail production admission requires the complete bounded hard gate', () => {
+  const input = fixtures();
+  admitFlowEntryDetail(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 4);
+  assert.equal(result.g008_source_proven_claims_reconciled, 9);
+
+  const missing = fixtures();
+  admitFlowEntryDetail(missing);
+  missing.g008EntryDetailAdmissionEvidence = null;
+  expectFailure(missing, /gravityflow\.entry-detail\.submitted.*required runtime admission evidence is missing/);
+
+  const incomplete = fixtures();
+  admitFlowEntryDetail(incomplete);
+  incomplete.g008EntryDetailAdmissionEvidence.zero_nested_operational_reentry = false;
+  expectFailure(incomplete, /gravityflow\.entry-detail\.submitted.*Entry Detail production admission contract is incomplete/);
+
+  const downgraded = fixtures();
+  admitFlowEntryDetail(downgraded);
+  downgraded.g008EntryDetailAdmissionEvidence.surfaces['gravityflow.entry-detail.expiration'] = 'NOT_PROVEN';
+  expectFailure(downgraded, /gravityflow\.entry-detail\.expiration.*did not admit the committed surface claim/);
+});
+
+test('combined Inbox and Status admissions reconcile five bounded runtime claims', () => {
   const input = fixtures();
   admitFlowInbox(input);
   admitFlowStatus(input);
   const result = reconcileQualificationEvidence(input);
-  assert.equal(result.g008_runtime_admitted_claims_reconciled, 4);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 5);
+});
+
+test('G-008 final no-admission claims require exact source plus enabled/disabled runtime reconciliation', () => {
+  const input = fixtures();
+  closeFlowResiduals(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_final_no_admission_claims_reconciled, 4);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 0);
+
+  const sourceOnly = fixtures();
+  closeFlowResiduals(sourceOnly);
+  sourceOnly.g008ResidualNoAdmissionEvidence = null;
+  expectFailure(sourceOnly, /gravityflow\.status\.due-date.*residual enabled\/disabled runtime reconciliation evidence is missing/);
+
+  const promoted = fixtures();
+  closeFlowResiduals(promoted);
+  promoted.g008Registry.products[0].surfaces.find((surface) => surface.id === 'gravityflow.timeline-history').support_state = 'ADMITTED_VERIFIED';
+  expectFailure(promoted, /gravityflow\.timeline-history.*FINAL_NO_ADMISSION must retain support_state NOT_PROVEN/);
+
+  const driftedSource = fixtures();
+  closeFlowResiduals(driftedSource);
+  driftedSource.g008ResidualSourceEvidence.source_contract.timeline_history.header_formats_note_date_directly = false;
+  expectFailure(driftedSource, /gravityflow\.timeline-history.*required source flag header_formats_note_date_directly is false/);
+});
+
+test('G-008 residual source contract gate rejects missing, empty, missing-flag, false and non-boolean evidence', () => {
+  const missing = fixtures();
+  closeFlowResiduals(missing);
+  delete missing.g008ResidualSourceEvidence.source_contract;
+  expectFailure(missing, /gravityflow\.status\.due-date.*source contract is missing or empty/);
+
+  const empty = fixtures();
+  closeFlowResiduals(empty);
+  empty.g008ResidualSourceEvidence.source_contract.status_due_date = {};
+  expectFailure(empty, /gravityflow\.status\.due-date.*source contract is missing or empty/);
+
+  const flagMissing = fixtures();
+  closeFlowResiduals(flagMissing);
+  delete flagMissing.g008ResidualSourceEvidence.source_contract.timeline_history.timeline_reads_gravityforms_notes;
+  expectFailure(flagMissing, /gravityflow\.timeline-history.*required source flag timeline_reads_gravityforms_notes is missing/);
+
+  const falseFlag = fixtures();
+  closeFlowResiduals(falseFlag);
+  falseFlag.g008ResidualSourceEvidence.source_contract.print.workflow_sidebar_not_rendered_by_print = false;
+  expectFailure(falseFlag, /gravityflow\.print.*required source flag workflow_sidebar_not_rendered_by_print is false/);
+
+  const nonBoolean = fixtures();
+  closeFlowResiduals(nonBoolean);
+  nonBoolean.g008ResidualSourceEvidence.source_contract.entry_detail_schedule_due_expiration.schedule_has_no_value_filter = 'true';
+  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule.*required source flag schedule_has_no_value_filter must be boolean/);
+});
+
+test('G-008 residual browser gate rejects missing or duplicated mode evidence', () => {
+  const missingEnabled = fixtures();
+  closeFlowResiduals(missingEnabled);
+  missingEnabled.g008ResidualBrowserEnabledEvidence = null;
+  expectFailure(missingEnabled, /enabled residual browser: browser evidence is missing/);
+
+  const missingDisabled = fixtures();
+  closeFlowResiduals(missingDisabled);
+  missingDisabled.g008ResidualBrowserDisabledEvidence = null;
+  expectFailure(missingDisabled, /disabled residual browser: browser evidence is missing/);
+
+  const enabledCopiedToDisabled = fixtures();
+  closeFlowResiduals(enabledCopiedToDisabled);
+  enabledCopiedToDisabled.g008ResidualBrowserDisabledEvidence = structuredClone(enabledCopiedToDisabled.g008ResidualBrowserEnabledEvidence);
+  expectFailure(enabledCopiedToDisabled, /disabled residual browser: mode must be disabled/);
+
+  const disabledCopiedToEnabled = fixtures();
+  closeFlowResiduals(disabledCopiedToEnabled);
+  disabledCopiedToEnabled.g008ResidualBrowserEnabledEvidence = structuredClone(disabledCopiedToEnabled.g008ResidualBrowserDisabledEvidence);
+  expectFailure(disabledCopiedToEnabled, /enabled residual browser: mode must be enabled/);
+
+  const wrongMode = fixtures();
+  closeFlowResiduals(wrongMode);
+  wrongMode.g008FlowStatusBrowserDisabledEvidence.mode = 'enabled';
+  expectFailure(wrongMode, /disabled Status browser: mode must be disabled/);
+});
+
+test('G-008 residual browser gate rejects empty observations and target identity drift', () => {
+  const emptyObservation = fixtures();
+  closeFlowResiduals(emptyObservation);
+  emptyObservation.g008ResidualBrowserEnabledEvidence.entry_detail = {};
+  expectFailure(emptyObservation, /Entry Detail observation is empty/);
+
+  const missingTarget = fixtures();
+  closeFlowResiduals(missingTarget);
+  delete missingTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.timeline-history'];
+  expectFailure(missingTarget, /residual target identity set is missing, duplicated, or unexpected/);
+
+  const wrongTarget = fixtures();
+  closeFlowResiduals(wrongTarget);
+  delete wrongTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.print'];
+  wrongTarget.g008ResidualBrowserEnabledEvidence.dispositions['gravityflow.print-wrong'] = 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0';
+  expectFailure(wrongTarget, /residual target identity set is missing, duplicated, or unexpected/);
+});
+
+test('G-008 residual browser gate rejects package drift and source-only runtime promotion', () => {
+  const wrongHash = fixtures();
+  closeFlowResiduals(wrongHash);
+  wrongHash.g008ResidualBrowserDisabledEvidence.exact_gravityflow_package_sha256 = '0'.repeat(64);
+  expectFailure(wrongHash, /disabled residual browser: Gravity Flow package SHA-256 mismatch/);
+
+  const sourceOnly = fixtures();
+  closeFlowResiduals(sourceOnly);
+  sourceOnly.g008ResidualBrowserEnabledEvidence = null;
+  sourceOnly.g008ResidualBrowserDisabledEvidence = null;
+  sourceOnly.g008FlowStatusBrowserEnabledEvidence = null;
+  sourceOnly.g008FlowStatusBrowserDisabledEvidence = null;
+  expectFailure(sourceOnly, /browser evidence is missing/);
 });
 
 test('exact identity mismatch rejects both vendor package drift and PersianGravity source drift', () => {

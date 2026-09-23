@@ -96,7 +96,7 @@ jobs:
       - name: Set up exact PHP runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
-          php-version: '8.2.33'
+          php-version: '8.2.34'
           coverage: none
           extensions: mysqli
           tools: composer:2.8.12
@@ -105,7 +105,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          test "$(php -r 'echo PHP_VERSION;')" = "8.2.34"
           composer validate --strict
           bash -n tests/real-integration/verify-package.sh
           php -l tests/real-integration/setup-runtime.php
@@ -113,14 +113,25 @@ jobs:
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-state.php
           php -l tests/real-integration/g008-flow-status-state.php
+          php -l tests/real-integration/g008-flow-residual-adversarial-setup.php
+          php -l tests/real-integration/g008-flow-residual-adversarial-state.php
+          php -l tests/real-integration/g008-flow-schedule-setup.php
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
+          node --check tests/real-integration/g008-residual-source-probe.mjs
           node --check tests/real-integration/g009-browser.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
           node --check tests/real-integration/g008-flow-inbox-reconcile.mjs
           node --check tests/real-integration/g008-flow-status-browser.mjs
           node --check tests/real-integration/g008-flow-status-reconcile.mjs
+          node --check tests/real-integration/g008-flow-residual-browser.mjs
+          node --check tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          node --check tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
+          node --check tests/real-integration/g008-flow-schedule-browser.mjs
+          node --check tests/real-integration/g008-flow-schedule-reconcile.mjs
+          node --check tests/real-integration/g008-timeline-print-reconcile.mjs
+          node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/qualification-reconciliation.test.mjs
@@ -252,7 +263,9 @@ jobs:
         run: |
           set -euo pipefail
           node tests/real-integration/source-discovery.mjs
+          node tests/real-integration/g008-residual-source-probe.mjs
           test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-residual-source-probe.json"
 
       - name: Create deterministic runtime fixtures and assert provider/fallback semantics
         shell: bash
@@ -348,10 +361,12 @@ jobs:
           node tests/real-integration/g008-flow-inbox-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
           node tests/real-integration/g008-flow-status-browser.mjs
+          node tests/real-integration/g008-flow-residual-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-browser-enabled.json"
 
       - name: Prove module-disabled native Gravity Flow fallback
         shell: bash
@@ -364,10 +379,12 @@ jobs:
           node tests/real-integration/g008-flow-inbox-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-status-state.php
           node tests/real-integration/g008-flow-status-browser.mjs
+          node tests/real-integration/g008-flow-residual-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-state-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-inbox-browser-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-state-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-browser-disabled.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
 
       - name: Reconcile G008 Flow Inbox admission evidence
@@ -383,6 +400,73 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-flow-status-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-status-admission.json"
+
+      - name: Create isolated residual Entry Detail, Timeline and schedule fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-setup.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-schedule-setup.php
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-adversarial-fixture.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-fixture.json"
+
+      - name: Qualify Entry Detail candidate, schedule, Timeline and Print with module enabled
+        shell: bash
+        env:
+          WU008_G008_MODE: enabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          node tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          node tests/real-integration/g008-flow-schedule-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-enabled.json"
+
+      - name: Qualify Entry Detail candidate, schedule, Timeline and Print with module disabled
+        shell: bash
+        env:
+          WU008_G008_MODE: disabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          node tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          node tests/real-integration/g008-flow-schedule-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-disabled.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+
+      - name: Reconcile Entry Detail two-hook candidate qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-two-hook-prototype.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-admission.json"
+
+      - name: Reconcile authentic schedule branch qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-schedule-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-qualification.json"
+
+      - name: Reconcile multi-note Timeline and Print qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-timeline-print-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-timeline-print-qualification.json"
+
+      - name: Reconcile residual G008 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-residual-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-no-admission.json"
 
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash

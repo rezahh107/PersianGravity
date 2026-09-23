@@ -255,12 +255,18 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 		? Gravity_Flow_Common::format_date( $native_last_updated_source, '', true, true )
 		: '-';
 
-	$due_enabled = ! empty( $current_step->due_date );
-	$due_raw     = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
-	$due_native  = $due_enabled
+	$due_enabled       = ! empty( $current_step->due_date );
+	$due_raw           = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
+	$due_native        = $due_enabled
 		? Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $due_raw ), '', true, true )
 		: '-';
-	$overdue     = $due_enabled ? (bool) $current_step->is_overdue() : false;
+	$status_due_native = $due_enabled
+		? Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $due_raw ), '', false, false )
+		: html_entity_decode( '&dash;', ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$entry_detail_due_native = $due_enabled
+		? Gravity_Flow_Common::format_date( $due_raw, '', false, false )
+		: null;
+	$overdue           = $due_enabled ? (bool) $current_step->is_overdue() : false;
 
 	if ( $due_raw !== (int) $runtime_entry['expected_due_timestamp'] ) {
 		throw new RuntimeException( 'Host due-date raw authority did not match deterministic fixture for entry ' . $entry['id'] . '.' );
@@ -277,10 +283,37 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 	$runtime_entry['overdue']                 = $overdue;
 	$runtime_entry['expected_created_native'] = $native_date_created;
 	$runtime_entry['expected_updated_native'] = $native_last_updated;
-	$runtime_entry['expected_due_native']     = $due_native;
+	$runtime_entry['expected_due_native']         = $due_native;
+	$runtime_entry['expected_status_due_native']  = $status_due_native;
+	$runtime_entry['expected_detail_due_native']  = $entry_detail_due_native;
 }
 unset( $runtime_entry );
 remove_filter( 'gravityflow_step_due_date_timestamp', $runtime_due_filter, PHP_INT_MAX );
+
+$residual_entry_fixture = null;
+foreach ( $runtime_entries as $candidate ) {
+	if ( 'alpha' === $candidate['key'] ) {
+		$residual_entry_fixture = $candidate;
+		break;
+	}
+}
+if ( ! is_array( $residual_entry_fixture ) ) {
+	throw new RuntimeException( 'Missing residual Entry Detail fixture.' );
+}
+$residual_entry = GFAPI::get_entry( $residual_entry_fixture['id'] );
+if ( is_wp_error( $residual_entry ) ) {
+	throw new RuntimeException( $residual_entry->get_error_message() );
+}
+$residual_timeline_native = array();
+foreach ( Gravity_Flow_Common::get_timeline_notes( $residual_entry ) as $note ) {
+	if ( ! isset( $note->date_created ) ) {
+		throw new RuntimeException( 'Timeline note is missing authoritative date_created.' );
+	}
+	$residual_timeline_native[] = Gravity_Flow_Common::format_date( $note->date_created, '', false, true );
+}
+if ( empty( $residual_timeline_native ) ) {
+	throw new RuntimeException( 'Residual timeline fixture produced no notes.' );
+}
 
 $page_id = wp_insert_post(
 	array(
@@ -302,7 +335,7 @@ $status_page_id = wp_insert_post(
 		'post_status'  => 'publish',
 		'post_title'   => 'G008 Gravity Flow Status System Dates',
 		'post_name'    => 'g008-gravityflow-status-system-dates',
-		'post_content' => sprintf( '[gravityflow page="status" form="%d" last_updated="true" due_date="false"]', (int) $form_id ),
+		'post_content' => sprintf( '[gravityflow page="status" form="%d" last_updated="true" due_date="true"]', (int) $form_id ),
 	),
 	true
 );
@@ -319,6 +352,24 @@ $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512
 $manifest['schema_version']                 = '1.6.0';
 $manifest['g008_flow_inbox_url']            = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
 $manifest['g008_flow_status_url']           = add_query_arg( 'page_id', (int) $status_page_id, home_url( '/' ) );
+$manifest['g008_flow_residual_entry_id']    = (int) $residual_entry_fixture['id'];
+$manifest['g008_flow_entry_detail_url']     = add_query_arg(
+	array(
+		'page_id' => (int) $page_id,
+		'view'    => 'entry',
+		'lid'     => (int) $residual_entry_fixture['id'],
+	),
+	home_url( '/' )
+);
+$manifest['g008_flow_print_url']            = add_query_arg(
+	array(
+		'action'    => 'gravityflow_print_entries',
+		'lid'       => (int) $residual_entry_fixture['id'],
+		'timelines' => 1,
+	),
+	admin_url( 'admin-ajax.php' )
+);
+$manifest['g008_flow_timeline_native']      = $residual_timeline_native;
 $manifest['g008_flow_form_id']              = (int) $form_id;
 $manifest['g008_flow_step_id']              = (int) $step_id;
 $manifest['g008_flow_no_due_step_id']       = (int) $no_due_step_id;

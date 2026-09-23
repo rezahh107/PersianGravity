@@ -132,6 +132,19 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			$this->assertSame( 'g008-flow-status-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
 
+		$entry_detail_admitted = array(
+			'gravityflow.entry-detail.submitted',
+			'gravityflow.entry-detail.last-updated',
+			'gravityflow.entry-detail.due-date',
+			'gravityflow.entry-detail.expiration',
+		);
+		foreach ( $entry_detail_admitted as $admitted_id ) {
+			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
+			$this->assertSame( 'ADMITTED_VERIFIED', $states[ $admitted_id ]['support_state'], $admitted_id );
+			$this->assertSame( 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
+			$this->assertSame( 'g008-entry-detail-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
+		}
+
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
 			'gravityflow.inbox.date-created',
@@ -139,12 +152,30 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			'gravityflow.inbox.due-date',
 			'gravityflow.status.date-created',
 			'gravityflow.status.workflow-timestamp',
+			'gravityflow.entry-detail.submitted',
+			'gravityflow.entry-detail.last-updated',
+			'gravityflow.entry-detail.due-date',
+			'gravityflow.entry-detail.expiration',
 		);
 		foreach ( $states as $id => $surface ) {
 			if ( ! in_array( $id, $admitted_ids, true ) ) {
 				$this->assertSame( 'NOT_PROVEN', $surface['support_state'], $id );
 				$this->assertNull( $surface['adapter_identity'], $id );
 			}
+		}
+
+		$residual_no_admission = array(
+			'gravityflow.status.due-date'      => 'g008-flow-residual-no-admission.json',
+			'gravityflow.entry-detail.schedule' => 'g008-flow-schedule-qualification.json',
+			'gravityflow.timeline-history'      => 'g008-flow-residual-no-admission.json',
+			'gravityflow.print'                 => 'g008-flow-residual-no-admission.json',
+		);
+		foreach ( $residual_no_admission as $id => $runtime_evidence ) {
+			$this->assertSame( 'SOURCE_PROVEN', $states[ $id ]['discovery_state'], $id );
+			$this->assertSame( 'NOT_PROVEN', $states[ $id ]['support_state'], $id );
+			$this->assertSame( 'FINAL_NO_ADMISSION', $states[ $id ]['exact_version_disposition'], $id );
+			$this->assertSame( $runtime_evidence, $states[ $id ]['runtime_evidence'], $id );
+			$this->assertNull( $states[ $id ]['adapter_identity'], $id );
 		}
 
 		$agents = (string) file_get_contents( dirname( __DIR__ ) . '/AGENTS.md' );
