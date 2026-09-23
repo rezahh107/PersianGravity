@@ -21,7 +21,7 @@ final class G008GravityFlowStatusFailClosedTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php';
-		function wp_timezone() { return new DateTimeZone( 'Asia/Tehran' ); }
+		$GLOBALS['pgr_test_timezone'] = 'Asia/Tehran';
 
 		$adapter = new PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter();
 		$this->assertSame( 'native', $this->status_call( $adapter, 'native', 'date_created', array( 'date_created' => '2026-03-20 22:15:00' ) ) );
@@ -37,7 +37,7 @@ final class G008GravityFlowStatusFailClosedTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php';
-		function wp_timezone() { return new DateTimeZone( 'Asia/Tehran' ); }
+		$GLOBALS['pgr_test_timezone'] = 'Asia/Tehran';
 
 		$adapter = new PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter();
 		$this->assertSame( 'native', $this->status_call( $adapter, 'native', 'workflow_timestamp', array( 'workflow_timestamp' => '1774132200' ) ) );
@@ -68,8 +68,8 @@ final class G008GravityFlowStatusFailClosedTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php';
 
+		$GLOBALS['pgr_test_timezone'] = 'Invalid/Timezone';
 		$adapter = new PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter();
-		$this->assertFalse( function_exists( 'wp_timezone' ) );
 		$this->assertSame( 'native', $this->status_call( $adapter, 'native', 'date_created', array( 'date_created' => '2026-03-20 22:15:00' ) ) );
 	}
 }
