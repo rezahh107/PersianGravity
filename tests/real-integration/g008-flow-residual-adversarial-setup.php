@@ -199,6 +199,20 @@ add_filter(
 	'gravityflow_date_format_entry_detail',
 	static function ( $format ) {
 		++$GLOBALS['pgr_wu008_ed_candidate_evidence']['format_hook_calls'];
+
+		// Test-only isolation: the drift scenario models an unsupported host for
+		// the prototype while the installed production host is still exact 3.1.0.
+		// Return the native non-empty GF format so the production adapter cannot
+		// arm its own marker and contaminate this prototype fail-closed control.
+		if (
+			'' === $format &&
+			isset( $_GET['pgr_g008_candidate_case'] ) &&
+			'drift' === (string) $_GET['pgr_g008_candidate_case'] &&
+			class_exists( 'GFCommon', false )
+		) {
+			return GFCommon::get_default_date_format();
+		}
+
 		if ( '' !== $format || ! pgr_wu008_ed_candidate_exact_host() ) {
 			return $format;
 		}
