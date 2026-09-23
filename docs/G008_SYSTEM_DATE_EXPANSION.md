@@ -146,16 +146,18 @@ The shared WU008 fixture runs with WordPress site timezone `Asia/Tehran` and PHP
 
 Operational evidence additionally proves enabled/disabled equality for DB, GFAPI and REST values, workflow step/final status and assignees, Status query IDs/count, ascending/descending sorting on both target raw keys, Status start/end filtering, and ordinary CSV output. Module-disabled late `csv → table` also remains native. The admission artifact is `g008-flow-status-admission.json`.
 
-## Gravity Flow surfaces still not admitted
+## Exact Gravity Flow 3.1.0 residual closure
 
-The following remain deliberately outside this production batch:
+The remaining non-GravityView G-008 candidates are source-closed for exact Gravity Flow `3.1.0` package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`. The registry retains `support_state=NOT_PROVEN` because that is the existing schema vocabulary, but each record now carries `exact_version_disposition=FINAL_NO_ADMISSION`. This is not an open discovery gap and is not a compatibility claim for future Flow versions.
 
-- Status `due_date` — `NOT_PROVEN`.
-- Entry Detail due/schedule/expiration — `NOT_PROVEN`.
-- Timeline/history — `NOT_PROVEN`.
-- Print — `NOT_PROVEN`.
+- Status `due_date`: `column_due_date()` directly calls the operational `get_due_date_timestamp()`, formats it and echoes it. Unlike the admitted Status columns, this table path does not call `filter_field_value()` / `gravityflow_field_value_status_table` and does not reach the table-only entry-URL proof seam. CSV/export has a separate branch and generic value filter, so intercepting that filter cannot provide a table-only presentation adapter. The due timestamp filter is operational and also feeds overdue classification.
+- Entry Detail due/expiration: `maybe_display_entry_detail_workflow_info()` directly formats and prints `get_due_date_timestamp()` and `get_expiration_timestamp()`. The nearby `gravityflow_below_workflow_info_entry_detail` action runs only after those values have already been emitted. Entry Detail schedule: `display_queued_step_details()` directly reads `get_schedule_timestamp()` and prints the native type-specific scheduled value. The due/schedule/expiration timestamp filters are workflow timing/state authorities, not presentation hooks.
+- Timeline/history: the initial event uses Entry `date_created`; workflow notes use Gravity Forms note `date_created`, stored in UTC. `get_note_header()` formats that raw timestamp directly and has no date-only output filter. `gravityflow_timeline_notes` is upstream of `array_reverse()`/rendering and exposes the full note array, so using it solely to change calendar presentation would mutate history data/order ownership rather than a bounded output seam. Note bodies remain separately escaped user/event content and are never parsed for dates.
+- Print: `Gravity_Flow_Print_Entries::render()` has no date formatter/calendar engine. It reuses `Gravity_Flow_Entry_Detail::entry_detail_grid()` and, when requested, `Gravity_Flow_Entry_Detail::timeline()`. `gravityflow_print_styles` only selects CSS assets. Because the underlying residual surfaces have no admitted seam, no independent Print adapter is introduced.
 
-No production adapter for any of those surfaces is introduced here. Workflow due/schedule/expiration timestamps outside the admitted Inbox presentation remain workflow-owned operational data.
+WU008 now writes `g008-residual-source-probe.json`, exercises authentic Entry Detail/Timeline and `gravityflow_print_entries` with timelines enabled in both module states, and reconciles the exact package/source/browser evidence into `g008-flow-residual-no-admission.json`. Status due-date is separately asserted native in the enabled and disabled Status browser lane. Any source/version/seam drift fails the exact 3.1.0 closure and requires fresh qualification.
+
+No production adapter is introduced for these four targets. Workflow deadline/schedule/expiration/history truth remains owned by Gravity Flow/Gravity Forms.
 
 ## GravityView remains unproven
 
