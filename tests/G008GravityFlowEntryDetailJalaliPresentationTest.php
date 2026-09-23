@@ -164,7 +164,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source );
 		$this->assertStringContainsString( "'gravityflow_date_format_entry_detail'", $source );
 		$this->assertStringContainsString( "'date_i18n'", $source );
-		$this->assertStringContainsString( "true !== \\$gmt", $source );
+		$this->assertStringContainsString( 'true !== $gmt', $source );
 		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_schedule_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_expiration_timestamp()', $source );
