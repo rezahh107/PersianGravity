@@ -168,6 +168,93 @@ const residualSourceContractBySurface = {
   'gravityflow.print': 'print',
 };
 
+const residualRequiredSourceFlags = {
+  status_due_date: [
+    'table_reads_operational_due_getter_directly',
+    'table_formats_due_inside_column_method',
+    'table_echoes_direct_output',
+    'table_native_empty_uses_dash_entity',
+    'table_has_no_status_value_filter',
+    'table_has_no_entry_url_proof_seam',
+    'export_has_separate_due_branch',
+    'export_uses_generic_status_filter',
+    'due_getter_is_operational_filter',
+    'overdue_uses_same_due_getter',
+  ],
+  entry_detail_schedule_due_expiration: [
+    'workflow_info_exposes_format_pattern_filter_only',
+    'format_pattern_filter_precedes_due_and_expiration',
+    'due_is_direct_operational_getter_render',
+    'expiration_is_direct_operational_getter_render',
+    'below_workflow_hook_is_after_direct_date_output',
+    'date_format_hook_is_format_string_only_and_precedes_operational_values',
+    'due_has_no_downstream_value_filter',
+    'expiration_has_no_downstream_value_filter',
+    'schedule_reads_operational_getter_directly',
+    'schedule_prints_directly',
+    'schedule_has_no_value_filter',
+    'schedule_getter_is_operational_filter',
+    'expiration_getter_is_operational_filter',
+    'schedule_validation_uses_same_getter',
+    'expiration_state_uses_same_getter',
+    'shared_format_hook_scopes_submitted_last_updated_due_expiration',
+    'flow_format_date_delegates_to_gravityforms',
+    'gravityforms_format_date_reaches_date_i18n',
+    'wordpress_date_i18n_exposes_supported_filter',
+    'wordpress_date_i18n_treats_numeric_input_as_local_timestamp_with_offset',
+    'schedule_date_branch_uses_configured_civil_date',
+    'schedule_date_field_and_delay_localize_operational_timestamp',
+    'schedule_date_timestamp_reads_configured_date',
+    'schedule_date_field_timestamp_reads_configured_field_and_offset',
+    'schedule_delay_timestamp_uses_step_timestamp_and_offset',
+    'queued_step_status_calls_schedule_renderer',
+  ],
+  timeline_history: [
+    'header_formats_note_date_directly',
+    'note_body_is_separate_escaped_content',
+    'timeline_reads_gravityforms_notes',
+    'timeline_inserts_initial_entry_event',
+    'initial_event_uses_entry_date_created',
+    'timeline_order_is_host_owned',
+    'timeline_full_array_filter_runs_after_host_reverse',
+    'only_timeline_data_filter_mutates_note_array',
+    'common_text_timeline_reuses_note_dates',
+    'gravityforms_notes_are_persisted_in_utc',
+    'gravityforms_notes_return_raw_date_created',
+  ],
+  print: [
+    'reuses_entry_detail_grid',
+    'optional_timeline_reuses_entry_detail_timeline',
+    'no_print_specific_date_formatter',
+    'print_style_hook_is_not_date_seam',
+    'workflow_sidebar_not_rendered_by_print',
+  ],
+};
+
+function validateRequiredBooleanFlags(contract, requiredFlags, label) {
+  const errors = [];
+  if (!isObject(contract) || Object.keys(contract).length === 0) {
+    return [`${label}: source contract is missing or empty.`];
+  }
+  for (const flag of requiredFlags ?? []) {
+    if (!Object.hasOwn(contract, flag)) {
+      errors.push(`${label}: required source flag ${flag} is missing.`);
+      continue;
+    }
+    if (typeof contract[flag] !== 'boolean') {
+      errors.push(`${label}: required source flag ${flag} must be boolean.`);
+      continue;
+    }
+    if (contract[flag] !== true) {
+      errors.push(`${label}: required source flag ${flag} is false.`);
+    }
+  }
+  if (!allEvidenceFlagsTrue(contract)) {
+    errors.push(`${label}: source contract contains an empty, non-boolean, or false evidence value.`);
+  }
+  return errors;
+}
+
 const residualBrowserTargets = [
   'gravityflow.entry-detail.schedule-due-expiration',
   'gravityflow.timeline-history',
@@ -315,8 +402,14 @@ function validateG008FinalNoAdmission(
     }
     const contractKey = residualSourceContractBySurface[surface.id];
     const targetContract = contractKey ? residualSourceEvidence.source_contract?.[contractKey] : null;
-    if (!contractKey || !isObject(targetContract) || Object.keys(targetContract).length === 0 || !allEvidenceFlagsTrue(targetContract)) {
-      errors.push(`G-008 ${surface.id}: residual source no-admission contract is missing, empty, non-boolean, or not fully proven.`);
+    if (!contractKey) {
+      errors.push(`G-008 ${surface.id}: residual source contract identity is not declared.`);
+    } else {
+      errors.push(...validateRequiredBooleanFlags(
+        targetContract,
+        residualRequiredSourceFlags[contractKey],
+        `G-008 ${surface.id}`
+      ));
     }
   }
   if (surface.id === 'gravityflow.status.due-date') {
@@ -342,6 +435,18 @@ function validateG008FinalNoAdmission(
   } else {
     if (residualRuntimeEvidence.status !== 'PASS') {
       errors.push(`G-008 ${surface.id}: residual runtime reconciliation is not PASS.`);
+    }
+    if (residualRuntimeEvidence.source_contract_proven !== true) {
+      errors.push(`G-008 ${surface.id}: residual runtime reconciliation does not declare source_contract_proven=true.`);
+    }
+    if (
+      residualRuntimeEvidence.browser_modes?.enabled !== 'enabled'
+      || residualRuntimeEvidence.browser_modes?.disabled !== 'disabled'
+    ) {
+      errors.push(`G-008 ${surface.id}: residual runtime browser mode identity is missing or duplicated.`);
+    }
+    if (residualRuntimeEvidence.site_timezone !== 'Asia/Tehran' || residualRuntimeEvidence.php_default_timezone !== 'UTC') {
+      errors.push(`G-008 ${surface.id}: residual runtime timezone identity mismatch.`);
     }
     if (residualRuntimeEvidence.exact_persiangravity_commit !== expectedIdentity.head) {
       errors.push(`G-008 ${surface.id}: residual runtime PersianGravity Head mismatch.`);
