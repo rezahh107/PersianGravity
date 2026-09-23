@@ -70,7 +70,9 @@ The exact Gravity Flow 3.1.0 current step owns the due-date authority through `g
 
 When the current step has no due date, the authentic Inbox contract is raw `due_date = 0` and `due_date_human_readable = '-'`. The adapter preserves that sentinel exactly.
 
-The same current-step `get_due_date_timestamp()` drives `is_overdue()`, which compares the due epoch with `time()`. Inbox overdue highlighting is then based on `is_overdue()` plus the host-owned highlight setting. Gravity Flow can derive a due timestamp from configured date, date-field or delay timing; that calculation remains entirely host-owned.
+The same current-step `get_due_date_timestamp()` drives `is_overdue()`, which compares the due epoch with `time()`. Inbox overdue highlighting is then based on `is_overdue()` plus the host-owned highlight setting. Gravity Flow can derive a due timestamp from configured date, date-field or delay timing; exact-package source qualification binds those modes as well: date/date-field civil values are converted to GMT before epoch conversion, date-field offsets are applied to the epoch, and delay mode starts from the step-scoped `workflow_step_<step_id>_timestamp` before adding the configured unit offset.
+
+Scheduling remains a distinct host-owned channel. Exact Gravity Flow source proves step start gating calls `validate_schedule()`, which reads `get_schedule_timestamp()` using the `schedule` namespace and the separate `gravityflow_step_schedule_timestamp` filter; the schedule getter does not call the due getter and the due getter does not call the schedule getter.
 
 The adapter runs only after Gravity Flow has computed the Inbox cell value and operational due/overdue state. It does not parse `due_date_human_readable`, write due state, hook `gravityflow_step_due_date_timestamp`, change scheduling/deadline calculation or replace the raw compare value. It only re-reads the current step's authoritative timestamp at the admitted display seam, constructs an absolute instant and delegates site-time localization plus Jalali formatting to `PGR_Jalali_Presentation::format_datetime()`.
 
@@ -106,13 +108,16 @@ The exact runtime proves equality of:
 - workflow step and final-status metadata;
 - assignees;
 - authoritative current-step due-date epoch and due-date enabled state;
+- step-scoped workflow timestamp used by delay-mode due calculation;
+- due-date type, delay offset/unit and `supports_due_date()` state;
 - overdue classification and due-date highlight configuration;
+- scheduled flag and schedule timestamp state;
 - authentic Inbox query IDs and count;
 - AG Grid raw `date_created` / `last_updated` / `due_date` compare values;
 - visible ascending/descending sort behavior for all three admitted Inbox columns;
 - quick-filter behavior using the exact raw `due_date` compare value.
 
-The display and raw channels are distinct in the exact host source: each admitted column has a raw `field` and a separate `displayKey`. The adapter is invoked only for the human-readable display identity, so no query, workflow, assignment, storage, deadline, overdue, compare, sort or filter value is replaced by Jalali text.
+The display and raw channels are distinct in the exact host source: each admitted column has a raw `field` and a separate `displayKey`. The adapter is invoked only for the human-readable display identity, so no query, workflow, assignment, storage, deadline, overdue, step-timing, scheduling, compare, sort or filter value is replaced by Jalali text.
 
 ## Fail-closed host/version behavior
 
