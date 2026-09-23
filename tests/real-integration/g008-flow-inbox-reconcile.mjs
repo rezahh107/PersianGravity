@@ -32,6 +32,7 @@ function dueOperationalState(entries) {
   return entries
     .map((entry) => ({
       id: Number(entry.id),
+      workflow_step_timestamp: Number(entry.workflow_step_timestamp ?? 0),
       due_date_enabled: Boolean(entry.due_date_enabled),
       due_date_timestamp: Number(entry.due_date_timestamp),
       due_date_type: String(entry.due_date_type ?? ''),
@@ -41,6 +42,8 @@ function dueOperationalState(entries) {
       supports_due_date: Boolean(entry.supports_due_date),
       due_date_highlight_type: String(entry.due_date_highlight_type ?? ''),
       due_date_highlight_color: String(entry.due_date_highlight_color ?? ''),
+      scheduled: Boolean(entry.scheduled),
+      schedule_timestamp: Number(entry.schedule_timestamp ?? 0),
     }))
     .sort((a, b) => a.id - b.id);
 }
@@ -72,7 +75,8 @@ function probeText(probe, key) {
 
 function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
   const probe = flowInboxEvidence?.due_date_source_probe;
-  if (!probe) return null;
+  const exactDueContract = flowInboxEvidence?.due_date_source_contract;
+  if (!probe || !exactDueContract) return null;
   const task = probeText(probe, 'task_model');
   const step = probeText(probe, 'step');
   const customSchedule = probeText(probe, 'custom_schedule_setting');
@@ -91,6 +95,7 @@ function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
     .sort((a, b) => a - b)[0] ?? 0;
 
   return {
+    exact_source_contract_present_and_proven: allContractValuesTrue(exactDueContract),
     raw_representation_and_sentinel: {
       raw_compare_uses_current_step_timestamp: task.includes("case 'due_date':") && task.includes('$value = $step->get_due_date_timestamp();'),
       raw_no_due_is_zero: task.includes('$value = 0;'),
@@ -113,13 +118,14 @@ function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
     workflow_scheduling_trace: {
       due_reference_census_present: dueRefs.length > 0,
       getter_supports_date_date_field_and_delay_modes: step.includes("case 'date':") && step.includes("case 'date_field':") && step.includes("case 'delay':") && step.includes("get_timestamp_delay( 'due_date' )"),
+      exact_delay_and_schedule_separation_contract_proven: Boolean(exactDueContract?.authoritative_getter_and_timezone?.delay_mode_starts_from_step_timestamp) && Boolean(exactDueContract?.scheduling_separation?.schedule_validation_reads_schedule_timestamp_not_due_timestamp) && Boolean(exactDueContract?.scheduling_separation?.schedule_getter_uses_schedule_namespace),
       schedule_custom_due_occurrences_are_settings_only: customSchedule.includes("'name'    => 'due_date'") && customSchedule.includes('gravity_flow()->settings_checkbox') && !customSchedule.includes('process_workflow('),
       no_due_reference_is_an_inbox_presentation_filter_mutation: !dueRefs.some((ref) => ref.operation === 'add_filter'),
     },
     presentation_seam: {
       exact_filter_apply_site_present: taskFilterLine > 0,
       display_is_computed_before_presentation_filter: taskDueDisplayLine > 0 && taskFilterLine > taskDueDisplayLine,
-      filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_field_id_and_entry),
+      filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_and_entry),
     },
   };
 }
@@ -147,9 +153,9 @@ if (JSON.stringify(enabledBrowser.quick_filter.visible_entry_ids) !== JSON.strin
 if (JSON.stringify(enabledBrowser.sort.date_created) !== JSON.stringify(disabledBrowser.sort.date_created)) baseFailures.push('date_created AG Grid sort behavior changed');
 if (JSON.stringify(enabledBrowser.sort.last_updated) !== JSON.stringify(disabledBrowser.sort.last_updated)) baseFailures.push('last_updated AG Grid sort behavior changed');
 if (JSON.stringify(enabledBrowser.sort.due_date) !== JSON.stringify(disabledBrowser.sort.due_date)) dueFailures.push('due_date AG Grid sort behavior changed');
-if (JSON.stringify(enabledDueOperational) !== JSON.stringify(disabledDueOperational)) dueFailures.push('due-date timing/support/highlight configuration changed across module modes');
-if (!enabledDueOperational.some((entry) => entry.due_date_enabled && entry.due_date_type === 'delay' && entry.due_date_delay_offset === 1 && entry.due_date_delay_unit === 'days' && entry.supports_due_date)) {
-  dueFailures.push('deterministic delay-timing/support fixture is missing or drifted');
+if (JSON.stringify(enabledDueOperational) !== JSON.stringify(disabledDueOperational)) dueFailures.push('due-date timing/support/highlight/schedule state changed across module modes');
+if (!enabledDueOperational.some((entry) => entry.due_date_enabled && entry.due_date_type === 'delay' && entry.due_date_delay_offset === 1 && entry.due_date_delay_unit === 'days' && entry.workflow_step_timestamp > 0 && entry.supports_due_date && !entry.scheduled && entry.schedule_timestamp === 0)) {
+  dueFailures.push('deterministic delay step-timing/support/schedule fixture is missing or drifted');
 }
 
 const expectedDue = baselineEntries.map((entry) => ({ id: entry.id, due_date_timestamp: entry.due_date_timestamp, overdue: entry.overdue }));
@@ -175,12 +181,12 @@ if (!sourceContract) {
 if (!dueSourceContract) {
   dueFailures.push('exact-package due-date source/deadline provenance is missing');
 } else if (!allContractValuesTrue(dueSourceContract)) {
-  dueFailures.push(`exact-package due-date source/deadline contract contains an unproven requirement: ${JSON.stringify(dueSourceContract)}`);
+  dueFailures.push(`exact-package due-date source/deadline/scheduling contract contains an unproven requirement: ${JSON.stringify(dueSourceContract)}`);
 }
 
 const failures = [...baseFailures, ...dueFailures];
 const result = {
-  schema_version: '1.3.0',
+  schema_version: '1.4.0',
   evidence_class: 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: enabledBrowser.exact_persiangravity_commit,
   exact_persiangravity_package_sha256: enabledBrowser.exact_persiangravity_package_sha256,
@@ -199,7 +205,7 @@ const result = {
   presentation_isolation: {
     raw_state_equal: JSON.stringify(enabledEntries) === JSON.stringify(disabledEntries),
     due_timestamp_and_overdue_equal: JSON.stringify(enabledDue) === JSON.stringify(disabledDue),
-    due_timing_support_highlight_state_equal: JSON.stringify(enabledDueOperational) === JSON.stringify(disabledDueOperational),
+    due_timing_support_highlight_schedule_state_equal: JSON.stringify(enabledDueOperational) === JSON.stringify(disabledDueOperational),
     ag_grid_compare_values_equal: JSON.stringify(rawRows(enabledBrowser)) === JSON.stringify(rawRows(disabledBrowser)),
     query_ids_equal: JSON.stringify(enabledState.query_ids) === JSON.stringify(disabledState.query_ids),
     sort_equal: JSON.stringify(enabledBrowser.sort) === JSON.stringify(disabledBrowser.sort),
