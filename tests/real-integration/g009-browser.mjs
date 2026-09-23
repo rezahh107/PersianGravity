@@ -414,7 +414,8 @@ async function qualifyGravityPerks(browser, viewport) {
     && observed.fileUpload.dropareaText.includes(expectedStrings.or);
   const fileGeometryPass = rectVisible(observed.fileUpload.droparea);
   const filenamePass = observed.fileUpload.filenameText === observed.fileUpload.filename
-    && observed.fileUpload.filenameText.includes('ID-1234');
+    && observed.fileUpload.filenameText.includes('ID-1234')
+    && observed.fileUpload.filenameState.unicodeBidi === 'isolate';
   const fileDirectionPass = observed.fileUpload.droparea.direction === expectedDirection;
   const fupState = stringsPass && fileGeometryPass && filenamePass && fileDirectionPass ? 'NATIVE_PASS' : 'NOT_PROVEN';
 
@@ -435,6 +436,7 @@ async function qualifyGravityPerks(browser, viewport) {
       && advanced.inlineStyleText?.includes('.ts-wrapper.rtl')
       && advanced.wrapperClasses?.split(/\s+/).includes('rtl')
       && advanced.control.direction === 'rtl'
+      && advanced.control.backgroundPosition.includes('left')
       && advanced.control.paddingLeftPx > advanced.control.paddingRightPx
     )
     : Boolean(
@@ -442,6 +444,7 @@ async function qualifyGravityPerks(browser, viewport) {
       && !advanced.inlineStylePresent
       && !advanced.wrapperClasses?.split(/\s+/).includes('rtl')
       && advanced.control.direction === 'ltr'
+      && advanced.control.backgroundPosition.includes('right')
     );
   const interactionPass = advanced.focusBefore
     && advanced.focusAdvanced
