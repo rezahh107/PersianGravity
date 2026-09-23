@@ -9,16 +9,8 @@
     "date_method": "format_date",
     "validated_product_range": "1800-01-01..2124-03-19"
   },
-  "support_states": [
-    "ADMITTED_VERIFIED",
-    "NOT_PROVEN",
-    "FAIL_CLOSED_VERSION_DRIFT"
-  ],
-  "discovery_states": [
-    "RUNTIME_PROVEN",
-    "SOURCE_PROVEN",
-    "NOT_PROVEN"
-  ],
+  "support_states": ["ADMITTED_VERIFIED", "NOT_PROVEN", "FAIL_CLOSED_VERSION_DRIFT"],
+  "discovery_states": ["RUNTIME_PROVEN", "SOURCE_PROVEN", "NOT_PROVEN"],
   "products": [
     {
       "product": "Gravity Forms",
@@ -34,13 +26,7 @@
           "source_calendar": "Gregorian",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract",
           "presentation_seam": "gform_entries_field_value when field/property id is date_created",
-          "semantic_dependencies": [
-            "entry storage",
-            "API value",
-            "query",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["entry storage", "API value", "query", "sort", "filter"],
           "fallback": "return native display value whenever module/seam/source/range/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -64,13 +50,7 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; converted to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_inbox_field_value receives the date_created_human_readable display value plus form/id/entry context while date_created remains the raw AG Grid compare field",
-          "semantic_dependencies": [
-            "AG Grid compare value",
-            "sort",
-            "filter",
-            "query",
-            "workflow"
-          ],
+          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -86,13 +66,7 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native date() intermediate is UTC in the qualified WordPress runtime, then Gravity Forms formatting and the Jalali facade target the WordPress site timezone",
           "presentation_seam": "gravityflow_inbox_field_value receives the last_updated_human_readable display value plus form/id/entry context while last_updated remains the raw AG Grid compare field",
-          "semantic_dependencies": [
-            "AG Grid compare value",
-            "sort",
-            "filter",
-            "query",
-            "workflow"
-          ],
+          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable, including the native '-' sentinel",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -108,19 +82,7 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "UTC Unix epoch absolute instant per exact Gravity Flow get_due_date_timestamp() contract; native Flow date() intermediate is UTC in the qualified runtime, while PersianGravity constructs the instant directly and PGR_Jalali_Presentation targets the WordPress site timezone",
           "presentation_seam": "Exact Gravity Flow 3.1.0 emits raw due_date before due_date_human_readable for each Inbox row and passes both through gravityflow_inbox_field_value; the adapter captures the already-computed raw integer epoch/0 by form+entry identity, returns raw unchanged, consumes that request-local authority for display only, and never re-runs get_due_date_timestamp() or parses the display string",
-          "semantic_dependencies": [
-            "current-step deadline timestamp",
-            "overdue state and Inbox highlight",
-            "due-date date/date-field/delay timing calculation",
-            "step-scoped workflow timestamp used by delay timing",
-            "distinct workflow schedule state",
-            "AG Grid raw compare value",
-            "sort",
-            "quick filter",
-            "Inbox query",
-            "workflow step/final status",
-            "assignments"
-          ],
+          "semantic_dependencies": ["current-step deadline timestamp", "overdue state and Inbox highlight", "due-date date/date-field/delay timing calculation", "step-scoped workflow timestamp used by delay timing", "distinct workflow schedule state", "AG Grid raw compare value", "sort", "quick filter", "Inbox query", "workflow step/final status", "assignments"],
           "fallback": "return native Gravity Flow display value whenever module/host/version/display identity/raw capture/order/form-entry identity/facade/range/conversion is unavailable or malformed; preserve native raw 0 and native '-' no-due-date sentinel exactly",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -136,15 +98,7 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; PersianGravity strict-parses UTC and PGR_Jalali_Presentation converts the instant to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact date_created column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
-          "semantic_dependencies": [
-            "entry storage",
-            "GFAPI/REST value",
-            "Status query",
-            "date_created sort",
-            "Status start/end filtering",
-            "workflow",
-            "CSV/export"
-          ],
+          "semantic_dependencies": ["entry storage", "GFAPI/REST value", "Status query", "date_created sort", "Status start/end filtering", "workflow", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -160,15 +114,7 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native numeric formatting uses PHP date() with UTC default timezone in the qualified runtime, then Gravity Forms localizes to the WordPress site timezone; PersianGravity constructs the instant directly and delegates site-time localization to PGR_Jalali_Presentation",
           "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact workflow_timestamp column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
-          "semantic_dependencies": [
-            "entry meta storage",
-            "GFAPI/REST value",
-            "Status query",
-            "workflow_timestamp sort",
-            "workflow state",
-            "assignments",
-            "CSV/export"
-          ],
+          "semantic_dependencies": ["entry meta storage", "GFAPI/REST value", "Status query", "workflow_timestamp sort", "workflow state", "assignments", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -282,12 +228,7 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "raw Gravity Forms date_created is UTC; exact GravityView output timezone contract NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": [
-            "query",
-            "search",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["query", "search", "sort", "filter"],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -302,12 +243,7 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "exact storage/output timezone semantics NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": [
-            "query",
-            "search",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["query", "search", "sort", "filter"],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
