@@ -79,6 +79,37 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
+	public function test_unexpected_date_i18n_gmt_semantics_fail_closed_without_marker_leak(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$format  = $adapter->filter_entry_detail_date_format( '' );
+
+		$this->assertSame(
+			'March 21, 2030',
+			$adapter->filter_marked_date(
+				'PGRJALALIENTRYDETAIL:March 21, 2030',
+				$format,
+				1900281780,
+				false
+			)
+		);
+	}
+
+	public function test_nonempty_host_format_disarms_stale_marker_context(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$marked  = $adapter->filter_entry_detail_date_format( '' );
+
+		$this->assertSame( 'Y-m-d', $adapter->filter_entry_detail_date_format( 'Y-m-d' ) );
+		$this->assertSame(
+			'PGRJALALIENTRYDETAIL:March 21, 2030',
+			$adapter->filter_marked_date(
+				'PGRJALALIENTRYDETAIL:March 21, 2030',
+				$marked,
+				1900281780,
+				true
+			)
+		);
+	}
+
 	public function test_out_of_range_marked_date_falls_back_without_marker_leak(): void {
 		$adapter   = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 		$format    = $adapter->filter_entry_detail_date_format( '' );
@@ -133,6 +164,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source );
 		$this->assertStringContainsString( "'gravityflow_date_format_entry_detail'", $source );
 		$this->assertStringContainsString( "'date_i18n'", $source );
+		$this->assertStringContainsString( "true !== \\$gmt", $source );
 		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_schedule_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_expiration_timestamp()', $source );
