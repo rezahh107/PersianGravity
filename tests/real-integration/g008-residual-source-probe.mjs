@@ -207,11 +207,14 @@ const sourceContract = {
       && entryQueuedMethod.includes("case 'delay':")
       && entryQueuedMethod.includes("date( 'Y-m-d H:i:s', $scheduled_timestamp )")
       && entryQueuedMethod.includes('get_date_from_gmt( $scheduled_date_str )'),
-    schedule_date_timestamp_reads_configured_date: timestampDateMethod.includes("$property = $setting_type . '_date'"),
+    schedule_date_timestamp_reads_configured_date:
+      timestampDateMethod.includes("$this->{\$setting_type . '_date'}")
+      && timestampDateMethod.includes('get_gmt_from_date( $date )'),
     schedule_date_field_timestamp_reads_configured_field_and_offset:
-      timestampDateFieldMethod.includes("$property = $setting_type . '_date_field'")
-      && timestampDateFieldMethod.includes("_date_field_offset")
-      && timestampDateFieldMethod.includes("_date_field_before_after"),
+      timestampDateFieldMethod.includes("$this->{\$setting_type . '_date_field'}")
+      && timestampDateFieldMethod.includes("$this->{\$setting_type . '_date_field_offset'}")
+      && timestampDateFieldMethod.includes("$this->{\$setting_type . '_date_field_before_after'}")
+      && timestampDateFieldMethod.includes('get_gmt_from_date( $date )'),
     schedule_delay_timestamp_uses_step_timestamp_and_offset:
       timestampDelayMethod.includes('get_step_timestamp()')
       && timestampDelayMethod.includes("_delay_offset")
