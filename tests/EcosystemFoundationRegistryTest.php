@@ -146,6 +146,14 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 				$this->assertNull( $surface['adapter_identity'], $id );
 			}
 		}
+
+		$agents = (string) file_get_contents( dirname( __DIR__ ) . '/AGENTS.md' );
+		$this->assertStringNotContainsString( 'V1 owns only Gravity Forms Entries List `date_created`', $agents );
+		foreach ( $states as $id => $surface ) {
+			if ( 'ADMITTED_VERIFIED' === $surface['support_state'] ) {
+				$this->assertStringContainsString( '`' . $id . '`', $agents, $id );
+			}
+		}
 	}
 
 	public function test_g008_claim_resolution_fails_closed_on_host_version_package_or_seam_drift(): void {
