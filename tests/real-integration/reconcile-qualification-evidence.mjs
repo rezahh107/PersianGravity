@@ -125,6 +125,7 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expec
   const evidenceClasses = {
     'g008-flow-inbox-admission.json': 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
     'g008-flow-status-admission.json': 'G008_GRAVITY_FLOW_STATUS_ADMISSION_RECONCILIATION',
+    'g008-entry-detail-admission.json': 'G008_GRAVITY_FLOW_ENTRY_DETAIL_ADMISSION_RECONCILIATION',
   };
   const evidenceFile = surface.runtime_evidence;
   const expectedClass = evidenceClasses[evidenceFile];
@@ -151,6 +152,24 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expec
   if (runtimeEvidence.surfaces?.[surface.id] !== 'ADMITTED_VERIFIED') {
     errors.push(`G-008 ${surface.id}: runtime evidence did not admit the committed surface claim.`);
   }
+  if (evidenceFile === 'g008-entry-detail-admission.json') {
+    if (
+      runtimeEvidence.source_contract_proven !== true
+      || runtimeEvidence.native_time_preserved !== true
+      || runtimeEvidence.unrelated_date_formatting_unchanged !== true
+      || runtimeEvidence.raw_db_gfapi_rest_equal !== true
+      || runtimeEvidence.workflow_deadline_expiration_state_equal !== true
+      || runtimeEvidence.operational_getter_counts_equal !== true
+      || runtimeEvidence.zero_nested_operational_reentry !== true
+      || runtimeEvidence.csv_export_isolated !== true
+      || runtimeEvidence.repeated_rendering_deterministic !== true
+      || runtimeEvidence.marker_leak_free !== true
+      || runtimeEvidence.production_browser_enabled_mode !== 'enabled'
+      || runtimeEvidence.production_browser_disabled_mode !== 'disabled'
+    ) {
+      errors.push(`G-008 ${surface.id}: Entry Detail production admission contract is incomplete.`);
+    }
+  }
   return errors;
 }
 
@@ -163,7 +182,7 @@ function allEvidenceFlagsTrue(value) {
 
 const residualSourceContractBySurface = {
   'gravityflow.status.due-date': 'status_due_date',
-  'gravityflow.entry-detail.schedule-due-expiration': 'entry_detail_schedule_due_expiration',
+  'gravityflow.entry-detail.schedule': 'entry_detail_schedule_due_expiration',
   'gravityflow.timeline-history': 'timeline_history',
   'gravityflow.print': 'print',
 };
@@ -182,26 +201,11 @@ const residualRequiredSourceFlags = {
     'overdue_uses_same_due_getter',
   ],
   entry_detail_schedule_due_expiration: [
-    'workflow_info_exposes_format_pattern_filter_only',
-    'format_pattern_filter_precedes_due_and_expiration',
-    'due_is_direct_operational_getter_render',
-    'expiration_is_direct_operational_getter_render',
-    'below_workflow_hook_is_after_direct_date_output',
-    'date_format_hook_is_format_string_only_and_precedes_operational_values',
-    'due_has_no_downstream_value_filter',
-    'expiration_has_no_downstream_value_filter',
     'schedule_reads_operational_getter_directly',
     'schedule_prints_directly',
     'schedule_has_no_value_filter',
     'schedule_getter_is_operational_filter',
-    'expiration_getter_is_operational_filter',
     'schedule_validation_uses_same_getter',
-    'expiration_state_uses_same_getter',
-    'shared_format_hook_scopes_submitted_last_updated_due_expiration',
-    'flow_format_date_delegates_to_gravityforms',
-    'gravityforms_format_date_reaches_date_i18n',
-    'wordpress_date_i18n_exposes_supported_filter',
-    'wordpress_date_i18n_treats_numeric_input_as_local_timestamp_with_offset',
     'schedule_date_branch_uses_configured_civil_date',
     'schedule_date_field_and_delay_localize_operational_timestamp',
     'schedule_date_timestamp_reads_configured_date',
@@ -257,7 +261,6 @@ function validateRequiredBooleanFlags(contract, requiredFlags, label) {
 }
 
 const residualBrowserTargets = [
-  'gravityflow.entry-detail.schedule-due-expiration',
   'gravityflow.timeline-history',
   'gravityflow.print',
 ];
@@ -316,11 +319,7 @@ function validateResidualBrowserPair(product, surface, enabled, disabled, expect
     if (!isObject(evidence.print) || typeof evidence.print.url !== 'string' || evidence.print.url.length === 0) {
       errors.push(`G-008 ${surface.id} ${label}: Print observation is empty.`);
     }
-    if (surface.id === 'gravityflow.entry-detail.schedule-due-expiration') {
-      if (typeof evidence.entry_detail.due_date_native !== 'string' || evidence.entry_detail.due_date_native.length === 0) {
-        errors.push(`G-008 ${surface.id} ${label}: required due-date browser observation is empty.`);
-      }
-    } else if (surface.id === 'gravityflow.timeline-history') {
+    if (surface.id === 'gravityflow.timeline-history') {
       if (!Array.isArray(evidence.entry_detail.timeline_native) || evidence.entry_detail.timeline_native.length === 0) {
         errors.push(`G-008 ${surface.id} ${label}: required Timeline browser observations are empty.`);
       }
@@ -377,6 +376,8 @@ function validateG008FinalNoAdmission(
   residualBrowserDisabledEvidence,
   statusBrowserEnabledEvidence,
   statusBrowserDisabledEvidence,
+  scheduleQualificationEvidence,
+  timelinePrintQualificationEvidence,
   expectedIdentity
 ) {
   const errors = [];
@@ -386,8 +387,11 @@ function validateG008FinalNoAdmission(
   if (surface.adapter_identity !== null) {
     errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must not name a production adapter.`);
   }
-  if (surface.runtime_evidence !== 'g008-flow-residual-no-admission.json') {
-    errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION must bind residual runtime reconciliation evidence.`);
+  const allowedNoAdmissionEvidence = surface.id === 'gravityflow.entry-detail.schedule'
+    ? 'g008-flow-schedule-qualification.json'
+    : 'g008-flow-residual-no-admission.json';
+  if (surface.runtime_evidence !== allowedNoAdmissionEvidence) {
+    errors.push(`G-008 ${surface.id}: FINAL_NO_ADMISSION runtime evidence reference mismatch.`);
   }
   if (!isObject(residualSourceEvidence) || residualSourceEvidence.evidence_class !== 'G008_RESIDUAL_EXACT_SOURCE_PROBE') {
     errors.push(`G-008 ${surface.id}: exact residual source evidence is missing.`);
@@ -421,6 +425,29 @@ function validateG008FinalNoAdmission(
       statusBrowserDisabledEvidence,
       expectedIdentity
     ));
+  } else if (surface.id === 'gravityflow.entry-detail.schedule') {
+    if (!isObject(scheduleQualificationEvidence)) {
+      errors.push(`G-008 ${surface.id}: schedule qualification evidence is missing.`);
+    } else {
+      if (scheduleQualificationEvidence.evidence_class !== 'G008_FLOW_SCHEDULE_BRANCH_QUALIFICATION_RECONCILIATION') {
+        errors.push(`G-008 ${surface.id}: schedule evidence class mismatch.`);
+      }
+      errors.push(...exactIdentityErrors(scheduleQualificationEvidence, expectedIdentity, `G-008 ${surface.id} schedule qualification`));
+      if (
+        scheduleQualificationEvidence.exact_gravityflow_version !== product.version
+        || scheduleQualificationEvidence.exact_gravityflow_package_sha256 !== product.package_sha256
+      ) {
+        errors.push(`G-008 ${surface.id}: schedule exact Gravity Flow identity mismatch.`);
+      }
+      if (
+        scheduleQualificationEvidence.source_contract_proven !== true
+        || scheduleQualificationEvidence.enabled_disabled_native_equality !== true
+        || scheduleQualificationEvidence.operational_getter_counts_equal !== true
+        || scheduleQualificationEvidence.disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
+      ) {
+        errors.push(`G-008 ${surface.id}: schedule runtime qualification is incomplete.`);
+      }
+    }
   } else {
     errors.push(...validateResidualBrowserPair(
       product,
@@ -429,6 +456,40 @@ function validateG008FinalNoAdmission(
       residualBrowserDisabledEvidence,
       expectedIdentity
     ));
+    if (!isObject(timelinePrintQualificationEvidence)) {
+      errors.push(`G-008 ${surface.id}: Timeline/Print qualification evidence is missing.`);
+    } else {
+      if (timelinePrintQualificationEvidence.evidence_class !== 'G008_TIMELINE_PRINT_QUALIFICATION_RECONCILIATION') {
+        errors.push(`G-008 ${surface.id}: Timeline/Print evidence class mismatch.`);
+      }
+      errors.push(...exactIdentityErrors(timelinePrintQualificationEvidence, expectedIdentity, `G-008 ${surface.id} Timeline/Print qualification`));
+      if (
+        timelinePrintQualificationEvidence.exact_gravityflow_version !== product.version
+        || timelinePrintQualificationEvidence.exact_gravityflow_package_sha256 !== product.package_sha256
+      ) {
+        errors.push(`G-008 ${surface.id}: Timeline/Print exact Gravity Flow identity mismatch.`);
+      }
+      if (surface.id === 'gravityflow.timeline-history') {
+        if (
+          timelinePrintQualificationEvidence.timeline?.initial_entry_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
+          || timelinePrintQualificationEvidence.timeline?.stored_note_event_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
+          || timelinePrintQualificationEvidence.timeline?.storage_unchanged !== true
+          || timelinePrintQualificationEvidence.timeline?.ids_order_bodies_unchanged !== true
+          || timelinePrintQualificationEvidence.timeline?.separate_display_property_consumed !== false
+          || timelinePrintQualificationEvidence.timeline?.date_created_representation_consumed_by_renderer !== true
+        ) {
+          errors.push(`G-008 ${surface.id}: Timeline runtime qualification is incomplete.`);
+        }
+      } else if (surface.id === 'gravityflow.print') {
+        if (
+          timelinePrintQualificationEvidence.print?.independent_date_seam_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
+          || timelinePrintQualificationEvidence.print?.stored_note_event_propagation_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
+          || timelinePrintQualificationEvidence.print?.workflow_sidebar_due_schedule_expiration !== 'ABSENT_FROM_PRINT_RENDER_PATH'
+        ) {
+          errors.push(`G-008 ${surface.id}: Print runtime qualification is incomplete.`);
+        }
+      }
+    }
   }
 
   if (!isObject(residualRuntimeEvidence) || residualRuntimeEvidence.evidence_class !== 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION') {
@@ -475,6 +536,8 @@ function validateG008(
   residualBrowserDisabledEvidence,
   statusBrowserEnabledEvidence,
   statusBrowserDisabledEvidence,
+  scheduleQualificationEvidence,
+  timelinePrintQualificationEvidence,
   expectedIdentity
 ) {
   const errors = [];
@@ -516,24 +579,28 @@ function validateG008(
           residualBrowserDisabledEvidence,
           statusBrowserEnabledEvidence,
           statusBrowserDisabledEvidence,
+          scheduleQualificationEvidence,
+          timelinePrintQualificationEvidence,
           expectedIdentity
         ));
         continue;
       }
 
-      const requirements = deriveG008SourceRequirements(surface);
-      if (!requirements) {
-        errors.push(`G-008 ${surface.id}: committed source-backed claim does not expose a derivable source seam/reference contract.`);
-        continue;
-      }
-      const refs = sourceEvidence.references?.[key] ?? {};
-      const seamRefs = refs[requirements.seam];
-      if (!Array.isArray(seamRefs) || !seamRefs.some((ref) => ref?.operation === 'apply_filters')) {
-        errors.push(`G-008 ${surface.id}: required apply_filters seam ${requirements.seam} is missing from exact source discovery.`);
-      }
-      for (const needle of requirements.needles) {
-        if (!Array.isArray(refs[needle]) || refs[needle].length === 0) {
-          errors.push(`G-008 ${surface.id}: required source reference ${needle} is missing from exact source discovery.`);
+      if (surface.runtime_evidence !== 'g008-entry-detail-admission.json') {
+        const requirements = deriveG008SourceRequirements(surface);
+        if (!requirements) {
+          errors.push(`G-008 ${surface.id}: committed source-backed claim does not expose a derivable source seam/reference contract.`);
+          continue;
+        }
+        const refs = sourceEvidence.references?.[key] ?? {};
+        const seamRefs = refs[requirements.seam];
+        if (!Array.isArray(seamRefs) || !seamRefs.some((ref) => ref?.operation === 'apply_filters')) {
+          errors.push(`G-008 ${surface.id}: required apply_filters seam ${requirements.seam} is missing from exact source discovery.`);
+        }
+        for (const needle of requirements.needles) {
+          if (!Array.isArray(refs[needle]) || refs[needle].length === 0) {
+            errors.push(`G-008 ${surface.id}: required source reference ${needle} is missing from exact source discovery.`);
+          }
         }
       }
 
@@ -555,12 +622,15 @@ export function reconcileQualificationEvidence({
   sourceDiscoveryEvidence,
   g008FlowInboxAdmissionEvidence,
   g008FlowStatusAdmissionEvidence,
+  g008EntryDetailAdmissionEvidence,
   g008ResidualSourceEvidence,
   g008ResidualNoAdmissionEvidence,
   g008ResidualBrowserEnabledEvidence,
   g008ResidualBrowserDisabledEvidence,
   g008FlowStatusBrowserEnabledEvidence,
   g008FlowStatusBrowserDisabledEvidence,
+  g008FlowScheduleQualificationEvidence,
+  g008TimelinePrintQualificationEvidence,
   expectedIdentity,
 }) {
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
@@ -580,6 +650,7 @@ export function reconcileQualificationEvidence({
     {
       'g008-flow-inbox-admission.json': g008FlowInboxAdmissionEvidence,
       'g008-flow-status-admission.json': g008FlowStatusAdmissionEvidence,
+      'g008-entry-detail-admission.json': g008EntryDetailAdmissionEvidence,
     },
     g008ResidualSourceEvidence,
     g008ResidualNoAdmissionEvidence,
@@ -587,6 +658,8 @@ export function reconcileQualificationEvidence({
     g008ResidualBrowserDisabledEvidence,
     g008FlowStatusBrowserEnabledEvidence,
     g008FlowStatusBrowserDisabledEvidence,
+    g008FlowScheduleQualificationEvidence,
+    g008TimelinePrintQualificationEvidence,
     expectedIdentity
   );
   const errors = [...g009.errors, ...g008.errors];
@@ -621,12 +694,15 @@ function runCli() {
     sourceDiscoveryEvidence: readJson(path.join(artifactDir, 'source-discovery.json')),
     g008FlowInboxAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-inbox-admission.json')),
     g008FlowStatusAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-admission.json')),
+    g008EntryDetailAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-entry-detail-admission.json')),
     g008ResidualSourceEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-residual-source-probe.json')),
     g008ResidualNoAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-no-admission.json')),
     g008ResidualBrowserEnabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-browser-enabled.json')),
     g008ResidualBrowserDisabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-residual-browser-disabled.json')),
     g008FlowStatusBrowserEnabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-browser-enabled.json')),
     g008FlowStatusBrowserDisabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-browser-disabled.json')),
+    g008FlowScheduleQualificationEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-schedule-qualification.json')),
+    g008TimelinePrintQualificationEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-timeline-print-qualification.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,
