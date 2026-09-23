@@ -169,6 +169,8 @@ const sourceContract = {
     timeline_inserts_initial_entry_event: timelineNotesMethod.includes('array_unshift') && timelineNotesMethod.includes('get_initial_note'),
     initial_event_uses_entry_date_created: initialNoteMethod.includes("$initial_note->date_created = $entry['date_created']"),
     timeline_order_is_host_owned: timelineNotesMethod.includes('array_reverse'),
+    timeline_full_array_filter_runs_after_host_reverse: timelineNotesMethod.indexOf('array_reverse') >= 0
+      && timelineNotesMethod.indexOf("apply_filters( 'gravityflow_timeline_notes'") > timelineNotesMethod.indexOf('array_reverse'),
     only_timeline_data_filter_mutates_note_array: timelineNotesMethod.includes("apply_filters( 'gravityflow_timeline_notes'"),
     common_text_timeline_reuses_note_dates: commonTimelineMethod.includes('get_timeline_notes') && commonTimelineMethod.includes('date_created'),
     gravityforms_notes_are_persisted_in_utc: gfFormsModel.content.includes('sub_type, date_created) values(%d, %d, %s, %s, %s, %s, utc_timestamp())'),
