@@ -68,13 +68,32 @@ foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		);
 		sort( $assignees );
 	}
+
+	$due_enabled   = $current_step && ! empty( $current_step->due_date );
+	$due_timestamp = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
+	$overdue       = $due_enabled ? (bool) $current_step->is_overdue() : false;
+	if ( $due_timestamp !== (int) $fixture['expected_due_timestamp'] ) {
+		throw new RuntimeException( 'Authoritative due-date timestamp drifted for entry ' . $entry['id'] . '.' );
+	}
+	if ( $overdue !== (bool) $fixture['expected_overdue'] ) {
+		throw new RuntimeException( 'Overdue classification drifted for entry ' . $entry['id'] . '.' );
+	}
+
 	$entries[] = array(
-		'id'                    => (int) $entry['id'],
-		'date_created'          => (string) $entry['date_created'],
-		'workflow_timestamp'    => (int) gform_get_meta( $entry['id'], 'workflow_timestamp' ),
-		'workflow_step'         => (int) gform_get_meta( $entry['id'], 'workflow_step' ),
-		'workflow_final_status' => (string) gform_get_meta( $entry['id'], 'workflow_final_status' ),
-		'assignees'             => $assignees,
+		'id'                       => (int) $entry['id'],
+		'date_created'             => (string) $entry['date_created'],
+		'workflow_timestamp'       => (int) gform_get_meta( $entry['id'], 'workflow_timestamp' ),
+		'workflow_step'            => (int) gform_get_meta( $entry['id'], 'workflow_step' ),
+		'workflow_final_status'    => (string) gform_get_meta( $entry['id'], 'workflow_final_status' ),
+		'workflow_assignee_meta'   => (string) gform_get_meta( $entry['id'], 'workflow_user_id_1' ),
+		'assignees'                => $assignees,
+		'due_date_enabled'         => (bool) $due_enabled,
+		'due_date_timestamp'       => $due_timestamp,
+		'due_date_type'            => $due_enabled ? (string) $current_step->due_date_type : '',
+		'overdue'                  => $overdue,
+		'supports_due_date'        => $current_step && is_callable( array( $current_step, 'supports_due_date' ) ) ? (bool) $current_step->supports_due_date() : false,
+		'due_date_highlight_type'  => $due_enabled ? (string) $current_step->due_date_highlight_type : '',
+		'due_date_highlight_color' => $due_enabled ? (string) $current_step->due_date_highlight_color : '',
 	);
 }
 
