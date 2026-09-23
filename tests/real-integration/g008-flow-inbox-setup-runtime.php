@@ -23,6 +23,7 @@ if ( 'UTC' !== date_default_timezone_get() ) {
 
 update_option( 'timezone_string', 'Asia/Tehran' );
 update_option( 'gmt_offset', 3.5 );
+update_option( 'gravityformsaddon_gravityformswebapi_settings', array( 'enabled' => '1' ) );
 if ( 'Asia/Tehran' !== wp_timezone_string() ) {
 	throw new RuntimeException( 'Deterministic site timezone was not established.' );
 }
