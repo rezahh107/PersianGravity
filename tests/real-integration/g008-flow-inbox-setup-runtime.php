@@ -156,7 +156,20 @@ update_option( 'pgr_g008_due_fixture_map', $due_map, false );
 wp_mkdir_p( WPMU_PLUGIN_DIR );
 $fixture_plugin = <<<'PHP'
 <?php
-/** Test-only deterministic due-date authority for WU008. */
+/**
+ * Test-only deterministic due-date authority plus presentation re-entry probe.
+ *
+ * Counts are request-local. If production presentation code incorrectly invokes
+ * the operational due-date getter while gravityflow_inbox_field_value is active,
+ * the callback returns a different timestamp so the browser regression detects
+ * both the extra invocation and the wrong source instant.
+ */
+$GLOBALS['pgr_wu008_due_filter_evidence'] = array(
+	'total'                       => 0,
+	'nested_inbox_presentation'   => 0,
+	'by_entry'                    => array(),
+);
+
 add_filter(
 	'gravityflow_step_due_date_timestamp',
 	static function ( $timestamp, $due_date_type, $step ) {
@@ -165,11 +178,46 @@ add_filter(
 		if ( ! is_array( $map ) || ! is_object( $step ) || ! is_callable( array( $step, 'get_entry_id' ) ) ) {
 			return $timestamp;
 		}
+
 		$entry_id = (int) $step->get_entry_id();
-		return isset( $map[ $entry_id ] ) ? (int) $map[ $entry_id ] : $timestamp;
+		if ( $entry_id <= 0 ) {
+			return $timestamp;
+		}
+
+		$evidence = &$GLOBALS['pgr_wu008_due_filter_evidence'];
+		++$evidence['total'];
+		if ( ! isset( $evidence['by_entry'][ $entry_id ] ) ) {
+			$evidence['by_entry'][ $entry_id ] = 0;
+		}
+		++$evidence['by_entry'][ $entry_id ];
+
+		$value = isset( $map[ $entry_id ] ) ? (int) $map[ $entry_id ] : $timestamp;
+		if ( doing_filter( 'gravityflow_inbox_field_value' ) ) {
+			++$evidence['nested_inbox_presentation'];
+			return is_int( $value ) ? $value + DAY_IN_SECONDS : $value;
+		}
+
+		return $value;
 	},
 	PHP_INT_MAX,
 	3
+);
+
+add_action(
+	'wp_footer',
+	static function () {
+		$mode = isset( $_GET['pgr_g008_mode'] ) ? (string) $_GET['pgr_g008_mode'] : '';
+		if ( ! in_array( $mode, array( 'enabled', 'disabled' ), true ) ) {
+			return;
+		}
+
+		$evidence = $GLOBALS['pgr_wu008_due_filter_evidence'];
+		ksort( $evidence['by_entry'] );
+		$evidence['mode'] = $mode;
+
+		echo '<script>window.pgrG008DueInvocationEvidence=' . wp_json_encode( $evidence ) . ';</script>';
+	},
+	PHP_INT_MAX
 );
 PHP;
 file_put_contents( WPMU_PLUGIN_DIR . '/pgr-wu008-g008-due-date-fixture.php', $fixture_plugin . "\n" );
@@ -293,7 +341,7 @@ file_put_contents(
 			'form_id'              => (int) $form_id,
 			'step_id'              => (int) $step_id,
 			'no_due_step_id'       => (int) $no_due_step_id,
-			'due_fixture_method'   => 'gravityflow_step_due_date_timestamp supported test-only override; production adapter does not hook this filter',
+			'due_fixture_method'   => 'gravityflow_step_due_date_timestamp supported test-only override plus request-local invocation/re-entry probe; production adapter does not hook this filter',
 			'entries'              => $runtime_entries,
 		),
 		JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
