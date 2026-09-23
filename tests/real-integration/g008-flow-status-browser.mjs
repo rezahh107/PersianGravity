@@ -56,6 +56,7 @@ async function readStatusRows(params = {}) {
       id: idMatch ? Number(idMatch[1]) : null,
       date_created: node.querySelector('.column-date_created')?.textContent?.trim() ?? '',
       workflow_timestamp: node.querySelector('.column-workflow_timestamp')?.textContent?.trim() ?? '',
+      due_date: node.querySelector('.column-due_date')?.textContent?.trim() ?? '',
     };
   }).filter((row) => Number.isInteger(row.id)));
   return rows;
@@ -85,6 +86,12 @@ for (const row of defaultRows) {
   }
   if (row.workflow_timestamp !== expectedUpdated) {
     throw new Error(`${mode} Status workflow_timestamp mismatch for ${row.id}: ${row.workflow_timestamp}`);
+  }
+  if (row.due_date !== fixture.expected_due_native) {
+    throw new Error(`${mode} Status due_date must remain native for exact Flow 3.1.0 no-admission: ${JSON.stringify({ id: row.id, actual: row.due_date, expected: fixture.expected_due_native })}`);
+  }
+  if (fixture.expected_due_native !== '-' && row.due_date === fixture.expected_due_jalali) {
+    throw new Error(`${mode} Status due_date unexpectedly crossed the admitted Jalali boundary for ${row.id}.`);
   }
 }
 
@@ -123,6 +130,11 @@ const evidence = {
   site_timezone: manifest.g008_flow_site_timezone,
   php_default_timezone: manifest.g008_flow_php_default_timezone,
   rows: defaultRows,
+  residual_no_admission: {
+    surface: 'gravityflow.status.due-date',
+    disposition: 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+    enabled_and_disabled_expect_native: true,
+  },
   sort,
   civil_day_filter: {
     start_date: '2026-03-21',
