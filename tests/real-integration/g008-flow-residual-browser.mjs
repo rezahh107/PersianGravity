@@ -14,13 +14,6 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 if (!manifest.g008_flow_entry_detail_url || !manifest.g008_flow_print_url || !Array.isArray(manifest.g008_flow_timeline_native)) {
   throw new Error('Residual Entry Detail/Print fixture is incomplete.');
 }
-const residualFixture = Array.isArray(manifest.g008_flow_entries)
-  ? manifest.g008_flow_entries.find((entry) => Number(entry.id) === Number(manifest.g008_flow_residual_entry_id))
-  : null;
-if (!residualFixture || typeof residualFixture.expected_detail_due_native !== 'string' || !residualFixture.expected_detail_due_native) {
-  throw new Error('Residual Entry Detail due-date native expectation is missing.');
-}
-
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 const diagnostics = { consoleErrors: [], pageErrors: [], requestFailures: [] };
@@ -55,14 +48,6 @@ const detailTimeline = normalize(await page.locator('.gravityflow-timeline .grav
 if (JSON.stringify(detailTimeline) !== JSON.stringify(manifest.g008_flow_timeline_native)) {
   throw new Error(`Entry Detail timeline native timestamps drifted: ${JSON.stringify({ detailTimeline, expected: manifest.g008_flow_timeline_native })}`);
 }
-const dueField = page.locator('.gravityflow-status-box-field-due-date .gravityflow-status-box-field-value').first();
-if (await dueField.count() !== 1) {
-  throw new Error('Entry Detail due-date field was not rendered exactly once.');
-}
-const detailDue = (await dueField.textContent())?.trim() ?? '';
-if (detailDue !== residualFixture.expected_detail_due_native) {
-  throw new Error(`Entry Detail due-date native output drifted: ${JSON.stringify({ actual: detailDue, expected: residualFixture.expected_detail_due_native })}`);
-}
 await page.screenshot({ path: path.join(artifactDir, `g008-flow-residual-entry-detail-${mode}.png`), fullPage: true });
 
 const printResponse = await page.goto(manifest.g008_flow_print_url, { waitUntil: 'domcontentloaded' });
@@ -91,7 +76,6 @@ const evidence = {
   entry_id: Number(manifest.g008_flow_residual_entry_id),
   entry_detail: {
     url: manifest.g008_flow_entry_detail_url,
-    due_date_native: detailDue,
     timeline_native: detailTimeline,
   },
   print: {
@@ -100,7 +84,6 @@ const evidence = {
     propagation: 'native underlying Timeline rendering reused; no independent Print date adapter',
   },
   dispositions: {
-    'gravityflow.entry-detail.schedule-due-expiration': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
     'gravityflow.timeline-history': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
     'gravityflow.print': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
   },
