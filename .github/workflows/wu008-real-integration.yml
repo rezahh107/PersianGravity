@@ -111,6 +111,9 @@ jobs:
           php -l tests/real-integration/setup-runtime.php
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
+          php -l tests/real-integration/g008-flow-residual-adversarial-setup.php
+          php -l tests/real-integration/g008-flow-residual-adversarial-state.php
+          php -l tests/real-integration/g008-flow-schedule-setup.php
           php -l tests/real-integration/g008-flow-inbox-state.php
           php -l tests/real-integration/g008-flow-status-state.php
           php -l tests/real-integration/g008-flow-residual-adversarial-setup.php
@@ -385,6 +388,27 @@ jobs:
           test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-browser-disabled.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
 
+      - name: Qualify Entry Detail two-hook candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-two-hook-prototype.json"
+
+      - name: Qualify authentic Entry Detail schedule branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-flow-schedule-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-qualification.json"
+
+      - name: Qualify multi-note Timeline and Print paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-timeline-print-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-timeline-print-qualification.json"
+
       - name: Reconcile G008 Flow Inbox admission evidence
         shell: bash
         run: |
@@ -419,6 +443,7 @@ jobs:
           node tests/real-integration/g008-flow-schedule-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-enabled.json"
 
       - name: Qualify disabled native residual fallback
