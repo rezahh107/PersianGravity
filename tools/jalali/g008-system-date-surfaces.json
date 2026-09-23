@@ -9,8 +9,16 @@
     "date_method": "format_date",
     "validated_product_range": "1800-01-01..2124-03-19"
   },
-  "support_states": ["ADMITTED_VERIFIED", "NOT_PROVEN", "FAIL_CLOSED_VERSION_DRIFT"],
-  "discovery_states": ["RUNTIME_PROVEN", "SOURCE_PROVEN", "NOT_PROVEN"],
+  "support_states": [
+    "ADMITTED_VERIFIED",
+    "NOT_PROVEN",
+    "FAIL_CLOSED_VERSION_DRIFT"
+  ],
+  "discovery_states": [
+    "RUNTIME_PROVEN",
+    "SOURCE_PROVEN",
+    "NOT_PROVEN"
+  ],
   "products": [
     {
       "product": "Gravity Forms",
@@ -26,7 +34,13 @@
           "source_calendar": "Gregorian",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract",
           "presentation_seam": "gform_entries_field_value when field/property id is date_created",
-          "semantic_dependencies": ["entry storage", "API value", "query", "sort", "filter"],
+          "semantic_dependencies": [
+            "entry storage",
+            "API value",
+            "query",
+            "sort",
+            "filter"
+          ],
           "fallback": "return native display value whenever module/seam/source/range/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -50,7 +64,13 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; converted to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_inbox_field_value receives the date_created_human_readable display value plus form/id/entry context while date_created remains the raw AG Grid compare field",
-          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
+          "semantic_dependencies": [
+            "AG Grid compare value",
+            "sort",
+            "filter",
+            "query",
+            "workflow"
+          ],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -66,7 +86,13 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native date() intermediate is UTC in the qualified WordPress runtime, then Gravity Forms formatting and the Jalali facade target the WordPress site timezone",
           "presentation_seam": "gravityflow_inbox_field_value receives the last_updated_human_readable display value plus form/id/entry context while last_updated remains the raw AG Grid compare field",
-          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
+          "semantic_dependencies": [
+            "AG Grid compare value",
+            "sort",
+            "filter",
+            "query",
+            "workflow"
+          ],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable, including the native '-' sentinel",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -82,7 +108,19 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "UTC Unix epoch absolute instant per exact Gravity Flow get_due_date_timestamp() contract; native Flow date() intermediate is UTC in the qualified runtime, while PersianGravity constructs the instant directly and PGR_Jalali_Presentation targets the WordPress site timezone",
           "presentation_seam": "Exact Gravity Flow 3.1.0 emits raw due_date before due_date_human_readable for each Inbox row and passes both through gravityflow_inbox_field_value; the adapter captures the already-computed raw integer epoch/0 by form+entry identity, returns raw unchanged, consumes that request-local authority for display only, and never re-runs get_due_date_timestamp() or parses the display string",
-          "semantic_dependencies": ["current-step deadline timestamp", "overdue state and Inbox highlight", "due-date date/date-field/delay timing calculation", "step-scoped workflow timestamp used by delay timing", "distinct workflow schedule state", "AG Grid raw compare value", "sort", "quick filter", "Inbox query", "workflow step/final status", "assignments"],
+          "semantic_dependencies": [
+            "current-step deadline timestamp",
+            "overdue state and Inbox highlight",
+            "due-date date/date-field/delay timing calculation",
+            "step-scoped workflow timestamp used by delay timing",
+            "distinct workflow schedule state",
+            "AG Grid raw compare value",
+            "sort",
+            "quick filter",
+            "Inbox query",
+            "workflow step/final status",
+            "assignments"
+          ],
           "fallback": "return native Gravity Flow display value whenever module/host/version/display identity/raw capture/order/form-entry identity/facade/range/conversion is unavailable or malformed; preserve native raw 0 and native '-' no-due-date sentinel exactly",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -98,7 +136,15 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; PersianGravity strict-parses UTC and PGR_Jalali_Presentation converts the instant to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact date_created column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
-          "semantic_dependencies": ["entry storage", "GFAPI/REST value", "Status query", "date_created sort", "Status start/end filtering", "workflow", "CSV/export"],
+          "semantic_dependencies": [
+            "entry storage",
+            "GFAPI/REST value",
+            "Status query",
+            "date_created sort",
+            "Status start/end filtering",
+            "workflow",
+            "CSV/export"
+          ],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -114,7 +160,15 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native numeric formatting uses PHP date() with UTC default timezone in the qualified runtime, then Gravity Forms localizes to the WordPress site timezone; PersianGravity constructs the instant directly and delegates site-time localization to PGR_Jalali_Presentation",
           "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact workflow_timestamp column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
-          "semantic_dependencies": ["entry meta storage", "GFAPI/REST value", "Status query", "workflow_timestamp sort", "workflow state", "assignments", "CSV/export"],
+          "semantic_dependencies": [
+            "entry meta storage",
+            "GFAPI/REST value",
+            "Status query",
+            "workflow_timestamp sort",
+            "workflow state",
+            "assignments",
+            "CSV/export"
+          ],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -141,32 +195,118 @@
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
           "evidence": "Exact Gravity Flow 3.1.0 source probe proves the table path directly formats/echoes the operational due getter with no supported downstream date-only value seam; authentic enabled/disabled Status browser evidence keeps the due-date column native.",
-          "drift_behavior": "This is a final no-admission disposition for exact Gravity Flow 3.1.0 only. A later host version may be reconsidered only if a new supported downstream table-only raw-authority seam is independently qualified.",
+          "drift_behavior": "Evidence-qualified final no-admission for this exact Gravity Flow 3.1.0 surface. Requalify if a newly discovered supported bounded presentation seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
           "runtime_evidence": "g008-flow-residual-no-admission.json"
         },
         {
-          "id": "gravityflow.entry-detail.schedule-due-expiration",
-          "ui_surface": "Entry Detail workflow due/schedule/expiration presentation",
-          "raw_source": "Current-step workflow-owned operational timestamps: due via get_due_date_timestamp(), schedule via get_schedule_timestamp(), expiration via get_expiration_timestamp(); each getter participates in step timing/state and exposes operational timestamp filters",
-          "source_calendar": "Due/expiration/schedule getters resolve to UTC Unix epoch instants; native schedule display additionally has type-specific civil-date behavior (configured date vs date-field/delay localization)",
-          "source_timezone": "Operational getters are UTC timestamp authorities; native Entry Detail applies Gravity Flow type-specific formatting/localization, including direct configured schedule_date for date mode and GMT-to-site conversion for date-field/delay modes",
-          "presentation_seam": "FINAL_NO_ADMISSION: maybe_display_entry_detail_workflow_info() exposes gravityflow_date_format_entry_detail only as a shared date-format-pattern filter before native Gravity_Flow_Common::format_date(); it does not expose raw timestamps or a calendar/value replacement contract. Due and expiration then read operational getters and print directly, with the only nearby content action after output. display_queued_step_details() directly reads/prints the schedule getter with no per-value output filter. The due/schedule/expiration timestamp filters are operational.",
+          "id": "gravityflow.entry-detail.submitted",
+          "ui_surface": "Gravity Flow Entry Detail workflow-info Submitted date",
+          "raw_source": "Gravity Forms Entry date_created UTC Y-m-d H:i:s, rendered by Flow 3.1.0 inside maybe_display_entry_detail_workflow_info() through the shared workflow-info date-format chain",
+          "semantic_dependencies": [
+            "entry storage",
+            "GFAPI/REST value",
+            "workflow-info rendering",
+            "query/export isolation"
+          ],
+          "source_calendar": "Gregorian local civil date derived by Gravity Flow/Gravity Forms from the host-owned workflow-info source before the bounded Jalali calendar replacement",
+          "source_timezone": "Exact Flow 3.1.0 reaches WordPress date_i18n with a localized timestamp-plus-offset; PersianGravity reads its UTC components with gmdate() as the already-local Gregorian civil date and performs no second timezone conversion",
+          "presentation_seam": "Composed exact-version presentation seam: gravityflow_date_format_entry_detail returns a unique escaped marker plus the native Gravity Forms date format, then a request-local date_i18n callback acts only on that exact armed marker/format, converts only the date component through PGR_Jalali_Presentation::format_date(), preserves Gravity Flow's native surrounding time text, and strips the marker on every fallback",
+          "fallback": "exact native Gravity Flow workflow-info output with no marker leakage whenever module/host/version/context/GF format/timestamp/range/facade/conversion is unavailable or drifted",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-entry-detail-admission.json",
+          "evidence": "Exact Flow 3.1.0 source plus authentic WordPress/Gravity Forms/Gravity Flow prototype and final production browser evidence proves the composed two-hook path, Tehran local-midnight boundaries, exact disabled/version-drift/out-of-range/conversion-failure native fallback, repeated rendering, unrelated WordPress/GF date formatting isolation, unchanged DB/GFAPI/REST/workflow/deadline/expiration/query/CSV state, equal operational getter counts, and zero presentation re-entry.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host identity and the qualified shared format-hook -> GFCommon::format_date() -> date_i18n chain are required; any source/version/context/marker semantics drift fails closed to native output and requires fresh qualification."
+        },
+        {
+          "id": "gravityflow.entry-detail.last-updated",
+          "ui_surface": "Gravity Flow Entry Detail workflow-info Last Updated date",
+          "raw_source": "Gravity Flow workflow_timestamp Unix epoch entry meta, rendered by Flow 3.1.0 inside maybe_display_entry_detail_workflow_info() through the shared workflow-info date-format chain",
+          "semantic_dependencies": [
+            "workflow timestamp meta",
+            "workflow state",
+            "GFAPI/REST value",
+            "query/export isolation"
+          ],
+          "source_calendar": "Gregorian local civil date derived by Gravity Flow/Gravity Forms from the host-owned workflow-info source before the bounded Jalali calendar replacement",
+          "source_timezone": "Exact Flow 3.1.0 reaches WordPress date_i18n with a localized timestamp-plus-offset; PersianGravity reads its UTC components with gmdate() as the already-local Gregorian civil date and performs no second timezone conversion",
+          "presentation_seam": "Composed exact-version presentation seam: gravityflow_date_format_entry_detail returns a unique escaped marker plus the native Gravity Forms date format, then a request-local date_i18n callback acts only on that exact armed marker/format, converts only the date component through PGR_Jalali_Presentation::format_date(), preserves Gravity Flow's native surrounding time text, and strips the marker on every fallback",
+          "fallback": "exact native Gravity Flow workflow-info output with no marker leakage whenever module/host/version/context/GF format/timestamp/range/facade/conversion is unavailable or drifted",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-entry-detail-admission.json",
+          "evidence": "Exact Flow 3.1.0 source plus authentic WordPress/Gravity Forms/Gravity Flow prototype and final production browser evidence proves the composed two-hook path, Tehran local-midnight boundaries, exact disabled/version-drift/out-of-range/conversion-failure native fallback, repeated rendering, unrelated WordPress/GF date formatting isolation, unchanged DB/GFAPI/REST/workflow/deadline/expiration/query/CSV state, equal operational getter counts, and zero presentation re-entry.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host identity and the qualified shared format-hook -> GFCommon::format_date() -> date_i18n chain are required; any source/version/context/marker semantics drift fails closed to native output and requires fresh qualification."
+        },
+        {
+          "id": "gravityflow.entry-detail.due-date",
+          "ui_surface": "Gravity Flow Entry Detail workflow-info Due date",
+          "raw_source": "Current-step get_due_date_timestamp() UTC Unix epoch remains Gravity Flow's operational deadline authority; PersianGravity does not call or alter the getter and acts only after the host has entered the shared workflow-info date formatting chain",
+          "semantic_dependencies": [
+            "current-step deadline authority",
+            "overdue/deadline state",
+            "workflow state",
+            "operational getter invocation count",
+            "CSV/export isolation"
+          ],
+          "source_calendar": "Gregorian local civil date derived by Gravity Flow/Gravity Forms from the host-owned workflow-info source before the bounded Jalali calendar replacement",
+          "source_timezone": "Exact Flow 3.1.0 reaches WordPress date_i18n with a localized timestamp-plus-offset; PersianGravity reads its UTC components with gmdate() as the already-local Gregorian civil date and performs no second timezone conversion",
+          "presentation_seam": "Composed exact-version presentation seam: gravityflow_date_format_entry_detail returns a unique escaped marker plus the native Gravity Forms date format, then a request-local date_i18n callback acts only on that exact armed marker/format, converts only the date component through PGR_Jalali_Presentation::format_date(), preserves Gravity Flow's native surrounding time text, and strips the marker on every fallback",
+          "fallback": "exact native Gravity Flow workflow-info output with no marker leakage whenever module/host/version/context/GF format/timestamp/range/facade/conversion is unavailable or drifted",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-entry-detail-admission.json",
+          "evidence": "Exact Flow 3.1.0 source plus authentic WordPress/Gravity Forms/Gravity Flow prototype and final production browser evidence proves the composed two-hook path, Tehran local-midnight boundaries, exact disabled/version-drift/out-of-range/conversion-failure native fallback, repeated rendering, unrelated WordPress/GF date formatting isolation, unchanged DB/GFAPI/REST/workflow/deadline/expiration/query/CSV state, equal operational getter counts, and zero presentation re-entry.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host identity and the qualified shared format-hook -> GFCommon::format_date() -> date_i18n chain are required; any source/version/context/marker semantics drift fails closed to native output and requires fresh qualification."
+        },
+        {
+          "id": "gravityflow.entry-detail.expiration",
+          "ui_surface": "Gravity Flow Entry Detail workflow-info Expiration date",
+          "raw_source": "Current-step get_expiration_timestamp() UTC Unix epoch remains Gravity Flow's operational expiration authority; PersianGravity does not call or alter the getter and acts only after the host has entered the shared workflow-info date formatting chain",
+          "semantic_dependencies": [
+            "expiration authority",
+            "expired state",
+            "workflow state",
+            "operational getter invocation count",
+            "CSV/export isolation"
+          ],
+          "source_calendar": "Gregorian local civil date derived by Gravity Flow/Gravity Forms from the host-owned workflow-info source before the bounded Jalali calendar replacement",
+          "source_timezone": "Exact Flow 3.1.0 reaches WordPress date_i18n with a localized timestamp-plus-offset; PersianGravity reads its UTC components with gmdate() as the already-local Gregorian civil date and performs no second timezone conversion",
+          "presentation_seam": "Composed exact-version presentation seam: gravityflow_date_format_entry_detail returns a unique escaped marker plus the native Gravity Forms date format, then a request-local date_i18n callback acts only on that exact armed marker/format, converts only the date component through PGR_Jalali_Presentation::format_date(), preserves Gravity Flow's native surrounding time text, and strips the marker on every fallback",
+          "fallback": "exact native Gravity Flow workflow-info output with no marker leakage whenever module/host/version/context/GF format/timestamp/range/facade/conversion is unavailable or drifted",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-entry-detail-admission.json",
+          "evidence": "Exact Flow 3.1.0 source plus authentic WordPress/Gravity Forms/Gravity Flow prototype and final production browser evidence proves the composed two-hook path, Tehran local-midnight boundaries, exact disabled/version-drift/out-of-range/conversion-failure native fallback, repeated rendering, unrelated WordPress/GF date formatting isolation, unchanged DB/GFAPI/REST/workflow/deadline/expiration/query/CSV state, equal operational getter counts, and zero presentation re-entry.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host identity and the qualified shared format-hook -> GFCommon::format_date() -> date_i18n chain are required; any source/version/context/marker semantics drift fails closed to native output and requires fresh qualification."
+        },
+        {
+          "id": "gravityflow.entry-detail.schedule",
+          "ui_surface": "Gravity Flow Entry Detail queued-step Scheduled date",
+          "raw_source": "Current-step get_schedule_timestamp() plus exact Flow 3.1.0 type-specific scheduling authority: explicit date uses configured schedule_date; date_field derives from the configured field/offset; delay derives from step-scoped workflow_step_<step_id>_timestamp plus delay offset",
+          "source_calendar": "Type-specific host semantics: configured Gregorian civil date for date mode; UTC Unix epoch localized by Gravity Flow for date_field/delay; empty date_field yields native false/absent queued state",
+          "source_timezone": "Exact Flow 3.1.0 schedule authority is type-specific; date_field/delay timestamps are operational instants localized by the host, while explicit date is a configured civil date",
+          "presentation_seam": "FINAL_NO_ADMISSION: display_queued_step_details() directly reads get_schedule_timestamp() and prints the host-owned type-specific Scheduled value. Exact source/runtime qualification of date, date_field, delay and empty date_field branches found no supported downstream value-only date presentation hook; gravityflow_step_schedule_timestamp is operational.",
           "semantic_dependencies": [
             "workflow schedule validation/start timing",
-            "due/deadline authority",
-            "expiration state",
-            "step timing",
-            "type-specific schedule semantics"
+            "queued-step state",
+            "step-scoped workflow timestamp",
+            "type-specific schedule semantics",
+            "operational schedule getter"
           ],
-          "fallback": "native Entry Detail workflow info/status-box rendering",
+          "fallback": "native queued-step Scheduled output, including the empty/absent date_field path",
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact-package call-site census proves gravityflow_date_format_entry_detail is format-string-only and upstream of native formatting, due/expiration are directly emitted from operational getters before the post-output action, schedule is directly emitted from the scheduling getter with type-specific native semantics, and the same getters drive operational validation/state. No broad Entry Detail converter is admitted.",
-          "drift_behavior": "Final no-admission for exact Gravity Flow 3.1.0. Any future supported per-value downstream seam requires fresh source/runtime qualification; operational timestamp filters remain non-presentation.",
+          "evidence": "Exact Flow 3.1.0 source plus authentic enabled/disabled browser qualification exercises explicit date, date_field, delay-relative and empty date_field branches, proves equal native output and operational getter counts with zero date_i18n re-entry, and finds no downstream value-only presentation seam.",
+          "drift_behavior": "Evidence-qualified final no-admission for this exact Flow 3.1.0 schedule surface. Requalify if a newly discovered supported bounded seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
-          "runtime_evidence": "g008-flow-residual-no-admission.json"
+          "runtime_evidence": "g008-flow-schedule-qualification.json"
         },
         {
           "id": "gravityflow.timeline-history",
@@ -174,7 +314,7 @@
           "raw_source": "Initial timeline event uses Gravity Forms Entry date_created UTC Y-m-d H:i:s; workflow note/event timestamps are Gravity Forms note date_created values stored with utc_timestamp() and returned raw by get_lead_notes()",
           "source_calendar": "Gregorian UTC date/time strings representing authoritative history event instants",
           "source_timezone": "UTC for Entry date_created and Gravity Forms note date_created; Gravity_Flow_Common::format_date() performs the native display localization",
-          "presentation_seam": "FINAL_NO_ADMISSION: Entry Detail get_note_header() directly formats note date_created with no date-only output filter. gravityflow_timeline_notes runs after Gravity Flow's array_reverse() ordering step but before rendering and permits mutation or reordering of the full note array; using it for Jalali presentation would take ownership of history records/order/content. Common text timeline rendering also formats the same note dates directly",
+          "presentation_seam": "FINAL_NO_ADMISSION: get_note_header() consumes note date_created directly. gravityflow_timeline_notes runs after host array_reverse() ordering and before rendering; authentic cloned-display experiments prove a separate display-only property is ignored downstream while replacing cloned date_created changes the header. Storage, IDs, order and bodies remain unchanged, so the rejection is the downstream Gregorian date_created representation requirement/no date-only display property—not full-array access by itself.",
           "semantic_dependencies": [
             "timeline event ordering",
             "initial-entry event identity",
@@ -186,8 +326,8 @@
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact Flow/GF source proves UTC raw authority, host-owned array_reverse ordering before the full-note-array filter, direct date formatting in the note header, escaped note-body separation, and no bounded date-only output seam. Authentic Entry Detail browser evidence keeps timeline timestamps native with the module enabled and disabled.",
-          "drift_behavior": "Final no-admission for exact Gravity Flow 3.1.0. A future dedicated date-only presentation hook may be requalified without mutating note/history arrays.",
+          "evidence": "Exact Flow/GF source plus authentic multi-note runtime/browser evidence proves UTC note storage/raw retrieval, post-array_reverse hook ordering, unchanged storage/IDs/order/bodies/date-looking user text, ignored separate display property, and downstream consumption of date_created for Entry Detail and Print Timeline headers.",
+          "drift_behavior": "Evidence-qualified final no-admission for this exact Gravity Flow 3.1.0 surface. Requalify if a newly discovered supported bounded presentation seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
           "runtime_evidence": "g008-flow-residual-no-admission.json"
         },
@@ -197,7 +337,7 @@
           "raw_source": "No independent Print date authority; Gravity_Flow_Print_Entries::render() reuses Entry Detail field-grid rendering and optionally Gravity_Flow_Entry_Detail::timeline() for history timestamps",
           "source_calendar": "inherits the native underlying Entry Detail/Timeline sources",
           "source_timezone": "inherits the native underlying Entry Detail/Timeline timezone semantics",
-          "presentation_seam": "FINAL_NO_ADMISSION: Print has no date formatter/calendar engine or date-specific supported hook. gravityflow_print_styles only selects CSS assets; render() reuses Entry Detail/Timeline. Because the underlying residual surfaces are final no-admission for exact 3.1.0, Print has no independent adapter to admit",
+          "presentation_seam": "FINAL_NO_ADMISSION for an independent Print date seam: Gravity_Flow_Print_Entries::render() reuses entry_detail_grid() and optional timeline(), has no print-specific date formatter, and gravityflow_print_styles is CSS-only. Exact source/runtime also proves workflow_entry_detail_status_box(), maybe_display_entry_detail_workflow_info() and display_queued_step_details() are not rendered by this Print path, so workflow-sidebar dates are absent/not-applicable rather than propagated.",
           "semantic_dependencies": [
             "dependent Entry Detail rendering",
             "dependent Timeline/history rendering",
@@ -207,8 +347,8 @@
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact source proves Print reuses entry_detail_grid() and optional timeline() and has no print-specific date formatter. Authentic Print execution with timelines enabled is compared enabled vs disabled and remains native.",
-          "drift_behavior": "Final no-admission for exact Gravity Flow 3.1.0, dependent on the exact underlying no-admission dispositions. Reconsider only if a future Print-specific supported date seam or newly admitted underlying seam is independently qualified.",
+          "evidence": "Exact source and authentic multi-note Print browser evidence prove field-grid reuse, Timeline reuse, native initial/stored Timeline headers, unchanged note bodies, absence of workflow-sidebar Submitted/Last Updated/Due/Scheduled/Expiration fields, and no independent Print calendar seam.",
+          "drift_behavior": "Evidence-qualified final no-admission for this exact Gravity Flow 3.1.0 surface. Requalify if a newly discovered supported bounded presentation seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
           "exact_version_disposition": "FINAL_NO_ADMISSION",
           "runtime_evidence": "g008-flow-residual-no-admission.json"
         }
@@ -228,7 +368,12 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "raw Gravity Forms date_created is UTC; exact GravityView output timezone contract NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": ["query", "search", "sort", "filter"],
+          "semantic_dependencies": [
+            "query",
+            "search",
+            "sort",
+            "filter"
+          ],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -243,7 +388,12 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "exact storage/output timezone semantics NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": ["query", "search", "sort", "filter"],
+          "semantic_dependencies": [
+            "query",
+            "search",
+            "sort",
+            "filter"
+          ],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
