@@ -9,16 +9,8 @@
     "date_method": "format_date",
     "validated_product_range": "1800-01-01..2124-03-19"
   },
-  "support_states": [
-    "ADMITTED_VERIFIED",
-    "NOT_PROVEN",
-    "FAIL_CLOSED_VERSION_DRIFT"
-  ],
-  "discovery_states": [
-    "RUNTIME_PROVEN",
-    "SOURCE_PROVEN",
-    "NOT_PROVEN"
-  ],
+  "support_states": ["ADMITTED_VERIFIED", "NOT_PROVEN", "FAIL_CLOSED_VERSION_DRIFT"],
+  "discovery_states": ["RUNTIME_PROVEN", "SOURCE_PROVEN", "NOT_PROVEN"],
   "products": [
     {
       "product": "Gravity Forms",
@@ -34,13 +26,7 @@
           "source_calendar": "Gregorian",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract",
           "presentation_seam": "gform_entries_field_value when field/property id is date_created",
-          "semantic_dependencies": [
-            "entry storage",
-            "API value",
-            "query",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["entry storage", "API value", "query", "sort", "filter"],
           "fallback": "return native display value whenever module/seam/source/range/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -64,13 +50,7 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; converted to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_inbox_field_value receives the date_created_human_readable display value plus form/id/entry context while date_created remains the raw AG Grid compare field",
-          "semantic_dependencies": [
-            "AG Grid compare value",
-            "sort",
-            "filter",
-            "query",
-            "workflow"
-          ],
+          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -86,13 +66,7 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native date() intermediate is UTC in the qualified WordPress runtime, then Gravity Forms formatting and the Jalali facade target the WordPress site timezone",
           "presentation_seam": "gravityflow_inbox_field_value receives the last_updated_human_readable display value plus form/id/entry context while last_updated remains the raw AG Grid compare field",
-          "semantic_dependencies": [
-            "AG Grid compare value",
-            "sort",
-            "filter",
-            "query",
-            "workflow"
-          ],
+          "semantic_dependencies": ["AG Grid compare value", "sort", "filter", "query", "workflow"],
           "fallback": "return native Gravity Flow display value whenever module/host/seam/source/range/facade/conversion is unavailable, including the native '-' sentinel",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
@@ -108,12 +82,7 @@
           "source_calendar": "Gregorian/system timestamp candidate",
           "source_timezone": "Operational UTC semantics are expected but exact presentation transformation remains NOT_PROVEN",
           "presentation_seam": "gravityflow_inbox_field_value receives display value plus form/id/entry context",
-          "semantic_dependencies": [
-            "deadline comparison",
-            "overdue state",
-            "workflow scheduling",
-            "AG Grid compare/sort/filter"
-          ],
+          "semantic_dependencies": ["deadline comparison", "overdue state", "workflow scheduling", "AG Grid compare/sort/filter"],
           "fallback": "native display value",
           "discovery_state": "SOURCE_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -128,22 +97,14 @@
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; PersianGravity strict-parses UTC and PGR_Jalali_Presentation converts the instant to the WordPress site timezone before Jalali calendar conversion",
           "presentation_seam": "gravityflow_status_args establishes exact format=table browser context, then gravityflow_field_value_status_table receives the formatted date_created display plus form/column/entry; format=csv and unknown context remain native",
-          "semantic_dependencies": [
-            "entry storage",
-            "GFAPI/REST value",
-            "Status query",
-            "date_created sort",
-            "Status start/end filtering",
-            "workflow",
-            "CSV/export"
-          ],
+          "semantic_dependencies": ["entry storage", "GFAPI/REST value", "Status query", "date_created sort", "Status start/end filtering", "workflow", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-flow-status-admission.json",
           "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table browser evidence proves UTC raw authority, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/civil-day-filter/workflow/assignment state, and native CSV/export.",
-          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification.",
-          "runtime_evidence": "g008-flow-status-admission.json"
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification."
         },
         {
           "id": "gravityflow.status.workflow-timestamp",
@@ -152,22 +113,14 @@
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native numeric formatting uses PHP date() with UTC default timezone in the qualified runtime, then Gravity Forms localizes to the WordPress site timezone; PersianGravity constructs the instant directly and delegates site-time localization to PGR_Jalali_Presentation",
           "presentation_seam": "gravityflow_status_args establishes exact format=table browser context, then gravityflow_field_value_status_table receives the formatted workflow_timestamp display plus form/column/entry; format=csv and unknown context remain native",
-          "semantic_dependencies": [
-            "entry meta storage",
-            "GFAPI/REST value",
-            "Status query",
-            "workflow_timestamp sort",
-            "workflow state",
-            "assignments",
-            "CSV/export"
-          ],
+          "semantic_dependencies": ["entry meta storage", "GFAPI/REST value", "Status query", "workflow_timestamp sort", "workflow state", "assignments", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-flow-status-admission.json",
           "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table browser evidence proves Unix-epoch authority, UTC native numeric intermediate, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/workflow/assignment state, and native CSV/export.",
-          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification.",
-          "runtime_evidence": "g008-flow-status-admission.json"
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification."
         },
         {
           "id": "gravityflow.status.due-date",
@@ -176,12 +129,7 @@
           "source_calendar": "Gregorian/system timestamp candidate",
           "source_timezone": "workflow operational timestamp; presentation timezone NOT_PROVEN",
           "presentation_seam": "NOT_PROVEN",
-          "semantic_dependencies": [
-            "deadline comparison",
-            "overdue state",
-            "workflow scheduling",
-            "sort/filter"
-          ],
+          "semantic_dependencies": ["deadline comparison", "overdue state", "workflow scheduling", "sort/filter"],
           "fallback": "native display value",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -196,12 +144,7 @@
           "source_calendar": "Gregorian/system timestamps",
           "source_timezone": "workflow operational UTC semantics; exact display conversions NOT_PROVEN",
           "presentation_seam": "NOT_PROVEN",
-          "semantic_dependencies": [
-            "workflow schedule",
-            "deadline",
-            "expiration",
-            "chronological comparison"
-          ],
+          "semantic_dependencies": ["workflow schedule", "deadline", "expiration", "chronological comparison"],
           "fallback": "native rendering",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -216,11 +159,7 @@
           "source_calendar": "Gregorian/system timestamp candidate",
           "source_timezone": "NOT_PROVEN",
           "presentation_seam": "NOT_PROVEN",
-          "semantic_dependencies": [
-            "event ordering",
-            "history chronology",
-            "workflow semantics"
-          ],
+          "semantic_dependencies": ["event ordering", "history chronology", "workflow semantics"],
           "fallback": "native timeline/history rendering",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -235,9 +174,7 @@
           "source_calendar": "inherits underlying surface",
           "source_timezone": "inherits underlying surface",
           "presentation_seam": "no print-specific calendar engine; propagation must be verified through admitted underlying seam",
-          "semantic_dependencies": [
-            "print rendering only; underlying workflow/history semantics remain authoritative"
-          ],
+          "semantic_dependencies": ["print rendering only; underlying workflow/history semantics remain authoritative"],
           "fallback": "native print output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -261,12 +198,7 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "raw Gravity Forms date_created is UTC; exact GravityView output timezone contract NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": [
-            "query",
-            "search",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["query", "search", "sort", "filter"],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
@@ -281,12 +213,7 @@
           "source_calendar": "Gregorian candidate",
           "source_timezone": "exact storage/output timezone semantics NOT_PROVEN",
           "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
-          "semantic_dependencies": [
-            "query",
-            "search",
-            "sort",
-            "filter"
-          ],
+          "semantic_dependencies": ["query", "search", "sort", "filter"],
           "fallback": "native GravityView output",
           "discovery_state": "NOT_PROVEN",
           "support_state": "NOT_PROVEN",
