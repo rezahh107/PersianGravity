@@ -261,7 +261,7 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 			}
 		};
 		Gravity_Flow_API::$current_step = $step;
-		$entry                           = array( 'id' => 9, 'workflow_step' => 4 );
+		$entry                           = array( 'id' => 9, 'form_id' => 1, 'workflow_step' => 4 );
 		$adapter                         = new PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter();
 
 		$native_raw = $step->get_due_date_timestamp();
