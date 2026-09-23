@@ -401,7 +401,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
   const result = reconcileQualificationEvidence(input);
   assert.deepEqual(result, {
     status: 'PASS',
-    g009_native_pass_claims_reconciled: 3,
+    g009_runtime_claims_reconciled: 3,
     g008_source_proven_claims_reconciled: 5,
     g008_runtime_admitted_claims_reconciled: 0,
     g008_final_no_admission_claims_reconciled: 0,
