@@ -139,6 +139,9 @@ const sourceContract = {
     due_is_direct_operational_getter_render: entryWorkflowInfoMethod.includes('get_due_date_timestamp()') && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-due-date') && entryWorkflowInfoMethod.includes("'Due Date'"),
     expiration_is_direct_operational_getter_render: entryWorkflowInfoMethod.includes('get_expiration_timestamp()') && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-expires') && entryWorkflowInfoMethod.includes("'Expires'"),
     below_workflow_hook_is_after_direct_date_output: entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()') >= 0 && entryWorkflowInfoMethod.indexOf("do_action( 'gravityflow_below_workflow_info_entry_detail'") > entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()'),
+    date_format_hook_is_format_string_only_and_precedes_operational_values: entryWorkflowInfoMethod.includes("$date_format = apply_filters( 'gravityflow_date_format_entry_detail', '' );")
+      && entryWorkflowInfoMethod.indexOf("gravityflow_date_format_entry_detail") < entryWorkflowInfoMethod.indexOf('get_due_date_timestamp()')
+      && entryWorkflowInfoMethod.indexOf("gravityflow_date_format_entry_detail") < entryWorkflowInfoMethod.indexOf('get_expiration_timestamp()'),
     due_has_no_downstream_value_filter: !entryWorkflowInfoMethod.slice(
       entryWorkflowInfoMethod.indexOf('get_due_date_timestamp()'),
       entryWorkflowInfoMethod.indexOf("'Due Date'")
