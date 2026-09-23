@@ -45,6 +45,7 @@ final class ModuleRuntimeGatingTest extends TestCase {
 		$this->assertSame( $presentation_enabled, class_exists( 'PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter', false ) );
 		$this->assertSame( $presentation_enabled, isset( $GLOBALS['pgr_test_filters']['gform_entries_field_value'] ) );
 		$this->assertSame( $presentation_enabled, isset( $GLOBALS['pgr_test_filters']['gravityflow_inbox_field_value'] ) );
+		$this->assertSame( $presentation_enabled, isset( $GLOBALS['pgr_test_filters']['gravityflow_status_args'] ) );
 		$this->assertSame( $presentation_enabled, isset( $GLOBALS['pgr_test_filters']['gravityflow_field_value_status_table'] ) );
 	}
 
@@ -86,6 +87,7 @@ final class ModuleRuntimeGatingTest extends TestCase {
 		$this->assertFalse( class_exists( 'PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter', false ) );
 		$this->assertArrayNotHasKey( 'gform_entries_field_value', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_inbox_field_value', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'gravityflow_status_args', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_field_value_status_table', $GLOBALS['pgr_test_filters'] );
 	}
 
