@@ -76,8 +76,8 @@ function dueInvocationEvidence(evidence) {
 function allContractValuesTrue(value) {
   if (typeof value === 'boolean') return value;
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const values = Object.values(value);
-  return values.length > 0 && values.every(allContractValuesTrue);
+  const entries = Object.entries(value).filter(([key]) => key !== 'paths');
+  return entries.length > 0 && entries.every(([, item]) => allContractValuesTrue(item));
 }
 
 const requiredInboxSourceFlags = {
