@@ -147,6 +147,20 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			}
 		}
 
+		$residual_no_admission = array(
+			'gravityflow.status.due-date',
+			'gravityflow.entry-detail.schedule-due-expiration',
+			'gravityflow.timeline-history',
+			'gravityflow.print',
+		);
+		foreach ( $residual_no_admission as $id ) {
+			$this->assertSame( 'SOURCE_PROVEN', $states[ $id ]['discovery_state'], $id );
+			$this->assertSame( 'NOT_PROVEN', $states[ $id ]['support_state'], $id );
+			$this->assertSame( 'FINAL_NO_ADMISSION', $states[ $id ]['exact_version_disposition'], $id );
+			$this->assertSame( 'g008-flow-residual-no-admission.json', $states[ $id ]['runtime_evidence'], $id );
+			$this->assertNull( $states[ $id ]['adapter_identity'], $id );
+		}
+
 		$agents = (string) file_get_contents( dirname( __DIR__ ) . '/AGENTS.md' );
 		$this->assertStringNotContainsString( 'V1 owns only Gravity Forms Entries List `date_created`', $agents );
 		foreach ( $states as $id => $surface ) {
