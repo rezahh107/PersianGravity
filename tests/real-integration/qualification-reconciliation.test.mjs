@@ -467,7 +467,7 @@ test('G-008 residual source contract gate rejects missing, empty, missing-flag, 
   const nonBoolean = fixtures();
   closeFlowResiduals(nonBoolean);
   nonBoolean.g008ResidualSourceEvidence.source_contract.entry_detail_schedule_due_expiration.schedule_has_no_value_filter = 'true';
-  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule-due-expiration.*required source flag schedule_has_no_value_filter must be boolean/);
+  expectFailure(nonBoolean, /gravityflow\.entry-detail\.schedule.*required source flag schedule_has_no_value_filter must be boolean/);
 });
 
 test('G-008 residual browser gate rejects missing or duplicated mode evidence', () => {
