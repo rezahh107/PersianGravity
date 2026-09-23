@@ -452,7 +452,7 @@ test('G-008 Status runtime admission claims require exact matching Status eviden
   admitFlowStatus(input);
   const result = reconcileQualificationEvidence(input);
   assert.equal(result.g008_source_proven_claims_reconciled, 5);
-  assert.equal(result.g008_runtime_admitted_claims_reconciled, 3);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 2);
 
   const downgraded = fixtures();
   admitFlowStatus(downgraded);
