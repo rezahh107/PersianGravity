@@ -139,6 +139,7 @@ const validateScheduleMethod = methodSource(step, 'validate_schedule');
 const timestampDateMethod = methodSource(step, 'get_timestamp_date');
 const timestampDateFieldMethod = methodSource(step, 'get_timestamp_date_field');
 const timestampDelayMethod = methodSource(step, 'get_timestamp_delay');
+const stepTimestampMethod = methodSource(step, 'get_step_timestamp');
 const entryStepStatusMethod = methodSource(flowMain, 'maybe_display_entry_detail_step_status');
 const noteHeaderMethod = methodSource(entryDetail, 'get_note_header');
 const noteBodyMethod = methodSource(entryDetail, 'get_note_body');
@@ -219,6 +220,9 @@ const sourceContract = {
       timestampDelayMethod.includes('get_step_timestamp()')
       && timestampDelayMethod.includes("_delay_offset")
       && timestampDelayMethod.includes("_delay_unit"),
+    step_timestamp_reads_step_scoped_entry_meta:
+      stepTimestampMethod.includes("'workflow_step_' . $this->get_id() . '_timestamp'")
+      && stepTimestampMethod.includes('gform_get_meta( $this->get_entry_id()'),
     queued_step_status_calls_schedule_renderer:
       entryStepStatusMethod.includes('display_queued_step_details') && entryStepStatusMethod.includes('queued'),
   },
@@ -273,6 +277,7 @@ const evidence = {
     step_get_timestamp_date: timestampDateMethod,
     step_get_timestamp_date_field: timestampDateFieldMethod,
     step_get_timestamp_delay: timestampDelayMethod,
+    step_get_step_timestamp: stepTimestampMethod,
     entry_step_status: entryStepStatusMethod,
   },
   targets: {
