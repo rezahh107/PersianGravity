@@ -18,6 +18,9 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
+	/** @var string|null Exact marker format armed by the qualified Flow hook. */
+	private $active_marker_format = null;
+
 	/**
 	 * Register only the composed Entry Detail presentation seams.
 	 *
@@ -36,6 +39,8 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_entry_detail_date_format( $format ) {
+		$this->active_marker_format = null;
+
 		if (
 			'' !== $format ||
 			! $this->is_exact_supported_host() ||
@@ -50,7 +55,9 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		return $this->marked_format( $native_format );
+		$this->active_marker_format = $this->marked_format( $native_format );
+
+		return $this->active_marker_format;
 	}
 
 	/**
@@ -69,37 +76,26 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_marked_date( $date, $format, $timestamp, $gmt ) {
-		unset( $gmt );
-
 		if (
-			! $this->is_exact_supported_host() ||
-			! class_exists( 'GFCommon', false ) ||
-			! class_exists( 'PGR_Jalali_Presentation', false ) ||
-			! is_string( $format )
-		) {
-			return $date;
-		}
-
-		$native_format = GFCommon::get_default_date_format();
-		if (
-			! is_string( $native_format ) ||
-			'' === $native_format ||
-			$format !== $this->marked_format( $native_format )
+			null === $this->active_marker_format ||
+			! is_string( $format ) ||
+			$format !== $this->active_marker_format
 		) {
 			return $date;
 		}
 
 		$fallback = $this->strip_marker( $date );
 
-		if ( is_int( $timestamp ) ) {
-			$local_timestamp = $timestamp;
-		} elseif ( is_string( $timestamp ) && 1 === preg_match( '/^-?[0-9]+$/', $timestamp ) ) {
-			$local_timestamp = (int) $timestamp;
-		} else {
+		if (
+			true !== $gmt ||
+			! is_int( $timestamp ) ||
+			! $this->is_exact_supported_host() ||
+			! class_exists( 'PGR_Jalali_Presentation', false )
+		) {
 			return $fallback;
 		}
 
-		$local_civil = gmdate( 'Y-m-d H:i:s', $local_timestamp );
+		$local_civil = gmdate( 'Y-m-d H:i:s', $timestamp );
 		if ( ! is_string( $local_civil ) || 19 !== strlen( $local_civil ) ) {
 			return $fallback;
 		}
