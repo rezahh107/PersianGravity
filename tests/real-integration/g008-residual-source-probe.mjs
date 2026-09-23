@@ -11,6 +11,7 @@ const exact = {
   sha256: process.env.WU008_FLOW_SHA256 || null,
   pgr_sha: process.env.WU008_PGR_SHA || null,
 };
+if (!/^[a-f0-9]{40}$/.test(exact.pgr_sha ?? '')) throw new Error('Residual probe must bind to the exact PersianGravity Head.');
 if (exact.version !== '3.1.0' || exact.sha256 !== 'ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404') {
   throw new Error('Residual probe requires exact Gravity Flow 3.1.0 owner-supplied package.');
 }
