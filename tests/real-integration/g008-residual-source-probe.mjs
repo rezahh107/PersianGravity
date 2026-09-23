@@ -79,6 +79,18 @@ function methodSource(source, methodName) {
   return source.content.slice(match.index, next ? match.index + match[0].length + next.index : source.content.length);
 }
 
+function methodContaining(source, needle) {
+  const needleIndex = source.content.indexOf(needle);
+  if (needleIndex < 0) return '';
+  const before = source.content.slice(0, needleIndex);
+  const declarations = [...before.matchAll(/(?:^|\n)\s*(?:public\s+|protected\s+|private\s+)?(?:static\s+)?function\s+[A-Za-z0-9_]+\s*\(/g)];
+  if (declarations.length === 0) return '';
+  const start = declarations.at(-1).index;
+  const rest = source.content.slice(needleIndex);
+  const next = /\n\s*(?:public\s+|protected\s+|private\s+)?(?:static\s+)?function\s+[A-Za-z0-9_]+\s*\(/.exec(rest);
+  return source.content.slice(start, next ? needleIndex + next.index : source.content.length);
+}
+
 function allTrue(value) {
   if (typeof value === 'boolean') return value;
   if (value && typeof value === 'object') return Object.values(value).every(allTrue);
@@ -96,7 +108,7 @@ const gfFormsModel = readFrom(gfRoot, 'forms_model.php');
 const statusDueMethod = methodSource(status, 'column_due_date');
 const statusExportMethod = methodSource(status, 'export');
 const entryWorkflowBoxMethod = methodSource(flowMain, 'workflow_entry_detail_status_box');
-const entryWorkflowInfoMethod = methodSource(flowMain, 'maybe_display_entry_detail_workflow_info');
+const entryWorkflowInfoMethod = methodContaining(flowMain, 'gravityflow-status-box-field-due-date');
 const entryQueuedMethod = methodSource(flowMain, 'display_queued_step_details');
 const dueGetterMethod = methodSource(step, 'get_due_date_timestamp');
 const scheduleGetterMethod = methodSource(step, 'get_schedule_timestamp');
