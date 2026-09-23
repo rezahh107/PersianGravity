@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   real-integration:
-    name: Exact current Head + GF 3.1.1.1 + Flow 3.1.0 + View 3.3.4
+    name: Exact current Head + locked Gravity ecosystem packages
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     services:
@@ -69,6 +69,24 @@ jobs:
       WU008_VIEW_SIZE: '7569755'
       WU008_VIEW_SHA256: af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829
       WU008_VIEW_VERSION: 3.3.4
+
+      WU008_PERKS_FILE_ID: 1s6bh8rcc-fGZcPWe2OzJQj48r7zaqeRG
+      WU008_PERKS_FILE: gravityperks_2.3.16.zip
+      WU008_PERKS_SIZE: '156703'
+      WU008_PERKS_SHA256: a160d166fb7894b0dfc558ae92e0c230a1336ed2a81e78fa1216be72b1024e7c
+      WU008_PERKS_VERSION: 2.3.16
+
+      WU008_FUP_FILE_ID: 1W7rVScg5N0X8_RWyWrc95NU2bUf_boWQ
+      WU008_FUP_FILE: gp-file-upload-pro-1.5.13.zip
+      WU008_FUP_SIZE: '3503920'
+      WU008_FUP_SHA256: fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce
+      WU008_FUP_VERSION: 1.5.13
+
+      WU008_ADVS_FILE_ID: 1_if3Eb9MctTgQaeYhGlSsyOsIJPIfJZ5
+      WU008_ADVS_FILE: gp-advanced-select-1.1.21.zip
+      WU008_ADVS_SIZE: '184531'
+      WU008_ADVS_SHA256: d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2
+      WU008_ADVS_VERSION: 1.1.21
 
     steps:
       - name: Checkout harness and PersianGravity source exactly
@@ -227,6 +245,9 @@ jobs:
           download "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE"
           download "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE"
           download "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE"
+          download "$WU008_PERKS_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_PERKS_FILE"
+          download "$WU008_FUP_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FUP_FILE"
+          download "$WU008_ADVS_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_ADVS_FILE"
 
       - name: Fail-closed verify all licensed packages before installation
         shell: bash
@@ -236,7 +257,10 @@ jobs:
           tests/real-integration/verify-package.sh "Gravity Forms" "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE" "$WU008_GF_FILE" "$WU008_GF_SIZE" "$WU008_GF_SHA256" "gravityforms/gravityforms.php" "$WU008_GF_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "gravityflow/gravityflow.php" "$WU008_FLOW_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
-          test "$(wc -l < "$evidence")" -eq 3
+          tests/real-integration/verify-package.sh "Gravity Perks" "$WU008_PERKS_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_PERKS_FILE" "$WU008_PERKS_FILE" "$WU008_PERKS_SIZE" "$WU008_PERKS_SHA256" "gravityperks/gravityperks.php" "$WU008_PERKS_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "GP File Upload Pro" "$WU008_FUP_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FUP_FILE" "$WU008_FUP_FILE" "$WU008_FUP_SIZE" "$WU008_FUP_SHA256" "gp-file-upload-pro/gp-file-upload-pro.php" "$WU008_FUP_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "GP Advanced Select" "$WU008_ADVS_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_ADVS_FILE" "$WU008_ADVS_FILE" "$WU008_ADVS_SIZE" "$WU008_ADVS_SHA256" "gp-advanced-select/gp-advanced-select.php" "$WU008_ADVS_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 6
 
       - name: Install verified vendors and exact current-Head PersianGravity package
         shell: bash
@@ -245,6 +269,9 @@ jobs:
           unzip -q "$WU008_PACKAGE_DIR/$WU008_GF_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_PERKS_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_FUP_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
+          unzip -q "$WU008_PACKAGE_DIR/$WU008_ADVS_FILE" -d "$WU008_WP_PATH/wp-content/plugins"
           unzip -q "dist/$WU008_PGR_ZIP_NAME" -d "$WU008_WP_PATH/wp-content/plugins"
 
           manifest="$WU008_WP_PATH/wp-content/plugins/persian-gravityforms/release-manifest.json"
@@ -252,10 +279,15 @@ jobs:
           test "$(php -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); echo $m["source_commit"];' "$manifest")" = "$WU008_PGR_SHA"
           test "$(php -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); echo $m["source_tree"];' "$manifest")" = "$WU008_PGR_TREE"
 
-          php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" plugin activate gravityforms --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" plugin activate gravityperks gp-file-upload-pro gp-advanced-select --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" plugin activate persian-gravityforms gravityflow gravityview --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityperks --field=version --path="$WU008_WP_PATH")" = "$WU008_PERKS_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gp-file-upload-pro --field=version --path="$WU008_WP_PATH")" = "$WU008_FUP_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_PGR_VERSION"
 
       - name: Discover exact vendor source seams without mutating vendors
@@ -343,6 +375,9 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_GF_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityflow --field=version --path="$WU008_WP_PATH")" = "$WU008_FLOW_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gravityview --field=version --path="$WU008_WP_PATH")" = "$WU008_VIEW_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gravityperks --field=version --path="$WU008_WP_PATH")" = "$WU008_PERKS_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gp-file-upload-pro --field=version --path="$WU008_WP_PATH")" = "$WU008_FUP_VERSION"
+          test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
 
       - name: Create G008 Flow Inbox fixtures after G009 isolation checks
         shell: bash
