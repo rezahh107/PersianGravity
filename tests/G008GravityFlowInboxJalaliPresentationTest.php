@@ -249,4 +249,34 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
 		$this->assertStringNotContainsString( "'gravityflow'", $source );
 	}
+
+	public function test_due_date_presentation_does_not_reenter_operational_getter_after_native_raw_and_display_resolution(): void {
+		$step = new class() {
+			public $due_date = true;
+			public $calls    = 0;
+
+			public function get_due_date_timestamp() {
+				++$this->calls;
+				return 1774044900 + ( ( $this->calls - 1 ) * 3600 );
+			}
+		};
+		Gravity_Flow_API::$current_step = $step;
+		$entry                           = array( 'id' => 9, 'workflow_step' => 4 );
+		$adapter                         = new PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter();
+
+		$native_raw = $step->get_due_date_timestamp();
+		$this->assertSame(
+			$native_raw,
+			$adapter->filter_inbox_value( $native_raw, 1, 'due_date', $entry )
+		);
+
+		$step->get_due_date_timestamp(); // Native due_date_human_readable calculation.
+
+		$this->assertSame(
+			'۱۴۰۵/۰۱/۰۱، ۰۱:۴۵',
+			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $entry )
+		);
+		$this->assertSame( 2, $step->calls, 'Presentation must add zero operational due-date getter invocations.' );
+	}
+
 }
