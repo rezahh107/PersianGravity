@@ -15,11 +15,8 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/** Exact Status-table workflow timestamp column identity. */
 	private const WORKFLOW_TIMESTAMP_COLUMN = 'workflow_timestamp';
 
-	/** Exact Gravity Flow table wrapper that owns browser presentation. */
-	private const STATUS_TABLE_CLASS = 'Gravity_Flow_Status_Table';
-
-	/** Exact method used by 3.1.0 table rendering, but not CSV export. */
-	private const STATUS_TABLE_FILTER_METHOD = 'filter_field_value';
+	/** Exact Gravity Flow browser-table output format. */
+	private const STATUS_TABLE_FORMAT = 'table';
 
 	/** Host-owned runtime version authority. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
@@ -27,22 +24,45 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
+	/** @var string|null Exact render format observed through gravityflow_status_args. */
+	private $status_format = null;
+
 	/**
-	 * Register only the exact Gravity Flow Status value seam.
+	 * Register the exact Status render-context observer and presentation seam.
 	 *
 	 * @return void
 	 */
 	public function hooks() {
+		add_filter( 'gravityflow_status_args', array( $this, 'capture_status_context' ), 20, 1 );
 		add_filter( 'gravityflow_field_value_status_table', array( $this, 'filter_status_value' ), 20, 4 );
+	}
+
+	/**
+	 * Capture only Gravity Flow's explicit Status render format.
+	 *
+	 * Gravity Flow 3.1.0 normalizes defaults before this filter and branches on
+	 * the resulting format: table renders the browser Status table while csv
+	 * enters the export path. Missing or unfamiliar context stays fail-closed.
+	 *
+	 * @param mixed $args Native Status render arguments.
+	 * @return mixed
+	 */
+	public function capture_status_context( $args ) {
+		$this->status_format = null;
+
+		if ( is_array( $args ) && isset( $args['format'] ) && is_string( $args['format'] ) ) {
+			$this->status_format = $args['format'];
+		}
+
+		return $args;
 	}
 
 	/**
 	 * Convert only the two admitted Status-table system-date presentation values.
 	 *
-	 * Gravity Flow 3.1.0 also invokes this filter directly while producing CSV.
-	 * The browser table path uniquely reaches it through
-	 * Gravity_Flow_Status_Table::filter_field_value(); requiring that exact
-	 * frame prevents this adapter from changing export/raw/operational values.
+	 * CSV/export uses the same value filter, but Gravity Flow marks that render
+	 * as format=csv through gravityflow_status_args first. The adapter therefore
+	 * returns native export/raw values unchanged.
 	 *
 	 * @param mixed        $value       Native display value.
 	 * @param int          $form_id     Current Gravity Forms form ID.
@@ -55,7 +75,7 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 
 		if (
 			! $this->is_exact_supported_host() ||
-			! $this->is_status_table_presentation_context() ||
+			self::STATUS_TABLE_FORMAT !== $this->status_format ||
 			! class_exists( 'PGR_Jalali_Presentation', false ) ||
 			! is_array( $entry )
 		) {
@@ -82,25 +102,6 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 		}
 
 		return null === $formatted ? $value : $formatted;
-	}
-
-	/**
-	 * Require the exact 3.1.0 browser-table caller. CSV export applies the same
-	 * WordPress filter directly and therefore intentionally lacks this frame.
-	 *
-	 * @return bool
-	 */
-	private function is_status_table_presentation_context() {
-		foreach ( debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 8 ) as $frame ) {
-			if (
-				( $frame['class'] ?? '' ) === self::STATUS_TABLE_CLASS &&
-				( $frame['function'] ?? '' ) === self::STATUS_TABLE_FILTER_METHOD
-			) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
