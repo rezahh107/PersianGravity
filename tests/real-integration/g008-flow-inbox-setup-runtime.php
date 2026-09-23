@@ -263,6 +263,9 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 	$status_due_native = $due_enabled
 		? Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $due_raw ), '', false, false )
 		: html_entity_decode( '&dash;', ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$entry_detail_due_native = $due_enabled
+		? Gravity_Flow_Common::format_date( $due_raw, '', false, false )
+		: null;
 	$overdue           = $due_enabled ? (bool) $current_step->is_overdue() : false;
 
 	if ( $due_raw !== (int) $runtime_entry['expected_due_timestamp'] ) {
@@ -280,8 +283,9 @@ foreach ( $runtime_entries as &$runtime_entry ) {
 	$runtime_entry['overdue']                 = $overdue;
 	$runtime_entry['expected_created_native'] = $native_date_created;
 	$runtime_entry['expected_updated_native'] = $native_last_updated;
-	$runtime_entry['expected_due_native']        = $due_native;
-	$runtime_entry['expected_status_due_native'] = $status_due_native;
+	$runtime_entry['expected_due_native']         = $due_native;
+	$runtime_entry['expected_status_due_native']  = $status_due_native;
+	$runtime_entry['expected_detail_due_native']  = $entry_detail_due_native;
 }
 unset( $runtime_entry );
 remove_filter( 'gravityflow_step_due_date_timestamp', $runtime_due_filter, PHP_INT_MAX );
