@@ -1,4 +1,4 @@
-# G-008 — System-date expansion and bounded Gravity Flow Inbox admission
+# G-008 — System-date expansion and bounded Gravity Flow Inbox/Status admission
 
 ## Stable conversion/consumer contract
 
@@ -103,13 +103,30 @@ The adapter requires the host's Gravity Flow version/basename authority to resol
 
 Unit coverage also proves native fallback when the facade is unavailable, the source is malformed/missing, the value is outside the validated product range, or the host version/basename drifts. The WU008 registry/evidence reconciliation binds committed runtime-admitted Flow Inbox claims to `g008-flow-inbox-admission.json` and exact current-Head/package identity.
 
+## Gravity Flow 3.1.0 Status table — admitted surfaces
+
+This batch additionally admits exactly two browser Status-table system-date presentations:
+
+- `gravityflow.status.date-created`
+- `gravityflow.status.workflow-timestamp`
+
+The production adapter is `PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter`. It observes the exact Status render `format` through `gravityflow_status_args`, but changes values only at `gravityflow_field_value_status_table`. Conversion is allowed only when the exact render context is `format=table`; `format=csv`, missing context, or unfamiliar context returns the native Gravity Flow value.
+
+The exact 3.1.0 Status source proves `date_created` is the Gravity Forms Entry UTC `Y-m-d H:i:s` source. The browser column formats that raw Entry property before the value filter, while Status sorting, query construction, and start/end filtering continue to use the raw `date_created` field. PersianGravity ignores the formatted display string, strict-parses the raw Entry value in UTC, and delegates site-time localization and Jalali formatting to `PGR_Jalali_Presentation`.
+
+The exact 3.1.0 Status source also proves `workflow_timestamp` is numeric Gravity Flow Entry meta containing a Unix epoch instant. The native Status formatter receives that numeric source; in the qualified runtime PHP's default timezone is UTC before Gravity Forms localizes display to the WordPress site timezone. PersianGravity constructs the instant directly from the raw epoch and delegates site-time localization to the shared facade.
+
+Exact-package source also proves the Status CSV exporter invokes the same `gravityflow_field_value_status_table` filter directly. The explicit `format=table` context gate is therefore required: authentic WU008 enabled/disabled evidence shows the CSV stays byte-identical, retains raw Gregorian `date_created` strings and numeric `workflow_timestamp` values, and contains no Jalali presentation values.
+
+The shared WU008 fixture runs with WordPress site timezone `Asia/Tehran` and PHP default timezone `UTC`. Authentic browser evidence proves exact Jalali presentation for all three deterministic entries when enabled, exact native Gravity Flow presentation when disabled, and a local civil-day boundary case where Status filtering for `2026-03-21` returns only the entry created at `2026-03-20 22:15:00` UTC.
+
+Operational evidence additionally proves enabled/disabled equality for DB, GFAPI and REST values, workflow step/final status and assignees, Status query IDs/count, ascending/descending sorting on both target raw keys, Status start/end filtering, and CSV output. The admission artifact is `g008-flow-status-admission.json`.
+
 ## Gravity Flow surfaces still not admitted
 
 The following remain deliberately outside this production batch:
 
 - Inbox `due_date` — still `SOURCE_PROVEN + NOT_PROVEN`; its deadline/scheduling semantics require independent operational qualification.
-- Status `date_created` — `SOURCE_PROVEN + NOT_PROVEN`.
-- Status `workflow_timestamp` — `SOURCE_PROVEN + NOT_PROVEN`.
 - Status `due_date` — `NOT_PROVEN`.
 - Entry Detail due/schedule/expiration — `NOT_PROVEN`.
 - Timeline/history — `NOT_PROVEN`.
