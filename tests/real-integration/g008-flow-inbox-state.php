@@ -69,9 +69,12 @@ foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		sort( $assignees );
 	}
 
-	$due_enabled   = $current_step && ! empty( $current_step->due_date );
-	$due_timestamp = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
-	$overdue       = $due_enabled ? (bool) $current_step->is_overdue() : false;
+	$due_enabled       = $current_step && ! empty( $current_step->due_date );
+	$due_timestamp     = $due_enabled ? (int) $current_step->get_due_date_timestamp() : 0;
+	$overdue           = $due_enabled ? (bool) $current_step->is_overdue() : false;
+	$step_timestamp    = $current_step && is_callable( array( $current_step, 'get_step_timestamp' ) ) ? (int) $current_step->get_step_timestamp() : 0;
+	$scheduled         = $current_step && ! empty( $current_step->scheduled );
+	$schedule_timestamp = $scheduled && is_callable( array( $current_step, 'get_schedule_timestamp' ) ) ? (int) $current_step->get_schedule_timestamp() : 0;
 	if ( $due_timestamp !== (int) $fixture['expected_due_timestamp'] ) {
 		throw new RuntimeException( 'Authoritative due-date timestamp drifted for entry ' . $entry['id'] . '.' );
 	}
@@ -84,6 +87,7 @@ foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		'date_created'             => (string) $entry['date_created'],
 		'workflow_timestamp'       => (int) gform_get_meta( $entry['id'], 'workflow_timestamp' ),
 		'workflow_step'            => (int) gform_get_meta( $entry['id'], 'workflow_step' ),
+		'workflow_step_timestamp'  => $step_timestamp,
 		'workflow_final_status'    => (string) gform_get_meta( $entry['id'], 'workflow_final_status' ),
 		'workflow_assignee_meta'   => (string) gform_get_meta( $entry['id'], 'workflow_user_id_1' ),
 		'assignees'                => $assignees,
@@ -96,6 +100,8 @@ foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		'supports_due_date'        => $current_step && is_callable( array( $current_step, 'supports_due_date' ) ) ? (bool) $current_step->supports_due_date() : false,
 		'due_date_highlight_type'  => $due_enabled && isset( $current_step->due_date_highlight_type ) ? (string) $current_step->due_date_highlight_type : '',
 		'due_date_highlight_color' => $due_enabled && isset( $current_step->due_date_highlight_color ) ? (string) $current_step->due_date_highlight_color : '',
+		'scheduled'                => (bool) $scheduled,
+		'schedule_timestamp'       => $schedule_timestamp,
 	);
 }
 
