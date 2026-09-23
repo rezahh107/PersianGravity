@@ -34,7 +34,7 @@ One exact WordPress capability probe is classified separately: `/wp-admin/admin-
 
 ## Real-runtime checks
 
-The disposable lane uses WordPress `6.8.3`, PHP `8.2.33`, MariaDB `11.4.8`, Playwright `1.55.0`, Chromium, and the exact PersianGravity source Head under test. It preserves the original WU008 checks for:
+The disposable lane uses WordPress `6.8.3`, PHP `8.2.34`, MariaDB `11.4.8`, Playwright `1.55.0`, Chromium, and the exact PersianGravity source Head under test. The PHP patch pin moved from `8.2.33` to `8.2.34` after the hosted `setup-php` runtime stopped reproducing the older exact patch reliably. This is qualification-infrastructure drift only: the plugin production implementation was not changed by the pin. Current exact-Head evidence is generated under PHP `8.2.34`; no claim of complete semantic equivalence between the two PHP patch releases is made. It preserves the original WU008 checks for:
 
 - exact runtime versions and package identities;
 - Persian provider resolution for admitted Gravity Forms, Gravity Flow, and GravityView strings;
