@@ -7,7 +7,15 @@ use PHPUnit\Framework\TestCase;
 final class G008GravityFlowStatusFailClosedTest extends TestCase {
 
 	private function status_call( $adapter, $value, $column, $entry ) {
-		$adapter->capture_status_context( array( 'format' => 'table' ) );
+		$entry = array_merge(
+			array(
+				'id'      => 42,
+				'form_id' => 1,
+			),
+			$entry
+		);
+		$adapter->reset_status_context( array( 'format' => 'table' ) );
+		$adapter->mark_status_table_entry( 'native-url', 1, 42, $entry );
 		return $adapter->filter_status_value( $value, 1, $column, $entry );
 	}
 
