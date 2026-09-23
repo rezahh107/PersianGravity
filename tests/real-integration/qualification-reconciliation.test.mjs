@@ -414,7 +414,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
 test('G-009 downgrade falsification rejects NOT_PROVEN for one required runtime scenario', () => {
   const input = fixtures();
   input.g009RtlEvidence.results.find((item) => item.id === 'gravityforms.frontend-form' && item.observed.viewport?.width === 390).evidence_state = 'NOT_PROVEN';
-  expectFailure(input, /gravityforms\.frontend-form.*rtl 390x844.*downgraded to NOT_PROVEN/);
+  expectFailure(input, /gravityforms\.frontend-form.*rtl 390x844.*expected NATIVE_PASS, found NOT_PROVEN/);
 });
 
 test('G-009 missing-evidence falsification rejects a missing required surface scenario', () => {
