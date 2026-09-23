@@ -120,15 +120,22 @@ export function deriveG008SourceRequirements(surface) {
   return { seam, needles };
 }
 
-function validateG008RuntimeClaim(product, surface, runtimeEvidence, expectedIdentity) {
+function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expectedIdentity) {
   const errors = [];
-  if (surface.runtime_evidence !== 'g008-flow-inbox-admission.json') {
-    return [`G-008 ${surface.id}: unsupported runtime evidence reference ${surface.runtime_evidence ?? 'MISSING'}.`];
+  const evidenceClasses = {
+    'g008-flow-inbox-admission.json': 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
+    'g008-flow-status-admission.json': 'G008_GRAVITY_FLOW_STATUS_ADMISSION_RECONCILIATION',
+  };
+  const evidenceFile = surface.runtime_evidence;
+  const expectedClass = evidenceClasses[evidenceFile];
+  if (!expectedClass) {
+    return [`G-008 ${surface.id}: unsupported runtime evidence reference ${evidenceFile ?? 'MISSING'}.`];
   }
+  const runtimeEvidence = runtimeEvidenceByFile?.[evidenceFile];
   if (!isObject(runtimeEvidence)) {
     return [`G-008 ${surface.id}: required runtime admission evidence is missing.`];
   }
-  if (runtimeEvidence.evidence_class !== 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION') {
+  if (runtimeEvidence.evidence_class !== expectedClass) {
     errors.push(`G-008 ${surface.id}: runtime admission evidence class mismatch.`);
   }
   if (runtimeEvidence.hard_gate_result !== 'PASS') {
@@ -147,7 +154,7 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidence, expectedIde
   return errors;
 }
 
-function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentity) {
+function validateG008(registry, sourceEvidence, runtimeEvidenceByFile, expectedIdentity) {
   const errors = [];
   const sourceClaims = [];
   const runtimeClaims = [];
@@ -163,7 +170,7 @@ function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentit
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
       const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN'
-        || surface.runtime_evidence === 'g008-flow-inbox-admission.json';
+        || Boolean(surface.runtime_evidence);
       if (!sourceClaim) continue;
 
       sourceClaims.push({ product, surface });
@@ -193,7 +200,7 @@ function validateG008(registry, sourceEvidence, runtimeEvidence, expectedIdentit
 
       if (surface.support_state === 'ADMITTED_VERIFIED' && surface.runtime_evidence) {
         runtimeClaims.push({ product, surface });
-        errors.push(...validateG008RuntimeClaim(product, surface, runtimeEvidence, expectedIdentity));
+        errors.push(...validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expectedIdentity));
       }
     }
   }
@@ -208,6 +215,7 @@ export function reconcileQualificationEvidence({
   g009LtrEvidence,
   sourceDiscoveryEvidence,
   g008FlowInboxAdmissionEvidence,
+  g008FlowStatusAdmissionEvidence,
   expectedIdentity,
 }) {
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
@@ -221,7 +229,15 @@ export function reconcileQualificationEvidence({
   }
 
   const g009 = validateG009(g009Registry, { rtl: g009RtlEvidence, ltr: g009LtrEvidence }, expectedIdentity);
-  const g008 = validateG008(g008Registry, sourceDiscoveryEvidence, g008FlowInboxAdmissionEvidence, expectedIdentity);
+  const g008 = validateG008(
+    g008Registry,
+    sourceDiscoveryEvidence,
+    {
+      'g008-flow-inbox-admission.json': g008FlowInboxAdmissionEvidence,
+      'g008-flow-status-admission.json': g008FlowStatusAdmissionEvidence,
+    },
+    expectedIdentity
+  );
   const errors = [...g009.errors, ...g008.errors];
   if (errors.length > 0) throw new EvidenceReconciliationError(errors);
 
@@ -252,6 +268,7 @@ function runCli() {
     g009LtrEvidence: readJson(path.join(artifactDir, 'g009-evidence-ltr.json')),
     sourceDiscoveryEvidence: readJson(path.join(artifactDir, 'source-discovery.json')),
     g008FlowInboxAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-inbox-admission.json')),
+    g008FlowStatusAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-admission.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,

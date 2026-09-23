@@ -38,6 +38,7 @@ final class PGR_Core {
 		if ( PGR_Module_Registry::is_enabled( 'jalali_presentation' ) ) {
 			( new PGR_GF_Jalali_Presentation_Adapter() )->hooks();
 			( new PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter() )->hooks();
+			( new PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter() )->hooks();
 		}
 
 		if ( PGR_Module_Registry::is_enabled( 'structured_scanner' ) ) {

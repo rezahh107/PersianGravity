@@ -15,7 +15,7 @@ Version 4.6.0 exposes six bounded source-defined modules enabled by default for 
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
-* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; V1 presents only Gravity Forms Entries List `date_created` and does not change stored/native values.
+* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; verified presentation covers Gravity Forms Entries List `date_created` plus exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated` and Status `date_created`/`workflow_timestamp`, without changing stored/native values.
 * Iranian Address type and province choices.
 * Form-level Persian/Arabic digit normalization (`pgr_normalize_digits`).
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
@@ -35,7 +35,7 @@ The complete Help & Documentation Center ships locally with Persian and English 
 
 `jalali_presentation` is separate from the dedicated `pgr_jalali_date` field. The field keeps true Jalali-domain storage semantics; the presentation module converts only explicitly known Gregorian/system sources for display.
 
-V1 uses a source-owned Borkowski-lineage Gregorian→Jalali engine, a typed `DateTimeInterface` presentation facade, and the display-only Gravity Forms `gform_entries_field_value` seam for Entries List `date_created`. Gravity Forms `date_created` is treated as UTC, converted to the WordPress/site timezone first, and only then calendar-converted. The raw Entry/database/REST/query value remains Gregorian UTC.
+The module uses a source-owned Borkowski-lineage Gregorian→Jalali engine and typed `DateTimeInterface` presentation facade. Gravity Forms Entries List `date_created` remains admitted through `gform_entries_field_value`. Exact Gravity Flow 3.1.0 additionally admits Inbox `date_created`/`last_updated` and Status-table `date_created`/`workflow_timestamp` through bounded host presentation seams. Authoritative UTC/epoch sources are converted to the WordPress/site timezone before calendar conversion; raw Entry/meta, database, REST/API, query/sort/filter, workflow, Inbox compare, and Status CSV/export values remain native.
 
 The V1 `VALIDATED_PRODUCT_RANGE` is Gregorian `1800-01-01..2124-03-19`. Outside that evidence-backed range, native presentation is retained. Full provenance, MIT attribution, official University of Tehran golden cases, ICU/reference differential evidence, timezone behavior and known limitations are documented in `docs/G008_JALALI_PRESENTATION.md`.
 

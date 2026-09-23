@@ -23,6 +23,7 @@ if ( 'UTC' !== date_default_timezone_get() ) {
 
 update_option( 'timezone_string', 'Asia/Tehran' );
 update_option( 'gmt_offset', 3.5 );
+update_option( 'gravityformsaddon_gravityformswebapi_settings', array( 'enabled' => '1' ) );
 if ( 'Asia/Tehran' !== wp_timezone_string() ) {
 	throw new RuntimeException( 'Deterministic site timezone was not established.' );
 }
@@ -149,14 +150,29 @@ if ( is_wp_error( $page_id ) ) {
 	throw new RuntimeException( $page_id->get_error_message() );
 }
 
+$status_page_id = wp_insert_post(
+	array(
+		'post_type'    => 'page',
+		'post_status'  => 'publish',
+		'post_title'   => 'G008 Gravity Flow Status System Dates',
+		'post_name'    => 'g008-gravityflow-status-system-dates',
+		'post_content' => sprintf( '[gravityflow page="status" form="%d" last_updated="true" due_date="false"]', (int) $form_id ),
+	),
+	true
+);
+if ( is_wp_error( $status_page_id ) ) {
+	throw new RuntimeException( $status_page_id->get_error_message() );
+}
+
 require_once PGR_PATH . 'includes/class-pgr-module-registry.php';
 if ( ! PGR_Module_Registry::set_enabled( 'jalali_presentation', true ) ) {
 	throw new RuntimeException( 'Could not enable jalali_presentation for the next HTTP request.' );
 }
 
 $manifest = json_decode( (string) file_get_contents( $manifest_path ), true, 512, JSON_THROW_ON_ERROR );
-$manifest['schema_version']                 = '1.4.0';
+$manifest['schema_version']                 = '1.5.0';
 $manifest['g008_flow_inbox_url']            = add_query_arg( 'page_id', (int) $page_id, home_url( '/' ) );
+$manifest['g008_flow_status_url']           = add_query_arg( 'page_id', (int) $status_page_id, home_url( '/' ) );
 $manifest['g008_flow_form_id']              = (int) $form_id;
 $manifest['g008_flow_step_id']              = (int) $step_id;
 $manifest['g008_flow_site_timezone']        = wp_timezone_string();

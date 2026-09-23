@@ -96,6 +96,7 @@ function fixtures() {
     g009LtrEvidence,
     sourceDiscoveryEvidence,
     g008FlowInboxAdmissionEvidence: null,
+    g008FlowStatusAdmissionEvidence: null,
     expectedIdentity: structuredClone(identity),
   };
 }
@@ -112,6 +113,27 @@ function admitFlowInbox(input) {
   }
   input.g008FlowInboxAdmissionEvidence = {
     evidence_class: 'G008_GRAVITY_FLOW_INBOX_ADMISSION_RECONCILIATION',
+    hard_gate_result: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_gravityflow_version: '3.1.0',
+    exact_gravityflow_package_sha256: 'b'.repeat(64),
+    surfaces: Object.fromEntries(targets.map((surface) => [surface.id, 'ADMITTED_VERIFIED'])),
+  };
+}
+
+function admitFlowStatus(input) {
+  const targets = input.g008Registry.products[0].surfaces.filter((surface) => [
+    'gravityflow.status.date-created',
+    'gravityflow.status.workflow-timestamp',
+  ].includes(surface.id));
+  for (const surface of targets) {
+    surface.discovery_state = 'RUNTIME_PROVEN';
+    surface.support_state = 'ADMITTED_VERIFIED';
+    surface.runtime_evidence = 'g008-flow-status-admission.json';
+  }
+  input.g008FlowStatusAdmissionEvidence = {
+    evidence_class: 'G008_GRAVITY_FLOW_STATUS_ADMISSION_RECONCILIATION',
     hard_gate_result: 'PASS',
     exact_persiangravity_commit: identity.head,
     exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
@@ -179,6 +201,32 @@ test('G-008 runtime admission claims require exact matching admission evidence',
   admitFlowInbox(missing);
   missing.g008FlowInboxAdmissionEvidence = null;
   expectFailure(missing, /gravityflow\.inbox\.date-created.*required runtime admission evidence is missing/);
+});
+
+test('G-008 Status runtime admission claims require exact matching Status evidence', () => {
+  const input = fixtures();
+  admitFlowStatus(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_source_proven_claims_reconciled, 5);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 2);
+
+  const downgraded = fixtures();
+  admitFlowStatus(downgraded);
+  downgraded.g008FlowStatusAdmissionEvidence.surfaces['gravityflow.status.workflow-timestamp'] = 'NOT_PROVEN';
+  expectFailure(downgraded, /gravityflow\.status\.workflow-timestamp.*did not admit the committed surface claim/);
+
+  const missing = fixtures();
+  admitFlowStatus(missing);
+  missing.g008FlowStatusAdmissionEvidence = null;
+  expectFailure(missing, /gravityflow\.status\.date-created.*required runtime admission evidence is missing/);
+});
+
+test('combined Inbox and Status admissions reconcile four bounded runtime claims', () => {
+  const input = fixtures();
+  admitFlowInbox(input);
+  admitFlowStatus(input);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 4);
 });
 
 test('exact identity mismatch rejects both vendor package drift and PersianGravity source drift', () => {
