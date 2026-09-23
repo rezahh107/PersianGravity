@@ -185,6 +185,8 @@ function pgr_wu008_ed_candidate_format() {
 $GLOBALS['pgr_wu008_ed_candidate_evidence'] = array(
 	'format_hook_calls'             => 0,
 	'marker_date_i18n_calls'        => 0,
+	'production_marker_date_i18n_calls' => 0,
+	'production_observations'       => array(),
 	'unrelated_date_i18n_calls'     => 0,
 	'due_getter_calls'              => 0,
 	'expiration_getter_calls'       => 0,
@@ -250,6 +252,34 @@ add_filter(
 );
 
 add_filter(
+	'date_i18n',
+	static function ( $date, $format, $timestamp, $gmt ) {
+		if ( ! class_exists( 'GFCommon', false ) ) {
+			return $date;
+		}
+		$literal = 'PGRJALALIENTRYDETAIL:';
+		$escaped = '';
+		foreach ( str_split( $literal ) as $character ) {
+			$escaped .= '\\' . $character;
+		}
+		$production_format = $escaped . GFCommon::get_default_date_format();
+		if ( $format !== $production_format ) {
+			return $date;
+		}
+		++$GLOBALS['pgr_wu008_ed_candidate_evidence']['production_marker_date_i18n_calls'];
+		$GLOBALS['pgr_wu008_ed_candidate_evidence']['production_observations'][] = array(
+			'timestamp_with_offset' => is_int( $timestamp ) ? $timestamp : null,
+			'gmt'                   => (bool) $gmt,
+			'local_civil'           => is_int( $timestamp ) ? gmdate( 'Y-m-d H:i:s', $timestamp ) : null,
+			'native_prefixed'       => $date,
+		);
+		return $date;
+	},
+	PHP_INT_MAX - 1,
+	4
+);
+
+add_filter(
 	'gravityflow_step_due_date_timestamp',
 	static function ( $timestamp, $type, $step ) {
 		unset( $type );
@@ -298,14 +328,16 @@ add_filter(
 add_action(
 	'wp_footer',
 	static function () {
-		if ( ! isset( $_GET['pgr_g008_candidate_case'] ) ) {
+		if ( ! isset( $_GET['pgr_g008_candidate_case'] ) && ! isset( $_GET['pgr_g008_production_probe'] ) ) {
 			return;
 		}
 		$probe_timestamp = strtotime( '2026-03-20 20:31:00 UTC' );
 		$unrelated_wp = date_i18n( 'Y-m-d H:i', GFCommon::get_local_timestamp( $probe_timestamp ), true );
 		$unrelated_gf = GFCommon::format_date( '2026-03-20 20:31:00', false, 'Y-m-d', true );
 		$evidence = $GLOBALS['pgr_wu008_ed_candidate_evidence'];
-		$evidence['case'] = (string) $_GET['pgr_g008_candidate_case'];
+		$evidence['case'] = isset( $_GET['pgr_g008_candidate_case'] )
+			? (string) $_GET['pgr_g008_candidate_case']
+			: 'production';
 		$evidence['unrelated_wp_date_i18n'] = $unrelated_wp;
 		$evidence['unrelated_gf_format_date'] = $unrelated_gf;
 		echo '<script>window.pgrG008EntryDetailCandidateEvidence=' . wp_json_encode( $evidence ) . ';</script>';
