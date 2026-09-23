@@ -271,6 +271,9 @@ const flowInboxDueDateSourceContract = {
     due_getter_does_not_call_schedule_getter: !flowDueGetterSource.includes('get_schedule_timestamp()'),
   },
   presentation_seam: {
+    raw_due_passes_presentation_filter: /case\s+'due_date':[\s\S]{0,1800}apply_filters\(\s*'gravityflow_inbox_field_value'/.test(flowInboxTask.content),
+    raw_due_column_precedes_display_column: /\$columns\['due_date'\][\s\S]{0,220}\$columns\['due_date_human_readable'\]/.test(flowInboxTask.content),
+    row_values_follow_column_iteration_order: /foreach\s*\(\s*\$columns\s+as\s+\$name\s*=>\s*\$label\s*\)[\s\S]{0,260}\$this->get_column_value\(\s*\$name,\s*\$form,\s*\$entry,\s*\$columns\s*\)/.test(flowInboxTask.content),
     display_is_computed_before_presentation_filter: /case\s+'due_date_human_readable':[\s\S]{0,1800}apply_filters\(\s*'gravityflow_inbox_field_value'/.test(flowInboxTask.content),
     filter_receives_display_form_id_field_id_and_entry: /apply_filters\(\s*'gravityflow_inbox_field_value',\s*\$value,\s*\$form\['id'\],\s*\$id,\s*\$entry\s*\)/.test(flowInboxTask.content),
   },
