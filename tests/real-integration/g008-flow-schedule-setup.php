@@ -165,6 +165,63 @@ $branches[] = $build(
 	''
 );
 
+$schedule_entry_map = array();
+foreach ( $branches as $branch ) {
+	$schedule_entry_map[ (int) $branch['entry_id'] ] = (string) $branch['key'];
+}
+update_option( 'pgr_wu008_g008_schedule_entry_map', $schedule_entry_map, false );
+
+wp_mkdir_p( WPMU_PLUGIN_DIR );
+$schedule_probe = <<<'PHP'
+<?php
+defined( 'ABSPATH' ) || exit;
+$GLOBALS['pgr_wu008_g008_schedule_probe'] = array(
+	'total' => 0,
+	'by_entry' => array(),
+	'nested_date_i18n' => 0,
+);
+add_filter(
+	'gravityflow_step_schedule_timestamp',
+	static function ( $timestamp, $type, $step ) {
+		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry_id' ) ) ) {
+			return $timestamp;
+		}
+		$entry_id = (int) $step->get_entry_id();
+		$map = get_option( 'pgr_wu008_g008_schedule_entry_map', array() );
+		if ( ! isset( $map[ $entry_id ] ) ) {
+			return $timestamp;
+		}
+		++$GLOBALS['pgr_wu008_g008_schedule_probe']['total'];
+		if ( ! isset( $GLOBALS['pgr_wu008_g008_schedule_probe']['by_entry'][ $entry_id ] ) ) {
+			$GLOBALS['pgr_wu008_g008_schedule_probe']['by_entry'][ $entry_id ] = 0;
+		}
+		++$GLOBALS['pgr_wu008_g008_schedule_probe']['by_entry'][ $entry_id ];
+		if ( doing_filter( 'date_i18n' ) ) {
+			++$GLOBALS['pgr_wu008_g008_schedule_probe']['nested_date_i18n'];
+		}
+		return $timestamp;
+	},
+	PHP_INT_MAX,
+	3
+);
+add_action(
+	'wp_footer',
+	static function () {
+		$entry_id = isset( $_GET['lid'] ) ? absint( $_GET['lid'] ) : 0;
+		$map = get_option( 'pgr_wu008_g008_schedule_entry_map', array() );
+		if ( ! isset( $map[ $entry_id ] ) ) {
+			return;
+		}
+		$evidence = $GLOBALS['pgr_wu008_g008_schedule_probe'];
+		$evidence['entry_id'] = $entry_id;
+		$evidence['branch'] = (string) $map[ $entry_id ];
+		echo '<script>window.pgrG008ScheduleProbe=' . wp_json_encode( $evidence ) . ';</script>';
+	},
+	PHP_INT_MAX
+);
+PHP;
+file_put_contents( WPMU_PLUGIN_DIR . '/pgr-wu008-g008-schedule-probe.php', $schedule_probe . "\n" );
+
 foreach ( $branches as $branch ) {
 	if ( 'date_field_empty' === $branch['key'] ) {
 		if ( false !== $branch['schedule_timestamp'] || $branch['is_queued'] || null !== $branch['expected_display'] ) {
