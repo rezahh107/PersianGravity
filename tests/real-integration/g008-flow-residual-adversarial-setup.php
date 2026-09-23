@@ -253,10 +253,11 @@ add_filter(
 	'gravityflow_step_due_date_timestamp',
 	static function ( $timestamp, $type, $step ) {
 		unset( $type );
-		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry_id' ) ) ) {
+		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry' ) ) ) {
 			return $timestamp;
 		}
-		$entry_id = (int) $step->get_entry_id();
+		$step_entry = $step->get_entry();
+		$entry_id   = is_array( $step_entry ) ? absint( rgar( $step_entry, 'id' ) ) : 0;
 		$map = get_option( 'pgr_wu008_entry_detail_candidate_map', array() );
 		if ( ! isset( $map[ $entry_id ]['due'] ) ) {
 			return $timestamp;
@@ -275,10 +276,11 @@ add_filter(
 	'gravityflow_step_expiration_timestamp',
 	static function ( $timestamp, $type, $step ) {
 		unset( $type );
-		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry_id' ) ) ) {
+		if ( ! is_object( $step ) || ! is_callable( array( $step, 'get_entry' ) ) ) {
 			return $timestamp;
 		}
-		$entry_id = (int) $step->get_entry_id();
+		$step_entry = $step->get_entry();
+		$entry_id   = is_array( $step_entry ) ? absint( rgar( $step_entry, 'id' ) ) : 0;
 		$map = get_option( 'pgr_wu008_entry_detail_candidate_map', array() );
 		if ( ! isset( $map[ $entry_id ]['expiration'] ) ) {
 			return $timestamp;
