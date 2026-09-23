@@ -96,15 +96,15 @@
           "raw_source": "Gravity Forms Entry date_created UTC Y-m-d H:i:s is the authoritative Status source; exact Gravity Flow 3.1.0 formats that raw Entry property for the browser column while date_created remains the native Status query/sort/filter key",
           "source_calendar": "Gregorian instant",
           "source_timezone": "UTC Y-m-d H:i:s per Gravity Forms Entry contract; PersianGravity strict-parses UTC and PGR_Jalali_Presentation converts the instant to the WordPress site timezone before Jalali calendar conversion",
-          "presentation_seam": "gravityflow_field_value_status_table receives the formatted date_created display plus form/column/entry only after gravityflow_status_args establishes exact format=table browser context; format=csv and unknown context remain native",
+          "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact date_created column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
           "semantic_dependencies": ["entry storage", "GFAPI/REST value", "Status query", "date_created sort", "Status start/end filtering", "workflow", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter",
           "runtime_evidence": "g008-flow-status-admission.json",
-          "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table browser evidence proves UTC raw authority, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/civil-day-filter/workflow/assignment state, and native CSV/export.",
-          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification."
+          "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table evidence proves UTC raw authority, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/civil-day-filter/workflow/assignment state, native CSV/export, native late table→csv mutation, and admitted Jalali late csv→table mutation.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version plus the table-only entry-URL proof seam and Status value seam are required; any seam/source drift fails closed to native rendering and requires requalification."
         },
         {
           "id": "gravityflow.status.workflow-timestamp",
@@ -112,15 +112,15 @@
           "raw_source": "Gravity Flow workflow_timestamp numeric Entry meta is the authoritative Unix epoch instant; exact Gravity Flow 3.1.0 feeds that numeric value to the Status formatter while workflow_timestamp remains the native sortable/query meta key",
           "source_calendar": "Unix epoch absolute instant presented as Gregorian local civil time before Jalali conversion",
           "source_timezone": "Unix epoch absolute instant; Gravity Flow native numeric formatting uses PHP date() with UTC default timezone in the qualified runtime, then Gravity Forms localizes to the WordPress site timezone; PersianGravity constructs the instant directly and delegates site-time localization to PGR_Jalali_Presentation",
-          "presentation_seam": "gravityflow_field_value_status_table receives the formatted workflow_timestamp display plus form/column/entry only after gravityflow_status_args establishes exact format=table browser context; format=csv and unknown context remain native",
+          "presentation_seam": "gravityflow_entry_url_status_table is the post-branch table-only proof seam: the exact workflow_timestamp column calls it immediately before gravityflow_field_value_status_table; PersianGravity consumes a one-shot token bound to the same form/entry, while export calls the value filter directly without this proof and therefore remains native",
           "semantic_dependencies": ["entry meta storage", "GFAPI/REST value", "Status query", "workflow_timestamp sort", "workflow state", "assignments", "CSV/export"],
           "fallback": "return native Gravity Flow value whenever module/host/version/context/source/timezone/range/facade/conversion is unavailable; CSV/export is always native",
           "discovery_state": "RUNTIME_PROVEN",
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter",
           "runtime_evidence": "g008-flow-status-admission.json",
-          "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table browser evidence proves Unix-epoch authority, UTC native numeric intermediate, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/workflow/assignment state, and native CSV/export.",
-          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version, Status render format and value seam are required; any drift fails closed to native rendering and requires requalification."
+          "evidence": "Exact Gravity Flow 3.1.0 package source plus current-Head WU008 authentic WordPress/Status-table evidence proves Unix-epoch authority, UTC native numeric intermediate, exact Jalali browser presentation, exact native disabled fallback, unchanged DB/GFAPI/REST/query/sort/workflow/assignment state, native CSV/export, native late table→csv mutation, and admitted Jalali late csv→table mutation.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0 host/version plus the table-only entry-URL proof seam and Status value seam are required; any seam/source drift fails closed to native rendering and requires requalification."
         },
         {
           "id": "gravityflow.status.due-date",
