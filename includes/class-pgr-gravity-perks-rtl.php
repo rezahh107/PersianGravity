@@ -9,6 +9,9 @@ defined( 'ABSPATH' ) || exit;
 
 /** Correct source-proven Tom Select RTL caret behavior without modifying vendor files. */
 final class PGR_Gravity_Perks_RTL {
+	/** Exact admitted GP Advanced Select version. */
+	private const TARGET_VERSION = '1.1.21';
+
 	/** Exact upstream style handle in GP Advanced Select 1.1.21. */
 	private const STYLE_HANDLE = 'gp-advanced-select-tom-select';
 
@@ -30,7 +33,14 @@ final class PGR_Gravity_Perks_RTL {
 	 * @return void
 	 */
 	public function maybe_attach() {
-		if ( $this->attached || 'fa_IR' !== determine_locale() || ! is_rtl() || ! wp_style_is( self::STYLE_HANDLE, 'registered' ) ) {
+		if (
+			$this->attached
+			|| ! defined( 'GP_ADVANCED_SELECT_VERSION' )
+			|| self::TARGET_VERSION !== GP_ADVANCED_SELECT_VERSION
+			|| 'fa_IR' !== determine_locale()
+			|| ! is_rtl()
+			|| ! wp_style_is( self::STYLE_HANDLE, 'registered' )
+		) {
 			return;
 		}
 
