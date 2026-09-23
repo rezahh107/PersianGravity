@@ -155,15 +155,25 @@ const sourceContract = {
   },
 };
 
-if (!allTrue(sourceContract)) {
-  throw new Error(`Exact Gravity Flow residual no-admission source contract drifted: ${JSON.stringify(sourceContract)}`);
-}
-
 const evidence = {
   schema_version: '1.2.0',
   evidence_class: 'G008_RESIDUAL_EXACT_SOURCE_PROBE',
   exact,
   source_contract: sourceContract,
+  method_sources: {
+    status_due_date: statusDueMethod,
+    status_export: statusExportMethod,
+    entry_workflow_box: entryWorkflowBoxMethod,
+    entry_queued_details: entryQueuedMethod,
+    due_getter: dueGetterMethod,
+    schedule_getter: scheduleGetterMethod,
+    expiration_getter: expirationGetterMethod,
+    timeline_note_header: noteHeaderMethod,
+    timeline_notes: timelineNotesMethod,
+    initial_note: initialNoteMethod,
+    common_timeline: commonTimelineMethod,
+    print_render: printRenderMethod,
+  },
   targets: {
     status_due_date: {
       status_due_date: windows(status, 'due_date', 24),
@@ -205,4 +215,7 @@ const evidence = {
 
 fs.mkdirSync(artifactDir, { recursive: true });
 fs.writeFileSync(path.join(artifactDir, 'g008-residual-source-probe.json'), `${JSON.stringify(evidence, null, 2)}\n`);
+if (!allTrue(sourceContract)) {
+  throw new Error(`Exact Gravity Flow residual no-admission source contract drifted: ${JSON.stringify(sourceContract)}`);
+}
 console.log('G008_RESIDUAL_SOURCE_PROBE exact Flow 3.1.0');
