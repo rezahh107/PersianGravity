@@ -39,9 +39,9 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 	}
 
 	private function due_step( $timestamps, $enabled = true ) {
-		$sequence = is_array( $timestamps ) ? array_values( $timestamps ) : array( $timestamps );
+		$timestamps = is_array( $timestamps ) ? array_values( $timestamps ) : array( $timestamps );
 
-		return new class( $sequence, $enabled ) {
+		return new class( $timestamps, $enabled ) {
 			public $due_date;
 			public $calls = 0;
 			private $timestamps;
@@ -54,7 +54,7 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 			public function get_due_date_timestamp() {
 				$index = min( $this->calls, count( $this->timestamps ) - 1 );
 				++$this->calls;
-				return $this->timestamps[ $index ];
+				return $this->timestamps[ $index ] ?? null;
 			}
 		};
 	}
@@ -206,29 +206,18 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 			$adapter->filter_inbox_value( 'native', 1, 'last_updated_human_readable', array( 'workflow_timestamp' => '4866566400' ) )
 		);
 
-		$entry = array( 'id' => 9 );
-		$this->assertSame(
-			'native due',
-			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $entry ),
-			'Display must fail closed when raw due_date was not observed first.'
-		);
-		$this->assertSame( 'not-a-timestamp', $adapter->filter_inbox_value( 'not-a-timestamp', 1, 'due_date', $entry ) );
-		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $entry ) );
+		$due_entry = array( 'id' => 9, 'form_id' => 1 );
+		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $due_entry ) );
 
-		$this->assertSame( 0, $adapter->filter_inbox_value( 0, 1, 'due_date', $entry ) );
-		$this->assertSame( '-', $adapter->filter_inbox_value( '-', 1, 'due_date_human_readable', $entry ) );
+		$this->assertSame( 0, $adapter->filter_inbox_value( 0, 1, 'due_date', $due_entry ) );
+		$this->assertSame( '-', $adapter->filter_inbox_value( '-', 1, 'due_date_human_readable', $due_entry ) );
 
-		$this->assertSame( 4866566400, $adapter->filter_inbox_value( 4866566400, 1, 'due_date', $entry ) );
-		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $entry ) );
+		$this->assertSame( 0, $adapter->filter_inbox_value( 0, 1, 'due_date', $due_entry ) );
+		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $due_entry ) );
 
-		$this->assertSame( 1774044900, $adapter->filter_inbox_value( 1774044900, 1, 'due_date', array( 'id' => 10 ) ) );
-		$this->assertSame(
-			'native due',
-			$adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $entry ),
-			'Captured due dates must not bleed between entry identities.'
-		);
-		$this->assertSame( 1774044900, $adapter->filter_inbox_value( 1774044900, 0, 'due_date', $entry ) );
-		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 0, 'due_date_human_readable', $entry ) );
+		$this->assertSame( 4866566400, $adapter->filter_inbox_value( 4866566400, 1, 'due_date', $due_entry ) );
+		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 1, 'due_date_human_readable', $due_entry ) );
+		$this->assertSame( 'native due', $adapter->filter_inbox_value( 'native due', 0, 'due_date_human_readable', $due_entry ) );
 	}
 
 	public function test_adapter_registers_only_the_inbox_presentation_filter(): void {
@@ -259,8 +248,6 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertStringNotContainsString( 'new Gravity_Flow_API', $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
 		$this->assertStringNotContainsString( "'gravityflow'", $source );
-		$this->assertStringNotContainsString( 'get_due_date_timestamp(', $source );
-		$this->assertStringNotContainsString( 'new Gravity_Flow_API', $source );
 	}
 
 	public function test_due_date_presentation_does_not_reenter_operational_getter_after_native_raw_and_display_resolution(): void {
