@@ -1,5 +1,20 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-008 Gravity Flow residual system-date closure — 2026-09-23
+
+Planning base and actual canonical base were both `main@670c9104987c067ce1e3a244864571d0e4bad4e6`; no rebind was required. Exact Gravity Flow authority remains version `3.1.0`, owner-supplied package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`.
+
+The exact-package residual source probe closes the four remaining non-GravityView candidates without adding a production adapter. Registry `support_state` stays `NOT_PROVEN` to preserve the existing schema vocabulary, while each exact 3.1.0 residual record is explicitly marked `exact_version_disposition=FINAL_NO_ADMISSION`.
+
+- Status `due_date`: the table method directly calls and formats `get_due_date_timestamp()` and echoes the result; it does not traverse the admitted Status value/filter proof seam. The same getter is operational deadline authority and feeds overdue classification. CSV/export is a separate path and cannot establish a table-only presentation seam.
+- Entry Detail due/expiration: `maybe_display_entry_detail_workflow_info()` directly formats/prints the operational getters; the nearby extension action is after output. Schedule: `display_queued_step_details()` directly reads/prints `get_schedule_timestamp()`. The corresponding timestamp filters are workflow timing/state hooks rather than display hooks.
+- Timeline/history: initial entry time is Entry `date_created`; workflow note times are Gravity Forms note `date_created`, stored in UTC. `get_note_header()` formats the timestamp directly. `gravityflow_timeline_notes` exposes the complete note array upstream of host-owned ordering/rendering, so using it for calendar display would mutate history-layer data rather than a bounded date-only output seam.
+- Print: `Gravity_Flow_Print_Entries::render()` reuses Entry Detail field-grid rendering and optional Timeline rendering. It has no date formatter/calendar engine; `gravityflow_print_styles` is a CSS-asset hook only.
+
+WU008 source evidence is `g008-residual-source-probe.json`. The residual runtime lane exercises authenticated Entry Detail/Timeline and the authentic `gravityflow_print_entries` endpoint with timelines enabled under both module states, while Status due-date remains native in the existing Status browser lane. `g008-flow-residual-no-admission.json` is the exact-run registry↔source↔browser reconciliation artifact. Green workflows prove only their executed scenarios; final exact-Head run IDs are recorded after the final Head is fixed.
+
+Existing admitted G-008 surfaces remain separate regression gates: Gravity Forms Entries List `date_created`; Flow Inbox `date_created`, `last_updated`, `due_date`; Flow Status `date_created`, `workflow_timestamp`. G-009 evidence/state is preserved and no Gravity Perks package is consumed by this closure.
+
 ## G-008 Gravity Flow Inbox `due_date` admission — 2026-09-23
 
 Planning and actual implementation base were both `main@f8bb09d2fef6458441731c45086de70178db6f09`; no base rebind was required. The admission remains exact to Gravity Flow `3.1.0`, package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`.
