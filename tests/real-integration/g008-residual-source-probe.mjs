@@ -128,6 +128,7 @@ const sourceContract = {
     table_reads_operational_due_getter_directly: statusDueMethod.includes('get_due_date_timestamp()'),
     table_formats_due_inside_column_method: statusDueMethod.includes('Gravity_Flow_Common::format_date'),
     table_echoes_direct_output: statusDueMethod.includes('echo $output;'),
+    table_native_empty_uses_dash_entity: statusDueMethod.includes("'&dash;'") || statusDueMethod.includes('&dash;'),
     table_has_no_status_value_filter: !statusDueMethod.includes('gravityflow_field_value_status_table') && !statusDueMethod.includes('filter_field_value('),
     table_has_no_entry_url_proof_seam: !statusDueMethod.includes('get_entry_url('),
     export_has_separate_due_branch: statusExportMethod.includes("case 'due_date':") && statusExportMethod.includes('get_due_date_timestamp()'),
