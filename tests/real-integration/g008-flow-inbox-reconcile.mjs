@@ -75,8 +75,9 @@ function dueInvocationEvidence(evidence) {
 
 function allContractValuesTrue(value) {
   if (typeof value === 'boolean') return value;
-  if (value && typeof value === 'object') return Object.values(value).every(allContractValuesTrue);
-  return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const values = Object.values(value);
+  return values.length > 0 && values.every(allContractValuesTrue);
 }
 
 function probeText(probe, key) {
