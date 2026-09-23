@@ -65,7 +65,7 @@ function validateG009(registry, artifacts, expectedIdentity) {
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      if (surface.evidence_state === 'NATIVE_PASS') claims.push({ product, surface });
+      if (['NATIVE_PASS', 'ADAPTER_REQUIRED_AND_VERIFIED'].includes(surface.evidence_state)) claims.push({ product, surface });
     }
   }
 
@@ -101,8 +101,8 @@ function validateG009(registry, artifacts, expectedIdentity) {
           errors.push(`G-009 ${surface.id}: required scenario ${scenario} expected exactly one result, found ${matches.length}.`);
           continue;
         }
-        if (matches[0].evidence_state !== 'NATIVE_PASS') {
-          errors.push(`G-009 ${surface.id}: required scenario ${scenario} downgraded to ${matches[0].evidence_state ?? 'MISSING_STATE'}.`);
+        if (matches[0].evidence_state !== surface.evidence_state) {
+          errors.push(`G-009 ${surface.id}: required scenario ${scenario} expected ${surface.evidence_state}, found ${matches[0].evidence_state ?? 'MISSING_STATE'}.`);
         }
       }
     }
