@@ -89,11 +89,13 @@ foreach ( $manifest['g008_flow_entries'] as $fixture ) {
 		'assignees'                => $assignees,
 		'due_date_enabled'         => (bool) $due_enabled,
 		'due_date_timestamp'       => $due_timestamp,
-		'due_date_type'            => $due_enabled ? (string) $current_step->due_date_type : '',
+		'due_date_type'            => $due_enabled && isset( $current_step->due_date_type ) ? (string) $current_step->due_date_type : '',
+		'due_date_delay_offset'    => $due_enabled && isset( $current_step->due_date_delay_offset ) ? (int) $current_step->due_date_delay_offset : 0,
+		'due_date_delay_unit'      => $due_enabled && isset( $current_step->due_date_delay_unit ) ? (string) $current_step->due_date_delay_unit : '',
 		'overdue'                  => $overdue,
 		'supports_due_date'        => $current_step && is_callable( array( $current_step, 'supports_due_date' ) ) ? (bool) $current_step->supports_due_date() : false,
-		'due_date_highlight_type'  => $due_enabled ? (string) $current_step->due_date_highlight_type : '',
-		'due_date_highlight_color' => $due_enabled ? (string) $current_step->due_date_highlight_color : '',
+		'due_date_highlight_type'  => $due_enabled && isset( $current_step->due_date_highlight_type ) ? (string) $current_step->due_date_highlight_type : '',
+		'due_date_highlight_color' => $due_enabled && isset( $current_step->due_date_highlight_color ) ? (string) $current_step->due_date_highlight_color : '',
 	);
 }
 
