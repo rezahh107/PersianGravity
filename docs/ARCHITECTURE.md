@@ -96,9 +96,10 @@ PGR_Gregorian_Jalali_Converter (pure calendar arithmetic)
         ↓
 PGR_Jalali_Presentation (typed timezone + formatting facade)
         ↓
-PGR_GF_Jalali_Presentation_Adapter
-        ↓
-Gravity Forms Entries List date_created only
+bounded presentation adapters
+        ├── PGR_GF_Jalali_Presentation_Adapter → Gravity Forms Entries List date_created
+        ├── PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter → exact Flow 3.1.0 Inbox date_created / last_updated
+        └── PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter → exact Flow 3.1.0 Status date_created / workflow_timestamp
 ```
 
 `PGR_Gregorian_Jalali_Converter` is a source-owned PHP adaptation of the Borkowski-lineage arithmetic represented by `jalaali-js` 2.0.1 commit `7ff10a0a4145c84a6911e87bfacf40ddf51a2adc`. MIT attribution ships in `includes/jalali-presentation/LICENSE.jalaali-js.txt`. Production adds no calendar library, Node, or `ext-intl` requirement.
@@ -230,7 +231,7 @@ Across the exact locked-source censuses, accepted Persian coverage is 5766/8432:
 
 ## Scope
 
-PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases. G-008 V1 does not add Gravity Flow, Print, global WordPress date, ordinary GF Date-field, or cross-repository presentation surfaces.
+PersianGravity does not own Gravity Flow workflow, GravityView business behavior, SRWF business logic, fonts, payment gateways, arbitrary external plugin translations, OCR/camera scanning, online Sayad inquiry, or custom databases. G-008 owns only explicitly admitted presentation seams. Exact Flow 3.1.0 Inbox/Status system-date display is admitted without owning Flow workflow/query/export semantics; due dates, Entry Detail, Timeline/history, Print, global WordPress dates, ordinary GF Date fields, GravityView dates, and future Flow versions remain outside the admitted boundary.
 
 ## G-007 bounded Gravity Perks family extension
 
