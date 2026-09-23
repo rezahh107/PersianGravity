@@ -45,6 +45,67 @@ function allContractValuesTrue(value) {
   return true;
 }
 
+function probeText(probe, key) {
+  const lines = new Map();
+  for (const occurrence of probe?.[key] ?? []) {
+    for (const item of occurrence.source ?? []) lines.set(Number(item.line), String(item.text));
+  }
+  return [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([line, text]) => `${line}:${text}`).join('\n');
+}
+
+function deriveDueDateSourceContract(flowInboxEvidence, sourceEvidence) {
+  const probe = flowInboxEvidence?.due_date_source_probe;
+  if (!probe) return null;
+  const task = probeText(probe, 'task_model');
+  const step = probeText(probe, 'step');
+  const customSchedule = probeText(probe, 'custom_schedule_setting');
+  const refs = sourceEvidence?.references?.gravityflow ?? {};
+  const inboxFilterRefs = refs.gravityflow_inbox_field_value ?? [];
+  const dueHumanRefs = refs.due_date_human_readable ?? [];
+  const dueRefs = refs.due_date ?? [];
+  const taskFilterLine = inboxFilterRefs
+    .filter((ref) => ref.file === 'includes/inbox/models/class-task.php' && ref.operation === 'apply_filters')
+    .map((ref) => Number(ref.line))
+    .sort((a, b) => a - b)[0] ?? 0;
+  const taskDueDisplayLine = dueHumanRefs
+    .filter((ref) => ref.file === 'includes/inbox/models/class-task.php')
+    .map((ref) => Number(ref.line))
+    .filter((line) => line >= 400)
+    .sort((a, b) => a - b)[0] ?? 0;
+
+  return {
+    raw_representation_and_sentinel: {
+      raw_compare_uses_current_step_timestamp: task.includes("case 'due_date':") && task.includes('$value = $step->get_due_date_timestamp();'),
+      raw_no_due_is_zero: task.includes('$value = 0;'),
+      display_uses_same_current_step_timestamp: task.includes("case 'due_date_human_readable':") && task.includes("format_date( date( 'Y-m-d H:i:s', $step->get_due_date_timestamp() ), '', true, true )"),
+      display_no_due_is_dash: task.includes("$value = '-';"),
+      raw_and_display_are_distinct_grid_identities: task.includes("'due_date'                    => array(") && task.includes("'displayKey'   => 'due_date_human_readable'") && task.includes("'due_date_human_readable'     => array("),
+      raw_compare_type_is_date: task.includes("'compareType'  => 'date'"),
+    },
+    utc_instant_semantics: {
+      getter_disabled_state_returns_false: step.includes('if ( ! $this->due_date )') && step.includes('return false;'),
+      getter_returns_due_timestamp: step.includes('return $due_date_timestamp;'),
+      getter_filter_contract_declares_utc_timestamp: step.includes('The current expiration timestamp (UTC).'),
+      getter_filter_is_supported_host_seam: step.includes("apply_filters( 'gravityflow_step_due_date_timestamp'"),
+    },
+    deadline_and_overdue: {
+      overdue_reads_same_getter: step.includes('$step_due_date = $this->get_due_date_timestamp();'),
+      overdue_compares_epoch_to_time: step.includes('if ( (int) $step_due_date < (int) time() )'),
+      inbox_highlight_reads_is_overdue: task.includes('$step->is_overdue()') && task.includes('$step->due_date_highlight_color'),
+    },
+    workflow_scheduling_trace: {
+      due_reference_census_present: dueRefs.length > 0,
+      schedule_custom_due_occurrences_are_settings_only: customSchedule.includes("'name'    => 'due_date'") && customSchedule.includes('gravity_flow()->settings_checkbox') && !customSchedule.includes('process_workflow('),
+      no_due_reference_is_an_inbox_presentation_filter_mutation: !dueRefs.some((ref) => ref.operation === 'add_filter'),
+    },
+    presentation_seam: {
+      exact_filter_apply_site_present: taskFilterLine > 0,
+      display_is_computed_before_presentation_filter: taskDueDisplayLine > 0 && taskFilterLine > taskDueDisplayLine,
+      filter_receives_display_form_id_field_id_and_entry: Boolean(flowInboxEvidence?.source_contract?.presentation_seam?.filter_receives_display_form_id_field_id_and_entry),
+    },
+  };
+}
+
 const baselineEntries = canonicalEntries(baseline.entries);
 const enabledEntries = canonicalEntries(enabledState.entries);
 const disabledEntries = canonicalEntries(disabledState.entries);
@@ -73,35 +134,24 @@ const disabledDue = disabledEntries.map((entry) => ({ id: entry.id, due_date_tim
 if (JSON.stringify(enabledDue) !== JSON.stringify(expectedDue) || JSON.stringify(disabledDue) !== JSON.stringify(expectedDue)) {
   dueFailures.push('authoritative due-date timestamp or overdue classification changed across module modes');
 }
-if (!baselineEntries.some((entry) => entry.due_date_timestamp === 0 && entry.due_date_enabled === false)) {
-  dueFailures.push('no-due-date sentinel fixture is missing');
-}
-if (!baselineEntries.some((entry) => entry.due_date_timestamp > 0 && entry.overdue === true)) {
-  dueFailures.push('overdue due-date fixture is missing');
-}
-if (!baselineEntries.some((entry) => entry.due_date_timestamp > 0 && entry.overdue === false)) {
-  dueFailures.push('future due-date fixture is missing');
-}
+if (!baselineEntries.some((entry) => entry.due_date_timestamp === 0 && entry.due_date_enabled === false)) dueFailures.push('no-due-date sentinel fixture is missing');
+if (!baselineEntries.some((entry) => entry.due_date_timestamp > 0 && entry.overdue === true)) dueFailures.push('overdue due-date fixture is missing');
+if (!baselineEntries.some((entry) => entry.due_date_timestamp > 0 && entry.overdue === false)) dueFailures.push('future due-date fixture is missing');
 
 const flowInboxEvidence = source?.classifications?.g008?.flow_inbox;
 const semanticProbe = flowInboxEvidence?.source_semantics_probe;
 const sourceContract = flowInboxEvidence?.source_contract;
-const dueSourceContract = sourceContract?.due_date;
+const dueSourceContract = deriveDueDateSourceContract(flowInboxEvidence, source);
 if (!semanticProbe) baseFailures.push('exact-package source semantic probe is missing');
 if (!sourceContract) {
   baseFailures.push('exact-package source/timezone contract is missing');
-} else if (!allContractValuesTrue({
-  date_created: sourceContract.date_created,
-  last_updated: sourceContract.last_updated,
-  timezone_and_formatting: sourceContract.timezone_and_formatting,
-  presentation_seam: sourceContract.presentation_seam,
-})) {
+} else if (!allContractValuesTrue(sourceContract)) {
   baseFailures.push('existing Inbox source/timezone contract contains an unproven requirement');
 }
 if (!dueSourceContract) {
-  dueFailures.push('exact-package due-date source/deadline contract is missing');
+  dueFailures.push('exact-package due-date source/deadline provenance is missing');
 } else if (!allContractValuesTrue(dueSourceContract)) {
-  dueFailures.push('exact-package due-date source/deadline contract contains an unproven requirement');
+  dueFailures.push(`exact-package due-date source/deadline contract contains an unproven requirement: ${JSON.stringify(dueSourceContract)}`);
 }
 
 const failures = [...baseFailures, ...dueFailures];
@@ -120,6 +170,7 @@ const result = {
     target_timezone: 'WORDPRESS_SITE_TIMEZONE_ASIA_TEHRAN_FIXTURE',
   },
   source_contract_proven: Boolean(sourceContract && allContractValuesTrue(sourceContract)),
+  due_date_source_contract: dueSourceContract,
   due_date_contract_proven: Boolean(dueSourceContract && allContractValuesTrue(dueSourceContract)),
   presentation_isolation: {
     raw_state_equal: JSON.stringify(enabledEntries) === JSON.stringify(disabledEntries),
