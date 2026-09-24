@@ -14,7 +14,7 @@
 
 	const ROOT_SELECTOR = '#gravityflow-status-box-container > #submitcomment > #minor-publishing.gravityflow-status-box';
 	const FIELD_SELECTOR = '.gravityflow-status-box-field';
-	const EXCLUDED_ANCESTORS = 'script, style, textarea, select, option, template, noscript, [hidden], [aria-hidden="true"]';
+	const EXCLUDED_ANCESTORS = 'script, style, textarea, select, option, template, noscript, [hidden], [aria-hidden="true"], [contenteditable="true"]';
 	const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 
 	/**
@@ -24,9 +24,37 @@
 	 * @return {string} Text with Persian digit glyphs.
 	 */
 	function shapeDigits( value ) {
+		if ( typeof value !== 'string' ) {
+			return value;
+		}
+
 		return value.replace( /[0-9]/g, function ( digit ) {
 			return PERSIAN_DIGITS.charAt( Number( digit ) );
 		} );
+	}
+
+	/**
+	 * Confirm that a candidate node is rendered human-visible text rather than
+	 * hidden, machine-owned, or editable state.
+	 *
+	 * @param {Text} node Candidate text node.
+	 * @return {boolean} Whether the node is eligible for glyph shaping.
+	 */
+	function isVisibleTextNode( node ) {
+		const parent = node && node.parentElement;
+		if ( ! parent || typeof parent.closest !== 'function' || parent.closest( EXCLUDED_ANCESTORS ) ) {
+			return false;
+		}
+
+		const view = parent.ownerDocument && parent.ownerDocument.defaultView;
+		if ( view && typeof view.getComputedStyle === 'function' ) {
+			const style = view.getComputedStyle( parent );
+			if ( style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' ) {
+				return false;
+			}
+		}
+
+		return typeof parent.getClientRects !== 'function' || parent.getClientRects().length > 0;
 	}
 
 	/**
@@ -45,12 +73,7 @@
 		let node = walker.nextNode();
 
 		while ( node ) {
-			const parent = node.parentElement;
-			const excluded = parent && typeof parent.closest === 'function'
-				? parent.closest( EXCLUDED_ANCESTORS )
-				: null;
-
-			if ( ! excluded && typeof node.nodeValue === 'string' ) {
+			if ( typeof node.nodeValue === 'string' && /[0-9]/.test( node.nodeValue ) && isVisibleTextNode( node ) ) {
 				const shaped = shapeDigits( node.nodeValue );
 				if ( shaped !== node.nodeValue ) {
 					node.nodeValue = shaped;
