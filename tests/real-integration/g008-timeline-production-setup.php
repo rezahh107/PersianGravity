@@ -38,7 +38,7 @@ global $wpdb;
 
 $note_id = (int) $wpdb->get_var(
 	$wpdb->prepare(
-		"SELECT id FROM {$notes_table} WHERE lead_id = %d AND note_type = %s AND sub_type = %s AND value = %s ORDER BY id ASC LIMIT 1",
+		"SELECT id FROM {$notes_table} WHERE entry_id = %d AND note_type = %s AND sub_type = %s AND value = %s ORDER BY id ASC LIMIT 1",
 		$entry_id,
 		'gravityflow',
 		'wu008-g008-duplicate',
