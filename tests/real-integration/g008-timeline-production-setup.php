@@ -137,7 +137,6 @@ $manifest['g008_flow_timeline_duplicate_ids'] = array_values(
 				return $item['date_created'] === $duplicate_timestamp;
 			}
 		)
-	)
 );
 file_put_contents(
 	$manifest_path,
@@ -157,5 +156,55 @@ file_put_contents(
 	$artifact_dir . '/g008-timeline-production-fixture.json',
 	wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n"
 );
+
+// Install a test-only observer. It never changes presentation; at wp_footer it
+// records whether the production adapter class/hooks are actually present and
+// the exact qualified host source bytes that the adapter is bound to.
+wp_mkdir_p( WPMU_PLUGIN_DIR );
+$probe = <<<'PHP'
+<?php
+defined( 'ABSPATH' ) || exit;
+function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
+	$count = 0;
+	if ( ! isset( $GLOBALS['wp_filter'][ $hook ] ) ) { return 0; }
+	foreach ( $GLOBALS['wp_filter'][ $hook ]->callbacks as $callbacks ) {
+		foreach ( $callbacks as $callback ) {
+			$fn = $callback['function'];
+			if ( is_array( $fn ) && isset( $fn[0], $fn[1] ) && is_object( $fn[0] ) && $fn[0] instanceof $class && $method === $fn[1] ) { ++$count; }
+		}
+	}
+	return $count;
+}
+add_action(
+	'wp_footer',
+	static function () {
+		$class = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
+		$flow_root = WP_PLUGIN_DIR . '/gravityflow';
+		$gf_main = class_exists( 'GFForms', false ) ? ( new ReflectionClass( 'GFForms' ) )->getFileName() : null;
+		$paths = array(
+			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
+			'flow_common'       => $flow_root . '/includes/class-common.php',
+			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
+			'gf_common'         => is_string( $gf_main ) ? dirname( $gf_main ) . '/common.php' : '',
+		);
+		$hashes = array();
+		foreach ( $paths as $key => $path ) {
+			$hashes[ $key ] = is_readable( $path ) ? hash_file( 'sha256', $path ) : null;
+		}
+		$evidence = array(
+			'class_loaded'             => class_exists( $class, false ),
+			'module_enabled'           => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
+			'option_date_format_hooks' => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
+			'date_i18n_hooks'          => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
+			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
+			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
+			'source_fingerprints'      => $hashes,
+		);
+		echo '<script>window.pgrG008TimelineProductionEvidence=' . wp_json_encode( $evidence ) . ';</script>';
+	},
+	PHP_INT_MAX
+);
+PHP;
+file_put_contents( WPMU_PLUGIN_DIR . '/pgr-wu008-g008-timeline-production-probe.php', $probe . "\n" );
 
 echo wp_json_encode( $evidence, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
