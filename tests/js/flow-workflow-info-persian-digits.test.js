@@ -6,6 +6,7 @@ test( 'ASCII digits are shaped as Persian glyphs without parsing the value', () 
 	assert.equal( adapter.shapeDigits( '11:04 / Entry 56' ), '۱۱:۰۴ / Entry ۵۶' );
 	assert.equal( adapter.shapeDigits( '۱۴۰۵/۰۶/۲۵ در 11:04 ق.ظ' ), '۱۴۰۵/۰۶/۲۵ در ۱۱:۰۴ ق.ظ' );
 	assert.equal( adapter.shapeDigits( 'already ۱۲۳' ), 'already ۱۲۳' );
+	assert.equal( adapter.shapeDigits( 1104 ), 1104 );
 } );
 
 test( 'missing exact workflow-info container fails closed', () => {
@@ -34,6 +35,18 @@ test( 'only field text nodes change while link and machine attributes stay byte-
 		{ nodeValue: 'Entry ID: 56', parentElement: { closest: () => null } },
 		{ nodeValue: ' at 11:04', parentElement: { closest: () => null } },
 		{ nodeValue: 'hidden 56', parentElement: { closest: () => ( {} ) } },
+		{
+			nodeValue: 'css hidden 56',
+			parentElement: {
+				closest: () => null,
+				ownerDocument: {
+					defaultView: {
+						getComputedStyle: () => ( { display: 'none', visibility: 'visible' } ),
+					},
+				},
+				getClientRects: () => [],
+			},
+		},
 	];
 	let index = 0;
 	const field = {};
@@ -62,5 +75,6 @@ test( 'only field text nodes change while link and machine attributes stay byte-
 	assert.equal( nodes[ 0 ].nodeValue, 'Entry ID: ۵۶' );
 	assert.equal( nodes[ 1 ].nodeValue, ' at ۱۱:۰۴' );
 	assert.equal( nodes[ 2 ].nodeValue, 'hidden 56' );
+	assert.equal( nodes[ 3 ].nodeValue, 'css hidden 56' );
 	assert.equal( JSON.stringify( attributes ), before );
 } );
