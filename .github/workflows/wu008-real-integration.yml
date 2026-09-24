@@ -456,6 +456,7 @@ jobs:
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-timeline-two-hook-research.php
           node tests/real-integration/g008-entry-detail-candidate-browser.mjs
           node tests/real-integration/g008-flow-schedule-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-enabled.json"
@@ -470,6 +471,7 @@ jobs:
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-flow-residual-adversarial-state.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-timeline-two-hook-research.php
           node tests/real-integration/g008-entry-detail-candidate-browser.mjs
           node tests/real-integration/g008-flow-schedule-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-residual-adversarial-state-disabled.json"
