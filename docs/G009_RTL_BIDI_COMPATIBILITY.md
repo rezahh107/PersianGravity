@@ -64,6 +64,8 @@ G-009 extends the existing WU008 real-integration lab instead of creating a seco
 
 The browser lane runs independently attributable `fa_IR`/RTL and effective WordPress `en_US`/LTR-control profiles. Structured evidence records computed direction, relevant alignment/padding, responsive geometry/overflow, focus/keyboard observations and the exact runtime identities. Screenshots remain supplemental artifacts.
 
+Because this batch changes the production Gravity Perks RTL adapter while requiring preservation of the existing G-008 Jalali presentation behavior, the dedicated `G008 Jalali Presentation Runtime` workflow also treats `includes/class-pgr-gravity-perks-rtl.php` changes as a regression trigger. That workflow remains G-008-owned and unchanged in test semantics; the added path only ensures this cross-cutting bootstrap-adjacent adapter cannot bypass the separate exact-runtime gate.
+
 The Gravity Flow frontend Inbox is reached through the authentic `[gravityflow page="inbox"]` shortcode. A disposable browser experiment may disable and restore the observed `gform_admin` stylesheet solely to establish CSS causality; this is qualification-only behavior and is never a production dequeue/override.
 
 ## `gform_admin` disposition
