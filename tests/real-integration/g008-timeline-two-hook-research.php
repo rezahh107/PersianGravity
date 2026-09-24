@@ -95,15 +95,27 @@ $snapshot = static function () use ($entry_id, $form) {
     $current = GFAPI::get_entry($entry_id);
     $step = (new Gravity_Flow_API($form['id']))->get_current_step($current);
     $rest = rest_do_request(new WP_REST_Request('GET', '/gf/v2/entries/' . $entry_id));
-    return json_decode(wp_json_encode(array('form'=>GFAPI::get_form($form['id']), 'feeds'=>gravity_flow()->get_feeds($form['id']), 'gfapi'=>$current, 'rest_status'=>$rest->get_status(), 'rest'=>$rest->get_data(), 'db'=>$wpdb->get_row($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_table_name() . ' WHERE id=%d', $entry_id), ARRAY_A), 'meta'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_meta_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'notes'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_notes_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'state'=>array($step->get_id(), $step->get_due_date_timestamp(), $step->get_expiration_timestamp(), $step->get_schedule_timestamp(), $step->is_overdue(), $step->is_expired()))),true,512,JSON_THROW_ON_ERROR);
+    return json_decode(wp_json_encode(array('form'=>GFAPI::get_form($form['id']), 'form_db'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_meta_table_name() . ' WHERE form_id=%d', $form['id']),ARRAY_A), 'feeds'=>gravity_flow()->get_feeds($form['id']), 'gfapi'=>$current, 'rest_status'=>$rest->get_status(), 'rest'=>$rest->get_data(), 'db'=>$wpdb->get_row($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_table_name() . ' WHERE id=%d', $entry_id), ARRAY_A), 'meta'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_meta_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'notes'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_notes_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'state'=>array($step->get_id(), $step->get_due_date_timestamp(), $step->get_expiration_timestamp(), $step->get_schedule_timestamp(), $step->is_overdue(), $step->is_expired()))),true,512,JSON_THROW_ON_ERROR);
 };
-$before = $snapshot();
+$pre_native = $snapshot();
 $native = $render();
 $wp_native = date_i18n('Y-m-d',1900269060,true);
 $gf_native = GFCommon::format_date($entry['date_created'],false,'',true);
 $text_native = Gravity_Flow_Common::get_timeline($entry);
 $sidebar = static function () use ($entry, $form) { ob_start(); gravity_flow()->workflow_entry_detail_status_box($form,$entry,(new Gravity_Flow_API($form['id']))->get_current_step($entry),array()); return ob_get_clean(); };
 $sidebar_native = $sidebar();
+// Native Print mutates cached GF_Field presentation properties. Prove that
+// control first, retain it as evidence, then compare equivalent warmed paths.
+$print_render=static function() use($entry_id) {
+    $old_get=$_GET; $_GET['lid']=(string)$entry_id; $_GET['timelines']='1';
+    ob_start(); Gravity_Flow_Print_Entries::render(); $html=ob_get_clean(); $_GET=$old_get;
+    return $html;
+};
+$native_print=$print_render();
+$before=$snapshot();
+$pre_native_authority=$pre_native; $native_authority=$before;
+unset($pre_native_authority['form'],$native_authority['form']);
+
 $research = new PGR_Timeline_Research();
 $research->start();
 $actual = $render();
@@ -193,11 +205,12 @@ remove_filter('option_date_format',$abort,PHP_INT_MAX);
 $checks['abort_cleanup_native'] = date_i18n('Y-m-d',1900269060,true)===$wp_native && count($research->contexts)===0;
 $checks['recovery_after_abort'] = $render()===$actual;
 // Authentic Print calls the same Timeline, with no separate adapter.
-$_GET['lid']=(string)$entry_id; $_GET['timelines']='1';
-ob_start(); Gravity_Flow_Print_Entries::render(); $print=ob_get_clean();
+$print=$print_render();
 $checks['print_headers_equal'] = $headers($print)===$headers($actual);
 $research->stop();
 $after=$snapshot();
+$checks['native_control_storage_unchanged']=$pre_native_authority===$native_authority;
+$checks['native_print_baseline_headers']=$headers($native_print)===$headers($native);
 $checks['raw_storage_api_state_equal'] = $before===$after && $before['rest_status']===200;
 $checks['disabled_native'] = $enabled || $actual===$native;
 $checks['enabled_changed'] = !$enabled || $actual!==$native;
@@ -212,6 +225,6 @@ foreach($notes as $note) {
 $checks['correct_jalali']=true;
 if($enabled) { foreach($headers($actual) as $i=>$header) { if(!$expected[$i] || strpos($header,$expected[$i])!==0) { $checks['correct_jalali']=false; } } }
 $checks['ids_bodies_order_preserved'] = preg_replace('/<div class="gravityflow-note-meta">.*?<\/div>/s','',$actual)===preg_replace('/<div class="gravityflow-note-meta">.*?<\/div>/s','',$native);
-$result=array('evidence_class'=>'RESEARCH_ONLY_AUTHENTIC_TIMELINE_FORMAT_MARKER_TWO_HOOK','head'=>getenv('WU008_PGR_SHA'),'flow_sha256'=>getenv('WU008_FLOW_SHA256'),'mode'=>$mode,'checks'=>$checks,'ordinary_counts'=>$ordinary_counts,'all_counts'=>$research->counts,'native_headers'=>$headers($native),'actual_headers'=>$headers($actual),'same_format_headers'=>$headers($same_actual),'before'=>$before,'after'=>$after,'production_admission'=>false);
+$result=array('evidence_class'=>'RESEARCH_ONLY_AUTHENTIC_TIMELINE_FORMAT_MARKER_TWO_HOOK','head'=>getenv('WU008_PGR_SHA'),'flow_sha256'=>getenv('WU008_FLOW_SHA256'),'mode'=>$mode,'checks'=>$checks,'ordinary_counts'=>$ordinary_counts,'all_counts'=>$research->counts,'native_headers'=>$headers($native),'actual_headers'=>$headers($actual),'same_format_headers'=>$headers($same_actual),'pre_native_control'=>$pre_native,'before'=>$before,'after'=>$after,'production_admission'=>false);
 file_put_contents($artifact_dir.'/g008-timeline-two-hook-research-'.$mode.'.json',wp_json_encode($result,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 if(in_array(false,$checks,true)) { throw new RuntimeException('Timeline research falsification: '.implode(', ',array_keys(array_filter($checks,static fn($v)=>!$v)))); }
