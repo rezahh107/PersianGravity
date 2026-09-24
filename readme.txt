@@ -2,7 +2,7 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.6.0
+Stable tag: 4.7.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
@@ -11,7 +11,7 @@ Focused Persian and Iranian capabilities for Gravity Forms with runtime module c
 
 Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
 
-Version 4.6.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
+Version 4.7.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
@@ -101,6 +101,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+
+= 4.7.0 =
 * Expanded exact Gravity Flow 3.1.0 Jalali system-date presentation to Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp`, with exact-source and authentic runtime/browser evidence while preserving native raw/storage/API/query/sort/filter, workflow/assignment, due/overdue/deadline, compare-value, and Status CSV/export semantics.
 * Added bounded Entry Detail workflow-info Jalali presentation for Submitted / Last Updated / Due / Expiration. Exact Flow 3.1.0 Status `due_date`, Entry Detail Scheduled, Timeline/history timestamps, and independent Print date seams remain native under evidence-qualified no-admission dispositions where no safe supported presentation seam was proven.
 * Closed the remaining non-GravityView G-009 Gravity Perks browser scope: exact public-read package provisioning, authentic File Upload Pro Persian labels/RTL, exact Advanced Select Tom Select qualification with a scoped logical-padding repair, and a final no-repair/no-admission disposition for `gform_admin` on the exercised Flow frontend surface.

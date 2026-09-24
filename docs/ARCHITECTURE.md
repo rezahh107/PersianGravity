@@ -1,4 +1,4 @@
-# Persian Gravity Forms Architecture — 4.6.0
+# Persian Gravity Forms Architecture — 4.7.0
 
 ## Runtime topology
 
