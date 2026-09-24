@@ -10,12 +10,14 @@ if (!wpPath || !artifactDir || !pgrSha) {
 
 const fupPath = path.join(wpPath, 'wp-content/plugins/gp-file-upload-pro/class-gp-file-upload-pro.php');
 const advancedPath = path.join(wpPath, 'wp-content/plugins/gp-advanced-select/class-gp-advanced-select.php');
-for (const sourcePath of [fupPath, advancedPath]) {
+const advancedFrontendPath = path.join(wpPath, 'wp-content/plugins/gp-advanced-select/js/src/frontend.ts');
+for (const sourcePath of [fupPath, advancedPath, advancedFrontendPath]) {
   if (!fs.existsSync(sourcePath)) throw new Error(`Exact installed vendor source is missing: ${sourcePath}`);
 }
 
 const fup = fs.readFileSync(fupPath, 'utf8');
 const advanced = fs.readFileSync(advancedPath, 'utf8');
+const advancedFrontend = fs.readFileSync(advancedFrontendPath, 'utf8');
 
 function lineOf(source, needle) {
   const index = source.indexOf(needle);
@@ -35,6 +37,7 @@ const observations = {
     source_file: 'gp-advanced-select/class-gp-advanced-select.php',
     exact_style_handle_line: lineOf(advanced, "'handle'  => 'gp-advanced-select-tom-select'"),
     exact_style_asset_line: lineOf(advanced, "'/styles/tom-select.bootstrap5.css'"),
+    change_listener_plugin_line: lineOf(advancedFrontend, 'change_listener: {}'),
   },
 };
 
