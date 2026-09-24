@@ -92,8 +92,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Exact host caller-chain proof is the qualified production seam.
-		$trace = debug_backtrace( 0, 60 );
+		$trace = $this->capture_trace();
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::FIRST_CHAIN );
 		if ( null === $path || ! $this->is_exact_supported_host() || ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
@@ -175,8 +174,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $fallback;
 		}
 
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Exact host caller-chain proof is the qualified production seam.
-		$trace = debug_backtrace( 0, 60 );
+		$trace = $this->capture_trace();
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::SECOND_CHAIN );
 		if ( null === $path || ! isset( $this->contexts[ $format ] ) ) {
@@ -226,6 +224,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		return null === $formatted ? $fallback : $formatted;
+	}
+
+	/**
+	 * Capture the bounded request stack used to prove the exact host caller path.
+	 * Keeping this argument-free avoids relying on PHP's post-7.0 argument-value
+	 * reporting semantics for the presentation callbacks themselves.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function capture_trace() {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Caller-chain proof is the qualified production seam.
+		return debug_backtrace( 0, 60 );
 	}
 
 	/**
@@ -293,7 +303,6 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 				unset( $this->contexts[ $format ] );
 			}
 		}
-	}
 
 	/**
 	 * Validate the exact first-seam host arguments discovered in qualification.
