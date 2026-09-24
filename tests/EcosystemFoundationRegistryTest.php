@@ -145,6 +145,17 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			$this->assertSame( 'g008-entry-detail-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
 
+		foreach ( array( 'gravityflow.timeline-history', 'gravityflow.print' ) as $admitted_id ) {
+			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
+			$this->assertSame( 'ADMITTED_VERIFIED', $states[ $admitted_id ]['support_state'], $admitted_id );
+			$this->assertSame( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
+			$this->assertSame( 'g008-timeline-print-qualification.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
+		}
+		$this->assertSame( 'ADMITTED_FOR_EXACT_VERSION', $states['gravityflow.timeline-history']['exact_version_disposition'] );
+		$this->assertSame( 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE', $states['gravityflow.print']['exact_version_disposition'] );
+		$this->assertStringContainsString( 'INHERITS_VERIFIED_TIMELINE_RENDERER', $states['gravityflow.print']['presentation_seam'] );
+		$this->assertStringContainsString( 'no independent Print date seam', $states['gravityflow.print']['presentation_seam'] );
+
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
 			'gravityflow.inbox.date-created',
@@ -156,6 +167,8 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			'gravityflow.entry-detail.last-updated',
 			'gravityflow.entry-detail.due-date',
 			'gravityflow.entry-detail.expiration',
+			'gravityflow.timeline-history',
+			'gravityflow.print',
 		);
 		foreach ( $states as $id => $surface ) {
 			if ( ! in_array( $id, $admitted_ids, true ) ) {
@@ -165,10 +178,8 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		}
 
 		$residual_no_admission = array(
-			'gravityflow.status.due-date'      => 'g008-flow-residual-no-admission.json',
+			'gravityflow.status.due-date'       => 'g008-flow-residual-no-admission.json',
 			'gravityflow.entry-detail.schedule' => 'g008-flow-schedule-qualification.json',
-			'gravityflow.timeline-history'      => 'g008-flow-residual-no-admission.json',
-			'gravityflow.print'                 => 'g008-flow-residual-no-admission.json',
 		);
 		foreach ( $residual_no_admission as $id => $runtime_evidence ) {
 			$this->assertSame( 'SOURCE_PROVEN', $states[ $id ]['discovery_state'], $id );
