@@ -181,7 +181,7 @@ const sourceContract = {
     entry_id_href_keeps_ascii_numeric_authority:
       entryWorkflowInfoMethod.includes("admin.php?page=gf_entries&view=entry&id=")
       && entryWorkflowInfoMethod.includes("'&lid=' . absint( $entry['id'] )")
-      && /\\$entry_id\\s*=\\s*absint\\( \\$entry\\['id'\\] \\)/.test(entryWorkflowInfoMethod),
+      && /\$entry_id\s*=\s*absint\( \$entry\['id'\] \)/.test(entryWorkflowInfoMethod),
     below_workflow_info_hook_is_supported_post_value_seam:
       entryWorkflowInfoMethod.includes("do_action( 'gravityflow_below_workflow_info_entry_detail', $form, $entry, $current_step )")
       && entryWorkflowInfoMethod.indexOf("do_action( 'gravityflow_below_workflow_info_entry_detail'") > entryWorkflowInfoMethod.indexOf('gravityflow-status-box-field-expires'),
