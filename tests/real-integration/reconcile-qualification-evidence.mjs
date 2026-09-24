@@ -451,6 +451,11 @@ function validateG008FinalNoAdmission(
   return errors;
 }
 
+const timelinePrintAdmissionSurfaceIds = new Set([
+  'gravityflow.timeline-history',
+  'gravityflow.print',
+]);
+
 const timelinePrintSourceFingerprints = {
   flow_entry_detail: 'a7634c5604184502457bcb22cdf1ade892e84c888cc60996aea8a810ced7680a',
   flow_common: 'a8844f4b6ac37eed1a2cc1e904418f6ed8c6b4480e982c5a809e895a6f9e0cc8',
@@ -588,6 +593,20 @@ function validateG008(
         errors.push(`G-008 ${surface.id}: ${product.product} package SHA-256 mismatch.`);
       }
 
+      if (timelinePrintAdmissionSurfaceIds.has(surface.id)) {
+        if (surface.support_state === 'ADMITTED_VERIFIED') {
+          runtimeClaims.push({ product, surface });
+        }
+        errors.push(...validateG008TimelinePrintAdmission(
+          registry,
+          product,
+          surface,
+          timelinePrintQualificationEvidence,
+          expectedIdentity
+        ));
+        continue;
+      }
+
       if (surface.exact_version_disposition === 'FINAL_NO_ADMISSION') {
         finalNoAdmissionClaims.push({ product, surface });
         errors.push(...validateG008FinalNoAdmission(
@@ -598,20 +617,6 @@ function validateG008(
           statusBrowserEnabledEvidence,
           statusBrowserDisabledEvidence,
           scheduleQualificationEvidence,
-          expectedIdentity
-        ));
-        continue;
-      }
-
-      if (surface.runtime_evidence === 'g008-timeline-print-qualification.json') {
-        if (surface.support_state === 'ADMITTED_VERIFIED') {
-          runtimeClaims.push({ product, surface });
-        }
-        errors.push(...validateG008TimelinePrintAdmission(
-          registry,
-          product,
-          surface,
-          timelinePrintQualificationEvidence,
           expectedIdentity
         ));
         continue;
