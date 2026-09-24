@@ -111,15 +111,21 @@ function canonicalStored(rows) {
     note_type: row.note_type,
   }));
 }
-const expectedStoredCanonical = canonicalStored(expectedStored);
+function canonicalStoredById(rows) {
+  return canonicalStored(rows).sort((left, right) => left.id - right.id);
+}
+const expectedStoredById = canonicalStoredById(expectedStored);
+const expectedTimelineCanonical = canonicalStored(expectedTimeline);
 for (const state of [enabledState, disabledState]) {
   if (JSON.stringify(state.timeline?.stored_before) !== JSON.stringify(state.timeline?.stored_after)) failures.push(`${state.mode}: Timeline qualification changed storage`);
   if (!state.timeline?.storage_equal_after_experiments) failures.push(`${state.mode}: storage equality flag is false`);
   if (!state.timeline?.ids_order_bodies_preserved) failures.push(`${state.mode}: note IDs/order/bodies were not preserved`);
   if (state.timeline?.display_property_ignored !== true) failures.push(`${state.mode}: historical separate display property finding drifted`);
   if (state.timeline?.date_created_is_consumed !== true) failures.push(`${state.mode}: historical date_created consumption finding drifted`);
-  const stored = canonicalStored(state.timeline?.stored_after);
-  if (JSON.stringify(stored) !== JSON.stringify(expectedStoredCanonical)) failures.push(`${state.mode}: authentic stored notes do not match production fixture`);
+  const storedById = canonicalStoredById(state.timeline?.stored_after);
+  if (JSON.stringify(storedById) !== JSON.stringify(expectedStoredById)) failures.push(`${state.mode}: authentic stored note identities do not match production fixture`);
+  const canonicalTimeline = canonicalStored(state.timeline?.canonical);
+  if (JSON.stringify(canonicalTimeline) !== JSON.stringify(expectedTimelineCanonical)) failures.push(`${state.mode}: canonical Timeline render order/identity does not match production fixture`);
 }
 if (JSON.stringify(enabledState.candidate_entry) !== JSON.stringify(disabledState.candidate_entry)) failures.push('candidate raw/GFAPI/REST/workflow state differs between module modes');
 if (JSON.stringify(enabledState.query) !== JSON.stringify(disabledState.query)) failures.push('query/sort result differs between module modes');
