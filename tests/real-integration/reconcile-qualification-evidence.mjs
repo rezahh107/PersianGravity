@@ -98,7 +98,7 @@ function validateG009(registry, artifacts, expectedIdentity, perksSourceEvidence
         }
         if (surface.id === 'gp-advanced-select.tom-select') {
           const source = perksSourceEvidence.observations?.advanced_select;
-          for (const field of ['exact_style_handle_line', 'exact_style_asset_line']) {
+          for (const field of ['exact_style_handle_line', 'exact_style_asset_line', 'change_listener_plugin_line']) {
             if (!Number.isInteger(source?.[field]) || source[field] <= 0) {
               errors.push(`G-009 ${surface.id}: exact vendor handle/style source contract is incomplete (${field}).`);
             }
