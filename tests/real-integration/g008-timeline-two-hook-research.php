@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit( 1 ); }
 
 final class PGR_Timeline_Research {
     public array $contexts = array();
-    public array $counts = array('first'=>0,'second'=>0,'consumed'=>0,'unrelated'=>0,'stale'=>0,'nested'=>0);
+    public array $counts = array('first'=>0,'second'=>0,'consumed'=>0,'unrelated'=>0,'stale'=>0,'nested'=>0,'armed'=>0,'initial_consumed'=>0,'stored_consumed'=>0);
     public bool $drift = false;
     public bool $conversion_failure = false;
     private array $markers = array();
@@ -50,12 +50,12 @@ final class PGR_Timeline_Research {
         if(!$utc || $utc->format('Y-m-d H:i:s')!==$raw) { return $format; }
         $civil=$utc->setTimezone(wp_timezone());
         $timestamp=gmmktime((int)$civil->format('H'),(int)$civil->format('i'),(int)$civil->format('s'),(int)$civil->format('n'),(int)$civil->format('j'),(int)$civil->format('Y'));
-        $literal='PGRTL'.(++$this->serial).'X'; $escaped='';
+        $literal='PGRTL'.bin2hex(random_bytes(16)).(++$this->serial).'X'; $escaped='';
         foreach(str_split($literal) as $char) { $escaped.='\\'.$char; }
         $marked=$escaped.trim($format);
         if($this->contexts) { ++$this->counts['nested']; }
         $this->contexts[$marked]=array('note'=>$note,'snapshot'=>get_object_vars($note),'notes'=>$notes,'entry'=>$entry,'timestamp'=>$timestamp);
-        $this->markers[$marked]=$literal;
+        $this->markers[$marked]=$literal; ++$this->counts['armed'];
         add_filter('date_i18n',array($this,'consume'),PHP_INT_MAX,4);
         return $marked;
     }
@@ -71,7 +71,7 @@ final class PGR_Timeline_Research {
         $note=$path[4]['args'][0]??null;
         if($this->drift || $gmt!==true || !is_int($timestamp) || $timestamp!==$context['timestamp'] || $note!==$context['note'] || get_object_vars($note)!==$context['snapshot'] || ($path[5]['args'][0]??null)!==$context['notes'] || ($path[6]['args'][0]??null)!==$context['entry'] || !in_array(($path[1]['args']??null),array(array($note->date_created,false,'',true),array($note->date_created,false,$format,true)),true) || ($path[2]['args']??null)!==array($note->date_created,'',false,true)) { ++$this->counts['unrelated']; return $fallback; }
         $converted=$this->conversion_failure?null:PGR_Jalali_Presentation::format_date((int)gmdate('Y',$timestamp),(int)gmdate('n',$timestamp),(int)gmdate('j',$timestamp));
-        if($converted!==null) { ++$this->counts['consumed']; }
+        if($converted!==null) { ++$this->counts['consumed']; ++$this->counts[(int)$note->id===0?'initial_consumed':'stored_consumed']; }
         return $converted??$fallback;
     }
 }
@@ -95,7 +95,7 @@ $snapshot = static function () use ($entry_id, $form) {
     $current = GFAPI::get_entry($entry_id);
     $step = (new Gravity_Flow_API($form['id']))->get_current_step($current);
     $rest = rest_do_request(new WP_REST_Request('GET', '/gf/v2/entries/' . $entry_id));
-    return array('gfapi'=>$current, 'rest_status'=>$rest->get_status(), 'rest'=>$rest->get_data(), 'db'=>$wpdb->get_row($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_table_name() . ' WHERE id=%d', $entry_id), ARRAY_A), 'meta'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_meta_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'notes'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_notes_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'state'=>array($step->get_id(), $step->get_due_date_timestamp(), $step->get_expiration_timestamp(), $step->get_schedule_timestamp(), $step->is_overdue(), $step->is_expired()));
+    return json_decode(wp_json_encode(array('form'=>GFAPI::get_form($form['id']), 'feeds'=>gravity_flow()->get_feeds($form['id']), 'gfapi'=>$current, 'rest_status'=>$rest->get_status(), 'rest'=>$rest->get_data(), 'db'=>$wpdb->get_row($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_table_name() . ' WHERE id=%d', $entry_id), ARRAY_A), 'meta'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_meta_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'notes'=>$wpdb->get_results($wpdb->prepare('SELECT * FROM ' . GFFormsModel::get_entry_notes_table_name() . ' WHERE entry_id=%d ORDER BY id', $entry_id), ARRAY_A), 'state'=>array($step->get_id(), $step->get_due_date_timestamp(), $step->get_expiration_timestamp(), $step->get_schedule_timestamp(), $step->is_overdue(), $step->is_expired()))),true,512,JSON_THROW_ON_ERROR);
 };
 $before = $snapshot();
 $native = $render();
@@ -143,6 +143,25 @@ add_filter('date_i18n',$reentrant,1,4);
 $reentrant_output=$render();
 remove_filter('date_i18n',$reentrant,1);
 $checks['reentrant_same_arguments_native'] = $nested_native && $reentrant_output===$actual;
+// Reenter after a format token is armed, while the outer row is still active.
+$in_time_option=false; $nested_during_format=null;
+$during_format=static function($value) use (&$in_time_option,&$nested_during_format,$render) {
+    if(!$in_time_option) { $in_time_option=true; $nested_during_format=$render(); $in_time_option=false; }
+    return $value;
+};
+add_filter('option_time_format',$during_format,PHP_INT_MAX);
+$outer_during_format=$render();
+remove_filter('option_time_format',$during_format,PHP_INT_MAX);
+$checks['nested_armed_row_isolation']=$outer_during_format===$actual && $nested_during_format===$actual;
+// Call-header helpers outside the authentic Timeline path must remain native.
+$research->stop(); $header_native=Gravity_Flow_Entry_Detail::get_note_header('control',$entry['date_created']);
+$research->start(); $checks['missing_timeline_context_native']=Gravity_Flow_Entry_Detail::get_note_header('control',$entry['date_created'])===$header_native;
+// Later filters may alter the format; only cleanup, never conversion, is allowed.
+$suffix=static fn($value)=>$value.'!';
+$research->stop(); add_filter('option_date_format',$suffix,PHP_INT_MAX); $suffix_native=$render(); remove_filter('option_date_format',$suffix,PHP_INT_MAX);
+$research->start(); add_filter('option_date_format',$suffix,PHP_INT_MAX); $suffix_actual=$render(); remove_filter('option_date_format',$suffix,PHP_INT_MAX);
+$checks['late_format_mismatch_native']=$suffix_actual===$suffix_native;
+
 
 // Same date/time format must still convert the date only.
 $same_format = static fn($value) => 'Y-m-d';
