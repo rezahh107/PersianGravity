@@ -50,14 +50,16 @@ final class PGR_Gravity_Perks_RTL {
 	}
 
 	/**
-	 * The vendor Tom Select runtime sets `rtl` on `.ts-wrapper`, while the bundled
-	 * stylesheet targets `.ts-control.rtl` and pins the single-select caret to the
-	 * right. Scope the compatibility rule to that actual wrapper state.
+	 * The exact GP Advanced Select runtime creates a `gfield_select` Tom Select
+	 * wrapper with its `change_listener` plugin and sets `rtl` on that wrapper.
+	 * The bundled stylesheet targets `.ts-control.rtl` instead and keeps the
+	 * single-select caret on the LTR side. Scope the compatibility rule to the
+	 * authentic wrapper state and reserve the caret gap on RTL inline-end.
 	 *
 	 * @return string
 	 */
 	public static function css() {
-		return '.ts-wrapper.rtl .ts-control,.ts-wrapper.rtl .ts-control>input{direction:rtl;text-align:right;}'
-			. '.ts-wrapper.rtl:not(.form-control):not(.form-select).single .ts-control{background-position:left .75rem center;padding-left:max(var(--ts-pr-min),calc(var(--ts-pr-clear-button) + var(--ts-pr-caret)))!important;padding-right:var(--ts-pr-min)!important;}';
+		return '.ts-wrapper.gfield_select.plugin-change_listener.rtl .ts-control,.ts-wrapper.gfield_select.plugin-change_listener.rtl .ts-control>input{direction:rtl;text-align:right;}'
+			. '.ts-wrapper.gfield_select.plugin-change_listener.rtl:not(.form-control):not(.form-select).single .ts-control{background-position:left .75rem center;padding-inline-start:var(--ts-pr-min)!important;padding-inline-end:max(var(--ts-pr-min),var(--ts-pr-caret))!important;}';
 	}
 }
