@@ -303,6 +303,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 				unset( $this->contexts[ $format ] );
 			}
 		}
+	}
 
 	/**
 	 * Validate the exact first-seam host arguments discovered in qualification.
