@@ -165,6 +165,30 @@ const sourceContract = {
     overdue_uses_same_due_getter: overdueMethod.includes('get_due_date_timestamp()') && overdueMethod.includes('time()'),
   },
   entry_detail_schedule_due_expiration: {
+    exact_status_box_wrapper:
+      entryWorkflowBoxMethod.includes('<div id="gravityflow-status-box-container" class="postbox">')
+      && entryWorkflowBoxMethod.includes('<div id="minor-publishing" class="gravityflow-status-box">'),
+    workflow_info_precedes_step_status_in_exact_wrapper:
+      entryWorkflowBoxMethod.indexOf('maybe_display_entry_detail_workflow_info') >= 0
+      && entryWorkflowBoxMethod.indexOf('maybe_display_entry_detail_workflow_info') < entryWorkflowBoxMethod.indexOf('maybe_display_entry_detail_step_status'),
+    workflow_info_uses_bounded_human_field_nodes:
+      entryWorkflowInfoMethod.includes('gravityflow-status-box-field-entry-id')
+      && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-submitted-time')
+      && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-last-updated')
+      && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-due-date')
+      && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-expires')
+      && entryWorkflowInfoMethod.includes('gravityflow-status-box-field-value'),
+    entry_id_href_keeps_ascii_numeric_authority:
+      entryWorkflowInfoMethod.includes("admin.php?page=gf_entries&view=entry&id=")
+      && entryWorkflowInfoMethod.includes("'&lid=' . absint( $entry['id'] )")
+      && entryWorkflowInfoMethod.includes("$entry_id = absint( $entry['id'] )"),
+    below_workflow_info_hook_is_supported_post_value_seam:
+      entryWorkflowInfoMethod.includes("do_action( 'gravityflow_below_workflow_info_entry_detail', $form, $entry, $current_step )")
+      && entryWorkflowInfoMethod.indexOf("do_action( 'gravityflow_below_workflow_info_entry_detail'") > entryWorkflowInfoMethod.indexOf('gravityflow-status-box-field-expires'),
+    queued_step_reuses_bounded_human_field_nodes:
+      entryQueuedMethod.includes('gravityflow-status-box-field-step-name')
+      && entryQueuedMethod.includes('gravityflow-status-box-field-scheduled-date')
+      && entryQueuedMethod.includes('gravityflow-status-box-field-value'),
     workflow_info_exposes_format_pattern_filter_only: entryWorkflowInfoMethod.includes("apply_filters( 'gravityflow_date_format_entry_detail', '' )"),
     format_pattern_filter_precedes_due_and_expiration: entryWorkflowInfoMethod.indexOf("apply_filters( 'gravityflow_date_format_entry_detail', '' )") >= 0
       && entryWorkflowInfoMethod.indexOf("apply_filters( 'gravityflow_date_format_entry_detail', '' )") < entryWorkflowInfoMethod.indexOf('get_due_date_timestamp()')
