@@ -136,18 +136,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		$this->contexts[ $marked['format'] ] = array(
-			'note' => $note,
+		$this->contexts[ $marked['format'] ]        = array(
+			'note'          => $note,
 			'note_snapshot' => get_object_vars( $note ),
-			'notes' => $notes,
-			'notes_order' => $note_order,
-			'entry' => $entry,
-			'entry_key' => $entry_key,
-			'form' => $form,
-			'raw' => $raw,
-			'timestamp' => $timestamp,
+			'notes'         => $notes,
+			'notes_order'   => $note_order,
+			'entry'         => $entry,
+			'entry_key'     => $entry_key,
+			'form'          => $form,
+			'raw'           => $raw,
+			'timestamp'     => $timestamp,
 			'native_format' => $format,
-			'event_kind' => $event_kind,
+			'event_kind'    => $event_kind,
 		);
 		$this->marker_literals[ $marked['format'] ] = $marked['literal'];
 
@@ -423,7 +423,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		return array(
-			'format' => $escaped . $native_format,
+			'format'  => $escaped . $native_format,
 			'literal' => $literal,
 		);
 	}
@@ -597,11 +597,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return false;
 		}
 
-		$paths = array(
+		$paths  = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
-			'flow_common' => $flow_root . '/includes/class-common.php',
-			'flow_print' => $flow_root . '/includes/pages/class-print-entries.php',
-			'gf_common' => dirname( $gf_main ) . '/common.php',
+			'flow_common'       => $flow_root . '/includes/class-common.php',
+			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
+			'gf_common'         => dirname( $gf_main ) . '/common.php',
 		);
 		$actual = array();
 		foreach ( $paths as $key => $path ) {
