@@ -66,10 +66,10 @@ final class G007GravityPerksLocalizationTest extends TestCase {
 
 		$this->assertCount( 1, $GLOBALS['pgr_test_inline_styles'] );
 		$this->assertSame( 'gp-advanced-select-tom-select', $GLOBALS['pgr_test_inline_styles'][0]['handle'] );
-		$this->assertStringContainsString( '.ts-wrapper.rtl', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
+		$this->assertStringContainsString( '.ts-wrapper.gfield_select.plugin-change_listener.rtl', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
 		$this->assertStringContainsString( 'background-position:left .75rem center', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
-		$this->assertStringContainsString( 'padding-left:max(var(--ts-pr-min),calc(var(--ts-pr-clear-button) + var(--ts-pr-caret)))!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
-		$this->assertStringContainsString( 'padding-right:var(--ts-pr-min)!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
+		$this->assertStringContainsString( 'padding-inline-start:var(--ts-pr-min)!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
+		$this->assertStringContainsString( 'padding-inline-end:max(var(--ts-pr-min),var(--ts-pr-caret))!important', $GLOBALS['pgr_test_inline_styles'][0]['data'] );
 	}
 
 	public function test_rtl_adapter_is_dormant_outside_fa_ir_rtl_or_without_vendor_handle(): void {
