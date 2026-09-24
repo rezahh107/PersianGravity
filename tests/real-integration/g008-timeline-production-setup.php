@@ -200,6 +200,14 @@ add_action(
 			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
 			'source_fingerprints'      => $hashes,
 		);
+		$artifact_dir = getenv( 'WU008_ARTIFACT_DIR' );
+		if ( is_string( $artifact_dir ) && '' !== $artifact_dir ) {
+			$probe_mode = $evidence['module_enabled'] ? 'enabled' : 'disabled';
+			file_put_contents(
+				trailingslashit( $artifact_dir ) . 'g008-timeline-production-hook-' . $probe_mode . '.json',
+				wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n"
+			);
+		}
 		echo '<script>window.pgrG008TimelineProductionEvidence=' . wp_json_encode( $evidence ) . ';</script>';
 	},
 	PHP_INT_MAX
