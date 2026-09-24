@@ -40,7 +40,7 @@ final class PGR_Timeline_Research {
         ++$this->counts['first'];
         $trace=debug_backtrace(0,60); $this->prune($trace);
         $path=$this->chain($trace,array('get_option','GFCommon::get_default_date_format','GFCommon::format_date','Gravity_Flow_Common::format_date','Gravity_Flow_Entry_Detail::get_note_header','Gravity_Flow_Entry_Detail::get_note_body','Gravity_Flow_Entry_Detail::notes_grid','Gravity_Flow_Entry_Detail::timeline'));
-        if(!$path || $this->drift || $option!=='date_format' || !is_string($format) || trim($format)==='' || GRAVITY_FLOW_VERSION!=='3.1.0' || GFForms::$version!=='3.1.1.1') { return $format; }
+        if(!$path || $this->drift || $option!=='date_format' || !is_string($format) || !in_array(trim($format),array('F j, Y','Y-m-d'),true) || GRAVITY_FLOW_VERSION!=='3.1.0' || GFForms::$version!=='3.1.1.1') { return $format; }
         $note=$path[5]['args'][0]??null; $notes=$path[6]['args'][0]??null; $entry=$path[7]['args'][0]??null;
         if(!is_object($note) || !is_array($notes) || !in_array($note,$notes,true) || !is_array($entry)) { return $format; }
         $raw=$note->date_created??null;
@@ -166,17 +166,23 @@ $checks['late_format_mismatch_native']=$suffix_actual===$suffix_native;
 // Same date/time format must still convert the date only.
 $same_format = static fn($value) => 'Y-m-d';
 $research->stop();
-add_filter('option_time_format',$same_format);
+add_filter('option_date_format',$same_format,10); add_filter('option_time_format',$same_format);
 $same_native=$render();
 $research->start();
 $same_actual=$render();
-remove_filter('option_time_format',$same_format);
+remove_filter('option_date_format',$same_format,10); remove_filter('option_time_format',$same_format);
 $checks['same_format_time_preserved'] = true;
 foreach ($headers($same_actual) as $i=>$header) {
     $parts=explode(' ',html_entity_decode($header));
     $native_parts=explode(' ',html_entity_decode($headers($same_native)[$i]));
     if (end($parts)!==end($native_parts)) { $checks['same_format_time_preserved']=false; }
 }
+
+// WP has special U semantics; unsupported profiles and short-circuits stay native.
+$research->stop(); $unix_format=static fn($value)=>'U'; add_filter('option_date_format',$unix_format,10); $unix_native=$render();
+$research->start(); $checks['unsupported_format_native']=$render()===$unix_native; remove_filter('option_date_format',$unix_format,10);
+$research->stop(); $pre_format=static fn($value)=>'Y-m-d'; add_filter('pre_option_date_format',$pre_format,10); $pre_native=$render();
+$research->start(); $checks['option_short_circuit_native']=$render()===$pre_native; remove_filter('pre_option_date_format',$pre_format,10);
 // Abort after arming; the next unrelated formatter must discard stale tokens.
 $abort = static function($notes) { throw new RuntimeException('RESEARCH_ABORT'); };
 add_filter('option_date_format',$abort,PHP_INT_MAX);
