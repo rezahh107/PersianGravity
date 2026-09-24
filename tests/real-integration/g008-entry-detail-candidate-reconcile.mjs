@@ -138,7 +138,8 @@ for (const scenarioName of ['failure', 'drift', 'range']) {
 if (enabled.failure?.candidateEvidence?.observations?.some((item) => item.jalali !== null)) failures.push('forced conversion failure produced Jalali output');
 if (enabled.drift?.candidateEvidence?.marker_date_i18n_calls !== 0) failures.push('version drift did not fail closed before date_i18n marker');
 if (enabled.range?.candidateEvidence?.observations?.some((item) => item.jalali !== null)) failures.push('out-of-range scenario produced Jalali output');
-if (JSON.stringify(enabled.repeated?.fields) !== JSON.stringify(enabled.exact?.fields)) failures.push('repeated rendering was not deterministic');
+const entryDetailRepeatedRenderingDeterministic = JSON.stringify(enabled.repeated?.fields) === JSON.stringify(enabled.exact?.fields);
+if (!entryDetailRepeatedRenderingDeterministic) failures.push('Entry Detail repeated rendering was not deterministic');
 if (enabled.exact?.candidateEvidence?.unrelated_wp_date_i18n !== disabled.exact?.candidateEvidence?.unrelated_wp_date_i18n) failures.push('unrelated WordPress date_i18n output changed');
 if (enabled.exact?.candidateEvidence?.unrelated_gf_format_date !== disabled.exact?.candidateEvidence?.unrelated_gf_format_date) failures.push('unrelated Gravity Forms formatting output changed');
 
@@ -181,6 +182,15 @@ for (const state of [enabledState, disabledState]) {
 }
 if (JSON.stringify(enabledState.timeline.stored_after) !== JSON.stringify(disabledState.timeline.stored_after)) failures.push('Timeline stored notes changed with module state');
 
+function canonicalTimelineSnapshot(timeline) {
+  return {
+    headers: timeline?.headers ?? [],
+    bodies: timeline?.bodies ?? [],
+    rows: timeline?.rows ?? [],
+    collector: timeline?.collector ?? null,
+  };
+}
+
 const timelineFixture = enabled.timeline?.fixture ?? [];
 if (timelineFixture.length < 5) failures.push('production Timeline fixture does not contain initial plus four stored events');
 const expectedDisabledHeaders = timelineFixture.map((item) => item.expected_header);
@@ -195,7 +205,11 @@ for (let index = 0; index < timelineFixture.length; index += 1) {
 const duplicateIds = enabled.timeline?.duplicate_ids ?? [];
 if (duplicateIds.length < 2 || new Set(duplicateIds.map(Number)).size !== duplicateIds.length) failures.push('duplicate-timestamp Timeline events lost distinct note identity');
 if (enabled.timeline?.marker_leaked !== false || disabled.timeline?.marker_leaked !== false) failures.push('Timeline production marker leaked');
-if (!enabled.timeline?.repeated || JSON.stringify(enabled.timeline.repeated) !== JSON.stringify({ headers: enabled.timeline.headers, bodies: enabled.timeline.bodies })) failures.push('enabled Timeline repeated rendering was not deterministic');
+const timelineRepeatedRenderingDeterministic = [enabled, disabled].every((browser) => (
+  Boolean(browser.timeline?.repeated)
+  && JSON.stringify(browser.timeline.repeated) === JSON.stringify(canonicalTimelineSnapshot(browser.timeline))
+));
+if (!timelineRepeatedRenderingDeterministic) failures.push('Timeline repeated rendering was not deterministic');
 if (JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Timeline note bodies/order changed with module state');
 if (JSON.stringify(enabled.print?.headers) !== JSON.stringify(enabled.timeline?.headers)) failures.push('enabled Print did not inherit verified Timeline headers');
 if (JSON.stringify(disabled.print?.headers) !== JSON.stringify(disabled.timeline?.headers)) failures.push('disabled Print did not inherit native Timeline headers');
@@ -226,7 +240,7 @@ const result = {
   unrelated_date_formatting_unchanged: !failures.some((failure) => failure.includes('unrelated')),
   operational_state_equal: JSON.stringify(canonicalCandidate(enabledState)) === JSON.stringify(canonicalCandidate(disabledState)),
   timeline_storage_equal: JSON.stringify(enabledState.timeline.stored_after) === JSON.stringify(disabledState.timeline.stored_after),
-  timeline_presentation_admitted: !failures.some((failure) => failure.includes('Timeline row') || failure.includes('Timeline headers') || failure.includes('Timeline production marker')),
+  timeline_presentation_admitted: timelineRepeatedRenderingDeterministic && !failures.some((failure) => failure.includes('Timeline row') || failure.includes('Timeline headers') || failure.includes('Timeline production marker')),
   print_inherits_verified_timeline_presentation: !failures.some((failure) => failure.includes('Print')),
   print_workflow_sidebar_absent: Object.values(enabled.print.workflow_sidebar_presence ?? {}).every((value) => value === 0),
   production_result: failures.length ? 'NOT_PROVEN' : 'ADMITTED_VERIFIED',
@@ -267,7 +281,7 @@ const admission = {
   operational_getter_counts_equal: !failures.some((failure) => failure.includes('getter invocation counts')),
   zero_nested_operational_reentry: !failures.some((failure) => failure.includes('nested operational getter')),
   csv_export_isolated: !failures.some((failure) => failure.includes('CSV/export')),
-  repeated_rendering_deterministic: !failures.some((failure) => failure.includes('Repeated rendering')),
+  repeated_rendering_deterministic: entryDetailRepeatedRenderingDeterministic && timelineRepeatedRenderingDeterministic,
   marker_leak_free: !failures.some((failure) => failure.includes('marker leaked')),
   timeline_production_admitted: result.timeline_presentation_admitted,
   print_inherits_verified_timeline_presentation: result.print_inherits_verified_timeline_presentation,
