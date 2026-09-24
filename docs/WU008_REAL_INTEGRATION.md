@@ -9,12 +9,15 @@ This harness is the repository-owned, fail-closed CI path for real WordPress/bro
 | Gravity Forms | `3.1.1.1` | `1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy` | `5300290` | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` |
 | Gravity Flow | `3.1.0` | `1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf` | `2603034` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` |
 | GravityView | `3.3.4` | `16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1` | `7569755` | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` |
+| Gravity Perks | `2.3.16` | `1s6bh8rcc-fGZcPWe2OzJQj48r7zaqeRG` | `156703` | `a160d166fb7894b0dfc558ae92e0c230a1336ed2a81e78fa1216be72b1024e7c` |
+| GP File Upload Pro | `1.5.13` | `1W7rVScg5N0X8_RWyWrc95NU2bUf_boWQ` | `3503920` | `fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce` |
+| GP Advanced Select | `1.1.21` | `1_if3Eb9MctTgQaeYhGlSsyOsIJPIfJZ5` | `184531` | `d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2` |
 
 PersianGravity is no longer fetched from the historical 4.2.0 commit. The workflow checks out the exact PR/workflow source SHA, builds the repository's deterministic production ZIP through `tools/build-production-package.sh`, installs that ZIP into the disposable WordPress site, and verifies the package's generated `release-manifest.json` source commit/tree against the checkout. Plugin version is derived from the same release authority used by the package builder; there is no separately synchronized WU008 PersianGravity version literal.
 
 ## Verification boundary
 
-All three licensed downloads must pass before extraction. The package verifier requires expected filename, ZIP signature, ZIP MIME/type inspection, full archive integrity, exact byte size, exact SHA-256, expected plugin main file, and exact plugin version header. Any permission/login HTML response, corrupt archive, changed bytes, changed version, unavailable download, or wrong file fails the job. There is no substitute package or cache bypass.
+All six licensed downloads must pass before extraction. The package verifier requires expected filename, ZIP signature, ZIP MIME/type inspection, full archive integrity, exact byte size, exact SHA-256, expected plugin main file, and exact plugin version header. Any permission/login HTML response, corrupt archive, changed bytes, changed version, unavailable download, or wrong file fails the job. There is no substitute package or cache bypass.
 
 The PersianGravity package is independently bound to exact checked-out commit/tree, derived version and built ZIP SHA-256. The runtime manifest records those identities together with the exact licensed vendor versions and package hashes.
 
@@ -22,7 +25,7 @@ The uploaded evidence is intentionally bounded to verification metadata, runtime
 
 ## Canonical browser navigation and authentication
 
-WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, `gravityflow_inbox_url`, and the authentic frontend `gravityflow_frontend_inbox_url`; browser tests consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`.
+WordPress runtime URL APIs own application navigation for this harness. `runtime-manifest.json` publishes `page_url`, `login_url`, `admin_url`, `gravityflow_inbox_url`, the authentic frontend `gravityflow_frontend_inbox_url`, and the authentic Gravity Perks fixture `gravityperks_frontend_url`; browser tests consume those values rather than rebuilding WordPress application paths from `WU008_BASE_URL`.
 
 The login step is a first-class diagnostics-gated browser operation. After login, the harness proves the authenticated WordPress admin boundary before product admin assertions run. GravityView's product URL is discovered from native authenticated admin navigation and the destination is verified as the exact `post_type=gravityview` surface.
 
@@ -54,10 +57,14 @@ G-009 extends the same lab rather than duplicating it. It runs:
 - basic focus/keyboard/input checks where a deterministic control exists;
 - an authentic frontend Gravity Flow Inbox shortcode request;
 - a disposable disable/restore experiment for the observed `gform_admin` stylesheet, when present, to separate CSS causality from production repair authorization;
-- strengthened GravityView native list-table/search-control evidence rather than page-load/`html dir` alone.
+- strengthened GravityView native list-table/search-control evidence rather than page-load/`html dir` alone;
+- exact anonymous-download/hash/version/root verification and activation for Gravity Perks 2.3.16, GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21;
+- an exact-installed-source metadata probe that proves File Upload Pro's PHP gettext → `wp_localize_script()` path and Advanced Select's exact style handle/change-listener seam without exporting licensed source;
+- an authentic File Upload Pro field with visible Persian labels, RTL/LTR geometry and mixed Persian/technical filename BiDi evidence;
+- an authentic GP Advanced Select field with exact Tom Select wrapper/handle evidence, caret side/padding computation, and search/keyboard/selection/focus checks in RTL plus native LTR control.
 
 The LTR control intentionally asserts WordPress' effective `get_locale()` and `is_rtl()` values rather than requiring a literal `WPLANG=en_US` option. WordPress represents its default English locale without that stored literal. The control removes the Persian locale option, proves effective `en_US`/LTR, runs the browser profile, and an `always()` restore step reactivates `fa_IR`/RTL and rechecks every plugin version so test state cannot leak across the lane.
 
 G-008 source discovery also reuses the exact installed vendor packages. `source-discovery.json` records only product/package identity plus normalized file/line references and candidate classifications; licensed source content itself is not uploaded. G-008 support/admission remains separate from source discovery.
 
-A green workflow can support only the exact scenarios it actually ran. It does not prove future vendor versions, absent AG Grid states, unprovisioned Gravity Perks packages, exhaustive accessibility, or a production repair for `gform_admin`.
+A green workflow can support only the exact scenarios it actually ran. It does not prove future vendor versions, absent AG Grid states, unlisted/future Gravity Perks products, exhaustive accessibility, or a production repair for `gform_admin`.
