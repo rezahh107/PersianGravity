@@ -60,17 +60,17 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_host_identity_accepts_only_exact_qualified_versions_and_safe_plugin_path(): void {
+	public function test_host_identity_accepts_only_exact_qualified_product_and_versions(): void {
 		$reflection = new ReflectionClass( PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter::class );
 		$method     = $reflection->getMethod( 'host_identity_matches' );
 		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
-		$basename   = 'host-flow/plugin.php';
+		$basename   = 'gravityflow/gravityflow.php';
 
 		$this->assertTrue( $method->invoke( $adapter, '3.1.0', '3.1.1.1', $basename ) );
 		$this->assertFalse( $method->invoke( $adapter, '3.1.1', '3.1.1.1', $basename ) );
 		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.2.0', $basename ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', '../escape/plugin.php' ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', '/absolute/plugin.php' ) );
+		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', 'host-flow/plugin.php' ) );
+		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', '../gravityflow/gravityflow.php' ) );
 	}
 
 	public function test_source_fingerprint_contract_accepts_only_exact_qualified_set(): void {
