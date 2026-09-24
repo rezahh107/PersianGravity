@@ -351,7 +351,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
 		}
 
-		$flow_basename = defined( self::FLOW_BASENAME_CONSTANT ) ? str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) : '';
+		$flow_basename  = defined( self::FLOW_BASENAME_CONSTANT ) ? str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) : '';
 		$flow_note_type = basename( dirname( $flow_basename ) );
 		return '' !== $flow_note_type && '.' !== $flow_note_type && isset( $note->note_type ) && $flow_note_type === (string) $note->note_type ? 'stored' : null;
 	}
@@ -504,7 +504,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return self::FLOW_VERSION === $flow_version &&
 			self::GF_VERSION === $gf_version &&
 			'' !== $flow_basename &&
-			$flow_basename === ltrim( $flow_basename, '/' ) &&
+			ltrim( $flow_basename, '/' ) === $flow_basename &&
 			false === strpos( $flow_basename, '..' ) &&
 			'.' !== $directory &&
 			'/' !== $directory &&
