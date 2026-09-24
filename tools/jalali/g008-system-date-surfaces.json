@@ -337,7 +337,7 @@
           "raw_source": "No independent Print date authority; Gravity_Flow_Print_Entries::render() reuses Entry Detail field-grid rendering and optionally Gravity_Flow_Entry_Detail::timeline() for history timestamps.",
           "source_calendar": "inherits the verified underlying Entry Detail/Timeline sources",
           "source_timezone": "inherits the verified underlying Entry Detail/Timeline timezone semantics",
-          "presentation_seam": "INHERITS_VERIFIED_TIMELINE_RENDERER: Print owns no independent date seam. Its optional Timeline path reuses Gravity_Flow_Entry_Detail::timeline(), so exact Flow 3.1.0 Print presentation inherits PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter only when the already-qualified Timeline renderer path is active; workflow-sidebar dates remain absent from this Print path.",
+          "presentation_seam": "INHERITS_VERIFIED_TIMELINE_RENDERER: There is no independent Print date seam. Its optional Timeline path reuses Gravity_Flow_Entry_Detail::timeline(), so exact Flow 3.1.0 Print presentation inherits PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter only when the already-qualified Timeline renderer path is active; workflow-sidebar dates remain absent from this Print path.",
           "semantic_dependencies": [
             "dependent Entry Detail rendering",
             "dependent Timeline/history rendering",
