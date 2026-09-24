@@ -9,6 +9,7 @@ on:
       - 'languages/providers/gravityflow/**'
       - 'includes/localization/**'
       - 'tools/i18n/**'
+      - 'tools/release/**'
       - 'tests/real-integration/g006-gravityforms-runtime.php'
   workflow_dispatch:
 
@@ -75,6 +76,9 @@ jobs:
           bash -n tests/real-integration/verify-package.sh
           php -l tests/real-integration/g006-gravityforms-runtime.php
           test -z "$(git ls-files '*.zip')"
+          expected_pgr_version="$(php tools/release/release-tool.php current)"
+          test -n "$expected_pgr_version"
+          printf 'G006_PGR_EXPECTED_VERSION=%s\n' "$expected_pgr_version" >> "$GITHUB_ENV"
           mkdir -p "$G006_GF_WP_PATH" "$G006_GF_PACKAGE_DIR" "$G006_GF_ARTIFACT_DIR"
 
       - name: Install disposable WordPress
@@ -118,7 +122,7 @@ jobs:
           php "$G006_GF_WP_CLI" plugin activate persian-gravityforms gravityforms gravityflow --path="$G006_GF_WP_PATH"
           test "$(php "$G006_GF_WP_CLI" plugin get gravityforms --field=version --path="$G006_GF_WP_PATH")" = "$G006_GF_GF_VERSION"
           test "$(php "$G006_GF_WP_CLI" plugin get gravityflow --field=version --path="$G006_GF_WP_PATH")" = "$G006_GF_FLOW_VERSION"
-          test "$(php "$G006_GF_WP_CLI" plugin get persian-gravityforms --field=version --path="$G006_GF_WP_PATH")" = "4.4.0"
+          test "$(php "$G006_GF_WP_CLI" plugin get persian-gravityforms --field=version --path="$G006_GF_WP_PATH")" = "$G006_PGR_EXPECTED_VERSION"
           G006_GF_ARTIFACT_DIR="$G006_GF_ARTIFACT_DIR" php "$G006_GF_WP_CLI" --path="$G006_GF_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g006-gravityforms-runtime.php"
           test -s "$G006_GF_ARTIFACT_DIR/g006-gravityforms-runtime.json"
 

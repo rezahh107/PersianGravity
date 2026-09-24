@@ -15,7 +15,7 @@ Version 4.6.0 exposes six bounded source-defined modules enabled by default for 
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
-* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; verified presentation covers Gravity Forms Entries List `date_created` plus exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp`, without changing stored/native or workflow-owned operational values.
+* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; verified presentation covers Gravity Forms Entries List `date_created` plus exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated`/`due_date`, Status `date_created`/`workflow_timestamp`, and Entry Detail Submitted / Last Updated / Due / Expiration, without changing stored/native or workflow-owned operational values.
 * Iranian Address type and province choices.
 * Form-level Persian/Arabic digit normalization (`pgr_normalize_digits`).
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
@@ -35,7 +35,7 @@ The complete Help & Documentation Center ships locally with Persian and English 
 
 `jalali_presentation` is separate from the dedicated `pgr_jalali_date` field. The field keeps true Jalali-domain storage semantics; the presentation module converts only explicitly known Gregorian/system sources for display.
 
-The module uses a source-owned Borkowski-lineage Gregorian→Jalali engine and typed `DateTimeInterface` presentation facade. Gravity Forms Entries List `date_created` remains admitted through `gform_entries_field_value`. Exact Gravity Flow 3.1.0 additionally admits Inbox `date_created`/`last_updated`/`due_date` and Status-table `date_created`/`workflow_timestamp` through bounded host presentation seams. Authoritative UTC/epoch sources are converted to the WordPress/site timezone before calendar conversion; raw Entry/meta, database, REST/API, query/sort/filter, workflow/assignment state, Inbox due-date deadline/overdue state, Inbox compare values, and Status CSV/export values remain native.
+The module uses a source-owned Borkowski-lineage Gregorian→Jalali engine and typed `DateTimeInterface` presentation facade. Gravity Forms Entries List `date_created` remains admitted through `gform_entries_field_value`. Exact Gravity Flow 3.1.0 additionally admits Inbox `date_created`/`last_updated`/`due_date`, Status-table `date_created`/`workflow_timestamp`, and Entry Detail workflow-info Submitted / Last Updated / Due / Expiration through bounded host presentation seams. Authoritative UTC/epoch sources are converted to the WordPress/site timezone before calendar conversion; raw Entry/meta, database, REST/API, query/sort/filter, workflow/assignment state, Inbox due-date deadline/overdue state, Inbox compare values, Status CSV/export values, and Entry Detail workflow/deadline/expiration semantics remain native. Exact Flow 3.1.0 Status `due_date`, Entry Detail Scheduled, Timeline/history timestamps, and independent Print date seams remain native under evidence-qualified no-admission dispositions where no safe supported presentation seam was proven.
 
 The V1 `VALIDATED_PRODUCT_RANGE` is Gregorian `1800-01-01..2124-03-19`. Outside that evidence-backed range, native presentation is retained. Full provenance, MIT attribution, official University of Tehran golden cases, ICU/reference differential evidence, timezone behavior and known limitations are documented in `docs/G008_JALALI_PRESENTATION.md`.
 
@@ -101,8 +101,9 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Expanded exact Gravity Flow 3.1.0 Jalali system-date presentation to Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp`, with exact-source and authentic runtime/browser evidence while preserving native raw/storage/API/query/sort/filter, workflow/assignment, due/overdue/deadline, compare-value, and Status CSV/export semantics.
+* Added bounded Entry Detail workflow-info Jalali presentation for Submitted / Last Updated / Due / Expiration. Exact Flow 3.1.0 Status `due_date`, Entry Detail Scheduled, Timeline/history timestamps, and independent Print date seams remain native under evidence-qualified no-admission dispositions where no safe supported presentation seam was proven.
 * Closed the remaining non-GravityView G-009 Gravity Perks browser scope: exact public-read package provisioning, authentic File Upload Pro Persian labels/RTL, exact Advanced Select Tom Select qualification with a scoped logical-padding repair, and a final no-repair/no-admission disposition for `gform_admin` on the exercised Flow frontend surface.
-* Admitted exact Gravity Flow 3.1.0 Inbox `due_date` Jalali presentation after exact-source and authentic WU008 browser/runtime proof, while preserving raw due epoch, overdue/deadline state, workflow/assignment state, AG Grid compare/sort/filter behavior, and native no-due-date fallback.
 
 = 4.6.0 =
 * Added opt-in `jalali_presentation` as a module independent from the existing `jalali_date` field.
