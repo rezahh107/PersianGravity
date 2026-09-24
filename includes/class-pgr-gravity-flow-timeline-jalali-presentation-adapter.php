@@ -15,9 +15,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const FLOW_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
-	/** Exact qualified host versions. */
-	private const FLOW_VERSION = '3.1.0';
-	private const GF_VERSION   = '3.1.1.1';
+	/** Exact qualified host identities. */
+	private const FLOW_VERSION  = '3.1.0';
+	private const GF_VERSION    = '3.1.1.1';
+	private const FLOW_BASENAME = 'gravityflow/gravityflow.php';
 
 	/** Exact qualified source fingerprints for the production Timeline contract. */
 	private const SOURCE_FINGERPRINTS = array(
@@ -121,8 +122,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$event_kind = $this->event_kind( $note, $entry, $raw );
-		$timestamp  = $this->expected_localized_timestamp( $raw );
-		$entry_key  = $this->entry_key( $entry );
+
+		$timestamp = $this->expected_localized_timestamp( $raw );
+
+		$entry_key = $this->entry_key( $entry );
+
 		$note_order = $this->note_identity_order( $notes );
 		if ( null === $event_kind || null === $timestamp || null === $entry_key || null === $note_order ) {
 			return $format;
@@ -225,7 +229,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return null === $formatted ? $fallback : $formatted;
 	}
 
-	/** @return array<int,array<string,mixed>> */
+	/**
+	 * Capture the bounded request stack used to prove the exact host path.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
 	private function capture_trace() {
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Qualified caller-chain proof.
 		return debug_backtrace( 0, 60 );
@@ -244,17 +252,22 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			if ( $this->frame_signature( $frame ) !== $expected[0] ) {
 				continue;
 			}
+
 			foreach ( $expected as $offset => $signature ) {
 				if ( ! isset( $trace[ $index + $offset ] ) || $this->frame_signature( $trace[ $index + $offset ] ) !== $signature ) {
 					return null;
 				}
 			}
+
 			return array_slice( $trace, $index, count( $expected ) );
 		}
+
 		return null;
 	}
 
 	/**
+	 * Build one comparable backtrace signature.
+	 *
 	 * @param array<string,mixed> $frame Backtrace frame.
 	 * @return string
 	 */
@@ -267,8 +280,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 
 	/**
 	 * Remove contexts whose exact owning Timeline row is no longer on-stack.
-	 * Marker literals stay request-local so even a stale formatted value can be
-	 * cleaned if it appears after the context was discarded.
+	 * Marker literals stay request-local so a stale formatted value can still be
+	 * cleaned if it appears after its context was discarded.
 	 *
 	 * @param array<int,array<string,mixed>> $trace Debug backtrace.
 	 * @return void
@@ -286,6 +299,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 					break;
 				}
 			}
+
 			if ( ! $live ) {
 				unset( $this->contexts[ $format ] );
 			}
@@ -293,6 +307,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
+	 * Validate the exact first-seam host arguments discovered in qualification.
+	 *
 	 * @param array<int,array<string,mixed>> $path Qualified first chain.
 	 * @param string                         $raw  Raw date_created.
 	 * @return bool
@@ -304,6 +320,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
+	 * Validate the exact second-seam host arguments discovered in qualification.
+	 *
 	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
 	 * @param array<string,mixed>            $context Owned row context.
 	 * @param string                         $format  Exact marked format.
@@ -313,6 +331,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		if ( ! isset( $path[1]['args'], $path[2]['args'] ) ) {
 			return false;
 		}
+
 		$raw = $context['raw'];
 		return in_array(
 			$path[1]['args'],
@@ -337,13 +356,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		if ( null === $id ) {
 			return null;
 		}
+
 		if ( '0' === $id ) {
 			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
 		}
 
-		$basename = defined( self::FLOW_BASENAME_CONSTANT ) ? str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) : '';
-		$note_type = basename( dirname( $basename ) );
-		return '' !== $note_type && '.' !== $note_type && isset( $note->note_type ) && $note_type === (string) $note->note_type ? 'stored' : null;
+		return isset( $note->note_type ) && 'gravityflow' === (string) $note->note_type ? 'stored' : null;
 	}
 
 	/**
@@ -363,6 +381,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			) {
 				return null;
 			}
+
 			$civil = $source->setTimezone( wp_timezone() );
 		} catch ( Throwable $exception ) {
 			unset( $exception );
@@ -377,10 +396,13 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			(int) $civil->format( 'j' ),
 			(int) $civil->format( 'Y' )
 		);
+
 		return is_int( $timestamp ) ? $timestamp : null;
 	}
 
 	/**
+	 * Create one unpredictable escaped literal marker for a Timeline row.
+	 *
 	 * @param string $native_format Qualified native date format.
 	 * @return array{format:string,literal:string}|null
 	 */
@@ -396,6 +418,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		foreach ( str_split( $literal ) as $character ) {
 			$escaped .= '\\' . $character;
 		}
+
 		return array(
 			'format'  => $escaped . $native_format,
 			'literal' => $literal,
@@ -403,6 +426,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
+	 * Remove every marker literal this request-local adapter owns.
+	 *
 	 * @param mixed $date Native formatted value.
 	 * @return mixed
 	 */
@@ -410,10 +435,13 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		if ( ! is_string( $date ) || empty( $this->marker_literals ) ) {
 			return $date;
 		}
+
 		return str_replace( array_values( $this->marker_literals ), '', $date );
 	}
 
 	/**
+	 * Snapshot exact note object identities and order independently of timestamps.
+	 *
 	 * @param array<mixed> $notes Timeline notes array.
 	 * @return array<int,int>|null
 	 */
@@ -425,10 +453,13 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			}
 			$result[] = spl_object_id( $note );
 		}
+
 		return $result;
 	}
 
 	/**
+	 * Bind Entry identity without loose numeric coercion.
+	 *
 	 * @param array<mixed> $entry Entry snapshot.
 	 * @return string|null
 	 */
@@ -436,29 +467,45 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		if ( ! isset( $entry['id'], $entry['form_id'] ) ) {
 			return null;
 		}
-		$id      = $this->positive_decimal_id( $entry['id'] );
+
+		$id = $this->positive_decimal_id( $entry['id'] );
+
 		$form_id = $this->positive_decimal_id( $entry['form_id'] );
 		return null === $id || null === $form_id ? null : $form_id . ':' . $id;
 	}
 
-	/** @param mixed $value Candidate ID. @return string|null */
+	/**
+	 * Normalize only canonical positive decimal IDs.
+	 *
+	 * @param mixed $value Candidate ID.
+	 * @return string|null
+	 */
 	private function positive_decimal_id( $value ) {
 		$normalized = $this->nonnegative_decimal_id( $value );
 		return null !== $normalized && '0' !== $normalized ? $normalized : null;
 	}
 
-	/** @param mixed $value Candidate ID. @return string|null */
+	/**
+	 * Normalize only canonical non-negative decimal IDs.
+	 *
+	 * @param mixed $value Candidate ID.
+	 * @return string|null
+	 */
 	private function nonnegative_decimal_id( $value ) {
 		if ( is_int( $value ) ) {
 			return $value >= 0 ? (string) $value : null;
 		}
+
 		if ( ! is_string( $value ) || 1 !== preg_match( '/^(?:0|[1-9][0-9]*)$/', $value ) ) {
 			return null;
 		}
+
 		return $value;
 	}
 
 	/**
+	 * Validate exact supported versions and plugin basename.
+	 *
 	 * @param string $flow_version  Runtime Flow version.
 	 * @param string $gf_version    Runtime Gravity Forms version.
 	 * @param string $flow_basename Host-owned Flow plugin basename.
@@ -466,15 +513,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	 */
 	private function host_identity_matches( $flow_version, $gf_version, $flow_basename ) {
 		$flow_basename = str_replace( '\\', '/', $flow_basename );
-		$directory     = dirname( $flow_basename );
 		return self::FLOW_VERSION === $flow_version &&
 			self::GF_VERSION === $gf_version &&
-			'' !== $flow_basename &&
-			ltrim( $flow_basename, '/' ) === $flow_basename &&
-			false === strpos( $flow_basename, '..' ) &&
-			'.' !== $directory &&
-			'/' !== $directory &&
-			'php' === strtolower( pathinfo( $flow_basename, PATHINFO_EXTENSION ) );
+			self::FLOW_BASENAME === $flow_basename;
 	}
 
 	/**
@@ -499,8 +540,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return false;
 		}
 
-		$flow_version  = (string) constant( self::FLOW_VERSION_CONSTANT );
-		$gf_version    = (string) GFForms::$version;
+		$flow_version = (string) constant( self::FLOW_VERSION_CONSTANT );
+
+		$gf_version = (string) GFForms::$version;
+
 		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
 		if ( ! $this->host_identity_matches( $flow_version, $gf_version, $flow_basename ) ) {
 			return false;
@@ -523,15 +566,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
 			'gf_common'         => dirname( $gf_main ) . '/common.php',
 		);
+
 		$actual = array();
 		foreach ( $paths as $key => $path ) {
 			if ( ! is_readable( $path ) ) {
 				return false;
 			}
+
 			$hash = hash_file( 'sha256', $path );
 			if ( ! is_string( $hash ) ) {
 				return false;
 			}
+
 			$actual[ $key ] = $hash;
 		}
 
@@ -540,6 +586,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
+	 * Compare calculated source hashes with the exact qualified set.
+	 *
 	 * @param array<string,string> $actual Calculated source hashes.
 	 * @return bool
 	 */
