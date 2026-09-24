@@ -15,10 +15,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const FLOW_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
-	/** Exact qualified host identities. */
-	private const FLOW_VERSION  = '3.1.0';
-	private const GF_VERSION    = '3.1.1.1';
-	private const FLOW_BASENAME = 'gravityflow/gravityflow.php';
+	/** Exact qualified host versions. */
+	private const FLOW_VERSION = '3.1.0';
+	private const GF_VERSION   = '3.1.1.1';
 
 	/** Exact qualified source fingerprints for the production Timeline contract. */
 	private const SOURCE_FINGERPRINTS = array(
@@ -69,9 +68,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	/** @var bool|null Cached exact host/source contract result. */
 	private $host_contract_valid = null;
 
+	/** @var string|null Product slug resolved from host basename + approved manifest. */
+	private $flow_product_slug = null;
+
 	/**
 	 * Register the generic first seam only after the exact host/source contract
-	 * and the Jalali facade dependency are already available.
+	 * and Jalali facade dependency are already available.
 	 *
 	 * @return void
 	 */
@@ -122,11 +124,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$event_kind = $this->event_kind( $note, $entry, $raw );
-
-		$timestamp = $this->expected_localized_timestamp( $raw );
-
-		$entry_key = $this->entry_key( $entry );
-
+		$timestamp  = $this->expected_localized_timestamp( $raw );
+		$entry_key  = $this->entry_key( $entry );
 		$note_order = $this->note_identity_order( $notes );
 		if ( null === $event_kind || null === $timestamp || null === $entry_key || null === $note_order ) {
 			return $format;
@@ -138,17 +137,17 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$this->contexts[ $marked['format'] ] = array(
-			'note'          => $note,
+			'note' => $note,
 			'note_snapshot' => get_object_vars( $note ),
-			'notes'         => $notes,
-			'notes_order'   => $note_order,
-			'entry'         => $entry,
-			'entry_key'     => $entry_key,
-			'form'          => $form,
-			'raw'           => $raw,
-			'timestamp'     => $timestamp,
+			'notes' => $notes,
+			'notes_order' => $note_order,
+			'entry' => $entry,
+			'entry_key' => $entry_key,
+			'form' => $form,
+			'raw' => $raw,
+			'timestamp' => $timestamp,
 			'native_format' => $format,
-			'event_kind'    => $event_kind,
+			'event_kind' => $event_kind,
 		);
 		$this->marker_literals[ $marked['format'] ] = $marked['literal'];
 
@@ -307,7 +306,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Validate the exact first-seam host arguments discovered in qualification.
+	 * Validate exact first-seam host arguments discovered in qualification.
 	 *
 	 * @param array<int,array<string,mixed>> $path Qualified first chain.
 	 * @param string                         $raw  Raw date_created.
@@ -320,7 +319,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Validate the exact second-seam host arguments discovered in qualification.
+	 * Validate exact second-seam host arguments discovered in qualification.
 	 *
 	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
 	 * @param array<string,mixed>            $context Owned row context.
@@ -344,7 +343,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Validate and classify the exact authoritative Timeline event type.
+	 * Validate and classify exact authoritative Timeline event type.
 	 *
 	 * @param object       $note  Timeline event object.
 	 * @param array<mixed> $entry Entry snapshot.
@@ -361,11 +360,15 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
 		}
 
-		return isset( $note->note_type ) && 'gravityflow' === (string) $note->note_type ? 'stored' : null;
+		if ( null === $this->flow_product_slug || ! isset( $note->note_type ) ) {
+			return null;
+		}
+
+		return $this->flow_product_slug === (string) $note->note_type ? 'stored' : null;
 	}
 
 	/**
-	 * Derive the exact localized timestamp-plus-offset value proved by research.
+	 * Derive exact localized timestamp-plus-offset value proved by research.
 	 *
 	 * @param string $raw UTC Y-m-d H:i:s.
 	 * @return int|null
@@ -420,7 +423,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		return array(
-			'format'  => $escaped . $native_format,
+			'format' => $escaped . $native_format,
 			'literal' => $literal,
 		);
 	}
@@ -451,6 +454,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			if ( ! is_object( $note ) ) {
 				return null;
 			}
+
 			$result[] = spl_object_id( $note );
 		}
 
@@ -468,8 +472,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return null;
 		}
 
-		$id = $this->positive_decimal_id( $entry['id'] );
-
+		$id      = $this->positive_decimal_id( $entry['id'] );
 		$form_id = $this->positive_decimal_id( $entry['form_id'] );
 		return null === $id || null === $form_id ? null : $form_id . ':' . $id;
 	}
@@ -504,18 +507,41 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Validate exact supported versions and plugin basename.
+	 * Resolve exact host identity through its basename plus approved manifest.
 	 *
-	 * @param string $flow_version  Runtime Flow version.
-	 * @param string $gf_version    Runtime Gravity Forms version.
-	 * @param string $flow_basename Host-owned Flow plugin basename.
-	 * @return bool
+	 * @param string       $flow_version  Runtime Flow version.
+	 * @param string       $gf_version    Runtime Gravity Forms version.
+	 * @param string       $flow_basename Host-owned plugin basename.
+	 * @param array<mixed> $products      Approved product manifest.
+	 * @return string|null Resolved product slug on exact match.
 	 */
-	private function host_identity_matches( $flow_version, $gf_version, $flow_basename ) {
+	private function resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products ) {
 		$flow_basename = str_replace( '\\', '/', $flow_basename );
-		return self::FLOW_VERSION === $flow_version &&
-			self::GF_VERSION === $gf_version &&
-			self::FLOW_BASENAME === $flow_basename;
+		if (
+			self::FLOW_VERSION !== $flow_version ||
+			self::GF_VERSION !== $gf_version ||
+			'' === $flow_basename ||
+			'/' === substr( $flow_basename, 0, 1 ) ||
+			false !== strpos( $flow_basename, '..' )
+		) {
+			return null;
+		}
+
+		$product_slug = dirname( $flow_basename );
+		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
+			return null;
+		}
+
+		foreach ( $products as $product ) {
+			if ( ! is_array( $product ) || (string) ( $product['product'] ?? '' ) !== $product_slug ) {
+				continue;
+			}
+
+			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
+			return self::FLOW_VERSION === $target && $flow_version === $target ? $product_slug : null;
+		}
+
+		return null;
 	}
 
 	/**
@@ -531,21 +557,32 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$this->host_contract_valid = false;
+		$this->flow_product_slug   = null;
 		if (
 			! defined( self::FLOW_VERSION_CONSTANT ) ||
 			! defined( self::FLOW_BASENAME_CONSTANT ) ||
+			! defined( 'PGR_PATH' ) ||
 			! defined( 'WP_PLUGIN_DIR' ) ||
 			! class_exists( 'GFForms', false )
 		) {
 			return false;
 		}
 
-		$flow_version = (string) constant( self::FLOW_VERSION_CONSTANT );
+		$registry_path = PGR_PATH . 'includes/localization/products.php';
+		if ( ! is_readable( $registry_path ) ) {
+			return false;
+		}
 
-		$gf_version = (string) GFForms::$version;
+		$products = require $registry_path;
+		if ( ! is_array( $products ) ) {
+			return false;
+		}
 
+		$flow_version  = (string) constant( self::FLOW_VERSION_CONSTANT );
+		$gf_version    = (string) GFForms::$version;
 		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
-		if ( ! $this->host_identity_matches( $flow_version, $gf_version, $flow_basename ) ) {
+		$product_slug  = $this->resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products );
+		if ( null === $product_slug ) {
 			return false;
 		}
 
@@ -562,11 +599,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 
 		$paths = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
-			'flow_common'       => $flow_root . '/includes/class-common.php',
-			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
-			'gf_common'         => dirname( $gf_main ) . '/common.php',
+			'flow_common' => $flow_root . '/includes/class-common.php',
+			'flow_print' => $flow_root . '/includes/pages/class-print-entries.php',
+			'gf_common' => dirname( $gf_main ) . '/common.php',
 		);
-
 		$actual = array();
 		foreach ( $paths as $key => $path ) {
 			if ( ! is_readable( $path ) ) {
@@ -581,12 +617,17 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$actual[ $key ] = $hash;
 		}
 
-		$this->host_contract_valid = $this->fingerprints_match( $actual );
-		return $this->host_contract_valid;
+		if ( ! $this->fingerprints_match( $actual ) ) {
+			return false;
+		}
+
+		$this->flow_product_slug   = $product_slug;
+		$this->host_contract_valid = true;
+		return true;
 	}
 
 	/**
-	 * Compare calculated source hashes with the exact qualified set.
+	 * Compare calculated source hashes with exact qualified set.
 	 *
 	 * @param array<string,string> $actual Calculated source hashes.
 	 * @return bool
