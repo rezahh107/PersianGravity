@@ -15,10 +15,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const FLOW_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
-	/** Exact qualified host contract. */
-	private const FLOW_VERSION  = '3.1.0';
-	private const GF_VERSION    = '3.1.1.1';
-	private const FLOW_BASENAME = 'gravityflow/gravityflow.php';
+	/** Exact qualified host versions. */
+	private const FLOW_VERSION = '3.1.0';
+	private const GF_VERSION   = '3.1.1.1';
 
 	/** Exact qualified source fingerprints for the production Timeline contract. */
 	private const SOURCE_FINGERPRINTS = array(
@@ -135,7 +134,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		$this->contexts[ $marked['format'] ] = array(
+		$this->contexts[ $marked['format'] ]        = array(
 			'note'          => $note,
 			'note_snapshot' => get_object_vars( $note ),
 			'notes'         => $notes,
@@ -352,7 +351,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
 		}
 
-		return isset( $note->note_type ) && 'gravityflow' === (string) $note->note_type ? 'stored' : null;
+		$flow_basename = defined( self::FLOW_BASENAME_CONSTANT ) ? str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) : '';
+		$flow_note_type = basename( dirname( $flow_basename ) );
+		return '' !== $flow_note_type && '.' !== $flow_note_type && isset( $note->note_type ) && $flow_note_type === (string) $note->note_type ? 'stored' : null;
 	}
 
 	/**
@@ -489,6 +490,28 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
+	 * Validate exact supported versions plus a safe host-owned plugin basename.
+	 * Source-file fingerprints separately bind the implementation bytes.
+	 *
+	 * @param string $flow_version  Runtime Flow version.
+	 * @param string $gf_version    Runtime Gravity Forms version.
+	 * @param string $flow_basename Host-owned Flow plugin basename.
+	 * @return bool
+	 */
+	private function host_identity_matches( $flow_version, $gf_version, $flow_basename ) {
+		$flow_basename = str_replace( '\\', '/', $flow_basename );
+		$directory     = dirname( $flow_basename );
+		return self::FLOW_VERSION === $flow_version &&
+			self::GF_VERSION === $gf_version &&
+			'' !== $flow_basename &&
+			$flow_basename === ltrim( $flow_basename, '/' ) &&
+			false === strpos( $flow_basename, '..' ) &&
+			'.' !== $directory &&
+			'/' !== $directory &&
+			'php' === strtolower( pathinfo( $flow_basename, PATHINFO_EXTENSION ) );
+	}
+
+	/**
 	 * Admit only the exact qualified Flow/GF source contract. The result is
 	 * cached on this request-local adapter so source files are never re-hashed
 	 * for each Timeline date.
@@ -505,15 +528,19 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			! defined( self::FLOW_VERSION_CONSTANT ) ||
 			! defined( self::FLOW_BASENAME_CONSTANT ) ||
 			! defined( 'WP_PLUGIN_DIR' ) ||
-			! class_exists( 'GFForms', false ) ||
-			self::FLOW_VERSION !== (string) constant( self::FLOW_VERSION_CONSTANT ) ||
-			self::FLOW_BASENAME !== str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) ||
-			self::GF_VERSION !== (string) GFForms::$version
+			! class_exists( 'GFForms', false )
 		) {
 			return false;
 		}
 
-		$flow_root = dirname( WP_PLUGIN_DIR . '/' . self::FLOW_BASENAME );
+		$flow_version  = (string) constant( self::FLOW_VERSION_CONSTANT );
+		$gf_version    = (string) GFForms::$version;
+		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
+		if ( ! $this->host_identity_matches( $flow_version, $gf_version, $flow_basename ) ) {
+			return false;
+		}
+
+		$flow_root = dirname( WP_PLUGIN_DIR . '/' . $flow_basename );
 		try {
 			$gf_reflection = new ReflectionClass( 'GFForms' );
 			$gf_main       = $gf_reflection->getFileName();
@@ -525,7 +552,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return false;
 		}
 
-		$paths = array(
+		$paths  = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
 			'flow_common'       => $flow_root . '/includes/class-common.php',
 			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
