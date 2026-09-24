@@ -4,15 +4,6 @@ use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
-if ( ! function_exists( 'wp_enqueue_script' ) ) {
-	function wp_enqueue_script() {}
-}
-if ( ! function_exists( 'determine_locale' ) ) {
-	function determine_locale() {
-		return 'fa_IR';
-	}
-}
-
 final class G008GravityFlowEntryDetailPersianDigitsFailClosedTest extends TestCase {
 
 	#[RunInSeparateProcess]
@@ -27,10 +18,12 @@ final class G008GravityFlowEntryDetailPersianDigitsFailClosedTest extends TestCa
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
 
-		$adapter = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
+		$GLOBALS['pgr_test_locale']   = 'fa_IR';
+		$GLOBALS['pgr_test_enqueued'] = array();
+		$adapter                     = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
 		$adapter->enqueue_digit_shaper( array(), array(), null );
 
-		$this->expectNotToPerformAssertions();
+		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
 	}
 
 	#[RunInSeparateProcess]
@@ -45,9 +38,11 @@ final class G008GravityFlowEntryDetailPersianDigitsFailClosedTest extends TestCa
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
 
-		$adapter = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
+		$GLOBALS['pgr_test_locale']   = 'fa_IR';
+		$GLOBALS['pgr_test_enqueued'] = array();
+		$adapter                     = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
 		$adapter->enqueue_digit_shaper( array(), array(), null );
 
-		$this->expectNotToPerformAssertions();
+		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
 	}
 }
