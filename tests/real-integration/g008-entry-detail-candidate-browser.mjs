@@ -17,8 +17,9 @@ const fixture = (manifest.g008_flow_entry_detail_candidate_entries ?? []).find(
 const rangeFixture = (manifest.g008_flow_entry_detail_candidate_entries ?? []).find(
   (entry) => Number(entry.id) === Number(manifest.g008_flow_entry_detail_range_entry_id)
 );
-if (!fixture || !rangeFixture || !manifest.g008_flow_entry_detail_candidate_url || !manifest.g008_flow_entry_detail_range_url) {
-  throw new Error('Entry Detail adversarial fixture is incomplete.');
+const timelineFixture = manifest.g008_flow_timeline_multi_note ?? [];
+if (!fixture || !rangeFixture || !manifest.g008_flow_entry_detail_candidate_url || !manifest.g008_flow_entry_detail_range_url || timelineFixture.length < 5) {
+  throw new Error('Entry Detail adversarial/Timeline production fixture is incomplete.');
 }
 
 const browser = await chromium.launch({ headless: true });
@@ -124,8 +125,8 @@ async function capture(url, candidateCase) {
   if (!response?.ok()) throw new Error(`Entry Detail ${candidateCase} request failed: ${response?.status()}`);
   await page.locator('.gravityflow-status-box-field-submitted-time').waitFor({ timeout: 15000 });
   const bodyText = await page.locator('body').innerText();
-  if (bodyText.includes('PGRG008ENTRYDETAILMARKER')) {
-    throw new Error(`Entry Detail ${candidateCase} leaked the presentation marker.`);
+  if (bodyText.includes('PGRG008ENTRYDETAILMARKER') || bodyText.includes('PGRTIMELINE')) {
+    throw new Error(`Entry Detail ${candidateCase} leaked a presentation marker.`);
   }
   const presentation = await readPresentationSnapshot();
   const candidateEvidence = await page.evaluate(() => window.pgrG008EntryDetailCandidateEvidence ?? null);
@@ -138,7 +139,7 @@ async function captureProduction(url) {
   if (!response?.ok()) throw new Error(`Entry Detail production request failed: ${response?.status()}`);
   await page.locator('.gravityflow-status-box-field-submitted-time').waitFor({ timeout: 15000 });
   const bodyText = await page.locator('body').innerText();
-  if (bodyText.includes('PGRG008ENTRYDETAILMARKER') || bodyText.includes('PGRJALALIENTRYDETAIL:')) {
+  if (bodyText.includes('PGRG008ENTRYDETAILMARKER') || bodyText.includes('PGRJALALIENTRYDETAIL:') || bodyText.includes('PGRTIMELINE')) {
     throw new Error('Entry Detail production request leaked a presentation marker.');
   }
   const presentation = await readPresentationSnapshot();
@@ -147,6 +148,43 @@ async function captureProduction(url) {
     throw new Error('Entry Detail production instrumentation evidence is missing.');
   }
   return { url: page.url(), ...presentation, candidateEvidence, marker_leaked: false };
+}
+
+async function readTimeline(selectorPrefix) {
+  const headerLocator = page.locator(`${selectorPrefix} .gravityflow-note-meta`);
+  await headerLocator.first().waitFor({ timeout: 15000 });
+  return {
+    headers: (await headerLocator.allTextContents()).map((value) => value.trim()).filter(Boolean),
+    bodies: (await page.locator(`${selectorPrefix} .gravityflow-note-body`).allTextContents()).map((value) => value.trim()),
+  };
+}
+
+function assertTimelinePresentation(snapshot, label) {
+  if (snapshot.headers.length !== timelineFixture.length) {
+    throw new Error(`${label} row/header count drifted: ${snapshot.headers.length} !== ${timelineFixture.length}`);
+  }
+  const expectedNative = timelineFixture.map((item) => item.expected_header);
+  if (mode === 'disabled') {
+    if (JSON.stringify(snapshot.headers) !== JSON.stringify(expectedNative)) {
+      throw new Error(`${label} disabled headers are not exact native host output: ${JSON.stringify({ actual: snapshot.headers, expectedNative })}`);
+    }
+  } else if (mode === 'enabled') {
+    for (let index = 0; index < timelineFixture.length; index += 1) {
+      const row = timelineFixture[index];
+      const header = snapshot.headers[index] ?? '';
+      if (!header.startsWith(row.expected_jalali_date)) {
+        throw new Error(`${label} row ${row.id} did not start with the independently expected Jalali date: ${header}`);
+      }
+      if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) {
+        throw new Error(`${label} row ${row.id} changed native time output: ${JSON.stringify({ header, expected: row.expected_native_time_tail })}`);
+      }
+    }
+  }
+  for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
+    if (!snapshot.bodies.includes(stored.value)) {
+      throw new Error(`${label} changed or omitted stored Timeline body ${stored.id}.`);
+    }
+  }
 }
 
 await login();
@@ -193,13 +231,13 @@ if (mode === 'enabled') {
     throw new Error(`Production adapter did not consume exactly four workflow-info date calls: ${production.candidateEvidence.production_marker_date_i18n_calls}`);
   }
   if (JSON.stringify(production.fields) !== JSON.stringify(exact.fields)) {
-    throw new Error(`Production adapter output differs from the qualified prototype: ${JSON.stringify({ production: production.fields, prototype: exact.fields })}`);
+    throw new Error(`Production adapter output differs from the qualified workflow-info prototype: ${JSON.stringify({ production: production.fields, prototype: exact.fields })}`);
   }
   if ((production.candidateEvidence.production_observations ?? []).length !== 4) {
-    throw new Error('Production marker observations are incomplete.');
+    throw new Error('Production workflow-info marker observations are incomplete.');
   }
   if (production.candidateEvidence.nested_due_getter_calls !== 0 || production.candidateEvidence.nested_expiration_getter_calls !== 0) {
-    throw new Error('Production presentation re-entered an operational due/expiration getter.');
+    throw new Error('Production workflow-info presentation re-entered an operational due/expiration getter.');
   }
 } else if (mode === 'disabled') {
   const native = [
@@ -214,13 +252,13 @@ if (mode === 'enabled') {
     throw new Error(`Module-disabled Entry Detail output was not exact native fallback: ${JSON.stringify({ actual: exact.fields, native })}`);
   }
   if (exact.candidateEvidence.marker_date_i18n_calls !== 0) {
-    throw new Error('Module-disabled request unexpectedly used the marker path.');
+    throw new Error('Module-disabled request unexpectedly used the workflow-info marker path.');
   }
   if (JSON.stringify(productionDates) !== JSON.stringify(native)) {
     throw new Error(`Module-disabled production request was not exact native fallback: ${JSON.stringify({ actual: production.fields, native })}`);
   }
   if (production.candidateEvidence.production_marker_date_i18n_calls !== 0) {
-    throw new Error('Module-disabled production request unexpectedly used the production marker path.');
+    throw new Error('Module-disabled production request unexpectedly used the workflow-info production marker path.');
   }
   if (exact.digit_script_count !== 0 || production.digit_script_count !== 0) {
     throw new Error('Module-disabled request loaded the Persian digit adapter.');
@@ -230,7 +268,7 @@ if (mode === 'enabled') {
   }
 } else {
   if (exact.candidateEvidence.marker_date_i18n_calls !== 4 || production.candidateEvidence.production_marker_date_i18n_calls !== 4) {
-    throw new Error('English control did not keep the independently enabled G008 date adapter active.');
+    throw new Error('English control did not keep the independently enabled workflow-info G008 date adapter active.');
   }
   if (exact.digit_script_count !== 0 || production.digit_script_count !== 0) {
     throw new Error('English/non-Persian control loaded the Persian digit adapter.');
@@ -263,10 +301,10 @@ if (mode === 'enabled') {
     fixture.expected_due_native,
     fixture.expected_expiration_native,
   ])) {
-    throw new Error('Forced conversion failure did not preserve native host semantics under presentation-only digit shaping.');
+    throw new Error('Forced workflow-info conversion failure did not preserve native host semantics under presentation-only digit shaping.');
   }
   if ((failure.candidateEvidence.observations ?? []).some((item) => item.jalali !== null)) {
-    throw new Error('Forced conversion failure unexpectedly produced Jalali output.');
+    throw new Error('Forced workflow-info conversion failure unexpectedly produced Jalali output.');
   }
 
   drift = await capture(manifest.g008_flow_entry_detail_candidate_url, 'drift');
@@ -281,10 +319,10 @@ if (mode === 'enabled') {
     fixture.expected_due_native,
     fixture.expected_expiration_native,
   ])) {
-    throw new Error('Forced date-adapter drift did not preserve native host semantics under presentation-only digit shaping.');
+    throw new Error('Forced workflow-info date-adapter drift did not preserve native host semantics under presentation-only digit shaping.');
   }
   if (drift.candidateEvidence.marker_date_i18n_calls !== 0) {
-    throw new Error('Version-drift request unexpectedly reached the marker date_i18n path.');
+    throw new Error('Workflow-info version-drift request unexpectedly reached the marker date_i18n path.');
   }
 
   range = await capture(manifest.g008_flow_entry_detail_range_url, 'range');
@@ -299,44 +337,56 @@ if (mode === 'enabled') {
     rangeFixture.expected_due_native,
     rangeFixture.expected_expiration_native,
   ])) {
-    throw new Error('Out-of-range dates did not preserve native host semantics under presentation-only digit shaping.');
+    throw new Error('Out-of-range workflow-info dates did not preserve native host semantics under presentation-only digit shaping.');
   }
   if ((range.candidateEvidence.observations ?? []).some((item) => item.jalali !== null)) {
-    throw new Error('Out-of-range fixture unexpectedly produced Jalali output.');
+    throw new Error('Out-of-range workflow-info fixture unexpectedly produced Jalali output.');
   }
 
   repeated = await capture(manifest.g008_flow_entry_detail_candidate_url, 'exact');
   if (JSON.stringify(repeated.fields) !== JSON.stringify(exact.fields)) {
-    throw new Error('Repeated Entry Detail rendering was not deterministic.');
+    throw new Error('Repeated Entry Detail workflow-info rendering was not deterministic.');
   }
 }
 
-const timelineResponse = await page.goto(withCase(manifest.g008_flow_entry_detail_candidate_url, 'exact'), { waitUntil: 'domcontentloaded' });
+const timelineUrl = withCase(manifest.g008_flow_entry_detail_candidate_url, 'exact');
+const timelineResponse = await page.goto(timelineUrl, { waitUntil: 'domcontentloaded' });
 if (!timelineResponse?.ok()) throw new Error(`Timeline Entry Detail request failed: ${timelineResponse?.status()}`);
-await page.locator('.gravityflow-timeline .gravityflow-note-meta').first().waitFor({ timeout: 15000 });
-const timelineHeaders = (await page.locator('.gravityflow-timeline .gravityflow-note-meta').allTextContents()).map((value) => value.trim()).filter(Boolean);
-const timelineBodies = (await page.locator('.gravityflow-timeline .gravityflow-note-body').allTextContents()).map((value) => value.trim());
-const expectedHeaders = (manifest.g008_flow_timeline_multi_note ?? []).map((item) => item.expected_header);
-if (mode !== 'english' && JSON.stringify(timelineHeaders) !== JSON.stringify(expectedHeaders)) {
-  throw new Error(`Multi-note Timeline headers drifted: ${JSON.stringify({ timelineHeaders, expectedHeaders })}`);
+const timeline = await readTimeline('.gravityflow-timeline');
+const timelineBodyText = await page.locator('body').innerText();
+if (timelineBodyText.includes('PGRTIMELINE')) throw new Error('Timeline leaked an owned production marker.');
+assertTimelinePresentation(timeline, 'Entry Detail Timeline');
+
+const duplicateIds = (manifest.g008_flow_timeline_duplicate_ids ?? []).map(Number);
+const duplicateRaw = manifest.g008_flow_timeline_duplicate_raw;
+const duplicateRows = timelineFixture.filter((item) => item.date_created === duplicateRaw);
+if (duplicateIds.length < 2 || new Set(duplicateIds).size !== duplicateIds.length || duplicateRows.length < 2) {
+  throw new Error('Duplicate-timestamp Timeline fixture did not preserve distinct note identity.');
 }
-for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
-  if (!timelineBodies.includes(stored.value)) {
-    throw new Error(`Stored Timeline body changed or disappeared for note ${stored.id}.`);
+
+let repeatedTimeline = null;
+if (mode !== 'english') {
+  const repeatedResponse = await page.goto(timelineUrl, { waitUntil: 'domcontentloaded' });
+  if (!repeatedResponse?.ok()) throw new Error(`Repeated Timeline request failed: ${repeatedResponse?.status()}`);
+  repeatedTimeline = await readTimeline('.gravityflow-timeline');
+  if (JSON.stringify(repeatedTimeline) !== JSON.stringify(timeline)) {
+    throw new Error('Repeated Timeline rendering was not deterministic.');
   }
 }
 
 const printResponse = await page.goto(manifest.g008_flow_entry_detail_candidate_print_url, { waitUntil: 'domcontentloaded' });
 if (!printResponse?.ok()) throw new Error(`Print request failed: ${printResponse?.status()}`);
-await page.locator('#view-container .gravityflow-note-meta').first().waitFor({ timeout: 15000 });
-const printHeaders = (await page.locator('#view-container .gravityflow-note-meta').allTextContents()).map((value) => value.trim()).filter(Boolean);
-const printBodies = (await page.locator('#view-container .gravityflow-note-body').allTextContents()).map((value) => value.trim());
-if (mode !== 'english' && JSON.stringify(printHeaders) !== JSON.stringify(expectedHeaders)) {
-  throw new Error('Print Timeline did not reuse the same native multi-note headers.');
+const print = await readTimeline('#view-container');
+const printBodyText = await page.locator('body').innerText();
+if (printBodyText.includes('PGRTIMELINE')) throw new Error('Print leaked an owned Timeline production marker.');
+assertTimelinePresentation(print, 'Print Timeline');
+if (JSON.stringify(print.headers) !== JSON.stringify(timeline.headers)) {
+  throw new Error('Print did not inherit the exact verified Timeline header presentation.');
 }
-for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
-  if (!printBodies.includes(stored.value)) throw new Error(`Print changed or omitted stored note body ${stored.id}.`);
+if (JSON.stringify(print.bodies) !== JSON.stringify(timeline.bodies)) {
+  throw new Error('Print did not preserve the same Timeline body/order presentation.');
 }
+
 const printDigitScriptCount = await page.locator('script[src*="pgr-flow-entry-detail-persian-digits.js"]').count();
 if (printDigitScriptCount !== 0) {
   throw new Error('Print unexpectedly loaded the workflow-info Persian digit adapter.');
@@ -357,13 +407,15 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.0.0',
-  evidence_class: 'AUTHENTIC_G008_ENTRY_DETAIL_TWO_HOOK_QUALIFICATION_BROWSER',
+  schema_version: '2.0.0',
+  evidence_class: 'AUTHENTIC_G008_ENTRY_DETAIL_AND_TIMELINE_PRODUCTION_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
   exact_persiangravity_package_sha256: process.env.WU008_PGR_PACKAGE_SHA256 || null,
   exact_gravityflow_version: process.env.WU008_FLOW_VERSION || null,
   exact_gravityflow_package_sha256: process.env.WU008_FLOW_SHA256 || null,
+  exact_gravityforms_version: process.env.WU008_GF_VERSION || null,
+  exact_gravityforms_package_sha256: process.env.WU008_GF_SHA256 || null,
   site_timezone: manifest.g008_flow_site_timezone || null,
   php_default_timezone: manifest.g008_flow_php_default_timezone || null,
   exact,
@@ -373,17 +425,22 @@ const evidence = {
   range,
   repeated,
   timeline: {
-    headers: timelineHeaders,
-    bodies: timelineBodies,
+    ...timeline,
+    repeated: repeatedTimeline,
+    fixture: timelineFixture,
+    duplicate_timestamp: duplicateRaw,
+    duplicate_ids: duplicateIds,
+    marker_leaked: false,
   },
   print: {
-    headers: printHeaders,
-    bodies: printBodies,
+    ...print,
     workflow_sidebar_presence: printSidebarPresence,
     digit_script_count: printDigitScriptCount,
+    marker_leaked: false,
+    relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
   },
   diagnostics,
 };
 fs.writeFileSync(path.join(artifactDir, `g008-entry-detail-candidate-browser-${mode}.json`), `${JSON.stringify(evidence, null, 2)}\n`);
 await browser.close();
-console.log(`G008_ENTRY_DETAIL_TWO_HOOK_BROWSER_${mode.toUpperCase()} PASS`);
+console.log(`G008_ENTRY_DETAIL_TIMELINE_BROWSER_${mode.toUpperCase()} PASS`);
