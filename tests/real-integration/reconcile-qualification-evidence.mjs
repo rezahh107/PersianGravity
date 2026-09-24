@@ -222,8 +222,6 @@ function allEvidenceFlagsTrue(value) {
 const residualSourceContractBySurface = {
   'gravityflow.status.due-date': 'status_due_date',
   'gravityflow.entry-detail.schedule': 'entry_detail_schedule_due_expiration',
-  'gravityflow.timeline-history': 'timeline_history',
-  'gravityflow.print': 'print',
 };
 
 const residualRequiredSourceFlags = {
@@ -253,26 +251,6 @@ const residualRequiredSourceFlags = {
     'step_timestamp_reads_step_scoped_entry_meta',
     'queued_step_status_calls_schedule_renderer',
   ],
-  timeline_history: [
-    'header_formats_note_date_directly',
-    'note_body_is_separate_escaped_content',
-    'timeline_reads_gravityforms_notes',
-    'timeline_inserts_initial_entry_event',
-    'initial_event_uses_entry_date_created',
-    'timeline_order_is_host_owned',
-    'timeline_full_array_filter_runs_after_host_reverse',
-    'only_timeline_data_filter_mutates_note_array',
-    'common_text_timeline_reuses_note_dates',
-    'gravityforms_notes_are_persisted_in_utc',
-    'gravityforms_notes_return_raw_date_created',
-  ],
-  print: [
-    'reuses_entry_detail_grid',
-    'optional_timeline_reuses_entry_detail_timeline',
-    'no_print_specific_date_formatter',
-    'print_style_hook_is_not_date_seam',
-    'workflow_sidebar_not_rendered_by_print',
-  ],
 };
 
 function validateRequiredBooleanFlags(contract, requiredFlags, label) {
@@ -299,11 +277,6 @@ function validateRequiredBooleanFlags(contract, requiredFlags, label) {
   return errors;
 }
 
-const residualBrowserTargets = [
-  'gravityflow.timeline-history',
-  'gravityflow.print',
-];
-
 function exactStringSet(values, expected) {
   if (!Array.isArray(values)) return false;
   const actual = [...values].sort();
@@ -321,53 +294,6 @@ function browserIdentityErrors(evidence, expectedMode, expectedClass, product, e
   if (evidence.exact_gravityflow_package_sha256 !== product.package_sha256) errors.push(`${label}: Gravity Flow package SHA-256 mismatch.`);
   if (evidence.site_timezone !== 'Asia/Tehran') errors.push(`${label}: site timezone identity mismatch.`);
   if (evidence.php_default_timezone !== 'UTC') errors.push(`${label}: PHP default timezone identity mismatch.`);
-  return errors;
-}
-
-function validateResidualBrowserPair(product, surface, enabled, disabled, expectedIdentity) {
-  const errors = [];
-  errors.push(...browserIdentityErrors(
-    enabled,
-    'enabled',
-    'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
-    product,
-    expectedIdentity,
-    `G-008 ${surface.id} enabled residual browser`
-  ));
-  errors.push(...browserIdentityErrors(
-    disabled,
-    'disabled',
-    'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
-    product,
-    expectedIdentity,
-    `G-008 ${surface.id} disabled residual browser`
-  ));
-  if (!isObject(enabled) || !isObject(disabled)) return errors;
-
-  for (const [label, evidence] of [['enabled', enabled], ['disabled', disabled]]) {
-    if (!isObject(evidence.dispositions) || !exactStringSet(Object.keys(evidence.dispositions), residualBrowserTargets)) {
-      errors.push(`G-008 ${surface.id} ${label}: residual target identity set is missing, duplicated, or unexpected.`);
-      continue;
-    }
-    if (evidence.dispositions[surface.id] !== 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0') {
-      errors.push(`G-008 ${surface.id} ${label}: residual target disposition is missing or wrong.`);
-    }
-    if (!isObject(evidence.entry_detail) || typeof evidence.entry_detail.url !== 'string' || evidence.entry_detail.url.length === 0) {
-      errors.push(`G-008 ${surface.id} ${label}: Entry Detail observation is empty.`);
-    }
-    if (!isObject(evidence.print) || typeof evidence.print.url !== 'string' || evidence.print.url.length === 0) {
-      errors.push(`G-008 ${surface.id} ${label}: Print observation is empty.`);
-    }
-    if (surface.id === 'gravityflow.timeline-history') {
-      if (!Array.isArray(evidence.entry_detail.timeline_native) || evidence.entry_detail.timeline_native.length === 0) {
-        errors.push(`G-008 ${surface.id} ${label}: required Timeline browser observations are empty.`);
-      }
-    } else if (surface.id === 'gravityflow.print') {
-      if (!Array.isArray(evidence.print.timeline_native) || evidence.print.timeline_native.length === 0) {
-        errors.push(`G-008 ${surface.id} ${label}: required Print Timeline observations are empty.`);
-      }
-    }
-  }
   return errors;
 }
 
@@ -411,12 +337,9 @@ function validateG008FinalNoAdmission(
   surface,
   residualSourceEvidence,
   residualRuntimeEvidence,
-  residualBrowserEnabledEvidence,
-  residualBrowserDisabledEvidence,
   statusBrowserEnabledEvidence,
   statusBrowserDisabledEvidence,
   scheduleQualificationEvidence,
-  timelinePrintQualificationEvidence,
   expectedIdentity
 ) {
   const errors = [];
@@ -456,6 +379,7 @@ function validateG008FinalNoAdmission(
       ));
     }
   }
+
   if (surface.id === 'gravityflow.status.due-date') {
     errors.push(...validateStatusDueBrowserPair(
       product,
@@ -487,50 +411,9 @@ function validateG008FinalNoAdmission(
         errors.push(`G-008 ${surface.id}: schedule runtime qualification is incomplete.`);
       }
     }
-  } else {
-    errors.push(...validateResidualBrowserPair(
-      product,
-      surface,
-      residualBrowserEnabledEvidence,
-      residualBrowserDisabledEvidence,
-      expectedIdentity
-    ));
-    if (!isObject(timelinePrintQualificationEvidence)) {
-      errors.push(`G-008 ${surface.id}: Timeline/Print qualification evidence is missing.`);
-    } else {
-      if (timelinePrintQualificationEvidence.evidence_class !== 'G008_TIMELINE_PRINT_QUALIFICATION_RECONCILIATION') {
-        errors.push(`G-008 ${surface.id}: Timeline/Print evidence class mismatch.`);
-      }
-      errors.push(...exactIdentityErrors(timelinePrintQualificationEvidence, expectedIdentity, `G-008 ${surface.id} Timeline/Print qualification`));
-      if (
-        timelinePrintQualificationEvidence.exact_gravityflow_version !== product.version
-        || timelinePrintQualificationEvidence.exact_gravityflow_package_sha256 !== product.package_sha256
-      ) {
-        errors.push(`G-008 ${surface.id}: Timeline/Print exact Gravity Flow identity mismatch.`);
-      }
-      if (surface.id === 'gravityflow.timeline-history') {
-        if (
-          timelinePrintQualificationEvidence.timeline?.initial_entry_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
-          || timelinePrintQualificationEvidence.timeline?.stored_note_event_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
-          || timelinePrintQualificationEvidence.timeline?.storage_unchanged !== true
-          || timelinePrintQualificationEvidence.timeline?.ids_order_bodies_unchanged !== true
-          || timelinePrintQualificationEvidence.timeline?.separate_display_property_consumed !== false
-          || timelinePrintQualificationEvidence.timeline?.date_created_representation_consumed_by_renderer !== true
-        ) {
-          errors.push(`G-008 ${surface.id}: Timeline runtime qualification is incomplete.`);
-        }
-      } else if (surface.id === 'gravityflow.print') {
-        if (
-          timelinePrintQualificationEvidence.print?.independent_date_seam_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
-          || timelinePrintQualificationEvidence.print?.stored_note_event_propagation_disposition !== 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0'
-          || timelinePrintQualificationEvidence.print?.workflow_sidebar_due_schedule_expiration !== 'ABSENT_FROM_PRINT_RENDER_PATH'
-        ) {
-          errors.push(`G-008 ${surface.id}: Print runtime qualification is incomplete.`);
-        }
-      }
-    }
   }
 
+  const residualIds = ['gravityflow.status.due-date', 'gravityflow.entry-detail.schedule'];
   if (!isObject(residualRuntimeEvidence) || residualRuntimeEvidence.evidence_class !== 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION') {
     errors.push(`G-008 ${surface.id}: residual enabled/disabled runtime reconciliation evidence is missing.`);
   } else {
@@ -540,11 +423,14 @@ function validateG008FinalNoAdmission(
     if (residualRuntimeEvidence.source_contract_proven !== true) {
       errors.push(`G-008 ${surface.id}: residual runtime reconciliation does not declare source_contract_proven=true.`);
     }
+    if (!exactStringSet(Object.keys(residualRuntimeEvidence.surfaces ?? {}), residualIds)) {
+      errors.push(`G-008 ${surface.id}: residual runtime target set is missing, duplicated, or includes an admitted surface.`);
+    }
     if (
-      residualRuntimeEvidence.browser_modes?.enabled !== 'enabled'
-      || residualRuntimeEvidence.browser_modes?.disabled !== 'disabled'
+      residualRuntimeEvidence.status_browser_modes?.enabled !== 'enabled'
+      || residualRuntimeEvidence.status_browser_modes?.disabled !== 'disabled'
     ) {
-      errors.push(`G-008 ${surface.id}: residual runtime browser mode identity is missing or duplicated.`);
+      errors.push(`G-008 ${surface.id}: residual Status runtime browser mode identity is missing or duplicated.`);
     }
     if (residualRuntimeEvidence.site_timezone !== 'Asia/Tehran' || residualRuntimeEvidence.php_default_timezone !== 'UTC') {
       errors.push(`G-008 ${surface.id}: residual runtime timezone identity mismatch.`);
@@ -565,14 +451,110 @@ function validateG008FinalNoAdmission(
   return errors;
 }
 
+const timelinePrintSourceFingerprints = {
+  flow_entry_detail: 'a7634c5604184502457bcb22cdf1ade892e84c888cc60996aea8a810ced7680a',
+  flow_common: 'a8844f4b6ac37eed1a2cc1e904418f6ed8c6b4480e982c5a809e895a6f9e0cc8',
+  flow_print: 'df969bf8a37ed4f5619e0e8b2a753dd1133fa0c7551b158d740248c67fcb95c6',
+  gf_common: 'ac4ed495ee02a119a4fd08c77279f0db0905e6f20f59c472d5e6bffc801ca355',
+};
+
+function validateG008TimelinePrintAdmission(registry, product, surface, evidence, expectedIdentity) {
+  const errors = [];
+  const label = `G-008 ${surface.id} Timeline/Print admission`;
+  const gravityForms = (registry.products ?? []).find((candidate) => candidate.product === 'Gravity Forms');
+
+  if (surface.discovery_state !== 'RUNTIME_PROVEN' || surface.support_state !== 'ADMITTED_VERIFIED') {
+    errors.push(`G-008 ${surface.id}: committed registry claim is not RUNTIME_PROVEN + ADMITTED_VERIFIED.`);
+  }
+  if (surface.adapter_identity !== 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter') {
+    errors.push(`G-008 ${surface.id}: committed Timeline adapter identity mismatch.`);
+  }
+  if (surface.runtime_evidence !== 'g008-timeline-print-qualification.json') {
+    errors.push(`G-008 ${surface.id}: dedicated Timeline/Print runtime evidence reference mismatch.`);
+  }
+  if (surface.id === 'gravityflow.timeline-history' && surface.exact_version_disposition !== 'ADMITTED_FOR_EXACT_VERSION') {
+    errors.push(`G-008 ${surface.id}: registry disposition is not exact-version admitted.`);
+  }
+  if (surface.id === 'gravityflow.print') {
+    if (surface.exact_version_disposition !== 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE') {
+      errors.push(`G-008 ${surface.id}: registry disposition is not admitted by verified Timeline inheritance.`);
+    }
+    if (!String(surface.presentation_seam ?? '').includes('INHERITS_VERIFIED_TIMELINE_RENDERER')) {
+      errors.push(`G-008 ${surface.id}: registry does not declare verified Timeline renderer inheritance.`);
+    }
+  }
+
+  if (!isObject(evidence)) {
+    return [...errors, `G-008 ${surface.id}: dedicated Timeline/Print admission evidence is missing.`];
+  }
+  if (evidence.evidence_class !== 'G008_TIMELINE_PRINT_PRODUCTION_ADMISSION_RECONCILIATION') {
+    errors.push(`G-008 ${surface.id}: Timeline/Print admission evidence class mismatch.`);
+  }
+  errors.push(...exactIdentityErrors(evidence, expectedIdentity, label));
+  if (evidence.exact_gravityflow_version !== product.version || evidence.exact_gravityflow_package_sha256 !== product.package_sha256) {
+    errors.push(`G-008 ${surface.id}: Timeline/Print exact Gravity Flow identity mismatch.`);
+  }
+  if (!gravityForms) {
+    errors.push(`G-008 ${surface.id}: Gravity Forms registry identity is missing.`);
+  } else if (
+    evidence.exact_gravityforms_version !== gravityForms.version
+    || evidence.exact_gravityforms_package_sha256 !== gravityForms.package_sha256
+  ) {
+    errors.push(`G-008 ${surface.id}: Timeline/Print exact Gravity Forms identity mismatch.`);
+  }
+  if (JSON.stringify(evidence.source_fingerprints) !== JSON.stringify(timelinePrintSourceFingerprints)) {
+    errors.push(`G-008 ${surface.id}: Timeline/Print exact source fingerprint identity mismatch.`);
+  }
+  if (!Array.isArray(evidence.failures) || evidence.failures.length !== 0) {
+    errors.push(`G-008 ${surface.id}: Timeline/Print qualification contains failures.`);
+  }
+
+  const timeline = evidence.timeline;
+  if (
+    timeline?.initial_entry_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
+    || timeline?.stored_note_event_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
+    || JSON.stringify(timeline?.supported_formats) !== JSON.stringify(['F j, Y', 'Y-m-d'])
+    || timeline?.unsupported_formats_native !== true
+    || timeline?.storage_unchanged !== true
+    || timeline?.ids_order_bodies_unchanged !== true
+    || timeline?.duplicate_timestamp_identity_proven !== true
+    || timeline?.user_authored_date_looking_text_untouched !== true
+    || timeline?.separate_display_property_consumed !== false
+    || timeline?.date_created_representation_consumed_by_renderer !== true
+    || timeline?.adapter_hook_lifecycle_proven !== true
+    || timeline?.native_disabled_fallback_proven !== true
+    || timeline?.enabled_jalali_presentation_proven !== true
+    || timeline?.body_vector_mode_equality_proven !== true
+    || timeline?.fixture_row_mapping_proven !== true
+    || timeline?.marker_non_leakage_proven !== true
+    || timeline?.operational_state_unchanged !== true
+  ) {
+    errors.push(`G-008 ${surface.id}: Timeline production admission contract is incomplete.`);
+  }
+
+  const print = evidence.print;
+  if (
+    print?.field_grid_relation !== 'REUSES_ENTRY_DETAIL_FIELD_GRID'
+    || print?.timeline_relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION'
+    || print?.initial_event_propagation_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE'
+    || print?.stored_note_event_propagation_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE'
+    || print?.independent_date_seam_disposition !== 'NO_INDEPENDENT_PRINT_DATE_SEAM_REQUIRED'
+    || print?.workflow_sidebar_due_schedule_expiration !== 'ABSENT_FROM_PRINT_RENDER_PATH'
+    || print?.body_vector_inheritance_proven !== true
+    || print?.native_disabled_inheritance_proven !== true
+    || print?.marker_non_leakage_proven !== true
+  ) {
+    errors.push(`G-008 ${surface.id}: Print verified-Timeline inheritance contract is incomplete.`);
+  }
+  return errors;
+}
+
 function validateG008(
   registry,
   sourceEvidence,
   runtimeEvidenceByFile,
   residualSourceEvidence,
   residualRuntimeEvidence,
-  residualBrowserEnabledEvidence,
-  residualBrowserDisabledEvidence,
   statusBrowserEnabledEvidence,
   statusBrowserDisabledEvidence,
   scheduleQualificationEvidence,
@@ -594,8 +576,7 @@ function validateG008(
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN'
-        || Boolean(surface.runtime_evidence);
+      const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN' || Boolean(surface.runtime_evidence);
       if (!sourceClaim) continue;
 
       sourceClaims.push({ product, surface });
@@ -614,11 +595,22 @@ function validateG008(
           surface,
           residualSourceEvidence,
           residualRuntimeEvidence,
-          residualBrowserEnabledEvidence,
-          residualBrowserDisabledEvidence,
           statusBrowserEnabledEvidence,
           statusBrowserDisabledEvidence,
           scheduleQualificationEvidence,
+          expectedIdentity
+        ));
+        continue;
+      }
+
+      if (surface.runtime_evidence === 'g008-timeline-print-qualification.json') {
+        if (surface.support_state === 'ADMITTED_VERIFIED') {
+          runtimeClaims.push({ product, surface });
+        }
+        errors.push(...validateG008TimelinePrintAdmission(
+          registry,
+          product,
+          surface,
           timelinePrintQualificationEvidence,
           expectedIdentity
         ));
@@ -673,6 +665,8 @@ export function reconcileQualificationEvidence({
   g008TimelinePrintQualificationEvidence,
   expectedIdentity,
 }) {
+  void g008ResidualBrowserEnabledEvidence;
+  void g008ResidualBrowserDisabledEvidence;
   if (!/^[a-f0-9]{40}$/.test(expectedIdentity?.head ?? '')) {
     throw new EvidenceReconciliationError(['Expected PersianGravity Head SHA is missing or invalid.']);
   }
@@ -694,8 +688,6 @@ export function reconcileQualificationEvidence({
     },
     g008ResidualSourceEvidence,
     g008ResidualNoAdmissionEvidence,
-    g008ResidualBrowserEnabledEvidence,
-    g008ResidualBrowserDisabledEvidence,
     g008FlowStatusBrowserEnabledEvidence,
     g008FlowStatusBrowserDisabledEvidence,
     g008FlowScheduleQualificationEvidence,
