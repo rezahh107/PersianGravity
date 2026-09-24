@@ -29,6 +29,11 @@ await page.fill('#user_pass', adminPassword);
 await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), page.click('#wp-submit')]);
 await page.locator('#wpadminbar').waitFor({ timeout: 10000 });
 
+function asciiDigits(value) {
+  const persian = '۰۱۲۳۴۵۶۷۸۹';
+  return typeof value === 'string' ? value.replace(/[۰-۹]/g, (digit) => String(persian.indexOf(digit))) : value;
+}
+
 const observations = [];
 for (const branch of branches) {
   const response = await page.goto(branch.entry_url, { waitUntil: 'domcontentloaded' });
@@ -48,8 +53,14 @@ for (const branch of branches) {
       throw new Error('Empty date-field schedule branch did not remain native absent/non-queued.');
     }
   } else {
-    if (count !== 1 || rendered !== branch.expected_display || branch.is_queued !== true) {
-      throw new Error(`Schedule branch ${branch.key} rendered value drifted: ${JSON.stringify({ rendered, expected: branch.expected_display, count })}`);
+    if (count !== 1 || asciiDigits(rendered) !== branch.expected_display || branch.is_queued !== true) {
+      throw new Error(`Schedule branch ${branch.key} rendered semantic value drifted: ${JSON.stringify({ rendered, expected: branch.expected_display, count })}`);
+    }
+    if (mode === 'enabled' && /[0-9]/.test(rendered)) {
+      throw new Error(`Schedule branch ${branch.key} retained ASCII digits in Persian presentation: ${rendered}`);
+    }
+    if (mode === 'disabled' && /[۰-۹]/.test(rendered)) {
+      throw new Error(`Schedule branch ${branch.key} unexpectedly shaped digits while the module was disabled: ${rendered}`);
     }
     if (!Number.isInteger(probe.total) || probe.total < 1) {
       throw new Error(`Schedule branch ${branch.key} did not exercise the authentic render getter path.`);
@@ -58,6 +69,10 @@ for (const branch of branches) {
 
   const bodyText = await page.locator('body').innerText();
   if (bodyText.includes('PGRG008ENTRYDETAILMARKER')) throw new Error(`Schedule branch ${branch.key} leaked Entry Detail marker.`);
+  const digitScriptCount = await page.locator('script[src*="pgr-flow-entry-detail-persian-digits.js"]').count();
+  if ((mode === 'enabled' && digitScriptCount !== 1) || (mode === 'disabled' && digitScriptCount !== 0)) {
+    throw new Error(`Schedule branch ${branch.key} digit adapter load state drifted: ${digitScriptCount}`);
+  }
   observations.push({
     key: branch.key,
     entry_id: Number(branch.entry_id),
@@ -68,7 +83,9 @@ for (const branch of branches) {
     is_queued: branch.is_queued,
     expected_display: branch.expected_display,
     rendered,
+    rendered_semantic_ascii: asciiDigits(rendered),
     scheduled_field_count: count,
+    digit_script_count: digitScriptCount,
     getter_probe: probe,
   });
 }

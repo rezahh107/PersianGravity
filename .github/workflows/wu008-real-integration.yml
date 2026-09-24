@@ -17,6 +17,9 @@ on:
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php'
+      - 'assets/js/pgr-flow-entry-detail-persian-digits.js'
       - 'docs/WU008_REAL_INTEGRATION.md'
       - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
       - 'docs/G008_JALALI_PRESENTATION.md'
@@ -147,12 +150,14 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-browser.mjs
           node --check tests/real-integration/g008-entry-detail-candidate-browser.mjs
           node --check tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
+          node --check assets/js/pgr-flow-entry-detail-persian-digits.js
           node --check tests/real-integration/g008-flow-schedule-browser.mjs
           node --check tests/real-integration/g008-flow-schedule-reconcile.mjs
           node --check tests/real-integration/g008-timeline-print-reconcile.mjs
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
@@ -476,6 +481,28 @@ jobs:
           test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-flow-schedule-browser-disabled.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+
+      - name: Prove English non-Persian workflow-info keeps ASCII digit presentation
+        shell: bash
+        env:
+          WU008_G008_MODE: english
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "en_US"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
+          node tests/real-integration/g008-entry-detail-candidate-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-entry-detail-candidate-browser-english.json"
+
+      - name: Restore Persian locale after English Entry Detail control
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
 
       - name: Reconcile Entry Detail two-hook candidate qualification
         shell: bash

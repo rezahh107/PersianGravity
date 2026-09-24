@@ -11,6 +11,7 @@ const enabledState = read('g008-residual-adversarial-state-enabled.json');
 const disabledState = read('g008-residual-adversarial-state-disabled.json');
 const enabled = read('g008-entry-detail-candidate-browser-enabled.json');
 const disabled = read('g008-entry-detail-candidate-browser-disabled.json');
+const english = read('g008-entry-detail-candidate-browser-english.json');
 
 const failures = [];
 const flowHash = process.env.WU008_FLOW_SHA256;
@@ -26,14 +27,21 @@ function requireIdentity(evidence, label) {
 }
 requireIdentity(enabled, 'enabled browser');
 requireIdentity(disabled, 'disabled browser');
+requireIdentity(english, 'English browser');
 requireIdentity(enabledState, 'enabled state');
 requireIdentity(disabledState, 'disabled state');
 
-if (enabled.mode !== 'enabled' || disabled.mode !== 'disabled') failures.push('browser mode identity mismatch');
+if (enabled.mode !== 'enabled' || disabled.mode !== 'disabled' || english.mode !== 'english') failures.push('browser mode identity mismatch');
 if (enabledState.mode !== 'enabled' || disabledState.mode !== 'disabled') failures.push('state mode identity mismatch');
 
 const contract = source?.source_contract?.entry_detail_schedule_due_expiration;
 const requiredContractFlags = [
+  'exact_status_box_wrapper',
+  'workflow_info_precedes_step_status_in_exact_wrapper',
+  'workflow_info_uses_bounded_human_field_nodes',
+  'entry_id_href_keeps_ascii_numeric_authority',
+  'below_workflow_info_hook_is_supported_post_value_seam',
+  'queued_step_reuses_bounded_human_field_nodes',
   'shared_format_hook_scopes_submitted_last_updated_due_expiration',
   'flow_format_date_delegates_to_gravityforms',
   'gravityforms_format_date_reaches_date_i18n',
@@ -47,7 +55,8 @@ for (const key of requiredContractFlags) {
 const fields = ['submitted', 'last_updated', 'due', 'expiration'];
 const enabledProduction = enabled.production;
 const disabledProduction = disabled.production;
-if (!enabledProduction || !disabledProduction) failures.push('production browser observations are missing');
+const englishProduction = english.production;
+if (!enabledProduction || !disabledProduction || !englishProduction) failures.push('production browser observations are missing');
 if (enabledProduction?.marker_leaked !== false || disabledProduction?.marker_leaked !== false) failures.push('production marker leaked into visible output');
 if (enabledProduction?.candidateEvidence?.marker_date_i18n_calls !== 0) failures.push('production request used isolated prototype marker');
 if (enabledProduction?.candidateEvidence?.production_marker_date_i18n_calls !== 4) failures.push('production adapter did not consume exactly four workflow-info dates');
@@ -57,6 +66,68 @@ if (JSON.stringify(enabledProduction?.fields) !== JSON.stringify(enabled.exact?.
 }
 if (JSON.stringify(disabledProduction?.fields) !== JSON.stringify(disabled.exact?.fields)) {
   failures.push('disabled production output differs from exact native output');
+}
+function canonicalMachineSnapshot(machine) {
+  if (!machine) return machine;
+  const copy = JSON.parse(JSON.stringify(machine));
+  for (const element of copy.element_attributes ?? []) {
+    if (element.tag === 'input' && element.attributes?.name === '_wpnonce' && Object.hasOwn(element.attributes, 'value')) {
+      element.attributes.value = '<request-nonce>';
+    }
+  }
+  for (const control of copy.controls ?? []) {
+    if (control.tag === 'input' && control.name === '_wpnonce') {
+      control.value_attribute = '<request-nonce>';
+      control.value_property = '<request-nonce>';
+    }
+  }
+  return copy;
+}
+
+const enabledMachine = canonicalMachineSnapshot(enabledProduction?.machine);
+const disabledMachine = canonicalMachineSnapshot(disabledProduction?.machine);
+if (JSON.stringify(enabledMachine) !== JSON.stringify(disabledMachine)) {
+  failures.push('presentation digit shaping changed stable DOM attributes, links, form controls or machine values');
+}
+for (const [label, machine] of [['enabled', enabledProduction?.machine], ['disabled', disabledProduction?.machine]]) {
+  const nonce = (machine?.controls ?? []).find((control) => control.tag === 'input' && control.name === '_wpnonce');
+  if (!nonce || typeof nonce.value_property !== 'string' || nonce.value_property === '' || /[۰-۹]/.test(nonce.value_property)) {
+    failures.push(`${label} request nonce was missing or no longer native ASCII/security text`);
+  }
+}
+if (enabledProduction?.digit_script_count !== 1 || disabledProduction?.digit_script_count !== 0 || englishProduction?.digit_script_count !== 0) {
+  failures.push('digit presentation adapter activation did not stay bounded to enabled Persian UI');
+}
+if (enabledProduction?.visible_status_fields?.some((value) => /[0-9]/.test(value))) {
+  failures.push('enabled Persian workflow-info still contains ASCII digits');
+}
+if (
+  typeof enabledProduction?.fields?.submitted !== 'string'
+  || enabledProduction.fields.submitted.includes('11:59')
+  || !enabledProduction.fields.submitted.includes('۱۱:۵۹')
+) {
+  failures.push('Submitted mixed-digit regression remains visible');
+}
+if (
+  typeof enabledProduction?.fields?.last_updated !== 'string'
+  || enabledProduction.fields.last_updated.includes('12:01')
+  || !enabledProduction.fields.last_updated.includes('۱۲:۰۱')
+) {
+  failures.push('Last Updated mixed-digit regression remains visible');
+}
+if (
+  typeof englishProduction?.fields?.submitted !== 'string'
+  || !englishProduction.fields.submitted.includes('11:59')
+  || englishProduction.fields.submitted.includes('۱۱:۵۹')
+) {
+  failures.push('English/non-Persian Submitted time did not remain ASCII');
+}
+if (
+  typeof englishProduction?.fields?.entry_id !== 'string'
+  || !/[0-9]/.test(englishProduction.fields.entry_id)
+  || /[۰-۹]/.test(englishProduction.fields.entry_id)
+) {
+  failures.push('English/non-Persian visible Entry ID did not remain ASCII');
 }
 if (
   enabledProduction?.candidateEvidence?.due_getter_calls !== disabledProduction?.candidateEvidence?.due_getter_calls
@@ -78,6 +149,11 @@ if (
 ) {
   failures.push('production adapter changed unrelated WordPress/Gravity Forms date formatting');
 }
+
+const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+const asciiDigits = (value) => typeof value === 'string'
+  ? value.replace(/[۰-۹]/g, (digit) => String(persianDigits.indexOf(digit)))
+  : value;
 
 const productionObservations = enabledProduction?.candidateEvidence?.production_observations ?? [];
 if (productionObservations.length !== 4) failures.push('production marker observation count is not four');
@@ -102,7 +178,7 @@ for (let index = 0; index < fields.length; index += 1) {
   if (typeof enabledVisible !== 'string' || !enabledVisible.includes(observation.jalali)) {
     failures.push(`enabled ${key}: visible output did not consume Jalali date`);
   }
-  const reconstructedNative = enabledVisible.replace(observation.jalali, observation.native_fallback);
+  const reconstructedNative = asciiDigits(enabledVisible.replace(observation.jalali, observation.native_fallback));
   if (reconstructedNative !== disabledVisible) {
     failures.push(`enabled ${key}: native time/host formatting was not preserved around date replacement`);
   }
@@ -165,6 +241,11 @@ if (JSON.stringify(canonicalCandidate(enabledState)) !== JSON.stringify(canonica
   failures.push('Entry Detail module state changed raw/query/workflow/deadline/expiration state');
 }
 if (
+  !/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(enabledState.candidate_entry.gfapi.date_created)
+) {
+  failures.push('raw date_created stopped being canonical ASCII');
+}
+if (
   enabledState.candidate_entry.gfapi.date_created !== enabledState.candidate_entry.database.date_created
   || enabledState.candidate_entry.gfapi.date_created !== enabledState.candidate_entry.rest.date_created
 ) {
@@ -189,6 +270,21 @@ if (disabledGetter.nested_due_getter_calls !== 0 || disabledGetter.nested_expira
   failures.push('disabled mode unexpectedly nested operational getters in date_i18n');
 }
 
+const entryIdAscii = String(enabledState.candidate_entry.gfapi.id);
+const enabledLinks = enabledProduction?.machine?.links ?? [];
+if (!enabledLinks.some((link) => typeof link.href_attribute === 'string' && link.href_attribute.includes(`lid=${entryIdAscii}`))) {
+  failures.push('visible Entry ID link did not retain the native ASCII entry-id query value');
+}
+if (enabledLinks.some((link) => /[۰-۹]/.test(String(link.href_attribute)) || /[۰-۹]/.test(String(link.href_property)))) {
+  failures.push('Persian digit glyphs leaked into workflow-info URLs/query parameters');
+}
+if (
+  JSON.stringify(enabledProduction?.direction) !== JSON.stringify(disabledProduction?.direction)
+  || enabledProduction?.direction?.computed !== 'rtl'
+) {
+  failures.push('digit shaping changed or failed the existing Persian RTL/BiDi direction contract');
+}
+
 for (const state of [enabledState, disabledState]) {
   if (!state.timeline?.storage_equal_after_experiments || !state.timeline?.ids_order_bodies_preserved) failures.push(`${state.mode}: Timeline experiment mutated storage/order/body`);
   if (!state.timeline?.display_property_ignored) failures.push(`${state.mode}: separate Timeline display property unexpectedly affected renderer`);
@@ -199,6 +295,9 @@ if (JSON.stringify(enabled.timeline.headers) !== JSON.stringify(disabled.timelin
 if (JSON.stringify(enabled.timeline.bodies) !== JSON.stringify(disabled.timeline.bodies)) failures.push('Timeline note bodies changed with module state');
 if (JSON.stringify(enabled.print.headers) !== JSON.stringify(disabled.print.headers)) failures.push('Print Timeline headers changed with module state');
 if (JSON.stringify(enabled.print.bodies) !== JSON.stringify(disabled.print.bodies)) failures.push('Print Timeline bodies changed with module state');
+if (enabled.print.digit_script_count !== 0 || disabled.print.digit_script_count !== 0 || english.print.digit_script_count !== 0) {
+  failures.push('Print unexpectedly loaded the workflow-info digit adapter');
+}
 for (const [key, count] of Object.entries(enabled.print.workflow_sidebar_presence ?? {})) {
   if (count !== 0 || disabled.print.workflow_sidebar_presence?.[key] !== 0) failures.push(`Print unexpectedly contains workflow-sidebar ${key}`);
 }
@@ -247,7 +346,13 @@ const admission = {
   source_contract_proven: requiredContractFlags.every((key) => contract?.[key] === true),
   production_browser_enabled_mode: enabled.mode,
   production_browser_disabled_mode: disabled.mode,
+  production_browser_english_mode: english.mode,
   native_time_preserved: result.native_time_preserved,
+  visible_digits_persian: !failures.some((failure) => failure.includes('ASCII digits') || failure.includes('mixed-digit')),
+  visible_entry_id_persian_machine_link_ascii: !failures.some((failure) => failure.includes('Entry ID link') || failure.includes('visible Entry ID')),
+  dom_machine_values_equal: !failures.some((failure) => failure.includes('stable DOM attributes') || failure.includes('request nonce')),
+  english_digits_native_ascii: !failures.some((failure) => failure.includes('English/non-Persian')),
+  rtl_bidi_unchanged: !failures.some((failure) => failure.includes('RTL/BiDi')),
   unrelated_date_formatting_unchanged: result.unrelated_date_formatting_unchanged,
   raw_db_gfapi_rest_equal: !failures.some((failure) => failure.includes('DB/GFAPI/REST')),
   workflow_deadline_expiration_state_equal: result.operational_state_equal,

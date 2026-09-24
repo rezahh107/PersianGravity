@@ -73,7 +73,7 @@ for (const key of expectedKeys) {
     date_field_value: on.date_field_value,
     is_queued: on.is_queued,
     expected_display: on.expected_display,
-    rendered: on.rendered,
+    rendered_semantic_ascii: on.rendered_semantic_ascii,
     scheduled_field_count: on.scheduled_field_count,
   }) !== JSON.stringify({
     schedule_type: off.schedule_type,
@@ -82,10 +82,15 @@ for (const key of expectedKeys) {
     date_field_value: off.date_field_value,
     is_queued: off.is_queued,
     expected_display: off.expected_display,
-    rendered: off.rendered,
+    rendered_semantic_ascii: off.rendered_semantic_ascii,
     scheduled_field_count: off.scheduled_field_count,
   })) {
     failures.push(`schedule branch ${key} changed with module state`);
+  }
+  if (key !== 'date_field_empty') {
+    if (on.digit_script_count !== 1 || off.digit_script_count !== 0) failures.push(`schedule branch ${key} digit adapter load state mismatch`);
+    if (typeof on.rendered !== 'string' || /[0-9]/.test(on.rendered)) failures.push(`schedule branch ${key} enabled presentation retained ASCII digits`);
+    if (typeof off.rendered !== 'string' || /[۰-۹]/.test(off.rendered)) failures.push(`schedule branch ${key} disabled presentation changed native digits`);
   }
   if (on.getter_probe?.nested_date_i18n !== 0 || off.getter_probe?.nested_date_i18n !== 0) {
     failures.push(`schedule branch ${key} nested operational getter through date_i18n`);
@@ -100,13 +105,13 @@ const fieldBranch = enabledMap.get('date_field');
 const delayBranch = enabledMap.get('delay');
 const emptyBranch = enabledMap.get('date_field_empty');
 
-if (!dateBranch || dateBranch.schedule_type !== 'date' || dateBranch.rendered !== dateBranch.expected_display) {
+if (!dateBranch || dateBranch.schedule_type !== 'date' || dateBranch.rendered_semantic_ascii !== dateBranch.expected_display) {
   failures.push('explicit date schedule branch was not authentically rendered');
 }
-if (!fieldBranch || fieldBranch.schedule_type !== 'date_field' || fieldBranch.rendered !== fieldBranch.expected_display) {
+if (!fieldBranch || fieldBranch.schedule_type !== 'date_field' || fieldBranch.rendered_semantic_ascii !== fieldBranch.expected_display) {
   failures.push('date_field schedule branch was not authentically rendered');
 }
-if (!delayBranch || delayBranch.schedule_type !== 'delay' || delayBranch.rendered !== delayBranch.expected_display) {
+if (!delayBranch || delayBranch.schedule_type !== 'delay' || delayBranch.rendered_semantic_ascii !== delayBranch.expected_display) {
   failures.push('delay schedule branch was not authentically rendered');
 }
 if (
@@ -129,6 +134,7 @@ const result = {
   source_contract_proven: failures.every((failure) => !failure.startsWith('exact source contract')),
   branches: Object.fromEntries(expectedKeys.map((key) => [key, enabledMap.get(key) ?? null])),
   enabled_disabled_native_equality: failures.every((failure) => !failure.includes('changed with module state')),
+  presentation_only_digit_delta: failures.every((failure) => !failure.includes('digit adapter') && !failure.includes('presentation retained') && !failure.includes('disabled presentation')),
   operational_getter_counts_equal: failures.every((failure) => !failure.includes('invocation count')),
   downstream_value_only_seam: 'NONE_IN_EXACT_3_1_0_DISPLAY_QUEUED_STEP_DETAILS',
   disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
