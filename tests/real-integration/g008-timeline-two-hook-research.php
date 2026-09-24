@@ -193,8 +193,8 @@ foreach ($headers($same_actual) as $i=>$header) {
 // WP has special U semantics; unsupported profiles and short-circuits stay native.
 $research->stop(); $unix_format=static fn($value)=>'U'; add_filter('option_date_format',$unix_format,10); $unix_native=$render();
 $research->start(); $checks['unsupported_format_native']=$render()===$unix_native; remove_filter('option_date_format',$unix_format,10);
-$research->stop(); $pre_format=static fn($value)=>'Y-m-d'; add_filter('pre_option_date_format',$pre_format,10); $pre_native=$render();
-$research->start(); $checks['option_short_circuit_native']=$render()===$pre_native; remove_filter('pre_option_date_format',$pre_format,10);
+$research->stop(); $pre_format=static fn($value)=>'Y-m-d'; add_filter('pre_option_date_format',$pre_format,10); $pre_format_native=$render();
+$research->start(); $checks['option_short_circuit_native']=$render()===$pre_format_native; remove_filter('pre_option_date_format',$pre_format,10);
 // Abort after arming; the next unrelated formatter must discard stale tokens.
 $abort = static function($notes) { throw new RuntimeException('RESEARCH_ABORT'); };
 add_filter('option_date_format',$abort,PHP_INT_MAX);
