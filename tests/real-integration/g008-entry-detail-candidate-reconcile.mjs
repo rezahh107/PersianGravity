@@ -67,8 +67,33 @@ if (JSON.stringify(enabledProduction?.fields) !== JSON.stringify(enabled.exact?.
 if (JSON.stringify(disabledProduction?.fields) !== JSON.stringify(disabled.exact?.fields)) {
   failures.push('disabled production output differs from exact native output');
 }
-if (JSON.stringify(enabledProduction?.machine) !== JSON.stringify(disabledProduction?.machine)) {
-  failures.push('presentation digit shaping changed DOM attributes, links, form controls or machine values');
+function canonicalMachineSnapshot(machine) {
+  if (!machine) return machine;
+  const copy = JSON.parse(JSON.stringify(machine));
+  for (const element of copy.element_attributes ?? []) {
+    if (element.tag === 'input' && element.attributes?.name === '_wpnonce' && Object.hasOwn(element.attributes, 'value')) {
+      element.attributes.value = '<request-nonce>';
+    }
+  }
+  for (const control of copy.controls ?? []) {
+    if (control.tag === 'input' && control.name === '_wpnonce') {
+      control.value_attribute = '<request-nonce>';
+      control.value_property = '<request-nonce>';
+    }
+  }
+  return copy;
+}
+
+const enabledMachine = canonicalMachineSnapshot(enabledProduction?.machine);
+const disabledMachine = canonicalMachineSnapshot(disabledProduction?.machine);
+if (JSON.stringify(enabledMachine) !== JSON.stringify(disabledMachine)) {
+  failures.push('presentation digit shaping changed stable DOM attributes, links, form controls or machine values');
+}
+for (const [label, machine] of [['enabled', enabledProduction?.machine], ['disabled', disabledProduction?.machine]]) {
+  const nonce = (machine?.controls ?? []).find((control) => control.tag === 'input' && control.name === '_wpnonce');
+  if (!nonce || typeof nonce.value_property !== 'string' || nonce.value_property === '' || /[۰-۹]/.test(nonce.value_property)) {
+    failures.push(`${label} request nonce was missing or no longer native ASCII/security text`);
+  }
 }
 if (enabledProduction?.digit_script_count !== 1 || disabledProduction?.digit_script_count !== 0 || englishProduction?.digit_script_count !== 0) {
   failures.push('digit presentation adapter activation did not stay bounded to enabled Persian UI');
@@ -325,7 +350,7 @@ const admission = {
   native_time_preserved: result.native_time_preserved,
   visible_digits_persian: !failures.some((failure) => failure.includes('ASCII digits') || failure.includes('mixed-digit')),
   visible_entry_id_persian_machine_link_ascii: !failures.some((failure) => failure.includes('Entry ID link') || failure.includes('visible Entry ID')),
-  dom_machine_values_equal: !failures.some((failure) => failure.includes('DOM attributes')),
+  dom_machine_values_equal: !failures.some((failure) => failure.includes('stable DOM attributes') || failure.includes('request nonce')),
   english_digits_native_ascii: !failures.some((failure) => failure.includes('English/non-Persian')),
   rtl_bidi_unchanged: !failures.some((failure) => failure.includes('RTL/BiDi')),
   unrelated_date_formatting_unchanged: result.unrelated_date_formatting_unchanged,
