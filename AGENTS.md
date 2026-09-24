@@ -24,6 +24,8 @@ Out of scope: fonts, arbitrary third-party translation ownership, payment gatewa
 
 PersianGravity may also provide generic `fa_IR` localization overlays for explicitly manifested Gravity ecosystem domains. This is cross-cutting infrastructure outside the user-module registry. Exact licensed source admission is required before activating catalog content or JS handles.
 
+Cross-product responsibility with Gravity Presentation Profiles (GPP) is governed by [`docs/PERSIANGRAVITY_GPP_RESPONSIBILITY_BOUNDARY.md`](docs/PERSIANGRAVITY_GPP_RESPONSIBILITY_BOUNDARY.md). That contract preserves host → PersianGravity → GPP ownership, does not widen runtime authority by documentation, and requires GPP to qualify its own exact PersianGravity provider release/source seam before consumption.
+
 ## 3. Runtime architecture
 
 ```text
