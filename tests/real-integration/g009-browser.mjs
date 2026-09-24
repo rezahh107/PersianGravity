@@ -350,8 +350,14 @@ async function qualifyGravityPerks(browser, viewport) {
         textAlign: style.textAlign,
         paddingLeft: style.paddingLeft,
         paddingRight: style.paddingRight,
+        paddingInlineStart: style.paddingInlineStart,
+        paddingInlineEnd: style.paddingInlineEnd,
         paddingLeftPx: Number.parseFloat(style.paddingLeft) || 0,
         paddingRightPx: Number.parseFloat(style.paddingRight) || 0,
+        paddingInlineStartPx: Number.parseFloat(style.paddingInlineStart) || 0,
+        paddingInlineEndPx: Number.parseFloat(style.paddingInlineEnd) || 0,
+        tsPrMin: style.getPropertyValue('--ts-pr-min').trim(),
+        tsPrCaret: style.getPropertyValue('--ts-pr-caret').trim(),
         backgroundPosition: style.backgroundPosition,
         backgroundPositionX: style.backgroundPositionX,
         rect: { left: rect.left, right: rect.right, width: rect.width, height: rect.height },
@@ -433,16 +439,22 @@ async function qualifyGravityPerks(browser, viewport) {
     ? Boolean(
       advanced.styleHandlePresent
       && advanced.inlineStylePresent
-      && advanced.inlineStyleText?.includes('.ts-wrapper.rtl')
+      && advanced.inlineStyleText?.includes('.ts-wrapper.gfield_select.plugin-change_listener.rtl')
+      && advanced.inlineStyleText?.includes('padding-inline-end:max(var(--ts-pr-min),var(--ts-pr-caret))!important')
       && advanced.wrapperClasses?.split(/\s+/).includes('rtl')
+      && advanced.wrapperClasses?.split(/\s+/).includes('gfield_select')
+      && advanced.wrapperClasses?.split(/\s+/).includes('plugin-change_listener')
       && advanced.control.direction === 'rtl'
       && advanced.control.backgroundPosition.includes('left')
       && advanced.control.paddingLeftPx > advanced.control.paddingRightPx
+      && advanced.control.paddingInlineEndPx > advanced.control.paddingInlineStartPx
     )
     : Boolean(
       advanced.styleHandlePresent
       && !advanced.inlineStylePresent
       && !advanced.wrapperClasses?.split(/\s+/).includes('rtl')
+      && advanced.wrapperClasses?.split(/\s+/).includes('gfield_select')
+      && advanced.wrapperClasses?.split(/\s+/).includes('plugin-change_listener')
       && advanced.control.direction === 'ltr'
       && advanced.control.backgroundPosition.includes('right')
     );
