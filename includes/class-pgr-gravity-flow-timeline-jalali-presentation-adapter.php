@@ -15,6 +15,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	/** Host-owned plugin identity authority. */
 	private const FLOW_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
+	/** Exact qualified host contract. */
+	private const FLOW_VERSION  = '3.1.0';
+	private const GF_VERSION    = '3.1.1.1';
+	private const FLOW_BASENAME = 'gravityflow/gravityflow.php';
+
 	/** Exact qualified source fingerprints for the production Timeline contract. */
 	private const SOURCE_FINGERPRINTS = array(
 		'flow_entry_detail' => 'a7634c5604184502457bcb22cdf1ade892e84c888cc60996aea8a810ced7680a',
@@ -88,6 +93,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Exact host caller-chain proof is the qualified production seam.
 		$trace = debug_backtrace( 0, 60 );
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::FIRST_CHAIN );
@@ -118,6 +124,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
+		$entry_key   = $this->entry_key( $entry );
+		$notes_order = $this->note_identity_order( $notes );
+		if ( null === $entry_key || null === $notes_order ) {
+			return $format;
+		}
+
 		$marked = $this->create_marked_format( $format );
 		if ( null === $marked ) {
 			return $format;
@@ -127,9 +139,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'note'          => $note,
 			'note_snapshot' => get_object_vars( $note ),
 			'notes'         => $notes,
-			'notes_order'   => $this->note_identity_order( $notes ),
+			'notes_order'   => $notes_order,
 			'entry'         => $entry,
-			'entry_key'     => $this->entry_key( $entry ),
+			'entry_key'     => $entry_key,
 			'form'          => $form,
 			'raw'           => $raw,
 			'timestamp'     => $timestamp,
@@ -164,6 +176,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $fallback;
 		}
 
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Exact host caller-chain proof is the qualified production seam.
 		$trace = debug_backtrace( 0, 60 );
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::SECOND_CHAIN );
@@ -491,46 +504,16 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		if (
 			! defined( self::FLOW_VERSION_CONSTANT ) ||
 			! defined( self::FLOW_BASENAME_CONSTANT ) ||
-			! defined( 'PGR_PATH' ) ||
 			! defined( 'WP_PLUGIN_DIR' ) ||
-			! class_exists( 'GFForms', false )
+			! class_exists( 'GFForms', false ) ||
+			self::FLOW_VERSION !== (string) constant( self::FLOW_VERSION_CONSTANT ) ||
+			self::FLOW_BASENAME !== str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) ) ||
+			self::GF_VERSION !== (string) GFForms::$version
 		) {
 			return false;
 		}
 
-		$registry_path = PGR_PATH . 'includes/localization/products.php';
-		if ( ! is_readable( $registry_path ) ) {
-			return false;
-		}
-		$products = require $registry_path;
-		if ( ! is_array( $products ) ) {
-			return false;
-		}
-
-		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
-		$flow_product  = dirname( $flow_basename );
-		if (
-			'' === $flow_product ||
-			'.' === $flow_product ||
-			'/' === $flow_product ||
-			false !== strpos( $flow_product, '..' ) ||
-			! isset( $products[ $flow_product ], $products['gravityforms'] )
-		) {
-			return false;
-		}
-
-		$flow_target = isset( $products[ $flow_product ]['target_version'] ) ? (string) $products[ $flow_product ]['target_version'] : '';
-		$gf_target   = isset( $products['gravityforms']['target_version'] ) ? (string) $products['gravityforms']['target_version'] : '';
-		if (
-			'' === $flow_target ||
-			'' === $gf_target ||
-			(string) constant( self::FLOW_VERSION_CONSTANT ) !== $flow_target ||
-			(string) GFForms::$version !== $gf_target
-		) {
-			return false;
-		}
-
-		$flow_root = dirname( WP_PLUGIN_DIR . '/' . ltrim( $flow_basename, '/' ) );
+		$flow_root = dirname( WP_PLUGIN_DIR . '/' . self::FLOW_BASENAME );
 		try {
 			$gf_reflection = new ReflectionClass( 'GFForms' );
 			$gf_main       = $gf_reflection->getFileName();
