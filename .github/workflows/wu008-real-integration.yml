@@ -17,6 +17,9 @@ on:
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php'
+      - 'assets/js/pgr-flow-entry-detail-persian-digits.js'
       - 'docs/WU008_REAL_INTEGRATION.md'
       - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
       - 'docs/G008_JALALI_PRESENTATION.md'
@@ -153,6 +156,7 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
