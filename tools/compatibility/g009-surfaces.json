@@ -12,12 +12,24 @@
   "native_pass_runtime_requirements": {
     "profiles": {
       "rtl": [
-        { "width": 1280, "height": 900 },
-        { "width": 390, "height": 844 }
+        {
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "width": 390,
+          "height": 844
+        }
       ],
       "ltr": [
-        { "width": 1280, "height": 900 },
-        { "width": 390, "height": 844 }
+        {
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "width": 390,
+          "height": 844
+        }
       ]
     }
   },
@@ -44,11 +56,13 @@
           "id": "gravityforms.gform-admin-frontend-reachability",
           "request_identity": "authentic Gravity Flow frontend Inbox request where Gravity Forms admin CSS is observed",
           "rtl_relevance": "global direction rules can influence html/body and dynamically inserted descendants",
-          "expected_native_behavior": "No PersianGravity repair is admitted until source/runtime reachability and material effect are proven.",
-          "style_handles": ["gform_admin"],
+          "expected_native_behavior": "Diagnostic reachability/causality alone does not authorize a repair; a production change requires a material visible defect and a safe bounded seam.",
+          "style_handles": [
+            "gform_admin"
+          ],
           "dom_state_signature": "frontend Gravity Flow Inbox shortcode page with gform_admin present",
           "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Exact source reachability and current-Head browser CSS causality are supported; disabling only the loaded stylesheet restores root RTL, but no material defect was observed on the exercised visible Inbox/AG Grid surface and no safe permanent repair seam is admitted.",
+          "evidence_provenance": "Current-Head WU008 exact-package browser qualification at 1280x900 and 390x844: gform_admin is present on the authentic Flow frontend Inbox in RTL/LTR controls; disabling only that stylesheet restores RTL root direction in fa_IR and restoring it returns the roots to LTR, establishing CSS causality. The exercised visible Inbox/AG Grid and interactive descendants remain usable with no material visible defect observed, so the final disposition is NO_REPAIR_NO_ADMISSION.",
           "drift_behavior": "Handle/version/surface mismatch invalidates any later finding or adapter authority."
         }
       ]
@@ -102,13 +116,13 @@
       "surfaces": [
         {
           "id": "gravityperks.family-baseline",
-          "request_identity": "only exact admitted Gravity Perks family packages; no automatic future/perk expansion",
-          "rtl_relevance": "family registration only",
-          "expected_native_behavior": "No executable RTL claim without exact-package surface evidence.",
+          "request_identity": "exact Gravity Perks 2.3.16 runtime with only GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21 admitted and exercised",
+          "rtl_relevance": "family activation plus the two explicitly admitted frontend surfaces; no automatic future/perk expansion",
+          "expected_native_behavior": "The exact admitted family is qualified only when both admitted Perk surfaces satisfy their own RTL/LTR evidence contracts.",
           "style_handles": [],
-          "dom_state_signature": null,
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "G-007 localization/source evidence does not equal browser RTL proof; WU008 has no authenticated exact-package provisioning for this package.",
+          "dom_state_signature": "active GravityPerks runtime with authentic GP File Upload Pro and GP Advanced Select fields in the published Gravity Forms fixture",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 exact-package browser qualification: Gravity Perks 2.3.16 plus exact GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21 were hash/version/root verified, activated, and exercised under fa_IR/RTL and en_US/LTR at 1280x900 and 390x844. This baseline is limited to those two admitted Perks and exercised surfaces.",
           "drift_behavior": "Any package/version drift remains fail-closed."
         }
       ]
@@ -122,13 +136,13 @@
       "surfaces": [
         {
           "id": "gp-file-upload-pro.frontend",
-          "request_identity": "authentic field runtime when exact package bytes are provisioned",
+          "request_identity": "published Gravity Forms frontend form containing an authentic GP File Upload Pro-enabled multi-file field",
           "rtl_relevance": "upload controls, progress/actions and technical filename BiDi islands",
-          "expected_native_behavior": "No RTL claim until exact-package browser evidence exists.",
+          "expected_native_behavior": "PHP gettext/provider values flow through the vendor wp_localize_script path; uploader layout remains usable in RTL and en_US/LTR remains native.",
           "style_handles": [],
-          "dom_state_signature": null,
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Exact package is admitted for G-007 localization but is not provisioned by WU008 today.",
+          "dom_state_signature": ".gpfup__droparea and .gpfup__filename inside the authentic gpfupEnable field",
+          "evidence_state": "NATIVE_PASS",
+          "evidence_provenance": "Current-Head WU008 exact-package source+browser evidence: exact GP File Upload Pro 1.5.13 source resolves select files / Drop files here / or through PHP gettext and wp_localize_script; fa_IR visibly renders انتخاب فایل‌ها / فایل‌ها را اینجا رها کنید / یا, en_US remains native English, both viewports stay usable, and گزارش-ID-1234.txt is preserved with unicode-bidi:isolate.",
           "drift_behavior": "Any package/version drift remains fail-closed."
         }
       ]
@@ -144,11 +158,13 @@
           "id": "gp-advanced-select.tom-select",
           "request_identity": "authentic GP Advanced Select field with the exact vendor Tom Select style handle",
           "rtl_relevance": "caret placement, inline/start/end padding, direction, search/selection and keyboard/focus behavior",
-          "expected_native_behavior": "Existing bounded PersianGravity adapter may run only for fa_IR + WordPress RTL + exact registered vendor handle; no future-version claim is implied.",
-          "style_handles": ["gp-advanced-select-tom-select"],
-          "dom_state_signature": ".ts-wrapper.rtl containing .ts-control",
-          "evidence_state": "NOT_PROVEN",
-          "evidence_provenance": "Existing G-007 source/unit evidence proves the bounded adapter contract but not current exact-package browser qualification; exact GP Advanced Select 1.1.21 package bytes are not available to the WU008 CI lane.",
+          "expected_native_behavior": "PersianGravity's bounded adapter runs only for exact GP Advanced Select 1.1.21 + fa_IR + is_rtl() + the exact registered vendor style handle; LTR and every drift/absence state retain native behavior.",
+          "style_handles": [
+            "gp-advanced-select-tom-select"
+          ],
+          "dom_state_signature": ".ts-wrapper.gfield_select.single.plugin-change_listener.rtl containing .ts-control",
+          "evidence_state": "ADAPTER_REQUIRED_AND_VERIFIED",
+          "evidence_provenance": "Current-Head WU008 exact-package source+browser evidence: GP Advanced Select 1.1.21 registers gp-advanced-select-tom-select and creates the change_listener Tom Select state. In fa_IR/RTL the bounded adapter moves the caret left and mirrors the reserve to padding-inline-end (computed 36px end vs 12px start) at both viewports while search/typing/ArrowDown/Enter/selection/focus remain usable. The en_US/LTR control has no PersianGravity inline style and remains native.",
           "drift_behavior": "Exact package/version, handle or required DOM/state-signature drift invalidates browser qualification and requires re-admission."
         }
       ]

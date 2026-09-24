@@ -36,9 +36,9 @@ function fixtures() {
         product: 'GravityView', version: '3.3.4', package_sha256: 'c'.repeat(64),
         surfaces: [{ id: 'gravityview.admin-list', evidence_state: 'NATIVE_PASS' }],
       },
-      { product: 'Gravity Perks', version: '2.3.16', package_sha256: 'd'.repeat(64), surfaces: [{ id: 'gravityperks.family-baseline', evidence_state: 'NOT_PROVEN' }] },
-      { product: 'GP File Upload Pro', version: '1.5.13', package_sha256: 'e'.repeat(64), surfaces: [{ id: 'gp-file-upload-pro.frontend', evidence_state: 'NOT_PROVEN' }] },
-      { product: 'GP Advanced Select', version: '1.1.21', package_sha256: 'f'.repeat(64), surfaces: [{ id: 'gp-advanced-select.tom-select', evidence_state: 'NOT_PROVEN' }] },
+      { product: 'Gravity Perks', version: '2.3.16', package_sha256: 'd'.repeat(64), surfaces: [{ id: 'gravityperks.family-baseline', evidence_state: 'NATIVE_PASS' }] },
+      { product: 'GP File Upload Pro', version: '1.5.13', package_sha256: 'e'.repeat(64), surfaces: [{ id: 'gp-file-upload-pro.frontend', evidence_state: 'NATIVE_PASS' }] },
+      { product: 'GP Advanced Select', version: '1.1.21', package_sha256: 'f'.repeat(64), surfaces: [{ id: 'gp-advanced-select.tom-select', evidence_state: 'ADAPTER_REQUIRED_AND_VERIFIED' }] },
     ],
   };
 
@@ -55,22 +55,50 @@ function fixtures() {
     }],
   };
 
-  const vendorVersions = { gravityforms: '3.1.1.1', gravityflow: '3.1.0', gravityview: '3.3.4' };
-  const packageShas = { gravityforms: 'a'.repeat(64), gravityflow: 'b'.repeat(64), gravityview: 'c'.repeat(64), persiangravity: identity.persiangravityPackageSha256 };
+  const vendorVersions = { gravityforms: '3.1.1.1', gravityflow: '3.1.0', gravityview: '3.3.4', gravityperks: '2.3.16', gpfileuploadpro: '1.5.13', gpadvancedselect: '1.1.21' };
+  const packageShas = { gravityforms: 'a'.repeat(64), gravityflow: 'b'.repeat(64), gravityview: 'c'.repeat(64), gravityperks: 'd'.repeat(64), gpfileuploadpro: 'e'.repeat(64), gpadvancedselect: 'f'.repeat(64), persiangravity: identity.persiangravityPackageSha256 };
   const makeG009 = (profile) => ({
     program: 'G-009', profile,
     exact_persiangravity_commit: identity.head,
     exact_package_sha256: structuredClone(packageShas),
     vendor_versions: structuredClone(vendorVersions),
     results: g009Registry.products.flatMap((product) => product.surfaces
-      .filter((surface) => surface.evidence_state === 'NATIVE_PASS')
+      .filter((surface) => ['NATIVE_PASS', 'ADAPTER_REQUIRED_AND_VERIFIED'].includes(surface.evidence_state))
       .flatMap((surface) => g009Registry.native_pass_runtime_requirements.profiles[profile].map((viewport) => ({
-        id: surface.id, evidence_state: 'NATIVE_PASS', observed: { viewport: structuredClone(viewport) },
+        id: surface.id, evidence_state: surface.evidence_state, observed: { viewport: structuredClone(viewport) },
       })))),
   });
   const g009RtlEvidence = makeG009('rtl');
   g009RtlEvidence.results.push({ id: 'gravityforms.gform-admin-frontend-reachability', evidence_state: 'NOT_PROVEN', observed: {} });
   const g009LtrEvidence = makeG009('ltr');
+
+  const g009PerksSourceEvidence = {
+    evidence_class: 'G009_EXACT_INSTALLED_GRAVITY_PERKS_SOURCE_PROBE',
+    exact_persiangravity_commit: identity.head,
+    exact_versions: {
+      gravityperks: '2.3.16',
+      gpfileuploadpro: '1.5.13',
+      gpadvancedselect: '1.1.21',
+    },
+    exact_package_sha256: {
+      gravityperks: 'd'.repeat(64),
+      gpfileuploadpro: 'e'.repeat(64),
+      gpadvancedselect: 'f'.repeat(64),
+    },
+    observations: {
+      file_upload_pro: {
+        wp_localize_script_gpfup_constants_line: 395,
+        gettext_select_files_line: 397,
+        gettext_drop_files_here_line: 398,
+        gettext_or_line: 399,
+      },
+      advanced_select: {
+        exact_style_handle_line: 550,
+        exact_style_asset_line: 551,
+        change_listener_plugin_line: 121,
+      },
+    },
+  };
 
   const sourceDiscoveryEvidence = {
     evidence_class: 'EXACT_INSTALLED_VENDOR_SOURCE_DISCOVERY',
@@ -94,6 +122,7 @@ function fixtures() {
     g008Registry,
     g009RtlEvidence,
     g009LtrEvidence,
+    g009PerksSourceEvidence,
     sourceDiscoveryEvidence,
     g008FlowInboxAdmissionEvidence: null,
     g008FlowStatusAdmissionEvidence: null,
@@ -401,7 +430,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
   const result = reconcileQualificationEvidence(input);
   assert.deepEqual(result, {
     status: 'PASS',
-    g009_runtime_claims_reconciled: 3,
+    g009_runtime_claims_reconciled: 6,
     g008_source_proven_claims_reconciled: 5,
     g008_runtime_admitted_claims_reconciled: 0,
     g008_final_no_admission_claims_reconciled: 0,
@@ -421,6 +450,26 @@ test('G-009 missing-evidence falsification rejects a missing required surface sc
   const input = fixtures();
   input.g009LtrEvidence.results = input.g009LtrEvidence.results.filter((item) => !(item.id === 'gravityview.admin-list' && item.observed.viewport?.width === 1280));
   expectFailure(input, /gravityview\.admin-list.*ltr 1280x900.*found 0/);
+});
+
+test('G-009 rejects duplicated mode identity and missing exact Perks source evidence', () => {
+  const duplicated = fixtures();
+  duplicated.g009LtrEvidence = structuredClone(duplicated.g009RtlEvidence);
+  expectFailure(duplicated, /G-009 ltr: artifact program\/profile identity mismatch/);
+
+  const missingSource = fixtures();
+  missingSource.g009PerksSourceEvidence = null;
+  expectFailure(missingSource, /Gravity Perks exact installed source probe is missing/);
+});
+
+test('G-009 rejects exact Perks source drift and adapter runtime downgrade', () => {
+  const drifted = fixtures();
+  drifted.g009PerksSourceEvidence.exact_package_sha256.gpadvancedselect = '0'.repeat(64);
+  expectFailure(drifted, /gp-advanced-select\.tom-select.*source probe package SHA-256 mismatch/);
+
+  const downgraded = fixtures();
+  downgraded.g009RtlEvidence.results.find((item) => item.id === 'gp-advanced-select.tom-select' && item.observed.viewport?.width === 390).evidence_state = 'NOT_PROVEN';
+  expectFailure(downgraded, /gp-advanced-select\.tom-select.*rtl 390x844.*expected ADAPTER_REQUIRED_AND_VERIFIED, found NOT_PROVEN/);
 });
 
 test('G-008 discovery-regression falsification rejects a lost asserted source seam/reference', () => {
@@ -628,9 +677,6 @@ test('deliberate NOT_PROVEN claims remain legal and are not promoted by reconcil
   const notProven = input.g009Registry.products.flatMap((product) => product.surfaces).filter((surface) => surface.evidence_state === 'NOT_PROVEN');
   assert.deepEqual(notProven.map((surface) => surface.id), [
     'gravityforms.gform-admin-frontend-reachability',
-    'gravityperks.family-baseline',
-    'gp-file-upload-pro.frontend',
-    'gp-advanced-select.tom-select',
   ]);
   assert.equal(notProven.every((surface) => surface.evidence_state === 'NOT_PROVEN'), true);
 });
