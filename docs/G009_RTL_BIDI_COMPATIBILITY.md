@@ -22,6 +22,8 @@ A source/unit observation is not browser qualification. A screenshot is suppleme
 
 Each registered product binds an exact admitted version and package SHA-256. Each registered surface records its authentic request/surface identity, RTL relevance, native expectation, relevant vendor handles, DOM/state signature when needed, current evidence ceiling, provenance, and drift behavior. Unexecuted surfaces remain `NOT_PROVEN`.
 
+The reconciliation gate treats only committed `NATIVE_PASS` and `ADAPTER_REQUIRED_AND_VERIFIED` records as executable browser claims. Each such claim must appear exactly once for every required RTL/LTR viewport and must match the artifact's exact PersianGravity Head/package identity plus the registered vendor version/hash. Gravity Perks-family promotions additionally require the exact-installed-source metadata probe for File Upload Pro's gettext/localized-script lines and Advanced Select's style-handle/change-listener seam. Missing, duplicated, downgraded or drifted evidence fails closed; source evidence alone never promotes a browser state.
+
 ## Bounded adapter contract
 
 A production adapter is admitted only when evidence establishes the narrowest supported seam and the strongest practical conjunction of gates. Depending on the vendor surface this can include:
