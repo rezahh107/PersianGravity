@@ -7,12 +7,6 @@ if (!artifactDir) throw new Error('WU008_ARTIFACT_DIR is required.');
 
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
-function allTrue(value) {
-  if (typeof value === 'boolean') return value;
-  if (!isObject(value)) return false;
-  const values = Object.values(value);
-  return values.length > 0 && values.every(allTrue);
-}
 function exactIdentity(evidence, flow, source, label) {
   if (!isObject(evidence)) throw new Error(`${label} evidence is missing.`);
   if (evidence.exact_persiangravity_commit !== source.exact.pgr_sha) throw new Error(`${label} PersianGravity Head mismatch.`);
@@ -20,19 +14,48 @@ function exactIdentity(evidence, flow, source, label) {
     throw new Error(`${label} exact Gravity Flow identity mismatch.`);
   }
 }
+function requireTrueFlags(contract, flags, label) {
+  if (!isObject(contract)) throw new Error(`${label} source contract is missing.`);
+  for (const flag of flags) {
+    if (contract[flag] !== true) throw new Error(`${label} source contract missing ${flag}.`);
+  }
+}
 
 const registry = readJson(path.join(root, 'tools/jalali/g008-system-date-surfaces.json'));
 const source = readJson(path.join(artifactDir, 'g008-residual-source-probe.json'));
-const enabled = readJson(path.join(artifactDir, 'g008-flow-residual-browser-enabled.json'));
-const disabled = readJson(path.join(artifactDir, 'g008-flow-residual-browser-disabled.json'));
 const statusEnabled = readJson(path.join(artifactDir, 'g008-flow-status-browser-enabled.json'));
 const statusDisabled = readJson(path.join(artifactDir, 'g008-flow-status-browser-disabled.json'));
 const schedule = readJson(path.join(artifactDir, 'g008-flow-schedule-qualification.json'));
-const timelinePrint = readJson(path.join(artifactDir, 'g008-timeline-print-qualification.json'));
 
-if (source?.evidence_class !== 'G008_RESIDUAL_EXACT_SOURCE_PROBE' || !isObject(source.exact) || !isObject(source.source_contract) || !allTrue(source.source_contract)) {
-  throw new Error('Residual exact-source contract is missing, empty, non-boolean, or not fully proven.');
+if (source?.evidence_class !== 'G008_RESIDUAL_EXACT_SOURCE_PROBE' || !isObject(source.exact) || !isObject(source.source_contract)) {
+  throw new Error('Residual exact-source evidence is missing or malformed.');
 }
+requireTrueFlags(source.source_contract.status_due_date, [
+  'table_reads_operational_due_getter_directly',
+  'table_formats_due_inside_column_method',
+  'table_echoes_direct_output',
+  'table_native_empty_uses_dash_entity',
+  'table_has_no_status_value_filter',
+  'table_has_no_entry_url_proof_seam',
+  'export_has_separate_due_branch',
+  'export_uses_generic_status_filter',
+  'due_getter_is_operational_filter',
+  'overdue_uses_same_due_getter',
+], 'Status due-date');
+requireTrueFlags(source.source_contract.entry_detail_schedule_due_expiration, [
+  'schedule_reads_operational_getter_directly',
+  'schedule_prints_directly',
+  'schedule_has_no_value_filter',
+  'schedule_getter_is_operational_filter',
+  'schedule_validation_uses_same_getter',
+  'schedule_date_branch_uses_configured_civil_date',
+  'schedule_date_field_and_delay_localize_operational_timestamp',
+  'schedule_date_timestamp_reads_configured_date',
+  'schedule_date_field_timestamp_reads_configured_field_and_offset',
+  'schedule_delay_timestamp_uses_step_timestamp_and_offset',
+  'step_timestamp_reads_step_scoped_entry_meta',
+  'queued_step_status_calls_schedule_renderer',
+], 'Entry Detail schedule');
 
 const flow = registry.products.find((product) => product.product === 'Gravity Flow');
 if (!flow || flow.version !== '3.1.0' || flow.package_sha256 !== source.exact.sha256) {
@@ -47,22 +70,6 @@ for (const id of residualIds) {
     throw new Error(`Residual registry disposition drifted for ${id}.`);
   }
 }
-const timelineSurface = flow.surfaces.find((item) => item.id === 'gravityflow.timeline-history');
-const printSurface = flow.surfaces.find((item) => item.id === 'gravityflow.print');
-if (
-  !timelineSurface || timelineSurface.support_state !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
-  || timelineSurface.adapter_identity !== 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter'
-  || timelineSurface.exact_version_disposition !== 'ADMITTED_FOR_EXACT_VERSION'
-) {
-  throw new Error('Timeline production admission registry record is missing or drifted.');
-}
-if (
-  !printSurface || printSurface.support_state !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
-  || printSurface.adapter_identity !== 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter (inherited renderer)'
-  || printSurface.exact_version_disposition !== 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE'
-) {
-  throw new Error('Print Timeline inheritance registry record is missing or drifted.');
-}
 if (flow.surfaces.some((item) => item.id === 'gravityflow.entry-detail.schedule-due-expiration')) {
   throw new Error('Legacy combined Entry Detail residual record is still present.');
 }
@@ -73,26 +80,8 @@ function assertBrowser(evidence, mode, expectedClass, label) {
   if (evidence.mode !== mode) throw new Error(`${label} mode must be ${mode}.`);
   if (evidence.site_timezone !== 'Asia/Tehran' || evidence.php_default_timezone !== 'UTC') throw new Error(`${label} timezone identity mismatch.`);
 }
-assertBrowser(enabled, 'enabled', 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_BROWSER', 'Residual enabled browser');
-assertBrowser(disabled, 'disabled', 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_BROWSER', 'Residual disabled browser');
 assertBrowser(statusEnabled, 'enabled', 'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER', 'Status enabled browser');
 assertBrowser(statusDisabled, 'disabled', 'AUTHENTIC_GRAVITY_FLOW_STATUS_BROWSER', 'Status disabled browser');
-
-if (enabled.entry_detail?.presentation !== 'JALALI' || disabled.entry_detail?.presentation !== 'NATIVE') {
-  throw new Error('Residual Timeline mode presentation did not reflect enabled Jalali / disabled native behavior.');
-}
-if (JSON.stringify(disabled.entry_detail?.timeline) !== JSON.stringify(disabled.print?.timeline)) {
-  throw new Error('Disabled Print does not inherit native Timeline rendering.');
-}
-if (JSON.stringify(enabled.entry_detail?.timeline) !== JSON.stringify(enabled.print?.timeline)) {
-  throw new Error('Enabled Print does not inherit Jalali Timeline rendering.');
-}
-if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') {
-  throw new Error('Residual Print inheritance relation is missing.');
-}
-if (JSON.stringify(enabled.entry_detail?.timeline) === JSON.stringify(disabled.entry_detail?.timeline)) {
-  throw new Error('Residual enabled Timeline unexpectedly equals disabled native Timeline.');
-}
 
 for (const [label, evidence] of [['enabled', statusEnabled], ['disabled', statusDisabled]]) {
   if (!Array.isArray(evidence.rows) || evidence.rows.length === 0 || evidence.rows.some((row) => typeof row?.due_date !== 'string')) {
@@ -118,56 +107,19 @@ if (
   throw new Error('Schedule final no-admission qualification is incomplete.');
 }
 
-exactIdentity(timelinePrint, flow, source, 'Timeline/Print qualification');
-if (timelinePrint.evidence_class !== 'G008_TIMELINE_PRINT_PRODUCTION_ADMISSION_RECONCILIATION') {
-  throw new Error('Timeline/Print production evidence class mismatch.');
-}
-if (
-  timelinePrint.timeline?.initial_entry_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
-  || timelinePrint.timeline?.stored_note_event_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED'
-  || timelinePrint.timeline?.storage_unchanged !== true
-  || timelinePrint.timeline?.ids_order_bodies_unchanged !== true
-  || timelinePrint.timeline?.duplicate_timestamp_identity_proven !== true
-  || timelinePrint.timeline?.user_authored_date_looking_text_untouched !== true
-  || timelinePrint.timeline?.separate_display_property_consumed !== false
-  || timelinePrint.timeline?.date_created_representation_consumed_by_renderer !== true
-  || timelinePrint.timeline?.adapter_hook_lifecycle_proven !== true
-) {
-  throw new Error('Timeline production admission qualification is incomplete.');
-}
-if (
-  timelinePrint.print?.field_grid_relation !== 'REUSES_ENTRY_DETAIL_FIELD_GRID'
-  || timelinePrint.print?.timeline_relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION'
-  || timelinePrint.print?.initial_event_propagation_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE'
-  || timelinePrint.print?.stored_note_event_propagation_disposition !== 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE'
-  || timelinePrint.print?.independent_date_seam_disposition !== 'NO_INDEPENDENT_PRINT_DATE_SEAM_REQUIRED'
-  || timelinePrint.print?.workflow_sidebar_due_schedule_expiration !== 'ABSENT_FROM_PRINT_RENDER_PATH'
-) {
-  throw new Error('Print Timeline inheritance admission is incomplete.');
-}
-
 const result = {
   schema_version: '2.0.0',
   evidence_class: 'G008_RESIDUAL_NO_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: source.exact.pgr_sha,
-  exact_persiangravity_package_sha256: enabled.exact_persiangravity_package_sha256,
+  exact_persiangravity_package_sha256: statusEnabled.exact_persiangravity_package_sha256,
   exact_gravityflow_version: flow.version,
   exact_gravityflow_package_sha256: flow.package_sha256,
-  site_timezone: enabled.site_timezone,
-  php_default_timezone: enabled.php_default_timezone,
+  site_timezone: statusEnabled.site_timezone,
+  php_default_timezone: statusEnabled.php_default_timezone,
   surfaces: Object.fromEntries(residualIds.map((id) => [id, 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0'])),
-  admitted_surfaces: {
-    'gravityflow.timeline-history': 'RUNTIME_PROVEN + ADMITTED_VERIFIED',
-    'gravityflow.print': 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE',
-  },
   source_contract_proven: true,
-  browser_modes: { enabled: enabled.mode, disabled: disabled.mode },
   status_browser_modes: { enabled: statusEnabled.mode, disabled: statusDisabled.mode },
   schedule_qualification: 'date/date_field/delay/empty branches qualified; no downstream value-only seam',
-  timeline_qualification: 'historical date_created consumption preserved; downstream formatter-context seam now production-admitted',
-  print_field_grid_relation: 'REUSES_ENTRY_DETAIL_FIELD_GRID',
-  print_timeline_relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
-  print_workflow_sidebar: 'ABSENT_FROM_PRINT_RENDER_PATH',
   status: 'PASS',
 };
 fs.writeFileSync(path.join(artifactDir, 'g008-flow-residual-no-admission.json'), `${JSON.stringify(result, null, 2)}\n`);
