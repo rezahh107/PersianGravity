@@ -15,6 +15,11 @@ if ( ! is_string( $artifact_dir ) || '' === $artifact_dir ) {
 }
 wp_mkdir_p( $artifact_dir );
 
+$expected_pgr_version = getenv( 'G006_PGR_EXPECTED_VERSION' );
+if ( ! is_string( $expected_pgr_version ) || 1 !== preg_match( '/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/', $expected_pgr_version ) ) {
+	throw new RuntimeException( 'G006_PGR_EXPECTED_VERSION must be a stable SemVer resolved from repository release authority.' );
+}
+
 function g006_gf_assert( $condition, $message ) {
 	if ( ! $condition ) {
 		throw new RuntimeException( $message );
@@ -47,7 +52,7 @@ $versions = array(
 );
 g006_gf_assert( '3.1.1.1' === $versions['gravityforms'], 'Gravity Forms runtime version mismatch.' );
 g006_gf_assert( '3.1.0' === $versions['gravityflow'], 'Gravity Flow runtime version mismatch.' );
-g006_gf_assert( '4.4.0' === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
+g006_gf_assert( $expected_pgr_version === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
 
 // Newly admitted G-006 identity through the real Gravity Forms field implementation.
 $text_field = GF_Fields::get( 'text' );
@@ -142,18 +147,19 @@ g006_gf_assert( array() === $products['gravityflow']['scripts'], 'Gravity Flow n
 g006_gf_assert( array() === ( glob( $pgr_root . '/languages/providers/gravityforms/gravityforms-fa_IR-*.json' ) ?: array() ), 'Unexpected Gravity Forms provider JSON catalog exists.' );
 
 $manifest = array(
-	'schema_version'  => 1,
-	'evidence_class'  => 'G006_GF_EXACT_LICENSED_RUNTIME',
-	'locale'          => get_locale(),
-	'versions'        => $versions,
-	'new_identity'    => $new_identity,
-	'existing'        => $existing,
-	'flow'            => $flow,
-	'fallback'        => $fallback,
-	'form_id'         => (int) $form_id,
-	'form_rendered'   => true,
-	'gf_native_js'    => 0,
-	'gf_provider_json'=> 0,
+	'schema_version'                      => 1,
+	'evidence_class'                      => 'G006_GF_EXACT_LICENSED_RUNTIME',
+	'locale'                              => get_locale(),
+	'expected_persiangravity_version'     => $expected_pgr_version,
+	'versions'                            => $versions,
+	'new_identity'                        => $new_identity,
+	'existing'                            => $existing,
+	'flow'                                => $flow,
+	'fallback'                            => $fallback,
+	'form_id'                             => (int) $form_id,
+	'form_rendered'                       => true,
+	'gf_native_js'                        => 0,
+	'gf_provider_json'                    => 0,
 );
 file_put_contents(
 	$artifact_dir . '/g006-gravityforms-runtime.json',
