@@ -212,6 +212,24 @@ function validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expec
   return errors;
 }
 
+function hasG008RuntimeAdmissionSignal(surface) {
+  return surface.discovery_state === 'RUNTIME_PROVEN'
+    || surface.support_state === 'ADMITTED_VERIFIED'
+    || surface.runtime_evidence != null;
+}
+
+function validateG008OrdinaryRuntimeAdmission(product, surface, runtimeEvidenceByFile, expectedIdentity) {
+  const errors = [];
+  if (surface.discovery_state !== 'RUNTIME_PROVEN') {
+    errors.push(`G-008 ${surface.id}: committed runtime admission discovery_state must be RUNTIME_PROVEN.`);
+  }
+  if (surface.support_state !== 'ADMITTED_VERIFIED') {
+    errors.push(`G-008 ${surface.id}: committed runtime admission support_state must be ADMITTED_VERIFIED.`);
+  }
+  errors.push(...validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expectedIdentity));
+  return errors;
+}
+
 function allEvidenceFlagsTrue(value) {
   if (typeof value === 'boolean') return value;
   if (!isObject(value)) return false;
@@ -581,8 +599,18 @@ function validateG008(
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      const sourceClaim = surface.discovery_state === 'SOURCE_PROVEN' || Boolean(surface.runtime_evidence);
-      if (!sourceClaim) continue;
+      const isTimelinePrintAdmission = timelinePrintAdmissionSurfaceIds.has(surface.id);
+      const isFinalNoAdmission = surface.exact_version_disposition === 'FINAL_NO_ADMISSION';
+      const isOrdinaryRuntimeAdmission = product.product === 'Gravity Flow'
+        && !isTimelinePrintAdmission
+        && !isFinalNoAdmission
+        && hasG008RuntimeAdmissionSignal(surface);
+      const isSourceOnlyClaim = surface.discovery_state === 'SOURCE_PROVEN';
+      const participates = isTimelinePrintAdmission
+        || isFinalNoAdmission
+        || isOrdinaryRuntimeAdmission
+        || isSourceOnlyClaim;
+      if (!participates) continue;
 
       sourceClaims.push({ product, surface });
       const key = productKey(product.product);
@@ -593,10 +621,8 @@ function validateG008(
         errors.push(`G-008 ${surface.id}: ${product.product} package SHA-256 mismatch.`);
       }
 
-      if (timelinePrintAdmissionSurfaceIds.has(surface.id)) {
-        if (surface.support_state === 'ADMITTED_VERIFIED') {
-          runtimeClaims.push({ product, surface });
-        }
+      if (isTimelinePrintAdmission) {
+        runtimeClaims.push({ product, surface });
         errors.push(...validateG008TimelinePrintAdmission(
           registry,
           product,
@@ -607,7 +633,7 @@ function validateG008(
         continue;
       }
 
-      if (surface.exact_version_disposition === 'FINAL_NO_ADMISSION') {
+      if (isFinalNoAdmission) {
         finalNoAdmissionClaims.push({ product, surface });
         errors.push(...validateG008FinalNoAdmission(
           product,
@@ -640,9 +666,9 @@ function validateG008(
         }
       }
 
-      if (surface.support_state === 'ADMITTED_VERIFIED' && surface.runtime_evidence) {
+      if (isOrdinaryRuntimeAdmission) {
         runtimeClaims.push({ product, surface });
-        errors.push(...validateG008RuntimeClaim(product, surface, runtimeEvidenceByFile, expectedIdentity));
+        errors.push(...validateG008OrdinaryRuntimeAdmission(product, surface, runtimeEvidenceByFile, expectedIdentity));
       }
     }
   }
