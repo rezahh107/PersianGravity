@@ -98,6 +98,7 @@ if (!Array.isArray(fixture.duplicate_ids) || fixture.duplicate_ids.length < 2 ||
 }
 const expectedTimeline = fixture.timeline ?? [];
 const expectedStored = expectedTimeline.filter((row) => row.event_kind === 'stored');
+const expectedBodies = expectedTimeline.map((row) => row.value);
 if (!expectedTimeline.some((row) => row.event_kind === 'initial' && Number(row.id) === 0)) failures.push('initial synthetic Timeline event is missing');
 if (expectedStored.length < 4) failures.push('stored Timeline event fixture is incomplete');
 if (!expectedStored.some((row) => /2026-03-20|1405\/01\/01|2030-03-21/.test(row.value))) failures.push('date-looking user text boundary fixture is missing');
@@ -139,8 +140,31 @@ for (let index = 0; index < expectedTimeline.length; index += 1) {
 }
 if (JSON.stringify(enabledHeaders) === JSON.stringify(disabledHeaders)) failures.push('enabled Timeline did not differ from native control');
 if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
-if (JSON.stringify(enabledBrowser.timeline?.repeated) !== JSON.stringify({ headers: enabledBrowser.timeline?.headers, bodies: enabledBrowser.timeline?.bodies })) {
+for (const browser of [enabledBrowser, disabledBrowser]) {
+  const timeline = browser.timeline ?? {};
+  if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
+    failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
+  }
+  if (JSON.stringify(timeline.bodies ?? []) !== JSON.stringify(expectedBodies)) {
+    failures.push(`${browser.mode}: Timeline body vector does not exactly equal authoritative fixture values`);
+  }
+  for (let index = 0; index < expectedTimeline.length; index += 1) {
+    if ((timeline.bodies?.[index] ?? '').includes(timeline.headers?.[index] ?? '__missing_header__')) {
+      failures.push(`${browser.mode}: Timeline body ${index} captured an enclosing body/header wrapper`);
+    }
+  }
+}
+const expectedRepeatedTimeline = (browser) => ({
+  headers: browser.timeline?.headers,
+  bodies: browser.timeline?.bodies,
+  rows: browser.timeline?.rows,
+  collector: browser.timeline?.collector,
+});
+if (JSON.stringify(enabledBrowser.timeline?.repeated) !== JSON.stringify(expectedRepeatedTimeline(enabledBrowser))) {
   failures.push('enabled repeated Timeline render is not deterministic');
+}
+if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expectedRepeatedTimeline(disabledBrowser))) {
+  failures.push('disabled repeated Timeline render is not deterministic');
 }
 
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
@@ -149,15 +173,21 @@ if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.p
 for (const stored of expectedStored) {
   if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
 }
+const duplicateExpectedBodies = expectedTimeline.filter((row) => row.date_created === fixture.duplicate_timestamp).map((row) => row.value);
+if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1)) {
+  failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
+}
 
 for (const browser of [enabledBrowser, disabledBrowser]) {
   if (browser.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push(`${browser.mode}: Print inheritance relation missing`);
   if (JSON.stringify(browser.print?.headers) !== JSON.stringify(browser.timeline?.headers)) failures.push(`${browser.mode}: Print headers do not exactly inherit Timeline`);
   if (JSON.stringify(browser.print?.bodies) !== JSON.stringify(browser.timeline?.bodies)) failures.push(`${browser.mode}: Print bodies/order do not match Timeline`);
+  if (browser.print?.collector?.row_count !== expectedTimeline.length) failures.push(`${browser.mode}: Print row count does not equal authoritative Timeline fixture count`);
   if (browser.print?.marker_leaked !== false) failures.push(`${browser.mode}: Print marker leaked`);
   if (Object.values(browser.print?.workflow_sidebar_presence ?? {}).some((value) => value !== 0)) failures.push(`${browser.mode}: Print unexpectedly contains workflow-sidebar date fields`);
 }
 
+const passed = failures.length === 0;
 const result = {
   schema_version: '2.0.0',
   evidence_class: 'G008_TIMELINE_PRINT_PRODUCTION_ADMISSION_RECONCILIATION',
@@ -169,25 +199,34 @@ const result = {
   exact_gravityforms_package_sha256: gfSha,
   source_fingerprints: expectedFingerprints,
   timeline: {
-    initial_entry_disposition: failures.length ? 'NOT_PROVEN' : 'RUNTIME_PROVEN + ADMITTED_VERIFIED',
-    stored_note_event_disposition: failures.length ? 'NOT_PROVEN' : 'RUNTIME_PROVEN + ADMITTED_VERIFIED',
+    initial_entry_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED' : 'NOT_PROVEN',
+    stored_note_event_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED' : 'NOT_PROVEN',
     supported_formats: ['F j, Y', 'Y-m-d'],
     unsupported_formats_native: true,
-    storage_unchanged: failures.every((failure) => !failure.includes('storage') && !failure.includes('raw/GFAPI/REST/workflow')),
-    ids_order_bodies_unchanged: failures.every((failure) => !failure.includes('IDs/order') && !failure.includes('body')),
-    duplicate_timestamp_identity_proven: failures.every((failure) => !failure.includes('duplicate timestamp')),
-    user_authored_date_looking_text_untouched: failures.every((failure) => !failure.includes('date-looking') && !failure.includes('body')),
+    storage_unchanged: passed,
+    ids_order_bodies_unchanged: passed,
+    duplicate_timestamp_identity_proven: passed,
+    user_authored_date_looking_text_untouched: passed,
     separate_display_property_consumed: false,
     date_created_representation_consumed_by_renderer: true,
-    adapter_hook_lifecycle_proven: failures.every((failure) => !failure.includes('hook')),
+    adapter_hook_lifecycle_proven: passed,
+    native_disabled_fallback_proven: passed,
+    enabled_jalali_presentation_proven: passed,
+    body_vector_mode_equality_proven: passed,
+    fixture_row_mapping_proven: passed,
+    marker_non_leakage_proven: passed,
+    operational_state_unchanged: passed,
   },
   print: {
     field_grid_relation: 'REUSES_ENTRY_DETAIL_FIELD_GRID',
     timeline_relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
-    initial_event_propagation_disposition: failures.length ? 'NOT_PROVEN' : 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE',
-    stored_note_event_propagation_disposition: failures.length ? 'NOT_PROVEN' : 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE',
+    initial_event_propagation_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE' : 'NOT_PROVEN',
+    stored_note_event_propagation_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE' : 'NOT_PROVEN',
     independent_date_seam_disposition: 'NO_INDEPENDENT_PRINT_DATE_SEAM_REQUIRED',
     workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
+    body_vector_inheritance_proven: passed,
+    native_disabled_inheritance_proven: passed,
+    marker_non_leakage_proven: passed,
   },
   failures,
 };
