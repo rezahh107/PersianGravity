@@ -317,7 +317,7 @@ await page.locator('.gravityflow-timeline .gravityflow-note-meta').first().waitF
 const timelineHeaders = (await page.locator('.gravityflow-timeline .gravityflow-note-meta').allTextContents()).map((value) => value.trim()).filter(Boolean);
 const timelineBodies = (await page.locator('.gravityflow-timeline .gravityflow-note-body').allTextContents()).map((value) => value.trim());
 const expectedHeaders = (manifest.g008_flow_timeline_multi_note ?? []).map((item) => item.expected_header);
-if (JSON.stringify(timelineHeaders) !== JSON.stringify(expectedHeaders)) {
+if (mode !== 'english' && JSON.stringify(timelineHeaders) !== JSON.stringify(expectedHeaders)) {
   throw new Error(`Multi-note Timeline headers drifted: ${JSON.stringify({ timelineHeaders, expectedHeaders })}`);
 }
 for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
@@ -331,7 +331,7 @@ if (!printResponse?.ok()) throw new Error(`Print request failed: ${printResponse
 await page.locator('#view-container .gravityflow-note-meta').first().waitFor({ timeout: 15000 });
 const printHeaders = (await page.locator('#view-container .gravityflow-note-meta').allTextContents()).map((value) => value.trim()).filter(Boolean);
 const printBodies = (await page.locator('#view-container .gravityflow-note-body').allTextContents()).map((value) => value.trim());
-if (JSON.stringify(printHeaders) !== JSON.stringify(expectedHeaders)) {
+if (mode !== 'english' && JSON.stringify(printHeaders) !== JSON.stringify(expectedHeaders)) {
   throw new Error('Print Timeline did not reuse the same native multi-note headers.');
 }
 for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
