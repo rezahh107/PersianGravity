@@ -47,8 +47,10 @@ jobs:
       - name: PHPCompatibility minimum baseline
         run: composer compat
 
-      - name: Structured Scanner pure JavaScript tests
-        run: node --test tests/js/structured-scanner.test.js
+      - name: Pure JavaScript tests
+        run: |
+          node --test tests/js/structured-scanner.test.js
+          node --test tests/js/flow-workflow-info-persian-digits.test.js
 
       - name: Check out pinned current WordPress Core
         uses: actions/checkout@v7
