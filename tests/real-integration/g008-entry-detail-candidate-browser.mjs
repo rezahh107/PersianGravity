@@ -151,17 +151,53 @@ async function captureProduction(url) {
 }
 
 async function readTimeline(selectorPrefix) {
-  const headerLocator = page.locator(`${selectorPrefix} .gravityflow-note-meta`);
-  await headerLocator.first().waitFor({ timeout: 15000 });
-  return {
-    headers: (await headerLocator.allTextContents()).map((value) => value.trim()).filter(Boolean),
-    bodies: (await page.locator(`${selectorPrefix} .gravityflow-note-body`).allTextContents()).map((value) => value.trim()),
-  };
+  const scope = page.locator(selectorPrefix);
+  await scope.locator('.gravityflow-note-meta').first().waitFor({ timeout: 15000 });
+  return scope.evaluate((element) => {
+    const bodyCandidates = [...element.querySelectorAll('.gravityflow-note-body')];
+    const rowCandidates = bodyCandidates.filter((candidate) => {
+      const headers = [...candidate.querySelectorAll('.gravityflow-note-meta')];
+      const bodyLeaves = [...candidate.querySelectorAll('.gravityflow-note-body')]
+        .filter((body) => !body.querySelector('.gravityflow-note-body'));
+      return headers.length === 1 && bodyLeaves.length === 1;
+    });
+    const rows = rowCandidates.map((row, index) => {
+      const headers = [...row.querySelectorAll('.gravityflow-note-meta')];
+      const bodyLeaves = [...row.querySelectorAll('.gravityflow-note-body')]
+        .filter((body) => !body.querySelector('.gravityflow-note-body'));
+      if (headers.length !== 1 || bodyLeaves.length !== 1) {
+        throw new Error(`Timeline row ${index} is ambiguous: ${headers.length} headers, ${bodyLeaves.length} body leaves.`);
+      }
+      return {
+        index,
+        header: headers[0].textContent?.trim() ?? '',
+        body: bodyLeaves[0].textContent?.trim() ?? '',
+      };
+    });
+    return {
+      headers: rows.map((row) => row.header),
+      bodies: rows.map((row) => row.body),
+      rows,
+      collector: {
+        row_count: rows.length,
+        body_candidate_count: bodyCandidates.length,
+      },
+    };
+  });
 }
 
 function assertTimelinePresentation(snapshot, label) {
-  if (snapshot.headers.length !== timelineFixture.length) {
-    throw new Error(`${label} row/header count drifted: ${snapshot.headers.length} !== ${timelineFixture.length}`);
+  if (snapshot.headers.length !== timelineFixture.length || snapshot.bodies.length !== timelineFixture.length || snapshot.collector?.row_count !== timelineFixture.length) {
+    throw new Error(`${label} row/header/body count drifted: ${JSON.stringify({ headers: snapshot.headers.length, bodies: snapshot.bodies.length, rows: snapshot.collector?.row_count, expected: timelineFixture.length })}`);
+  }
+  const expectedBodies = timelineFixture.map((item) => item.value);
+  if (JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
+    throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
+  }
+  for (let index = 0; index < timelineFixture.length; index += 1) {
+    if (snapshot.bodies[index].includes(snapshot.headers[index])) {
+      throw new Error(`${label} body ${index} contains its Timeline header; collector captured an enclosing wrapper.`);
+    }
   }
   const expectedNative = timelineFixture.map((item) => item.expected_header);
   if (mode === 'disabled') {
