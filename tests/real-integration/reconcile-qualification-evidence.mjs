@@ -59,13 +59,52 @@ function validateRegistryRuntimeRequirements(registry) {
   return requirements.profiles;
 }
 
-function validateG009(registry, artifacts, expectedIdentity) {
+function validateG009(registry, artifacts, expectedIdentity, perksSourceEvidence) {
   const errors = [];
   const claims = [];
 
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
-      if (surface.evidence_state === 'NATIVE_PASS') claims.push({ product, surface });
+      if (['NATIVE_PASS', 'ADAPTER_REQUIRED_AND_VERIFIED'].includes(surface.evidence_state)) claims.push({ product, surface });
+    }
+  }
+
+  const perksClaims = claims.filter(({ product }) => ['Gravity Perks', 'GP File Upload Pro', 'GP Advanced Select'].includes(product.product));
+  if (perksClaims.length > 0) {
+    if (!isObject(perksSourceEvidence)) {
+      errors.push('G-009 Gravity Perks exact installed source probe is missing.');
+    } else {
+      if (perksSourceEvidence.evidence_class !== 'G009_EXACT_INSTALLED_GRAVITY_PERKS_SOURCE_PROBE') {
+        errors.push('G-009 Gravity Perks source probe evidence class mismatch.');
+      }
+      if (perksSourceEvidence.exact_persiangravity_commit !== expectedIdentity.head) {
+        errors.push('G-009 Gravity Perks source probe PersianGravity Head mismatch.');
+      }
+      for (const { product, surface } of perksClaims) {
+        const key = productKey(product.product);
+        if (perksSourceEvidence.exact_versions?.[key] !== product.version) {
+          errors.push(`G-009 ${surface.id}: exact installed source probe version mismatch.`);
+        }
+        if (perksSourceEvidence.exact_package_sha256?.[key] !== product.package_sha256) {
+          errors.push(`G-009 ${surface.id}: exact installed source probe package SHA-256 mismatch.`);
+        }
+        if (surface.id === 'gp-file-upload-pro.frontend') {
+          const source = perksSourceEvidence.observations?.file_upload_pro;
+          for (const field of ['wp_localize_script_gpfup_constants_line', 'gettext_select_files_line', 'gettext_drop_files_here_line', 'gettext_or_line']) {
+            if (!Number.isInteger(source?.[field]) || source[field] <= 0) {
+              errors.push(`G-009 ${surface.id}: exact PHP gettext/wp_localize_script source contract is incomplete (${field}).`);
+            }
+          }
+        }
+        if (surface.id === 'gp-advanced-select.tom-select') {
+          const source = perksSourceEvidence.observations?.advanced_select;
+          for (const field of ['exact_style_handle_line', 'exact_style_asset_line', 'change_listener_plugin_line']) {
+            if (!Number.isInteger(source?.[field]) || source[field] <= 0) {
+              errors.push(`G-009 ${surface.id}: exact vendor handle/style source contract is incomplete (${field}).`);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -101,8 +140,8 @@ function validateG009(registry, artifacts, expectedIdentity) {
           errors.push(`G-009 ${surface.id}: required scenario ${scenario} expected exactly one result, found ${matches.length}.`);
           continue;
         }
-        if (matches[0].evidence_state !== 'NATIVE_PASS') {
-          errors.push(`G-009 ${surface.id}: required scenario ${scenario} downgraded to ${matches[0].evidence_state ?? 'MISSING_STATE'}.`);
+        if (matches[0].evidence_state !== surface.evidence_state) {
+          errors.push(`G-009 ${surface.id}: required scenario ${scenario} expected ${surface.evidence_state}, found ${matches[0].evidence_state ?? 'MISSING_STATE'}.`);
         }
       }
     }
@@ -619,6 +658,7 @@ export function reconcileQualificationEvidence({
   g008Registry,
   g009RtlEvidence,
   g009LtrEvidence,
+  g009PerksSourceEvidence,
   sourceDiscoveryEvidence,
   g008FlowInboxAdmissionEvidence,
   g008FlowStatusAdmissionEvidence,
@@ -643,7 +683,7 @@ export function reconcileQualificationEvidence({
     throw new EvidenceReconciliationError(['Expected PersianGravity package SHA-256 is missing or invalid.']);
   }
 
-  const g009 = validateG009(g009Registry, { rtl: g009RtlEvidence, ltr: g009LtrEvidence }, expectedIdentity);
+  const g009 = validateG009(g009Registry, { rtl: g009RtlEvidence, ltr: g009LtrEvidence }, expectedIdentity, g009PerksSourceEvidence);
   const g008 = validateG008(
     g008Registry,
     sourceDiscoveryEvidence,
@@ -667,7 +707,7 @@ export function reconcileQualificationEvidence({
 
   return {
     status: 'PASS',
-    g009_native_pass_claims_reconciled: g009.claims,
+    g009_runtime_claims_reconciled: g009.claims,
     g008_source_proven_claims_reconciled: g008.sourceClaims,
     g008_runtime_admitted_claims_reconciled: g008.runtimeClaims,
     g008_final_no_admission_claims_reconciled: g008.finalNoAdmissionClaims,
@@ -691,6 +731,7 @@ function runCli() {
     g008Registry: readJson(path.join(repoRoot, 'tools/jalali/g008-system-date-surfaces.json')),
     g009RtlEvidence: readJson(path.join(artifactDir, 'g009-evidence-rtl.json')),
     g009LtrEvidence: readJson(path.join(artifactDir, 'g009-evidence-ltr.json')),
+    g009PerksSourceEvidence: readJsonIfPresent(path.join(artifactDir, 'g009-perks-source-probe.json')),
     sourceDiscoveryEvidence: readJson(path.join(artifactDir, 'source-discovery.json')),
     g008FlowInboxAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-inbox-admission.json')),
     g008FlowStatusAdmissionEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-admission.json')),

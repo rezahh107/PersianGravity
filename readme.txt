@@ -53,7 +53,7 @@ The existing locked Gravity products remain Gravity Forms 3.1.1.1 at 4207/4207 a
 
 G-007 adds separately bounded, exact-version provider authority for Gravity Perks 2.3.16 (`gravityperks`, 83/83), GP File Upload Pro 1.5.13 (`gp-file-upload-pro`, 39/39), and GP Advanced Select 1.1.21 (`gp-advanced-select`, 5/5): 127/127 reviewed source-backed primary-domain identities in total. Broader/current/future Gravity Perks products are not implicitly supported, observed cross-domain calls remain explicit exclusions, and all three native script-translation maps remain empty. File Upload Pro's uploader labels are supplied through its real PHP gettext → `wp_localize_script()` path, including `select files` → `انتخاب فایل‌ها`, `Drop files here` → `فایل‌ها را اینجا رها کنید`, and `or` → `یا`. GP Advanced Select uses a bounded `fa_IR` RTL compatibility adapter attached only to the exact `gp-advanced-select-tom-select` style handle; vendor package bytes, vendor CSS and updater behavior remain unmodified.
 
-Exact package/source/build evidence exists for G-007, but exact-package browser rendering of the File Upload Pro labels and screenshot-level real-package Advanced Select caret placement remains `NOT_VERIFIED`. Source/unit/CI evidence is not presented as browser proof. See `docs/LOCALIZATION.md`, `docs/G007_GRAVITY_PERKS_LOCALIZATION.md`, and `docs/VALIDATION_G007.md` for the exact authority and evidence boundaries.
+Current WU008 exact-package browser evidence now verifies the authentic File Upload Pro 1.5.13 labels/RTL layout and the GP Advanced Select 1.1.21 Tom Select caret/padding behavior at desktop and narrow RTL/LTR profiles. Advanced Select remains a bounded adapter case: exact version + `fa_IR`/RTL + exact style handle are required, the correction is scoped to the authentic wrapper, and LTR/drift states fail closed to native behavior. Source/unit evidence remains distinct from browser evidence. See `docs/LOCALIZATION.md`, `docs/G007_GRAVITY_PERKS_LOCALIZATION.md`, `docs/VALIDATION_G007.md`, and `docs/G009_RTL_BIDI_COMPATIBILITY.md`.
 
 == Requirements ==
 
@@ -101,6 +101,7 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Closed the remaining non-GravityView G-009 Gravity Perks browser scope: exact public-read package provisioning, authentic File Upload Pro Persian labels/RTL, exact Advanced Select Tom Select qualification with a scoped logical-padding repair, and a final no-repair/no-admission disposition for `gform_admin` on the exercised Flow frontend surface.
 * Admitted exact Gravity Flow 3.1.0 Inbox `due_date` Jalali presentation after exact-source and authentic WU008 browser/runtime proof, while preserving raw due epoch, overdue/deadline state, workflow/assignment state, AG Grid compare/sort/filter behavior, and native no-due-date fallback.
 
 = 4.6.0 =

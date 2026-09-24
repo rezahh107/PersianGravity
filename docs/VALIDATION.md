@@ -68,6 +68,14 @@ Targeted source execution before the production commit:
 
 The original G-008 V1 lane remains the Gravity Forms Entries List regression contract. The shared current-Head WU008 licensed integration separately validates exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated` and Status `date_created`/`workflow_timestamp`. For Status it binds exact-package source/timezone/context evidence to enabled/disabled browser output and proves DB/GFAPI/REST values, workflow state/assignees, query IDs/count, ascending/descending sort, local-civil-day start/end filtering, and CSV/export are unchanged. Its admission artifact is `g008-flow-status-admission.json`. Due dates, Entry Detail, Timeline/history, Print, GravityView system dates, global WordPress dates, GPP, ordinary GF Date fields, and future Gravity Flow versions remain unverified by that admission.
 
+## G-009 non-GravityView browser qualification
+
+The shared WU008 lane now also provisions exact Gravity Perks 2.3.16, GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21 from the owner-supplied public-read Drive IDs and verifies filename, ZIP signature/type, archive integrity, byte size, full SHA-256, expected plugin main file/root and exact version before extraction. Licensed ZIPs and extracted source stay outside uploaded artifacts.
+
+For fa_IR/RTL and en_US/LTR at 1280x900 and 390x844, the authentic File Upload Pro field proves the three admitted Persian labels travel through the real PHP gettext → `wp_localize_script()` path, preserves native English in LTR, and preserves a mixed Persian/technical filename with BiDi isolation. Authentic GP Advanced Select proves the exact `gp-advanced-select-tom-select` handle and wrapper state, the bounded exact-version adapter's mirrored logical caret reserve, and usable search/keyboard/selection/focus; the LTR control receives no adapter CSS. Gravity Perks family `NATIVE_PASS` is limited to these two admitted Perks.
+
+The same WU008 run re-exercises `gform_admin` on the authentic Gravity Flow frontend Inbox. Stylesheet reachability and root-direction CSS causality are proven, but no material visible defect is observed on the exercised visible grid/interactive surface and no safe bounded permanent seam is established. Its exact-version production disposition is therefore `NO_REPAIR_NO_ADMISSION`, not a dequeue or global direction override.
+
 ## Current content-admission snapshot — 2026-09-15
 
 - Gravity Forms: revision 3 `CONTENT_ADMITTED_FULL`. The 6 historical surface records still deduplicate to the same 1759 identities; one reviewed `PRODUCT_REMAINDER` record admits the exact disjoint 2448 residual source-backed identities. The required union is 4207/4207, with 0 fuzzy, empty, rejected or unreviewed remainder entries.

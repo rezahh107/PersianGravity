@@ -4,7 +4,7 @@
 
 PersianGravity owns only bounded Persian/RTL compatibility for explicitly admitted Gravity ecosystem products and exact admitted versions. WordPress locale resolution and `is_rtl()` remain authoritative. Vendor-native RTL is preferred; a surface that works natively remains adapter-free.
 
-PersianGravity does not own Gravity Flow workflow/data/assignment/search/sort/filter/paging/navigation/permissions/state, AG Grid state machinery, GravityView business behavior, GPP presentation, or theme/page-width layout. Vendor packages/updaters are immutable. There is no site-wide direction reset and no future-version compatibility promise.
+PersianGravity does not own Gravity Flow workflow/data/assignment/search/sort/filter/paging/navigation/permissions/state, AG Grid state machinery, GravityView business behavior, GPP presentation, or theme/page-width layout. Vendor packages/updaters are immutable. There is no site-wide direction reset and no future-version compatibility promise. This batch does not expand GravityView-specific qualification; its pre-existing representative regression remains only a preservation check.
 
 The source-owned evidence registry is `tools/compatibility/g009-surfaces.json`. It is development/qualification data, not a runtime registry, service container, feature framework, or project-management system. Production does not load it.
 
@@ -21,6 +21,8 @@ The only surface evidence states are:
 A source/unit observation is not browser qualification. A screenshot is supplemental evidence only. A green CI job proves only the exact scenarios recorded by that job.
 
 Each registered product binds an exact admitted version and package SHA-256. Each registered surface records its authentic request/surface identity, RTL relevance, native expectation, relevant vendor handles, DOM/state signature when needed, current evidence ceiling, provenance, and drift behavior. Unexecuted surfaces remain `NOT_PROVEN`.
+
+The reconciliation gate treats only committed `NATIVE_PASS` and `ADAPTER_REQUIRED_AND_VERIFIED` records as executable browser claims. Each such claim must appear exactly once for every required RTL/LTR viewport and must match the artifact's exact PersianGravity Head/package identity plus the registered vendor version/hash. Gravity Perks-family promotions additionally require the exact-installed-source metadata probe for File Upload Pro's gettext/localized-script lines and Advanced Select's style-handle/change-listener seam. Missing, duplicated, downgraded or drifted evidence fails closed; source evidence alone never promotes a browser state.
 
 ## Bounded adapter contract
 
@@ -44,21 +46,25 @@ The current exact-package/current-Head WU008 qualification establishes these ini
 - Gravity Flow 3.1.0 authentic frontend Inbox/AG Grid seam: `NATIVE_PASS` for the exercised desktop and narrow visible grid surface. The grid remains vendor-owned; no PersianGravity grid/search/filter/pager/state implementation is introduced.
 - GravityView 3.3.4 native admin list table: `NATIVE_PASS` for the exercised desktop and narrow table geometry/direction. A small WordPress admin-shell horizontal overflow is retained as host evidence rather than reclassified as a GravityView-owned failure.
 - Gravity Forms `gform_admin` reachability on the authentic Flow frontend request: `NOT_PROVEN` for production repair. Exact source/runtime reachability and direction causality are supported, but no material defect was observed on the exercised visible Inbox/AG Grid seam and stylesheet necessity/safe permanent repair seam are not established.
-- Gravity Perks 2.3.16, GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21 browser RTL qualification: `NOT_PROVEN` because the WU008 lane does not possess a safe CI delivery mechanism for those exact licensed package bytes.
+- Gravity Perks 2.3.16 exact admitted family baseline: `NATIVE_PASS` for the exercised combination of GP File Upload Pro 1.5.13 and GP Advanced Select 1.1.21 only. All three packages are exact hash/version/root verified and active in the same disposable runtime; no other Perk or future version is implied.
+- GP File Upload Pro 1.5.13 authentic frontend: `NATIVE_PASS`. The exact installed source probe binds the real PHP gettext → `wp_localize_script()` path, and the browser renders `انتخاب فایل‌ها`, `فایل‌ها را اینجا رها کنید` and `یا` under fa_IR/RTL while en_US remains native English. The real mixed filename `گزارش-ID-1234.txt` is preserved with a BiDi-isolated filename node.
+- GP Advanced Select 1.1.21 authentic Tom Select: `ADAPTER_REQUIRED_AND_VERIFIED`. The exact `gp-advanced-select-tom-select` handle and `.ts-wrapper.gfield_select.single.plugin-change_listener.rtl` state are present. The bounded adapter moves the caret to the RTL side and computes a 36px inline-end reserve versus 12px inline-start at both viewports; typing, search, ArrowDown/Enter selection and focus remain usable. The LTR control has no PersianGravity inline style and remains native.
 
 These are not product-wide future-version claims. Each state is bounded by the exact version/package/surface contract recorded in the registry.
 
 ## Existing GP Advanced Select precedent
 
-`PGR_Gravity_Perks_RTL` remains the only existing executable Gravity Perks RTL compatibility adapter. Its source-proven contract is limited to effective `fa_IR` + WordPress RTL plus the exact registered `gp-advanced-select-tom-select` handle and the `.ts-wrapper.rtl` vendor state that motivated the bounded CSS correction.
+`PGR_Gravity_Perks_RTL` remains the only executable Gravity Perks RTL compatibility adapter. Its production gate is now the conjunction of exact GP Advanced Select `1.1.21`, effective `fa_IR`, WordPress RTL, and the exact registered `gp-advanced-select-tom-select` handle. Version/locale/RTL/handle absence fails closed before any inline CSS is attached.
 
-The exact GP Advanced Select 1.1.21 package is admitted for G-007 source/localization authority, but the current WU008 delivery lane does not provision its exact licensed bytes. Therefore this batch does not promote the adapter to browser-verified G-009 support. Exact-package browser requalification stays `NOT_PROVEN` until those bytes are safely available to the lab.
+Exact-package runtime showed the vendor sets RTL on the wrapper, specifically `.ts-wrapper.gfield_select.single.plugin-change_listener.rtl`, while its bundled direction selectors expect `.ts-control.rtl` and its single-select caret remains right-pinned. The first physical-padding repair moved the caret but did not reserve the mirrored text gap in the real browser. The final bounded rule therefore scopes to the authentic GP Advanced Select wrapper and uses logical `padding-inline-start/end`; exact browser evidence confirms 12px start / 36px end in RTL. This does not target unrelated Tom Select instances.
 
 ## WU008 qualification boundary
 
-G-009 extends the existing WU008 real-integration lab instead of creating a second browser environment. The lab now installs PersianGravity from the deterministic production ZIP built from the exact checked-out PR Head and binds evidence to that source commit/tree and ZIP SHA-256. The existing exact Gravity Forms, Gravity Flow and GravityView package verification remains intact.
+G-009 extends the existing WU008 real-integration lab instead of creating a second browser environment. The lab installs PersianGravity from the deterministic production ZIP built from the exact checked-out PR Head and binds evidence to that source commit/tree and ZIP SHA-256. Exact Gravity Forms, Gravity Flow, GravityView, Gravity Perks, GP File Upload Pro and GP Advanced Select packages are all verified before extraction; licensed ZIPs and extracted source remain outside uploaded artifacts.
 
 The browser lane runs independently attributable `fa_IR`/RTL and effective WordPress `en_US`/LTR-control profiles. Structured evidence records computed direction, relevant alignment/padding, responsive geometry/overflow, focus/keyboard observations and the exact runtime identities. Screenshots remain supplemental artifacts.
+
+Because this batch changes the production Gravity Perks RTL adapter while requiring preservation of the existing G-008 Jalali presentation behavior, the dedicated `G008 Jalali Presentation Runtime` workflow also treats `includes/class-pgr-gravity-perks-rtl.php` changes as a regression trigger. That workflow remains G-008-owned and unchanged in test semantics; the added path only ensures this cross-cutting bootstrap-adjacent adapter cannot bypass the separate exact-runtime gate.
 
 The Gravity Flow frontend Inbox is reached through the authentic `[gravityflow page="inbox"]` shortcode. A disposable browser experiment may disable and restore the observed `gform_admin` stylesheet solely to establish CSS causality; this is qualification-only behavior and is never a production dequeue/override.
 
@@ -68,9 +74,9 @@ Exact Gravity Flow 3.1.0 source contains the frontend reachability path that res
 
 On the authentic `fa_IR` frontend Flow Inbox request, the stylesheet is present and `html/body` compute LTR even though the document carries `dir="rtl"`. In the disposable qualification experiment, disabling only that loaded stylesheet changes computed root direction to RTL, and restoring it returns the roots to LTR. This supports CSS causality.
 
-The exercised visible Inbox/AG Grid surface nevertheless computes RTL, remains inside both representative viewports and retains basic focus behavior. No material visible defect was observed in those exercised states. The batch also does not establish that `gform_admin` is unnecessary to every control, popup, dialog or dynamically inserted state, nor does it establish an official narrow permanent removal/override seam.
+The exercised visible Inbox/AG Grid surface nevertheless computes RTL, remains inside both representative viewports and retains basic focus behavior. Dynamically observed interactive descendants were also recorded; no material visible defect was observed in those exercised states. The batch does not establish that `gform_admin` is unnecessary to every control, popup, dialog or future dynamically inserted state, nor does it establish an official narrow permanent removal/override seam.
 
-Therefore the production disposition remains `NOT_PROVEN`: no dequeue, no global RTL override and no G-009 production adapter is added for this interaction in this batch.
+Therefore the registry state remains `NOT_PROVEN` for a production repair, with the exact-version disposition closed as `NO_REPAIR_NO_ADMISSION`: no dequeue, no global RTL override and no G-009 production adapter is added for this interaction.
 
 ## Current registered products
 

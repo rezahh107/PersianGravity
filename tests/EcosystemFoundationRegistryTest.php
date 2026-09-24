@@ -55,9 +55,9 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( 'NOT_PROVEN', $states['gravityforms.gform-admin-frontend-reachability'] );
 		$this->assertSame( 'NATIVE_PASS', $states['gravityflow.frontend-inbox-ag-grid'] );
 		$this->assertSame( 'NATIVE_PASS', $states['gravityview.admin-list'] );
-		$this->assertSame( 'NOT_PROVEN', $states['gravityperks.family-baseline'] );
-		$this->assertSame( 'NOT_PROVEN', $states['gp-file-upload-pro.frontend'] );
-		$this->assertSame( 'NOT_PROVEN', $states['gp-advanced-select.tom-select'] );
+		$this->assertSame( 'NATIVE_PASS', $states['gravityperks.family-baseline'] );
+		$this->assertSame( 'NATIVE_PASS', $states['gp-file-upload-pro.frontend'] );
+		$this->assertSame( 'ADAPTER_REQUIRED_AND_VERIFIED', $states['gp-advanced-select.tom-select'] );
 	}
 
 	public function test_g009_claim_resolution_fails_closed_on_version_package_handle_or_signature_drift(): void {
@@ -76,7 +76,7 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			'version'        => '1.1.21',
 			'package_sha256' => 'd83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2',
 			'handles'        => array( 'gp-advanced-select-tom-select' ),
-			'dom_signature'  => '.ts-wrapper.rtl containing .ts-control',
+			'dom_signature'  => '.ts-wrapper.gfield_select.single.plugin-change_listener.rtl containing .ts-control',
 		);
 		$this->assertSame( 'ADAPTER_REQUIRED_AND_VERIFIED', $this->resolve_g009_claim( $record, $exact, 'ADAPTER_REQUIRED_AND_VERIFIED' ) );
 
