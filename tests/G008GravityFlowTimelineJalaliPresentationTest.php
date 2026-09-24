@@ -60,17 +60,22 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_host_identity_accepts_only_exact_qualified_product_and_versions(): void {
+	public function test_host_identity_resolves_only_exact_versions_through_approved_manifest_shape(): void {
 		$reflection = new ReflectionClass( PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter::class );
-		$method     = $reflection->getMethod( 'host_identity_matches' );
+		$method     = $reflection->getMethod( 'resolve_product_slug' );
 		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
-		$basename   = 'gravityflow/gravityflow.php';
+		$products   = array(
+			array(
+				'product' => 'host-flow',
+				'target_version' => '3.1.0',
+			),
+		);
 
-		$this->assertTrue( $method->invoke( $adapter, '3.1.0', '3.1.1.1', $basename ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.1', '3.1.1.1', $basename ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.2.0', $basename ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', 'host-flow/plugin.php' ) );
-		$this->assertFalse( $method->invoke( $adapter, '3.1.0', '3.1.1.1', '../gravityflow/gravityflow.php' ) );
+		$this->assertSame( 'host-flow', $method->invoke( $adapter, '3.1.0', '3.1.1.1', 'host-flow/plugin.php', $products ) );
+		$this->assertNull( $method->invoke( $adapter, '3.1.1', '3.1.1.1', 'host-flow/plugin.php', $products ) );
+		$this->assertNull( $method->invoke( $adapter, '3.1.0', '3.2.0', 'host-flow/plugin.php', $products ) );
+		$this->assertNull( $method->invoke( $adapter, '3.1.0', '3.1.1.1', 'other/plugin.php', $products ) );
+		$this->assertNull( $method->invoke( $adapter, '3.1.0', '3.1.1.1', '../host-flow/plugin.php', $products ) );
 	}
 
 	public function test_source_fingerprint_contract_accepts_only_exact_qualified_set(): void {
@@ -158,13 +163,15 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$this->assertSame( 'March 21, 2030', $strip->invoke( $adapter, $first['literal'] . 'March 21, 2030' ) );
 	}
 
-	public function test_production_source_contains_no_rejected_mutation_or_rewrite_mechanism(): void {
+	public function test_production_source_contains_no_rejected_mutation_or_foreign_domain_literal(): void {
 		$source = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 
 		$this->assertStringContainsString( "add_filter( 'option_date_format'", $source );
 		$this->assertStringContainsString( "add_filter( 'date_i18n'", $source );
+		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( 'PGR_Jalali_Presentation::format_date', $source );
 		$this->assertStringContainsString( "hash_file( 'sha256'", $source );
+		$this->assertStringNotContainsString( "'gravityflow'", $source );
 		$this->assertStringNotContainsString( "add_filter( 'gravityflow_timeline_notes'", $source );
 		$this->assertStringNotContainsString( '->date_created =', $source );
 		$this->assertStringNotContainsString( 'ob_start(', $source );
