@@ -77,9 +77,9 @@ The prefix field maps only an exact Core-generated `{domain}-fa_IR` basename to 
 
 Gravity Forms 3.1.1.1 declares `gravityforms`. `gravityforms.php` calls `GFCommon::load_gf_text_domain()`; the implementation in `common.php` checks an explicit `WP_LANG_DIR/gravityforms/{domain}-{locale}.mo` path using `load_textdomain()` and then calls `load_plugin_textdomain()` for the plugin `languages` directory. Gravity Flow 3.1.0 declares `gravityflow` and does not independently call `load_plugin_textdomain()`/`load_textdomain()` in the admitted source; its add-on lifecycle delegates to the Gravity Forms add-on parent, with an older-GF compatibility translation manager path. GravityView 3.3.4 source admission establishes the `gk-gravityview` primary domain plus a separate `gk-query-filters` dependency/domain boundary; that dependency is not manifested or activated by PersianGravity.
 
-For G-007, all three primary providers use the same shared PHP catalog path. GP File Upload Pro 1.5.13 evaluates uploader labels with PHP gettext and passes the resolved values into its browser runtime through `wp_localize_script()`. The admitted acceptance strings are `select files` → `انتخاب فایل‌ها`, `Drop files here` → `فایل‌ها را اینجا رها کنید`, and `or` → `یا`; no parallel script-translation subsystem is needed for those labels. GP Advanced Select 1.1.21 additionally has the bounded `PGR_Gravity_Perks_RTL` compatibility adapter: only under effective `fa_IR` + WordPress RTL and only when the exact `gp-advanced-select-tom-select` style handle is registered, PersianGravity attaches inline CSS to the existing handle to mirror Tom Select's `.ts-wrapper.rtl` caret/padding behavior. Vendor CSS/package bytes remain untouched.
+For G-007, all three primary providers use the same shared PHP catalog path. GP File Upload Pro 1.5.13 evaluates uploader labels with PHP gettext and passes the resolved values into its browser runtime through `wp_localize_script()`. The admitted acceptance strings are `select files` → `انتخاب فایل‌ها`, `Drop files here` → `فایل‌ها را اینجا رها کنید`, and `or` → `یا`; no parallel script-translation subsystem is needed for those labels. GP Advanced Select 1.1.21 additionally has the bounded `PGR_Gravity_Perks_RTL` compatibility adapter: it requires exact version `1.1.21`, effective `fa_IR` + WordPress RTL and the exact registered `gp-advanced-select-tom-select` style handle, then scopes logical caret/padding correction to the authentic `.ts-wrapper.gfield_select.plugin-change_listener.rtl` state. Vendor CSS/package bytes remain untouched.
 
-These product findings are source/runtime-path evidence. They do not by themselves establish exact-package browser rendering.
+The source/runtime-path evidence remains independently recorded, and G-009/WU008 now adds exact-package browser proof for the authentic File Upload Pro and Advanced Select surfaces without converting source evidence into browser evidence.
 
 ### JavaScript precedence and admitted census
 
@@ -150,10 +150,10 @@ Core tests execute real gettext/JIT/registry/translation-controller/PHP/MO code.
 
 Historical licensed WU-008/WU-009 evidence for exact Gravity Forms/Gravity Flow/GravityView products is preserved in `docs/VALIDATION.md`. It is preservation/integration evidence for those products and must not be used as exact G-007 browser proof.
 
-Exact-package G-007 browser rendering remains `NOT_VERIFIED`. A read-only attempt reverified all three locked G-007 package hashes but could not instantiate the required disposable exact-package WordPress/browser runtime; no target G-007 page, DOM/computed-style evidence or screenshot was produced. In particular, the following remain unproven at the browser level:
+Exact-package G-007 browser rendering is now qualified by the G-009/WU008 lane for the two explicitly admitted Perk surfaces. The lane verifies all three locked package hashes/versions/roots before activation, binds evidence to the exact PersianGravity Head, and records independent fa_IR/RTL and en_US/LTR profiles at 1280x900 and 390x844.
 
-- visible File Upload Pro 1.5.13 Persian uploader labels;
-- Advanced Select 1.1.21 real rendered RTL caret/text-padding placement;
-- non-`fa_IR`/non-RTL negative/control behavior in the real licensed-package UI.
+- File Upload Pro 1.5.13 visibly renders the three admitted Persian uploader labels through its real PHP gettext → `wp_localize_script()` path, preserves native English in LTR, keeps the uploader usable, and preserves a mixed Persian/technical filename as a BiDi-isolated token.
+- Advanced Select 1.1.21 is `ADAPTER_REQUIRED_AND_VERIFIED` for the authentic `gp-advanced-select-tom-select` / `.ts-wrapper.gfield_select.single.plugin-change_listener.rtl` seam; the RTL caret reserve is physically and logically mirrored while keyboard/search/selection/focus remain usable, and the LTR control receives no adapter CSS.
+- No other Perk or future version is admitted by this evidence.
 
-No real G-007 browser PASS may be inferred from source inspection, automated adapter lifecycle tests, deterministic build checks, existing CI, package filenames, or the historical WU-008 browser run. See `docs/G007_GRAVITY_PERKS_LOCALIZATION.md` and `docs/VALIDATION_G007.md` for the exact evidence boundary.
+See `docs/G007_GRAVITY_PERKS_LOCALIZATION.md` and `docs/VALIDATION_G007.md` for the exact evidence boundary.

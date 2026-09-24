@@ -32,7 +32,7 @@ The explicit screenshot-backed targets are admitted as:
 - `Drop files here` → `فایل‌ها را اینجا رها کنید`
 - `or` → `یا`
 
-The deterministic MO and `.l10n.php` contain these exact values. A real licensed browser rendering remains a separate evidence level and is not inferred from catalog/source proof.
+The deterministic MO and `.l10n.php` contain these exact values. G-009/WU008 now adds the separate exact-package browser evidence layer: the authentic uploader visibly renders all three Persian labels under fa_IR/RTL and native English under the en_US/LTR control.
 
 ## GP Advanced Select RTL root cause and fix
 
@@ -40,13 +40,13 @@ The exact Advanced Select package uses the style handle `gp-advanced-select-tom-
 
 PersianGravity adds one bounded compatibility adapter, `PGR_Gravity_Perks_RTL`, which:
 
-- runs only when the effective locale is `fa_IR` and WordPress is RTL;
-- requires the exact `gp-advanced-select-tom-select` handle to be registered;
+- requires exact GP Advanced Select `1.1.21`, effective locale `fa_IR`, WordPress RTL, and the exact registered `gp-advanced-select-tom-select` handle;
 - attaches inline CSS to that vendor-owned handle instead of editing vendor files;
-- targets only `.ts-wrapper.rtl`, moves the single-select caret to the left, and mirrors the vendor caret-reservation padding so the text no longer keeps the LTR right-side caret gap;
-- remains dormant when Advanced Select is absent, the locale is not `fa_IR`, RTL is false, or the exact style handle is unavailable.
+- scopes the actual correction to `.ts-wrapper.gfield_select.plugin-change_listener.rtl`, the authentic wrapper state observed in the exact package;
+- moves the single-select caret to the left and mirrors its text reserve with logical `padding-inline-start/end`;
+- remains dormant when Advanced Select is absent, version/locale/RTL drifts, or the exact style handle is unavailable.
 
-This is a source-proven compatibility repair rather than a general Select/Tom Select override.
+The first real-package qualification showed that caret position alone was insufficient: the previous physical padding expression left the computed RTL reserve at 0px left / 12px right. The final logical rule computes 36px inline-end / 12px inline-start in both tested RTL viewports while search, typing, keyboard selection and focus remain usable. The en_US/LTR control receives no adapter CSS. This is an exact-version compatibility repair, not a general Tom Select override.
 
 ## Deterministic artifacts and authority
 
