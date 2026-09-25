@@ -196,11 +196,25 @@ if (timelineFixture.length < 5) failures.push('production Timeline fixture does 
 const expectedDisabledHeaders = timelineFixture.map((item) => item.expected_header);
 if (JSON.stringify(disabled.timeline?.headers) !== JSON.stringify(expectedDisabledHeaders)) failures.push('disabled Timeline headers are not exact native host output');
 if ((enabled.timeline?.headers ?? []).length !== timelineFixture.length) failures.push('enabled Timeline row/header count differs from authoritative fixture');
+if ((english.timeline?.headers ?? []).length !== timelineFixture.length) failures.push('English Timeline row/header count differs from authoritative fixture');
 for (let index = 0; index < timelineFixture.length; index += 1) {
   const row = timelineFixture[index];
-  const header = enabled.timeline?.headers?.[index] ?? '';
-  if (typeof row.expected_jalali_date !== 'string' || !header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} did not use independently expected Jalali date`);
-  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
+  const enabledHeader = enabled.timeline?.headers?.[index] ?? '';
+  const englishHeader = english.timeline?.headers?.[index] ?? '';
+  if (typeof row.expected_jalali_date !== 'string' || !enabledHeader.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} did not use independently expected Jalali date`);
+  if (row.expected_native_time_tail && !asciiDigits(enabledHeader).includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time value`);
+  if (row.expected_native_time_tail && enabledHeader.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} retained ASCII time digits`);
+  if (row.expected_persian_time && !enabledHeader.includes(row.expected_persian_time)) failures.push(`enabled Timeline row ${row.id} did not expose Persian time digits`);
+  if (typeof row.expected_jalali_date !== 'string' || !englishHeader.startsWith(row.expected_jalali_date)) failures.push(`English Timeline row ${row.id} changed existing calendar presentation`);
+  if (row.expected_native_time_tail && !englishHeader.includes(row.expected_native_time_tail)) failures.push(`English Timeline row ${row.id} did not preserve ASCII time digits`);
+  if (row.expected_persian_time && englishHeader.includes(row.expected_persian_time)) failures.push(`English Timeline row ${row.id} leaked Persian time digits`);
+}
+if (enabled.timeline?.time_digit_script_count !== 1 || disabled.timeline?.time_digit_script_count !== 0 || english.timeline?.time_digit_script_count !== 0) failures.push('Timeline time-digit adapter activation did not stay bounded to enabled Persian UI');
+const enabledTimelineMachine = (enabled.timeline?.rows ?? []).map((row) => row.machine);
+const disabledTimelineMachine = (disabled.timeline?.rows ?? []).map((row) => row.machine);
+const englishTimelineMachine = (english.timeline?.rows ?? []).map((row) => row.machine);
+if (JSON.stringify(enabledTimelineMachine) !== JSON.stringify(disabledTimelineMachine) || JSON.stringify(englishTimelineMachine) !== JSON.stringify(disabledTimelineMachine)) {
+  failures.push('Timeline time-digit shaping changed note IDs, attributes, links or controls');
 }
 const duplicateIds = enabled.timeline?.duplicate_ids ?? [];
 if (duplicateIds.length < 2 || new Set(duplicateIds.map(Number)).size !== duplicateIds.length) failures.push('duplicate-timestamp Timeline events lost distinct note identity');
@@ -213,10 +227,20 @@ if (!timelineRepeatedRenderingDeterministic) failures.push('Timeline repeated re
 if (JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Timeline note bodies/order changed with module state');
 if (JSON.stringify(enabled.print?.headers) !== JSON.stringify(enabled.timeline?.headers)) failures.push('enabled Print did not inherit verified Timeline headers');
 if (JSON.stringify(disabled.print?.headers) !== JSON.stringify(disabled.timeline?.headers)) failures.push('disabled Print did not inherit native Timeline headers');
-if (JSON.stringify(enabled.print?.bodies) !== JSON.stringify(enabled.timeline?.bodies) || JSON.stringify(disabled.print?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Print changed Timeline bodies/order');
-if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push('Print inheritance evidence relation is missing');
-if (enabled.print?.marker_leaked !== false || disabled.print?.marker_leaked !== false) failures.push('Print Timeline production marker leaked');
+if (JSON.stringify(english.print?.headers) !== JSON.stringify(english.timeline?.headers)) failures.push('English Print did not inherit Timeline headers');
+if (
+  JSON.stringify(enabled.print?.bodies) !== JSON.stringify(enabled.timeline?.bodies)
+  || JSON.stringify(disabled.print?.bodies) !== JSON.stringify(disabled.timeline?.bodies)
+  || JSON.stringify(english.print?.bodies) !== JSON.stringify(english.timeline?.bodies)
+) failures.push('Print changed Timeline bodies/order');
+if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || english.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push('Print inheritance evidence relation is missing');
+if (enabled.print?.marker_leaked !== false || disabled.print?.marker_leaked !== false || english.print?.marker_leaked !== false) failures.push('Print Timeline production marker leaked');
 if (enabled.print.digit_script_count !== 0 || disabled.print.digit_script_count !== 0 || english.print.digit_script_count !== 0) failures.push('Print unexpectedly loaded the workflow-info digit adapter');
+if (enabled.print.timeline_time_digit_script_count !== 1 || disabled.print.timeline_time_digit_script_count !== 0 || english.print.timeline_time_digit_script_count !== 0) failures.push('Print Timeline time-digit adapter activation did not stay bounded to enabled Persian UI');
+const enabledPrintMachine = (enabled.print?.rows ?? []).map((row) => row.machine);
+const disabledPrintMachine = (disabled.print?.rows ?? []).map((row) => row.machine);
+const englishPrintMachine = (english.print?.rows ?? []).map((row) => row.machine);
+if (JSON.stringify(enabledPrintMachine) !== JSON.stringify(disabledPrintMachine) || JSON.stringify(englishPrintMachine) !== JSON.stringify(disabledPrintMachine)) failures.push('Print Timeline time-digit shaping changed note IDs, attributes, links or controls');
 for (const [key, count] of Object.entries(enabled.print.workflow_sidebar_presence ?? {})) {
   if (count !== 0 || disabled.print.workflow_sidebar_presence?.[key] !== 0) failures.push(`Print unexpectedly contains workflow-sidebar ${key}`);
 }
@@ -241,6 +265,8 @@ const result = {
   operational_state_equal: JSON.stringify(canonicalCandidate(enabledState)) === JSON.stringify(canonicalCandidate(disabledState)),
   timeline_storage_equal: JSON.stringify(enabledState.timeline.stored_after) === JSON.stringify(disabledState.timeline.stored_after),
   timeline_presentation_admitted: timelineRepeatedRenderingDeterministic && !failures.some((failure) => failure.includes('Timeline row') || failure.includes('Timeline headers') || failure.includes('Timeline production marker')),
+  timeline_time_digits_persian: !failures.some((failure) => failure.includes('ASCII time digits') || failure.includes('Persian time digits') || failure.includes('time-digit adapter')),
+  timeline_machine_dom_unchanged: !failures.some((failure) => failure.includes('note IDs, attributes, links or controls')),
   print_inherits_verified_timeline_presentation: !failures.some((failure) => failure.includes('Print')),
   print_workflow_sidebar_absent: Object.values(enabled.print.workflow_sidebar_presence ?? {}).every((value) => value === 0),
   production_result: failures.length ? 'NOT_PROVEN' : 'ADMITTED_VERIFIED',
@@ -285,6 +311,8 @@ const admission = {
   marker_leak_free: !failures.some((failure) => failure.includes('marker leaked')),
   timeline_production_admitted: result.timeline_presentation_admitted,
   print_inherits_verified_timeline_presentation: result.print_inherits_verified_timeline_presentation,
+  timeline_time_digits_persian: result.timeline_time_digits_persian,
+  timeline_machine_dom_unchanged: result.timeline_machine_dom_unchanged,
   hard_gate_result: failures.length ? 'FAIL' : 'PASS',
   failures,
 };
