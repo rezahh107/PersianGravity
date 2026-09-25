@@ -480,21 +480,35 @@ jobs:
             rm -f "$gv_backup"
           }
           trap restore_gv EXIT
+          read_gv_header_version() {
+            php -r '
+              $data = file_get_contents($argv[1], false, null, 0, 8192);
+              if (!is_string($data) || !preg_match("/^(?:[ \\t]*<\\?(?:php)?)?[ \\t\\/*#@]*Version:(.*)$/mi", $data, $m)) { exit(1); }
+              $value = preg_replace("/\\s*(?:\\*\\/|\\?>).*/", "", $m[1]);
+              echo trim((string) $value);
+            ' "$gv_main"
+          }
+          test "$(read_gv_header_version)" = "3.3.4"
           php -r '
             $path = $argv[1];
             $content = file_get_contents($path);
             if (!is_string($content)) { fwrite(STDERR, "GravityView header read failed\n"); exit(1); }
-            $updated = preg_replace(
-              "/^([ \\t\\/*#@]*Version:[ \\t]*)3\\.3\\.4([ \\t]*)$/mi",
-              "$1" . "3.3.5" . "$2",
-              $content,
-              1,
-              $count
-            );
-            if (!is_string($updated) || $count !== 1) { fwrite(STDERR, "GravityView header drift injection failed\n"); exit(1); }
-            file_put_contents($path, $updated);
+            $prefix = substr($content, 0, 8192);
+            if (!preg_match("/^(?:[ \\t]*<\\?(?:php)?)?[ \\t\\/*#@]*Version:(.*)$/mi", $prefix, $match, PREG_OFFSET_CAPTURE)) {
+              fwrite(STDERR, "GravityView plugin Version header not found\n");
+              exit(1);
+            }
+            $line = $match[0][0];
+            $offset = $match[0][1];
+            $updated_line = preg_replace("/3\\.3\\.4/", "3.3.5", $line, 1, $count);
+            if (!is_string($updated_line) || $count !== 1) {
+              fwrite(STDERR, "GravityView plugin Version header drift injection failed\n");
+              exit(1);
+            }
+            $updated = substr_replace($content, $updated_line, $offset, strlen($line));
+            if (false === file_put_contents($path, $updated)) { exit(1); }
           ' "$gv_main"
-          test "$(php -r 'require $argv[1] . "/wp-load.php"; $d=get_file_data($argv[2], ["Version"=>"Version"], "plugin"); echo $d["Version"] ?? "";' "$WU008_WP_PATH" "$gv_main")" = "3.3.5"
+          test "$(read_gv_header_version)" = "3.3.5"
 
           node tests/real-integration/g008-gravityview-production-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
