@@ -58,6 +58,8 @@ final class RepositoryConsistencyTest extends TestCase {
 			$this->assertStringContainsString( 'Print', $document );
 			$this->assertStringContainsString( 'Status `due_date`', $document );
 			$this->assertStringContainsString( 'Entry Detail Scheduled', $document );
+			$this->assertStringContainsString( 'GravityView 3.3.4', $document );
+			$this->assertStringContainsString( '`date_created`/`date_updated`', $document );
 		}
 
 		$this->assertStringContainsString( 'Print owns no independent calendar or digit-shaping engine', $readme );
@@ -68,6 +70,7 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $architecture );
+		$this->assertStringContainsString( 'PGR_GravityView_Jalali_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'Print owns no independent calendar or digit seam', $architecture );
 		$this->assertStringContainsString( 'Status `due_date` and Entry Detail Scheduled', $architecture );
 		$this->assertStringContainsString( 'Timeline and Print remain outside the separate Entry Detail Persian-digit adapter', $architecture );
