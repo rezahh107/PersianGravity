@@ -102,8 +102,8 @@ assert(
 );
 
 const trace = state.enabled.prototype_trace;
-assert(Array.isArray(trace) && trace.some((row) => row.hook === 'gravityview/template/field/date_created/output' && row.presented === true), 'Runtime did not prove date_created field-specific filter consumption.');
-assert(trace.some((row) => row.hook === 'gravityview/template/field/date_updated/output' && row.presented === true), 'Runtime did not prove date_updated field-specific filter consumption.');
+assert(Array.isArray(trace) && trace.some((row) => row.hook === 'gravityview/template/field/output' && row.field_id === 'date_created' && row.presented === true), 'Runtime did not prove date_created consumption at the final GravityView field-output seam.');
+assert(trace.some((row) => row.hook === 'gravityview/template/field/output' && row.field_id === 'date_updated' && row.presented === true), 'Runtime did not prove date_updated consumption at the final GravityView field-output seam.');
 
 const qualification = {
   schema_version: '1.0.0',
@@ -121,11 +121,12 @@ const qualification = {
   source_findings: {
     date_created: 'GravityView Field DateCreated reads the authoritative entry date_created value and formats it before the field-specific output filter.',
     date_updated: 'GravityView Field DateUpdated inherits DateCreated rendering with its own date_updated identity.',
-    consumed_seam: 'gravityview/template/field/{field_type}/output is consumed by TemplateField before the final gravityview/template/field/output echo.',
+    consumed_seam: 'Exact source exposes the dynamic field-type family, but authentic runtime did not consume semantic-name hooks gravityview/template/field/date_created|date_updated/output. The qualified prototype therefore uses the final consumed gravityview/template/field/output seam and gates on exact Template_Context field/view/entry identity before reading authoritative raw entry properties.',
     query_boundary: 'Query/search/sort paths use raw Gravity Forms entry properties independently of the presentation output seam; date_created search has explicit UTC conversion, date_updated participates in raw query-filter SQL handling, and authentic frontend filter_date_created/filter_date_updated requests return stable raw-entry result identities.',
   },
   runtime_findings: {
-    field_specific_hooks_consumed: true,
+    final_context_bound_hook_consumed: true,
+    semantic_name_dynamic_hooks_not_assumed: true,
     typed_raw_entry_values_available: true,
     enabled_jalali_visible: true,
     disabled_native_fallback: true,
