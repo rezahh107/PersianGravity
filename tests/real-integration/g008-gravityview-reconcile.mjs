@@ -3,11 +3,15 @@ import path from 'node:path';
 
 const artifactDir = process.env.WU008_ARTIFACT_DIR;
 const expectedHead = process.env.WU008_PGR_SHA;
+const expectedTree = process.env.WU008_PGR_TREE;
+const expectedPgrPackageSha = process.env.WU008_PGR_PACKAGE_SHA256;
 const expectedViewSha = process.env.WU008_VIEW_SHA256;
 const expectedGfSha = process.env.WU008_GF_SHA256;
 if (
   !artifactDir ||
   !/^[a-f0-9]{40}$/.test(expectedHead ?? '') ||
+  !/^[a-f0-9]{40}$/.test(expectedTree ?? '') ||
+  !/^[a-f0-9]{64}$/.test(expectedPgrPackageSha ?? '') ||
   !/^[a-f0-9]{64}$/.test(expectedViewSha ?? '') ||
   !/^[a-f0-9]{64}$/.test(expectedGfSha ?? '')
 ) {
@@ -153,6 +157,9 @@ const qualification = {
   exact_gravityforms_version: '3.1.1.1',
   exact_gravityforms_package_sha256: expectedGfSha,
   exact_persiangravity_head: expectedHead,
+  exact_persiangravity_commit: expectedHead,
+  exact_persiangravity_tree: expectedTree,
+  exact_persiangravity_package_sha256: expectedPgrPackageSha,
   evidence: {
     source: 'g008-gravityview-source-probe.json',
     fixture: 'g008-gravityview-fixture-baseline.json',
