@@ -17,14 +17,9 @@ if ( ! defined( 'GRAVITY_FLOW_VERSION' ) ) {
 if ( ! defined( 'GRAVITY_FLOW_PLUGIN_BASENAME' ) ) {
 	define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
 }
-if ( ! function_exists( 'add_query_arg' ) ) {
-	function add_query_arg( $key, $value, $url ) {
-		return $url . '?' . rawurlencode( (string) $key ) . '=' . rawurlencode( (string) $value );
-	}
-}
-if ( ! function_exists( 'esc_url' ) ) {
-	function esc_url( $url ) {
-		return (string) $url;
+if ( ! function_exists( 'wp_print_scripts' ) ) {
+	function wp_print_scripts( $handles ) {
+		$GLOBALS['pgr_test_printed_scripts'][] = $handles;
 	}
 }
 
@@ -33,9 +28,10 @@ require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-per
 final class G008GravityFlowTimelinePersianTimeDigitsPresentationTest extends TestCase {
 
 	protected function setUp(): void {
-		$GLOBALS['pgr_test_actions']  = array();
-		$GLOBALS['pgr_test_enqueued'] = array();
-		$GLOBALS['pgr_test_locale']   = 'en_US';
+		$GLOBALS['pgr_test_actions']         = array();
+		$GLOBALS['pgr_test_enqueued']        = array();
+		$GLOBALS['pgr_test_printed_scripts'] = array();
+		$GLOBALS['pgr_test_locale']          = 'en_US';
 	}
 
 	public function test_registers_only_bounded_post_render_presentation_hooks(): void {
@@ -79,29 +75,29 @@ final class G008GravityFlowTimelinePersianTimeDigitsPresentationTest extends Tes
 		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
 	}
 
-	public function test_print_requires_qualified_signal_and_emits_one_owned_script_tag(): void {
+	public function test_print_requires_qualified_signal_and_prints_owned_handle_once(): void {
 		$GLOBALS['pgr_test_locale'] = 'fa_IR';
 		$adapter                    = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
 		$adapter->hooks();
 
-		ob_start();
 		do_action( 'gravityflow_print_entry_footer', array(), array() );
-		$without_signal = (string) ob_get_clean();
-		$this->assertSame( '', $without_signal );
+		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
+		$this->assertSame( array(), $GLOBALS['pgr_test_printed_scripts'] );
 
 		do_action( 'pgr_gravity_flow_timeline_header_presented' );
-		ob_start();
 		do_action( 'gravityflow_print_entry_footer', array(), array() );
-		$first = (string) ob_get_clean();
 
 		do_action( 'pgr_gravity_flow_timeline_header_presented' );
-		ob_start();
 		do_action( 'gravityflow_print_entry_footer', array(), array() );
-		$second = (string) ob_get_clean();
 
-		$this->assertStringContainsString( 'pgr-flow-timeline-persian-time-digits.js', $first );
-		$this->assertStringContainsString( 'ver=4.7.0', $first );
-		$this->assertSame( '', $second );
+		$this->assertSame(
+			array( 'pgr-gravity-flow-timeline-persian-time-digits' ),
+			$GLOBALS['pgr_test_enqueued']
+		);
+		$this->assertSame(
+			array( 'pgr-gravity-flow-timeline-persian-time-digits' ),
+			$GLOBALS['pgr_test_printed_scripts']
+		);
 	}
 
 	public function test_timeline_calendar_adapter_emits_signal_only_after_successful_conversion_guard(): void {
