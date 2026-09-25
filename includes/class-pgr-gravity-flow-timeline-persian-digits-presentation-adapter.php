@@ -56,6 +56,9 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 	/** @var bool|null Cached exact host/source contract result. */
 	private $host_contract_valid = null;
 
+	/** @var string|null Product slug resolved from host basename + approved manifest. */
+	private $flow_product_slug = null;
+
 	/**
 	 * Register only the exact Persian Timeline time presentation seam.
 	 *
@@ -118,8 +121,11 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 			return $format;
 		}
 
-		$timestamp = $this->expected_localized_timestamp( $raw );
-		if ( null === $timestamp ) {
+		$timestamp  = $this->expected_localized_timestamp( $raw );
+		$entry_key  = $this->entry_key( $entry );
+		$note_order = $this->note_identity_order( $notes );
+		$event_kind = $this->event_kind( $note, $entry, $raw );
+		if ( null === $timestamp || null === $entry_key || null === $note_order || null === $event_kind ) {
 			return $format;
 		}
 
@@ -127,13 +133,14 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 			'note'          => $note,
 			'note_snapshot' => get_object_vars( $note ),
 			'notes'         => $notes,
-			'notes_order'   => $this->note_identity_order( $notes ),
+			'notes_order'   => $note_order,
 			'entry'         => $entry,
-			'entry_key'     => $this->entry_key( $entry ),
+			'entry_key'     => $entry_key,
 			'form'          => $form,
 			'raw'           => $raw,
 			'timestamp'     => $timestamp,
 			'time_format'   => $format,
+			'event_kind'    => $event_kind,
 		);
 
 		return $format;
@@ -204,7 +211,8 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->date_i18n_path_arguments_match( $path, $context['raw'] )
+			! $this->date_i18n_path_arguments_match( $path, $context['raw'] ) ||
+			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
 		) {
 			return $date;
 		}
@@ -337,6 +345,31 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 	}
 
 	/**
+	 * Validate and classify exact authoritative Timeline event type.
+	 *
+	 * @param object       $note  Timeline event object.
+	 * @param array<mixed> $entry Entry snapshot.
+	 * @param string       $raw   Raw date_created.
+	 * @return string|null
+	 */
+	private function event_kind( $note, $entry, $raw ) {
+		$id = $this->nonnegative_decimal_id( $note->id ?? null );
+		if ( null === $id ) {
+			return null;
+		}
+
+		if ( '0' === $id ) {
+			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
+		}
+
+		if ( null === $this->flow_product_slug || ! isset( $note->note_type ) ) {
+			return null;
+		}
+
+		return $this->flow_product_slug === (string) $note->note_type ? 'stored' : null;
+	}
+
+	/**
 	 * Derive the same localized timestamp-plus-offset consumed by GF date_i18n.
 	 *
 	 * @param string $raw UTC Y-m-d H:i:s.
@@ -414,11 +447,22 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 	 * @return string|null
 	 */
 	private function positive_decimal_id( $value ) {
+		$normalized = $this->nonnegative_decimal_id( $value );
+		return null !== $normalized && '0' !== $normalized ? $normalized : null;
+	}
+
+	/**
+	 * Normalize only canonical non-negative decimal IDs.
+	 *
+	 * @param mixed $value Candidate ID.
+	 * @return string|null
+	 */
+	private function nonnegative_decimal_id( $value ) {
 		if ( is_int( $value ) ) {
-			return $value > 0 ? (string) $value : null;
+			return $value >= 0 ? (string) $value : null;
 		}
 
-		if ( ! is_string( $value ) || 1 !== preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+		if ( ! is_string( $value ) || 1 !== preg_match( '/^(?:0|[1-9][0-9]*)$/', $value ) ) {
 			return null;
 		}
 
@@ -484,6 +528,7 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 		}
 
 		$this->host_contract_valid = false;
+		$this->flow_product_slug   = null;
 		if (
 			! defined( self::FLOW_VERSION_CONSTANT ) ||
 			! defined( self::FLOW_BASENAME_CONSTANT ) ||
@@ -542,7 +587,12 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 			$actual[ $key ] = $hash;
 		}
 
-		$this->host_contract_valid = $this->fingerprints_match( $actual );
-		return $this->host_contract_valid;
+		if ( ! $this->fingerprints_match( $actual ) ) {
+			return false;
+		}
+
+		$this->flow_product_slug   = $product_slug;
+		$this->host_contract_valid = true;
+		return true;
 	}
 }
