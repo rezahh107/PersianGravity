@@ -230,9 +230,8 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 }
 
 $GLOBALS['pgr_wu008_timeline_call_observations'] = array(
-	'time_format'     => array(),
-	'date_i18n'       => array(),
-	'post_date_i18n'  => array(),
+	'time_format' => array(),
+	'date_i18n'   => array(),
 );
 
 function pgr_wu008_timeline_stack_signatures() {
@@ -246,188 +245,18 @@ function pgr_wu008_timeline_stack_signatures() {
 	return $signatures;
 }
 
-function pgr_wu008_timeline_adapter_state() {
-	$class = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
-	if ( ! isset( $GLOBALS['wp_filter']['option_time_format'] ) ) {
-		return null;
-	}
-
-	$adapter = null;
-	foreach ( $GLOBALS['wp_filter']['option_time_format']->callbacks as $callbacks ) {
-		foreach ( $callbacks as $callback ) {
-			$fn = $callback['function'];
-			if ( is_array( $fn ) && isset( $fn[0], $fn[1] ) && is_object( $fn[0] ) && $fn[0] instanceof $class && 'filter_time_format' === $fn[1] ) {
-				$adapter = $fn[0];
-				break 2;
-			}
-		}
-	}
-	if ( ! is_object( $adapter ) ) {
-		return null;
-	}
-
-	$reflection = new ReflectionObject( $adapter );
-	$snapshot   = array();
-	foreach ( array( 'contexts', 'time_contexts' ) as $property_name ) {
-		$property = $reflection->getProperty( $property_name );
-		$property->setAccessible( true );
-		$value = $property->getValue( $adapter );
-		if ( 'contexts' === $property_name ) {
-			$snapshot['date_context_count'] = is_array( $value ) ? count( $value ) : null;
-			continue;
-		}
-
-		$snapshot['time_contexts'] = array();
-		foreach ( is_array( $value ) ? $value : array() as $key => $context ) {
-			$note = $context['note'] ?? null;
-			$snapshot['time_contexts'][] = array(
-				'key'               => $key,
-				'note_id'           => is_object( $note ) && isset( $note->id ) ? (int) $note->id : null,
-				'raw'               => $context['raw'] ?? null,
-				'timestamp'         => $context['timestamp'] ?? null,
-				'time_format'       => $context['time_format'] ?? null,
-				'event_kind'        => $context['event_kind'] ?? null,
-				'calendar_admitted' => $context['calendar_admitted'] ?? null,
-			);
-		}
-	}
-	return $snapshot;
-}
-
-function pgr_wu008_timeline_time_gate_diagnostics( $format, $timestamp, $gmt ) {
-	$class = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
-	if ( ! isset( $GLOBALS['wp_filter']['option_time_format'] ) ) {
-		return null;
-	}
-
-	$adapter = null;
-	foreach ( $GLOBALS['wp_filter']['option_time_format']->callbacks as $callbacks ) {
-		foreach ( $callbacks as $callback ) {
-			$fn = $callback['function'];
-			if ( is_array( $fn ) && isset( $fn[0], $fn[1] ) && is_object( $fn[0] ) && $fn[0] instanceof $class && 'filter_time_format' === $fn[1] ) {
-				$adapter = $fn[0];
-				break 2;
-			}
-		}
-	}
-	if ( ! is_object( $adapter ) ) {
-		return null;
-	}
-
-	$trace = debug_backtrace( 0, 20 );
-	$path  = null;
-	foreach ( $trace as $index => $frame ) {
-		$signature = ( isset( $frame['class'] ) ? (string) $frame['class'] : '' )
-			. ( isset( $frame['type'] ) ? (string) $frame['type'] : '' )
-			. ( isset( $frame['function'] ) ? (string) $frame['function'] : '' );
-		if ( 'date_i18n' === $signature && isset( $trace[ $index + 6 ] ) ) {
-			$path = array_slice( $trace, $index, 7 );
-			break;
-		}
-	}
-	if ( null === $path ) {
-		return null;
-	}
-
-	$reflection = new ReflectionObject( $adapter );
-	$property   = $reflection->getProperty( 'time_contexts' );
-	$property->setAccessible( true );
-	$contexts = $property->getValue( $adapter );
-
-	$note = $path[4]['args'][0] ?? null;
-	$key  = is_object( $note ) ? spl_object_id( $note ) : null;
-	if ( null === $key || ! is_array( $contexts ) || ! isset( $contexts[ $key ] ) ) {
-		return array( 'context_present' => false );
-	}
-
-	$context = $contexts[ $key ];
-	$notes   = $path[5]['args'][0] ?? null;
-	$entry   = $path[6]['args'][0] ?? null;
-	$form    = $path[6]['args'][1] ?? null;
-
-	$order_method  = $reflection->getMethod( 'note_identity_order' );
-	$entry_method  = $reflection->getMethod( 'entry_key' );
-	$args_method   = $reflection->getMethod( 'second_path_arguments_match' );
-	$event_method  = $reflection->getMethod( 'event_kind' );
-	foreach ( array( $order_method, $entry_method, $args_method, $event_method ) as $method ) {
-		$method->setAccessible( true );
-	}
-
-	return array(
-		'context_present'        => true,
-		'format_matches'         => ( $context['time_format'] ?? null ) === $format,
-		'calendar_admitted'      => true === ( $context['calendar_admitted'] ?? null ),
-		'gmt_true'               => true === $gmt,
-		'timestamp_is_int'       => is_int( $timestamp ),
-		'timestamp_matches'      => ( $context['timestamp'] ?? null ) === $timestamp,
-		'note_same'              => ( $context['note'] ?? null ) === $note,
-		'note_snapshot_same'     => is_object( $note ) && ( $context['note_snapshot'] ?? null ) === get_object_vars( $note ),
-		'notes_is_array'         => is_array( $notes ),
-		'notes_same'             => ( $context['notes'] ?? null ) === $notes,
-		'notes_order_same'       => is_array( $notes ) && ( $context['notes_order'] ?? null ) === $order_method->invoke( $adapter, $notes ),
-		'entry_is_array'         => is_array( $entry ),
-		'entry_same'             => ( $context['entry'] ?? null ) === $entry,
-		'entry_key_same'         => is_array( $entry ) && ( $context['entry_key'] ?? null ) === $entry_method->invoke( $adapter, $entry ),
-		'form_same'              => ( $context['form'] ?? null ) === $form,
-		'path_arguments_match'   => $args_method->invoke( $adapter, $path, $context, $format ),
-		'event_kind_same'        => is_object( $note ) && is_array( $entry ) && ( $context['event_kind'] ?? null ) === $event_method->invoke( $adapter, $note, $entry, $context['raw'] ?? '' ),
-		'gfcommon_args'          => $path[1]['args'] ?? null,
-		'flow_common_args'       => $path[2]['args'] ?? null,
-	);
-}
-
-
 add_action(
 	'wp_loaded',
 	static function () {
-		add_filter(
-			'option_date_format',
-			static function ( $format, $option = null ) {
-				$stack = pgr_wu008_timeline_stack_signatures();
-				if ( ! in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
-					return $format;
-				}
-
-				static $post_observer_registered = false;
-				if ( ! $post_observer_registered ) {
-					add_filter(
-						'date_i18n',
-						static function ( $date, $date_format, $timestamp, $gmt ) {
-							$inner_stack = pgr_wu008_timeline_stack_signatures();
-							if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $inner_stack, true ) ) {
-								$GLOBALS['pgr_wu008_timeline_call_observations']['post_date_i18n'][] = array(
-									'output'        => $date,
-									'format'        => $date_format,
-									'timestamp'     => $timestamp,
-									'gmt'           => $gmt,
-									'stack'         => $inner_stack,
-									'adapter_state' => pgr_wu008_timeline_adapter_state(),
-								);
-							}
-							return $date;
-						},
-						PHP_INT_MAX,
-						4
-					);
-					$post_observer_registered = true;
-				}
-
-				return $format;
-			},
-			PHP_INT_MAX,
-			2
-		);
-
 		add_filter(
 			'option_time_format',
 			static function ( $format, $option = null ) {
 				$stack = pgr_wu008_timeline_stack_signatures();
 				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
 					$GLOBALS['pgr_wu008_timeline_call_observations']['time_format'][] = array(
-						'format'        => $format,
-						'option'        => $option,
-						'stack'         => $stack,
-						'adapter_state' => pgr_wu008_timeline_adapter_state(),
+						'format' => $format,
+						'option' => $option,
+						'stack'  => $stack,
 					);
 				}
 				return $format;
@@ -442,12 +271,11 @@ add_action(
 				$stack = pgr_wu008_timeline_stack_signatures();
 				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
 					$GLOBALS['pgr_wu008_timeline_call_observations']['date_i18n'][] = array(
-						'output'           => $date,
-						'format'           => $format,
-						'timestamp'        => $timestamp,
-						'gmt'              => $gmt,
-						'stack'            => $stack,
-						'time_gate_checks' => pgr_wu008_timeline_time_gate_diagnostics( $format, $timestamp, $gmt ),
+						'output'    => $date,
+						'format'    => $format,
+						'timestamp' => $timestamp,
+						'gmt'       => $gmt,
+						'stack'     => $stack,
 					);
 				}
 				return $date;
