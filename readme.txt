@@ -11,7 +11,7 @@ Focused Persian and Iranian capabilities for Gravity Forms with runtime module c
 
 Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
 
-Current repository source keeps plugin version metadata at 4.7.0 and exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
+Version 4.7.0 exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
