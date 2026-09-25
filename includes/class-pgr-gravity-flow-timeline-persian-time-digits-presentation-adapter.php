@@ -18,41 +18,65 @@ final class PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter {
 	/** Browser adapter handle. */
 	private const SCRIPT_HANDLE = 'pgr-gravity-flow-timeline-persian-time-digits';
 
-	/** @var bool Whether the bounded browser adapter was already enqueued. */
+	/** @var bool Whether an authentic qualified Timeline header was presented. */
+	private $qualified_timeline_presented = false;
+
+	/** @var bool Whether the bounded Entry Detail browser adapter was enqueued. */
 	private $enqueued = false;
 
+	/** @var bool Whether the standalone Print page script tag was emitted. */
+	private $print_script_emitted = false;
+
 	/**
-	 * Register only the source-authenticated Timeline presentation signal.
+	 * Register only bounded post-render presentation hooks.
 	 *
-	 * The signal is emitted by the exact Timeline Jalali adapter only after its
-	 * exact version/source/caller/context contract has successfully converted
-	 * one authentic Timeline header date.
+	 * The internal signal is emitted by the exact Timeline Jalali adapter only
+	 * after its exact version/source/caller/context contract successfully
+	 * converts one authentic Timeline header date.
 	 *
 	 * @return void
 	 */
 	public function hooks() {
 		add_action(
 			'pgr_gravity_flow_timeline_header_presented',
-			array( $this, 'enqueue_time_digit_shaper' ),
+			array( $this, 'mark_qualified_timeline_presentation' ),
 			PHP_INT_MAX,
 			0
+		);
+		add_action(
+			'gravityflow_entry_detail_content_after',
+			array( $this, 'enqueue_entry_detail_shaper' ),
+			PHP_INT_MAX,
+			2
+		);
+		add_action(
+			'gravityflow_print_entry_footer',
+			array( $this, 'print_standalone_shaper' ),
+			PHP_INT_MAX,
+			2
 		);
 	}
 
 	/**
-	 * Enqueue the header-only browser shaper for admitted Persian presentation.
+	 * Mark one authentic Timeline render as eligible for glyph shaping.
 	 *
 	 * @return void
 	 */
-	public function enqueue_time_digit_shaper() {
-		if (
-			$this->enqueued ||
-			! function_exists( 'determine_locale' ) ||
-			'fa_IR' !== determine_locale() ||
-			! $this->is_exact_supported_host() ||
-			! defined( 'PGR_URL' ) ||
-			! defined( 'PGR_VERSION' )
-		) {
+	public function mark_qualified_timeline_presentation() {
+		$this->qualified_timeline_presented = true;
+	}
+
+	/**
+	 * Enqueue the header-only shaper after Entry Detail Timeline rendering.
+	 *
+	 * @param mixed $form  Host form.
+	 * @param mixed $entry Host entry.
+	 * @return void
+	 */
+	public function enqueue_entry_detail_shaper( $form, $entry ) {
+		unset( $form, $entry );
+
+		if ( ! $this->consume_qualified_presentation() || $this->enqueued || ! $this->can_shape() ) {
 			return;
 		}
 
@@ -65,6 +89,61 @@ final class PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter {
 		);
 
 		$this->enqueued = true;
+	}
+
+	/**
+	 * Print the same owned shaper on Gravity Flow's standalone Print page.
+	 *
+	 * Exact Flow 3.1.0 does not call WordPress footer script printers on this
+	 * document. Its entry-footer action runs after the optional Timeline render,
+	 * so an authenticated Timeline signal can safely emit one owned script tag.
+	 * The browser adapter defers execution until DOMContentLoaded, covering later
+	 * entries in the same bulk-print document without broad DOM interception.
+	 *
+	 * @param mixed $form  Host form.
+	 * @param mixed $entry Host entry.
+	 * @return void
+	 */
+	public function print_standalone_shaper( $form, $entry ) {
+		unset( $form, $entry );
+
+		if ( ! $this->consume_qualified_presentation() || $this->print_script_emitted || ! $this->can_shape() ) {
+			return;
+		}
+
+		$src = add_query_arg(
+			'ver',
+			rawurlencode( (string) PGR_VERSION ),
+			PGR_URL . 'assets/js/pgr-flow-timeline-persian-time-digits.js'
+		);
+
+		printf( '<script src="%s"></script>', esc_url( $src ) );
+		$this->print_script_emitted = true;
+	}
+
+	/**
+	 * Consume the row-render signal so unrelated later host actions cannot reuse
+	 * stale Timeline presentation authority.
+	 *
+	 * @return bool
+	 */
+	private function consume_qualified_presentation() {
+		$qualified                          = $this->qualified_timeline_presented;
+		$this->qualified_timeline_presented = false;
+		return $qualified;
+	}
+
+	/**
+	 * Apply common locale/runtime gates without touching host date/time state.
+	 *
+	 * @return bool
+	 */
+	private function can_shape() {
+		return function_exists( 'determine_locale' ) &&
+			'fa_IR' === determine_locale() &&
+			$this->is_exact_supported_host() &&
+			defined( 'PGR_URL' ) &&
+			defined( 'PGR_VERSION' );
 	}
 
 	/**
