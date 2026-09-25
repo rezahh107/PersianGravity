@@ -19,7 +19,7 @@ on:
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php'
-      - 'includes/class-pgr-gravity-flow-timeline-persian-digits-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php'
       - 'assets/js/pgr-flow-entry-detail-persian-digits.js'
       - 'docs/WU008_REAL_INTEGRATION.md'
       - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
