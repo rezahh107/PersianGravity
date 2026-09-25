@@ -103,10 +103,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		add_filter( 'option_date_format', array( $this, 'filter_date_format' ), PHP_INT_MAX, 2 );
-
-		if ( function_exists( 'determine_locale' ) && 'fa_IR' === determine_locale() ) {
-			add_filter( 'option_time_format', array( $this, 'filter_time_format' ), PHP_INT_MAX, 2 );
-		}
+		add_filter( 'option_time_format', array( $this, 'filter_time_format' ), PHP_INT_MAX, 2 );
 	}
 
 	/**
@@ -268,7 +265,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	 */
 	public function filter_date_i18n( $date, $format, $timestamp, $gmt ) {
 		$fallback = $this->strip_owned_markers( $date );
-		if ( ! is_string( $format ) ) {
+		if (
+			! is_string( $format ) ||
+			! function_exists( 'determine_locale' ) ||
+			'fa_IR' !== determine_locale()
+		) {
 			return $fallback;
 		}
 
