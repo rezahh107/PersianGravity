@@ -96,6 +96,66 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		);
 	}
 
+
+	public function test_time_digits_require_the_same_row_calendar_admission(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$contexts                   = $reflection->getProperty( 'time_contexts' );
+		$host_contract              = $reflection->getProperty( 'host_contract_valid' );
+		$product_slug               = $reflection->getProperty( 'flow_product_slug' );
+		$shape                      = $reflection->getMethod( 'shape_timeline_time_digits' );
+
+		$host_contract->setValue( $adapter, true );
+		$product_slug->setValue( $adapter, 'gravityflow' );
+
+		$raw   = '2030-03-20 20:31:00';
+		$note  = (object) array(
+			'id'           => 7,
+			'date_created' => $raw,
+			'note_type'    => 'gravityflow',
+		);
+		$notes = array( $note );
+		$entry = array(
+			'id'           => 12,
+			'form_id'      => 3,
+			'date_created' => $raw,
+		);
+		$form      = array( 'id' => 3 );
+		$timestamp = 1900269060;
+		$key       = spl_object_id( $note );
+		$context   = array(
+			'note'              => $note,
+			'note_snapshot'     => get_object_vars( $note ),
+			'notes'             => $notes,
+			'notes_order'       => array( $key ),
+			'entry'             => $entry,
+			'entry_key'         => '3:12',
+			'form'              => $form,
+			'raw'               => $raw,
+			'timestamp'         => $timestamp,
+			'time_format'       => 'g:i a',
+			'event_kind'        => 'stored',
+			'calendar_admitted' => false,
+		);
+		$path      = array(
+			array( 'function' => 'date_i18n' ),
+			array( 'class' => 'GFCommon', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, false, '', true ) ),
+			array( 'class' => 'Gravity_Flow_Common', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, '', false, true ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_header', 'args' => array( 'Runtime Admin', $raw ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_body', 'args' => array( $note, 'Runtime Admin' ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'notes_grid', 'args' => array( $notes ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'timeline', 'args' => array( $entry, $form ) ),
+		);
+
+		$contexts->setValue( $adapter, array( $key => $context ) );
+		$this->assertSame( '12:01 ق.ظ', $shape->invoke( $adapter, '12:01 ق.ظ', 'g:i a', $timestamp, true, $path ) );
+
+		$context['calendar_admitted'] = true;
+		$contexts->setValue( $adapter, array( $key => $context ) );
+		$this->assertSame( '۱۲:۰۱ ق.ظ', $shape->invoke( $adapter, '12:01 ق.ظ', 'g:i a', $timestamp, true, $path ) );
+	}
+
 	public function test_host_identity_resolves_only_exact_versions_through_approved_manifest_shape(): void {
 		$reflection = new ReflectionClass( PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter::class );
 		$method     = $reflection->getMethod( 'resolve_product_slug' );
