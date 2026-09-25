@@ -93,7 +93,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	 * @return void
 	 */
 	public function hooks() {
-		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) || ! $this->is_exact_supported_host() ) {
+		if (
+			! function_exists( 'determine_locale' ) ||
+			'fa_IR' !== determine_locale() ||
+			! class_exists( 'PGR_Jalali_Presentation', false ) ||
+			! $this->is_exact_supported_host()
+		) {
 			return;
 		}
 
@@ -116,6 +121,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'date_format' !== $option ||
 			! is_string( $format ) ||
 			! in_array( $format, self::SUPPORTED_FORMATS, true ) ||
+			! function_exists( 'determine_locale' ) ||
+			'fa_IR' !== determine_locale() ||
 			! class_exists( 'PGR_Jalali_Presentation', false ) ||
 			! $this->is_exact_supported_host()
 		) {
