@@ -145,7 +145,9 @@ jobs:
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
           node --check tests/real-integration/g008-residual-source-probe.mjs
+          node --check tests/real-integration/g008-gravityview-source-evidence.mjs
           node --check tests/real-integration/g008-gravityview-source-probe.mjs
+          node --check tests/real-integration/g008-gravityview-artifact-privacy.mjs
           node --check tests/real-integration/g008-gravityview-browser.mjs
           node --check tests/real-integration/g008-gravityview-reconcile.mjs
           node --check tests/real-integration/g009-browser.mjs
@@ -166,6 +168,7 @@ jobs:
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
+          node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
             exit 1
@@ -314,6 +317,7 @@ jobs:
           test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
           test -s "$WU008_ARTIFACT_DIR/g008-residual-source-probe.json"
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-source-probe.json"
+          node tests/real-integration/g008-gravityview-artifact-privacy.mjs
           test -s "$WU008_ARTIFACT_DIR/g009-perks-source-probe.json"
 
       - name: Create deterministic runtime fixtures and assert provider/fallback semantics
@@ -476,6 +480,7 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-gravityview-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-date-qualification.json"
+          node tests/real-integration/g008-gravityview-artifact-privacy.mjs
           original_date_format="$(php -r '$d=json_decode(file_get_contents($argv[1]),true); echo $d["original_date_format"] ?? "";' "$WU008_ARTIFACT_DIR/g008-gravityview-fixture-baseline.json")"
           test -n "$original_date_format"
           php "$WU008_WP_CLI" option update date_format "$original_date_format" --path="$WU008_WP_PATH"
@@ -637,13 +642,29 @@ jobs:
           set -euo pipefail
           node tests/real-integration/reconcile-qualification-evidence.mjs
 
+      - name: Stage privacy-checked bounded evidence for upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          upload_dir=/tmp/wu008-upload
+          rm -rf "$upload_dir"
+          if test -f "$WU008_ARTIFACT_DIR/g008-gravityview-source-probe.json"; then
+            node tests/real-integration/g008-gravityview-artifact-privacy.mjs
+          fi
+          mkdir -p "$upload_dir"
+          if test -d "$WU008_ARTIFACT_DIR"; then
+            cp -a "$WU008_ARTIFACT_DIR/." "$upload_dir/"
+          fi
+          if test -f /tmp/wu008-wp-server.log; then
+            cp /tmp/wu008-wp-server.log "$upload_dir/"
+          fi
+
       - name: Upload bounded runtime evidence only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /tmp/wu008-artifacts
-            /tmp/wu008-wp-server.log
+          path: /tmp/wu008-upload
           if-no-files-found: ignore
           retention-days: 30
