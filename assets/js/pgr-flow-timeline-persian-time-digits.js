@@ -8,7 +8,17 @@
 		return;
 	}
 
-	adapter.run( document );
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener(
+			'DOMContentLoaded',
+			function () {
+				adapter.run( document );
+			},
+			{ once: true }
+		);
+	} else {
+		adapter.run( document );
+	}
 }( function () {
 	'use strict';
 
