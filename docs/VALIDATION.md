@@ -1,5 +1,13 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-008 post-PR58 Timeline/Print truth reconciliation — 2026-09-25
+
+Canonical `main@d9ed597a600c16d2dcca0e76339be845b84198c6` is the merge commit of PR #58 production Head `c74bca28496c2ae09be123d3762769fae2d78b31`. Exact-Head CI `36063495049`, Artifact Install Smoke `36063495060`, G008 Jalali Presentation Runtime `36063495364`, and WU008 Licensed Real Integration `36063494990` all completed successfully.
+
+For exact Gravity Flow `3.1.0`, `gravityflow.timeline-history` is now `RUNTIME_PROVEN + ADMITTED_VERIFIED` for bounded Jalali calendar presentation. Print owns no independent calendar adapter; `gravityflow.print` is admitted only by inheritance when the verified Timeline renderer is reused. Native storage, raw `date_created`, note/event identity, bodies, ordering, surrounding native time semantics, API/state behavior and workflow semantics remain unchanged. Unsupported formats or exact source/version/caller-chain drift fail closed to native rendering. Status `gravityflow.status.due-date` and Entry Detail `gravityflow.entry-detail.schedule` remain the exact Flow 3.1.0 residual final no-admission calendar surfaces.
+
+PR #57 digit shaping is a separate presentation concern: exact Flow 3.1.0 Entry Detail status-box visible field text may receive presentation-only Persian digits under its admitted contract, while Timeline/history and Print do not load or execute that digit-shaping adapter. Earlier dated validation sections below remain historical records of their own checkpoints; any Timeline/Print no-admission statement in those earlier sections is superseded for current repository truth by merged PR #58 and this reconciliation, not rewritten as if it had been true later.
+
 ## G-008 Entry Detail presentation-only Persian digits — 2026-09-24
 
 Implementation base is fresh canonical `main@511870b9152180bae4544f692fdb4e003d4c04e7`, after the 4.7.0 release-candidate PR was merged. The immutable candidate commit remains `26f5fa648fb8917b795061a3e8d6aa828f233411`; this feature is isolated on `feat/flow-workflow-info-persian-digits` and does not modify the release branch/candidate. Exact Gravity Flow authority remains `3.1.0`, owner-supplied package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`.
