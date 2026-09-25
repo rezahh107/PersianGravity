@@ -60,7 +60,9 @@ final class RepositoryConsistencyTest extends TestCase {
 			$this->assertStringContainsString( 'Entry Detail Scheduled', $document );
 		}
 
+		$this->assertStringContainsString( 'Print owns no independent calendar adapter', $readme );
 		$this->assertStringContainsString( 'Print owns no independent calendar adapter', $github );
+		$this->assertStringContainsString( 'Timeline/history and Print remain outside this digit-shaping adapter', $readme );
 		$this->assertStringContainsString( 'Timeline/history and Print remain outside this digit-shaping adapter', $github );
 		$this->assertStringNotContainsString( 'Timeline initial/stored event dates, and any independent Print date seam remain evidence-qualified final no-admission', $github );
 
