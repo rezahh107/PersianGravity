@@ -159,14 +159,14 @@ const qualification = {
   source_provenance: source.provenance,
   source_findings: {
     date_created: 'Exact GravityView DateCreated reads the authoritative Entry date_created value, then formats it through GVCommon::format_date before the field-specific output filter. Exact Gravity Forms source defines date_created as UTC Y-m-d H:i:s.',
-    date_updated: 'Exact GravityView DateUpdated inherits the DateCreated renderer with its own date_updated identity. Exact Gravity Forms source defines the updated timestamp as UTC, while GravityView keeps date_updated as a raw system-column request/query identity even though exact 3.3.4 does not expose it as a direct Search Bar slot.',
+    date_updated: 'Exact GravityView DateUpdated inherits the DateCreated renderer with its own date_updated identity. Exact Gravity Forms source defines the updated timestamp as UTC, while GravityView keeps date_updated as a raw system-column request/query identity. The qualification preserves the observed native behavior of a direct filter_date_updated request when no date_updated Search Bar field is configured; it does not claim that every possible date_updated search configuration is unavailable or browser-qualified.',
     timezone: 'The authoritative Entry properties are UTC/system datetimes. In the authentic Asia/Tehran runtime, native GravityView rendering converts those raw instants to site-local civil time before the output seam; the qualification prototype passes the raw UTC DateTime to PGR_Jalali_Presentation::format_datetime(), preserving that site-time presentation domain.',
     consumed_seams: [
       'gravityview/template/field/date_created/output',
       'gravityview/template/field/date_updated/output',
     ],
     context: 'The consumed field-specific filters receive Template_Context with exact field identity and an Entry object exposing as_entry(); the prototype reads authoritative raw date_created/date_updated from that Entry rather than parsing native display strings.',
-    query_boundary: 'Exact GravityView 3.3.4 does not expose date_created/date_updated as direct Search Bar slots. Its entry_date request contract maps gv_start/gv_end to raw date_created with UTC-aware query handling. Although SearchRequest can parse registered meta/system keys such as filter_date_updated, SearchPolicy does not admit date_updated on this View without a real searchable-field configuration, so the direct request remains a native no-op. Sorting and all query decisions remain upstream of the field output filters, so presentation does not participate in DB/GFAPI/REST/query/sort/filter construction.',
+    query_boundary: 'The host-native entry_date Search Bar request maps gv_start/gv_end to raw date_created with UTC-aware query handling. A direct filter_date_updated request on this fixture, which has no configured date_updated Search Bar field, remains a native no-op in every mode. Sorting and query construction occur upstream of the field output filters, so the qualified presentation seam does not participate in DB/GFAPI/REST/query/sort/filter construction. This evidence does not claim exhaustive browser coverage of every optional GravityView date_updated search configuration.',
   },
   runtime_findings: {
     field_specific_hooks_consumed: true,
