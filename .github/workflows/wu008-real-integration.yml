@@ -302,9 +302,11 @@ jobs:
         run: |
           set -euo pipefail
           node tests/real-integration/source-discovery.mjs
+          node tests/real-integration/g008-gravityview-source-probe.mjs
           node tests/real-integration/g008-residual-source-probe.mjs
           node tests/real-integration/g009-perks-source-probe.mjs
           test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-source-qualification.json"
           test -s "$WU008_ARTIFACT_DIR/g008-residual-source-probe.json"
           test -s "$WU008_ARTIFACT_DIR/g009-perks-source-probe.json"
 
@@ -314,7 +316,9 @@ jobs:
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/setup-runtime.php
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g009-setup-runtime.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-setup-runtime.php
           test -s "$WU008_MANIFEST_PATH"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-fixture.json"
 
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -387,6 +391,30 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gravityperks --field=version --path="$WU008_WP_PATH")" = "$WU008_PERKS_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gp-file-upload-pro --field=version --path="$WU008_WP_PATH")" = "$WU008_FUP_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
+
+      - name: Qualify GravityView G008 system dates across enabled, native, drift and LTR controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          for mode in enabled disabled version-drift english; do
+            WU008_G008_GV_MODE="$mode" WU008_G008_GV_PHASE=pre               php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+            WU008_G008_GV_MODE="$mode" node tests/real-integration/g008-gravityview-browser.mjs
+            WU008_G008_GV_MODE="$mode" WU008_G008_GV_PHASE=post               php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+            test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-$mode.json"
+            test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-$mode-pre.json"
+            test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-$mode-post.json"
+          done
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'update_option( "wu008_g008_gravityview_force_version_mismatch", false ); PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "fa_IR"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "rtl"
+
+      - name: Reconcile GravityView G008 qualification evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-gravityview-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-qualification.json"
 
       - name: Create G008 Flow Inbox fixtures after G009 isolation checks
         shell: bash
