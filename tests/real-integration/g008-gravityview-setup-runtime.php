@@ -207,7 +207,7 @@ $search_fields_shortcode = wp_json_encode(
 		),
 		array(
 			'field' => 'search_all',
-			'input' => 'search_all',
+			'input' => 'input_text',
 			'label' => 'Search Everything',
 		),
 	),
