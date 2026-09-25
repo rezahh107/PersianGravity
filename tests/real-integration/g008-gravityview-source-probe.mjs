@@ -90,7 +90,10 @@ const dateUpdated = read(roots.gravityview, 'src/Field/Types/DateUpdated.php');
 const templateField = read(roots.gravityview, 'src/Template/TemplateField.php');
 const gvCommon = read(roots.gravityview, 'src/Legacy/Utility/Common.php');
 const formGf = read(roots.gravityview, 'src/Form/FormGravityForms.php');
+const searchPolicy = read(roots.gravityview, 'src/Search/SearchPolicy.php');
 const queryVisitor = read(roots.gravityview, 'src/Search/Querying/Visitors/QueryFilterVisitor.php');
+const searchWidget = read(roots.gravityview, 'src/Widget/Types/SearchWidget.php');
+const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-filters/src/Sql/SqlAdjustmentCallbacks.php');
 const gfApi = read(roots.gravityforms, 'includes/api.php');
 
 const sourceContract = {
@@ -109,7 +112,7 @@ const sourceContract = {
     contexts: /var\s+\$contexts\s*=\s*\[['"]single['"],\s*['"]multiple['"],\s*['"]export['"]\]/.test(dateUpdated.content),
   },
   formatting: {
-    gv_common_declares_no_site_timezone: gvCommon.content.includes("Formats date without applying site's timezone."),
+    gv_common_comment_without_site_timezone: gvCommon.content.includes("Formats date without applying site's timezone."),
     gv_common_is_copy_of_gf_formatter: gvCommon.content.includes('This is a copy of {@see GFCommon::format_date()}'),
   },
   presentation_seam: {
@@ -121,7 +124,10 @@ const sourceContract = {
     filters_merge_to_search_criteria: formGf.content.includes('$search_criteria = $filter::merge_search_criteria( $search_criteria, $filter->as_search_criteria() );'),
     sorts_translate_raw_field_id_direction_and_numeric_mode: /foreach\s*\(\s*\$sorts\s+as\s+\$sort\s*\)[\s\S]{0,420}\$sorting\s*=\s*\[[\s\S]{0,220}'key'\s*=>\s*\$sort->field->ID[\s\S]{0,180}'direction'\s*=>\s*\$sort->direction[\s\S]{0,180}'is_numeric'\s*=>\s*\\GV\\Entry_Sort::NUMERIC\s*==\s*\$sort->mode/.test(formGf.content),
     gfapi_consumes_search_and_sort: /GFAPI::get_entries\([\s\S]{0,260}\$search_criteria[\s\S]{0,120}\$sorting/.test(formGf.content),
-    query_filter_handles_date_created: queryVisitor.content.includes("'date_created'"),
+    date_created_search_policy_marks_utc_storage: searchPolicy.content.includes('date_created') && searchPolicy.content.includes('stored in UTC format'),
+    query_filter_handles_date_created_in_utc: queryVisitor.content.includes("'date_created'") && queryVisitor.content.includes("new DateTimeZone( 'UTC' )"),
+    search_widget_builds_query_filters_from_request: searchWidget.content.includes('SearchRequest::from_request') && searchWidget.content.includes('SearchFilterBuilder::to_query_filters'),
+    date_updated_raw_sql_identity_is_preserved: sqlAdjustment.content.includes('date_updated') && sqlAdjustment.content.includes('date_created') && sqlAdjustment.content.includes('UNIX_TIMESTAMP'),
   },
   gravityforms_raw_contract: {
     date_created_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
@@ -154,7 +160,10 @@ const evidence = {
     template_output_filters: numberedExcerpt(templateField, 390, 526),
     gv_format_date: around(gvCommon, "Formats date without applying site's timezone.", 2, 85),
     gravityview_gfapi_query_bridge: numberedExcerpt(formGf, 103, 150),
+    date_created_search_policy: around(searchPolicy, "stored in UTC format", 14, 18),
     query_filter_date_created: around(queryVisitor, "'date_created'", 24, 34),
+    search_widget_query_builder: around(searchWidget, 'SearchRequest::from_request', 18, 36),
+    date_updated_raw_sql_adjustment: around(sqlAdjustment, 'date_updated =', 10, 34),
     gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
     gravityforms_update_entry_property: around(gfApi, 'update_entry_property', 12, 44),
   },
