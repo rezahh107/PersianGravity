@@ -228,6 +228,63 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 	}
 	return $count;
 }
+
+$GLOBALS['pgr_wu008_timeline_call_observations'] = array(
+	'time_format' => array(),
+	'date_i18n'   => array(),
+);
+
+function pgr_wu008_timeline_stack_signatures() {
+	$signatures = array();
+	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Test-only exact runtime evidence.
+	foreach ( debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 16 ) as $frame ) {
+		$signatures[] = ( isset( $frame['class'] ) ? (string) $frame['class'] : '' )
+			. ( isset( $frame['type'] ) ? (string) $frame['type'] : '' )
+			. ( isset( $frame['function'] ) ? (string) $frame['function'] : '' );
+	}
+	return $signatures;
+}
+
+add_action(
+	'wp_loaded',
+	static function () {
+		add_filter(
+			'option_time_format',
+			static function ( $format, $option = null ) {
+				$stack = pgr_wu008_timeline_stack_signatures();
+				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
+					$GLOBALS['pgr_wu008_timeline_call_observations']['time_format'][] = array(
+						'format' => $format,
+						'option' => $option,
+						'stack'  => $stack,
+					);
+				}
+				return $format;
+			},
+			PHP_INT_MAX,
+			2
+		);
+
+		add_filter(
+			'date_i18n',
+			static function ( $date, $format, $timestamp, $gmt ) {
+				$stack = pgr_wu008_timeline_stack_signatures();
+				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
+					$GLOBALS['pgr_wu008_timeline_call_observations']['date_i18n'][] = array(
+						'output'    => $date,
+						'format'    => $format,
+						'timestamp' => $timestamp,
+						'gmt'       => $gmt,
+						'stack'     => $stack,
+					);
+				}
+				return $date;
+			},
+			PHP_INT_MAX,
+			4
+		);
+	}
+);
 add_action(
 	'wp_footer',
 	static function () {
@@ -254,6 +311,7 @@ add_action(
 			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
 			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
 			'source_fingerprints'      => $hashes,
+			'call_observations'        => $GLOBALS['pgr_wu008_timeline_call_observations'] ?? array(),
 		);
 		$artifact_dir = getenv( 'WU008_ARTIFACT_DIR' );
 		if ( is_string( $artifact_dir ) && '' !== $artifact_dir ) {
