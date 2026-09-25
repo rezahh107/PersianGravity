@@ -129,11 +129,24 @@ foreach ( $notes as $note ) {
 	}
 
 	$native_header = Gravity_Flow_Common::format_date( $raw, '', false, true );
-	$time_tail     = '';
-	if ( is_string( $native_header ) && false !== strpos( $native_header, '@' ) ) {
-		$parts     = explode( '@', $native_header, 2 );
-		$time_tail = trim( $parts[1] );
-	}
+	$gmt_time      = mysql2date( 'G', $raw );
+	$local_time    = GFCommon::get_local_timestamp( $gmt_time );
+	$native_time   = date_i18n( GFCommon::get_default_time_format(), $local_time, true );
+	$persian_time  = strtr(
+		$native_time,
+		array(
+			'0' => '۰',
+			'1' => '۱',
+			'2' => '۲',
+			'3' => '۳',
+			'4' => '۴',
+			'5' => '۵',
+			'6' => '۶',
+			'7' => '۷',
+			'8' => '۸',
+			'9' => '۹',
+		)
+	);
 	if ( $duplicate_timestamp === $raw ) {
 		++$duplicate_count;
 	}
@@ -145,7 +158,8 @@ foreach ( $notes as $note ) {
 		'note_type'                 => isset( $note->note_type ) ? (string) $note->note_type : 'initial',
 		'expected_header'           => $native_header,
 		'expected_jalali_date'      => $oracle[ $local_day ],
-		'expected_native_time_tail' => $time_tail,
+		'expected_native_time'      => $native_time,
+		'expected_persian_time'     => $persian_time,
 		'event_kind'                => 0 === (int) $note->id ? 'initial' : 'stored',
 	);
 }
@@ -214,6 +228,63 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 	}
 	return $count;
 }
+
+$GLOBALS['pgr_wu008_timeline_call_observations'] = array(
+	'time_format' => array(),
+	'date_i18n'   => array(),
+);
+
+function pgr_wu008_timeline_stack_signatures() {
+	$signatures = array();
+	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Test-only exact runtime evidence.
+	foreach ( debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 16 ) as $frame ) {
+		$signatures[] = ( isset( $frame['class'] ) ? (string) $frame['class'] : '' )
+			. ( isset( $frame['type'] ) ? (string) $frame['type'] : '' )
+			. ( isset( $frame['function'] ) ? (string) $frame['function'] : '' );
+	}
+	return $signatures;
+}
+
+add_action(
+	'wp_loaded',
+	static function () {
+		add_filter(
+			'option_time_format',
+			static function ( $format, $option = null ) {
+				$stack = pgr_wu008_timeline_stack_signatures();
+				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
+					$GLOBALS['pgr_wu008_timeline_call_observations']['time_format'][] = array(
+						'format' => $format,
+						'option' => $option,
+						'stack'  => $stack,
+					);
+				}
+				return $format;
+			},
+			PHP_INT_MAX,
+			2
+		);
+
+		add_filter(
+			'date_i18n',
+			static function ( $date, $format, $timestamp, $gmt ) {
+				$stack = pgr_wu008_timeline_stack_signatures();
+				if ( in_array( 'Gravity_Flow_Entry_Detail::get_note_header', $stack, true ) ) {
+					$GLOBALS['pgr_wu008_timeline_call_observations']['date_i18n'][] = array(
+						'output'    => $date,
+						'format'    => $format,
+						'timestamp' => $timestamp,
+						'gmt'       => $gmt,
+						'stack'     => $stack,
+					);
+				}
+				return $date;
+			},
+			PHP_INT_MAX,
+			4
+		);
+	}
+);
 add_action(
 	'wp_footer',
 	static function () {
@@ -233,15 +304,20 @@ add_action(
 		$evidence = array(
 			'class_loaded'             => class_exists( $class, false ),
 			'module_enabled'           => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
+			'locale'                   => function_exists( 'determine_locale' ) ? determine_locale() : null,
 			'option_date_format_hooks' => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
+			'option_time_format_hooks' => pgr_wu008_timeline_callback_count( 'option_time_format', $class, 'filter_time_format' ),
 			'date_i18n_hooks'          => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
 			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
 			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
 			'source_fingerprints'      => $hashes,
+			'call_observations'        => $GLOBALS['pgr_wu008_timeline_call_observations'] ?? array(),
 		);
 		$artifact_dir = getenv( 'WU008_ARTIFACT_DIR' );
 		if ( is_string( $artifact_dir ) && '' !== $artifact_dir ) {
-			$probe_mode = $evidence['module_enabled'] ? 'enabled' : 'disabled';
+			$probe_mode = ! $evidence['module_enabled']
+				? 'disabled'
+				: ( 'fa_IR' === $evidence['locale'] ? 'enabled' : 'english' );
 			file_put_contents(
 				trailingslashit( $artifact_dir ) . 'g008-timeline-production-hook-' . $probe_mode . '.json',
 				wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n"

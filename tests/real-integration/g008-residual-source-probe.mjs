@@ -252,6 +252,10 @@ const sourceContract = {
   },
   timeline_history: {
     header_formats_note_date_directly: noteHeaderMethod.includes('Gravity_Flow_Common::format_date( $date_created') && !noteHeaderMethod.includes('apply_filters('),
+    gravityforms_reads_host_time_format: gfFormatDateMethod.includes('$time_format = self::get_default_time_format();'),
+    gravityforms_renders_date_and_time_separately:
+      gfFormatDateMethod.includes('date_i18n( $date_format, $local_time, true )')
+      && gfFormatDateMethod.includes('date_i18n( $time_format, $local_time, true )'),
     note_body_is_separate_escaped_content: noteBodyMethod.includes('nl2br( esc_html( $note->value ) )'),
     timeline_reads_gravityforms_notes: timelineNotesMethod.includes('RGFormsModel::get_lead_notes'),
     timeline_inserts_initial_entry_event: timelineNotesMethod.includes('array_unshift') && timelineNotesMethod.includes('get_initial_note'),

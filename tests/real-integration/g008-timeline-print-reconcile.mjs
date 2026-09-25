@@ -11,8 +11,10 @@ const enabledState = read('g008-residual-adversarial-state-enabled.json');
 const disabledState = read('g008-residual-adversarial-state-disabled.json');
 const enabledBrowser = read('g008-entry-detail-candidate-browser-enabled.json');
 const disabledBrowser = read('g008-entry-detail-candidate-browser-disabled.json');
+const englishBrowser = read('g008-entry-detail-candidate-browser-english.json');
 const enabledHook = read('g008-timeline-production-hook-enabled.json');
 const disabledHook = read('g008-timeline-production-hook-disabled.json');
+const englishHook = read('g008-timeline-production-hook-english.json');
 
 const failures = [];
 const head = process.env.WU008_PGR_SHA;
@@ -30,6 +32,8 @@ const timelineContract = source?.source_contract?.timeline_history;
 const printContract = source?.source_contract?.print;
 for (const flag of [
   'header_formats_note_date_directly',
+  'gravityforms_reads_host_time_format',
+  'gravityforms_renders_date_and_time_separately',
   'note_body_is_separate_escaped_content',
   'timeline_reads_gravityforms_notes',
   'timeline_inserts_initial_entry_event',
@@ -73,20 +77,32 @@ function browserIdentity(browser, mode) {
 }
 browserIdentity(enabledBrowser, 'enabled');
 browserIdentity(disabledBrowser, 'disabled');
+browserIdentity(englishBrowser, 'english');
 
 if (
   enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
-  || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
+  || enabledHook.locale !== 'fa_IR'
+  || enabledHook.option_date_format_hooks !== 1 || enabledHook.option_time_format_hooks !== 1
+  || enabledHook.date_i18n_hooks !== 1
 ) {
   failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
 }
 if (
   disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
-  || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
+  || disabledHook.option_date_format_hooks !== 0 || disabledHook.option_time_format_hooks !== 0
+  || disabledHook.date_i18n_hooks !== 0
 ) {
   failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
 }
-for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook]]) {
+if (
+  englishHook.class_loaded !== true || englishHook.module_enabled !== true
+  || englishHook.locale !== 'en_US'
+  || englishHook.option_date_format_hooks !== 0 || englishHook.option_time_format_hooks !== 0
+  || englishHook.date_i18n_hooks !== 0
+) {
+  failures.push(`English production Timeline adapter did not fail closed: ${JSON.stringify(englishHook)}`);
+}
+for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook], ['english', englishHook]]) {
   if (hook.flow_version !== '3.1.0' || hook.gf_version !== '3.1.1.1') failures.push(`${label} hook probe host version mismatch`);
   if (JSON.stringify(hook.source_fingerprints) !== JSON.stringify(expectedFingerprints)) failures.push(`${label} source fingerprint mismatch`);
 }
@@ -142,10 +158,33 @@ for (let index = 0; index < expectedTimeline.length; index += 1) {
   const row = expectedTimeline[index];
   const header = enabledHeaders[index] ?? '';
   if (!header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} Jalali date mismatch`);
-  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
+  if (!row.expected_persian_time || !header.includes(row.expected_persian_time)) failures.push(`enabled Timeline row ${row.id} Persian time digit mismatch`);
+  if (row.expected_native_time && /[0-9]/.test(row.expected_native_time) && header.includes(row.expected_native_time)) failures.push(`enabled Timeline row ${row.id} retained ASCII time digits`);
 }
 if (JSON.stringify(enabledHeaders) === JSON.stringify(disabledHeaders)) failures.push('enabled Timeline did not differ from native control');
-if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
+const enabledHeaderText = enabledHeaders.join('\n');
+if (enabledHeaderText.includes('11:59') || !enabledHeaderText.includes('۱۱:۵۹') || enabledHeaderText.includes('12:01') || !enabledHeaderText.includes('۱۲:۰۱')) {
+  failures.push('enabled Timeline boundary time digits are not coherently Persian');
+}
+const disabledHeaderText = disabledHeaders.join('\n');
+if (!disabledHeaderText.includes('11:59') || disabledHeaderText.includes('۱۱:۵۹') || !disabledHeaderText.includes('12:01') || disabledHeaderText.includes('۱۲:۰۱')) {
+  failures.push('disabled Timeline boundary time digits are not exact ASCII native output');
+}
+const englishHeaders = englishBrowser.timeline?.headers ?? [];
+const englishHeaderText = englishHeaders.join('\n');
+if (!englishHeaderText.includes('11:59') || englishHeaderText.includes('۱۱:۵۹') || !englishHeaderText.includes('12:01') || englishHeaderText.includes('۱۲:۰۱')) {
+  failures.push('English Timeline boundary time digits did not remain ASCII');
+}
+if (/[۰-۹]/.test(englishHeaderText)) failures.push('English Timeline leaked Persian digit glyphs');
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  const row = expectedTimeline[index];
+  const header = englishHeaders[index] ?? '';
+  const gregorianYear = typeof row.date_created === 'string' ? row.date_created.slice(0, 4) : '';
+  if (!gregorianYear || !header.includes(gregorianYear) || header.includes(row.expected_jalali_date)) {
+    failures.push(`English Timeline row ${row.id} did not remain native Gregorian presentation`);
+  }
+}
+if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false || englishBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
 for (const browser of [enabledBrowser, disabledBrowser]) {
   const timeline = browser.timeline ?? {};
   if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
@@ -159,6 +198,14 @@ for (const browser of [enabledBrowser, disabledBrowser]) {
       failures.push(`${browser.mode}: Timeline body ${index} captured an enclosing body/header wrapper`);
     }
   }
+}
+const englishTimeline = englishBrowser.timeline ?? {};
+if (englishTimeline.collector?.row_count !== expectedTimeline.length || englishTimeline.headers?.length !== expectedTimeline.length || englishTimeline.rows?.length !== expectedTimeline.length) {
+  failures.push('English Timeline row/header count does not equal authoritative fixture count');
+}
+const expectedRowIds = expectedTimeline.map((row) => `gravityflow-note-${row.id}`);
+if (JSON.stringify((englishTimeline.rows ?? []).map((row) => row.row_id)) !== JSON.stringify(expectedRowIds)) {
+  failures.push('English Timeline row identity/order drifted');
 }
 const expectedRepeatedTimeline = (browser) => ({
   headers: browser.timeline?.headers,
@@ -175,16 +222,44 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
-if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+const englishBodies = englishBrowser.timeline?.bodies ?? [];
+if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) {
+  failures.push('Timeline bodies/order changed with presentation mode');
+}
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  const row = expectedTimeline[index];
+  if (row.event_kind === 'stored' && englishBodies[index] !== row.value) {
+    failures.push(`English stored Timeline body ${row.id} changed or moved`);
+  }
+}
+
+const timelineMachine = (browser) => (browser.timeline?.rows ?? []).map((row) => ({
+  row_id: row.row_id,
+  row_attributes: row.row_attributes,
+  header_attributes: row.header_attributes,
+  body_attributes: row.body_attributes,
+}));
+if (JSON.stringify(timelineMachine(enabledBrowser)) !== JSON.stringify(timelineMachine(disabledBrowser))) {
+  failures.push('Timeline DOM IDs/attributes changed with Persian time digit presentation');
+}
 for (const stored of expectedStored) {
-  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
+  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value) || !englishBodies.includes(stored.value)) {
+    failures.push(`stored body ${stored.id} changed or disappeared`);
+  }
 }
 const duplicateExpectedBodies = expectedTimeline.filter((row) => row.date_created === fixture.duplicate_timestamp).map((row) => row.value);
-if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1)) {
+if (
+  duplicateExpectedBodies.length < 2
+  || duplicateExpectedBodies.some((body) => (
+    enabledBodies.filter((value) => value === body).length !== 1
+    || disabledBodies.filter((value) => value === body).length !== 1
+    || englishBodies.filter((value) => value === body).length !== 1
+  ))
+) {
   failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
 }
 
-for (const browser of [enabledBrowser, disabledBrowser]) {
+for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   if (browser.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push(`${browser.mode}: Print inheritance relation missing`);
   if (JSON.stringify(browser.print?.headers) !== JSON.stringify(browser.timeline?.headers)) failures.push(`${browser.mode}: Print headers do not exactly inherit Timeline`);
   if (JSON.stringify(browser.print?.bodies) !== JSON.stringify(browser.timeline?.bodies)) failures.push(`${browser.mode}: Print bodies/order do not match Timeline`);
@@ -218,6 +293,9 @@ const result = {
     adapter_hook_lifecycle_proven: passed,
     native_disabled_fallback_proven: passed,
     enabled_jalali_presentation_proven: passed,
+    enabled_persian_time_digits_proven: passed,
+    english_native_gregorian_ascii_presentation_proven: passed,
+    dom_ids_attributes_unchanged: passed,
     body_vector_mode_equality_proven: passed,
     fixture_row_mapping_proven: passed,
     marker_non_leakage_proven: passed,
@@ -232,6 +310,8 @@ const result = {
     workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
     body_vector_inheritance_proven: passed,
     native_disabled_inheritance_proven: passed,
+    persian_time_digit_inheritance_proven: passed,
+    english_native_gregorian_ascii_inheritance_proven: passed,
     marker_non_leakage_proven: passed,
   },
   failures,

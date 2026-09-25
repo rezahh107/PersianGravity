@@ -10,6 +10,7 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 
 	protected function setUp(): void {
 		$GLOBALS['pgr_test_filters'] = array();
+		$GLOBALS['pgr_test_locale']  = 'fa_IR';
 	}
 
 	public function test_missing_exact_host_contract_registers_no_generic_timeline_hook(): void {
@@ -20,7 +21,20 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
 	}
 
-	public function test_exact_cached_host_contract_registers_only_first_seam_until_row_arms(): void {
+	public function test_non_persian_locale_registers_no_timeline_calendar_hooks(): void {
+		$GLOBALS['pgr_test_locale'] = 'en_US';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+
+		$adapter->hooks();
+
+		$this->assertArrayNotHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
+	}
+
+	public function test_exact_cached_host_contract_registers_only_format_seams_until_row_arms(): void {
 		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
 		$reflection = new ReflectionClass( $adapter );
 		$property   = $reflection->getProperty( 'host_contract_valid' );
@@ -28,11 +42,103 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$adapter->hooks();
 
 		$this->assertArrayHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_timeline_notes', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_due_date_timestamp', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_schedule_timestamp', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_expiration_timestamp', $GLOBALS['pgr_test_filters'] );
+	}
+
+
+	public function test_persian_locale_registers_bounded_time_format_capture_without_extra_date_hook(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+		$adapter->hooks();
+
+		$this->assertArrayHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
+	}
+
+	public function test_unrelated_time_format_call_fails_closed_byte_for_byte(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+
+		$this->assertSame( 'g:i a', $adapter->filter_time_format( 'g:i a', 'time_format' ) );
+		$this->assertSame( 'g:i a', $adapter->filter_time_format( 'g:i a', 'not_time_format' ) );
+	}
+
+	public function test_time_glyph_shaper_changes_ascii_only_and_preserves_existing_persian_digits(): void {
+		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection = new ReflectionClass( $adapter );
+		$method     = $reflection->getMethod( 'shape_ascii_digits' );
+
+		$this->assertSame( '۱۲:۰۱ ق.ظ', $method->invoke( $adapter, '12:01 ق.ظ' ) );
+		$this->assertSame( '۱۱:۵۹ ب.ظ', $method->invoke( $adapter, '11:59 ب.ظ' ) );
+		$this->assertSame( 'already ۱۲:۰۱', $method->invoke( $adapter, 'already ۱۲:۰۱' ) );
+	}
+
+	public function test_time_capture_reuses_exact_active_calendar_row_context(): void {
+		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection = new ReflectionClass( $adapter );
+		$contexts   = $reflection->getProperty( 'contexts' );
+		$resolve    = $reflection->getMethod( 'active_calendar_context_for_time_path' );
+		$order      = $reflection->getMethod( 'note_identity_order' );
+
+		$raw   = '2030-03-20 20:31:00';
+		$note  = (object) array(
+			'id'           => 7,
+			'date_created' => $raw,
+			'note_type'    => 'gravityflow',
+		);
+		$notes = array( $note );
+		$entry = array(
+			'id'           => 12,
+			'form_id'      => 3,
+			'date_created' => $raw,
+		);
+		$form    = array( 'id' => 3 );
+		$context = array(
+			'note'          => $note,
+			'note_snapshot' => get_object_vars( $note ),
+			'notes'         => $notes,
+			'notes_order'   => $order->invoke( $adapter, $notes ),
+			'entry'         => $entry,
+			'entry_key'     => '3:12',
+			'form'          => $form,
+			'raw'           => $raw,
+			'timestamp'     => 1900281660,
+			'native_format' => 'F j, Y',
+			'event_kind'    => 'stored',
+		);
+		$marked  = '\\P\\G\\R\\T\\I\\M\\E\\L\\I\\N\\E\\a\\b\\c\\X' . 'F j, Y';
+		$contexts->setValue( $adapter, array( $marked => $context ) );
+
+		$path = array_fill( 0, 8, array() );
+		$path[5] = array( 'args' => array( $note, 'Runtime Admin' ) );
+		$path[6] = array( 'args' => array( $notes ) );
+		$path[7] = array( 'args' => array( $entry, $form ) );
+
+		$owned = $resolve->invoke( $adapter, $path );
+		$this->assertIsArray( $owned );
+		$this->assertSame( $marked, $owned['format'] );
+		$this->assertSame( $context, $owned['context'] );
+
+		$contexts->setValue(
+			$adapter,
+			array(
+				$marked            => $context,
+				$marked . '\\2' => $context,
+			)
+		);
+		$this->assertNull( $resolve->invoke( $adapter, $path ) );
 	}
 
 	public function test_unrelated_option_date_format_call_never_arms(): void {
@@ -58,6 +164,68 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 			'March 21, 2030 11:59',
 			$adapter->filter_date_i18n( 'March 21, 2030 11:59', 'F j, Y H:i', 1900269060, true )
 		);
+	}
+
+
+	public function test_time_digits_require_the_same_row_calendar_admission(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$contexts                   = $reflection->getProperty( 'time_contexts' );
+		$host_contract              = $reflection->getProperty( 'host_contract_valid' );
+		$product_slug               = $reflection->getProperty( 'flow_product_slug' );
+		$shape                      = $reflection->getMethod( 'shape_timeline_time_digits' );
+
+		$host_contract->setValue( $adapter, true );
+		$product_slug->setValue( $adapter, 'gravityflow' );
+
+		$raw   = '2030-03-20 20:31:00';
+		$note  = (object) array(
+			'id'           => 7,
+			'date_created' => $raw,
+			'note_type'    => 'gravityflow',
+		);
+		$notes = array( $note );
+		$entry = array(
+			'id'           => 12,
+			'form_id'      => 3,
+			'date_created' => $raw,
+		);
+		$form        = array( 'id' => 3 );
+		$timestamp   = 1900269060;
+		$key         = spl_object_id( $note );
+		$date_format = '\\P\\G\\R\\T\\I\\M\\E\\L\\I\\N\\E\\a\\b\\c\\X' . 'F j, Y';
+		$context     = array(
+			'note'              => $note,
+			'note_snapshot'     => get_object_vars( $note ),
+			'notes'             => $notes,
+			'notes_order'       => array( $key ),
+			'entry'             => $entry,
+			'entry_key'         => '3:12',
+			'form'              => $form,
+			'raw'               => $raw,
+			'timestamp'         => $timestamp,
+			'time_format'       => 'g:i a',
+			'date_format'       => $date_format,
+			'event_kind'        => 'stored',
+			'calendar_admitted' => false,
+		);
+		$path      = array(
+			array( 'function' => 'date_i18n' ),
+			array( 'class' => 'GFCommon', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, false, $date_format, true ) ),
+			array( 'class' => 'Gravity_Flow_Common', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, '', false, true ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_header', 'args' => array( 'Runtime Admin', $raw ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_body', 'args' => array( $note, 'Runtime Admin' ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'notes_grid', 'args' => array( $notes ) ),
+			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'timeline', 'args' => array( $entry, $form ) ),
+		);
+
+		$contexts->setValue( $adapter, array( $key => $context ) );
+		$this->assertSame( '12:01 ق.ظ', $shape->invoke( $adapter, '12:01 ق.ظ', 'g:i a', $timestamp, true, $path ) );
+
+		$context['calendar_admitted'] = true;
+		$contexts->setValue( $adapter, array( $key => $context ) );
+		$this->assertSame( '۱۲:۰۱ ق.ظ', $shape->invoke( $adapter, '12:01 ق.ظ', 'g:i a', $timestamp, true, $path ) );
 	}
 
 	public function test_host_identity_resolves_only_exact_versions_through_approved_manifest_shape(): void {
@@ -167,12 +335,20 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$source = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 
 		$this->assertStringContainsString( "add_filter( 'option_date_format'", $source );
+		$this->assertStringContainsString( "'fa_IR' !== determine_locale()", $source );
+		$this->assertStringContainsString( "add_filter( 'option_time_format'", $source );
 		$this->assertStringContainsString( "add_filter( 'date_i18n'", $source );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( 'PGR_Jalali_Presentation::format_date', $source );
 		$this->assertStringContainsString( "hash_file( 'sha256'", $source );
 		$this->assertStringNotContainsString( "'gravityflow'", $source );
 		$this->assertStringNotContainsString( "add_filter( 'gravityflow_timeline_notes'", $source );
+		$this->assertStringNotContainsString( '->value', $source );
+		$this->assertStringNotContainsString( 'wp_enqueue_script', $source );
+		$this->assertStringNotContainsString( 'querySelector', $source );
+		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
+		$this->assertStringNotContainsString( 'get_schedule_timestamp()', $source );
+		$this->assertStringNotContainsString( 'get_expiration_timestamp()', $source );
 		$this->assertStringNotContainsString( '->date_created =', $source );
 		$this->assertStringNotContainsString( 'ob_start(', $source );
 		$this->assertStringNotContainsString( 'preg_replace(', $source );
