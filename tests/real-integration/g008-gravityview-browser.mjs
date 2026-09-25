@@ -104,8 +104,20 @@ function assertPresentation(snap, shouldPresent, expectedEntries = fixture.entri
       if (span.text !== expectedJalali) throw new Error(`Jalali presentation mismatch for ${span.field}/${span.entry}: ${span.text}`);
       if (!span.native || span.native === span.text) throw new Error(`Native GravityView output was not captured separately for ${span.field}/${span.entry}`);
     }
-  } else if (spans.length !== 0) {
-    throw new Error(`Native/fail-closed mode unexpectedly rendered ${spans.length} prototype spans.`);
+  } else {
+    if (spans.length !== 0) {
+      throw new Error(`Native/fail-closed mode unexpectedly rendered ${spans.length} prototype spans.`);
+    }
+    for (const expected of expectedEntries) {
+      const row = snap.rows.find((item) => item.token === expected.token);
+      if (!row) throw new Error(`Missing native GravityView row for ${expected.token}`);
+      if (!row.cells.includes(expected.expected_created_native)) {
+        throw new Error(`Native date_created output mismatch for ${expected.token}: ${JSON.stringify(row.cells)}`);
+      }
+      if (!row.cells.includes(expected.expected_updated_native)) {
+        throw new Error(`Native date_updated output mismatch for ${expected.token}: ${JSON.stringify(row.cells)}`);
+      }
+    }
   }
 }
 
@@ -115,7 +127,13 @@ async function sortedTokens(field, direction) {
   await open(url.toString());
   const snap = await snapshot();
   assertPresentation(snap, mode === 'enabled');
-  return { tokens: snap.rows.map((row) => row.token), snapshot: snap, url: page.url() };
+  const tokens = snap.rows.map((row) => row.token);
+  return {
+    tokens,
+    entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
+    snapshot: snap,
+    url: page.url(),
+  };
 }
 
 async function filteredTokens(field, localDate, expectedEntry) {
@@ -132,7 +150,14 @@ async function filteredTokens(field, localDate, expectedEntry) {
   if (searchInput && searchInput.value !== localDate) {
     throw new Error(`Visible GravityView search input value drifted for filter_${field}: ${searchInput.value}`);
   }
-  return { tokens: snap.rows.map((row) => row.token), snapshot: snap, url: page.url(), searchInput };
+  const tokens = snap.rows.map((row) => row.token);
+  return {
+    tokens,
+    entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
+    snapshot: snap,
+    url: page.url(),
+    searchInput,
+  };
 }
 
 const result = {
