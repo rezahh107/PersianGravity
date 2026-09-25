@@ -51,6 +51,7 @@ jobs:
         run: |
           node --test tests/js/structured-scanner.test.js
           node --test tests/js/flow-workflow-info-persian-digits.test.js
+          node --test tests/js/flow-timeline-persian-time-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           node --test tests/real-integration/g008-claim-classification.test.mjs
 
