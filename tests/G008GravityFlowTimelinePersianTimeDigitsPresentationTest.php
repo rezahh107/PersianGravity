@@ -17,6 +17,16 @@ if ( ! defined( 'GRAVITY_FLOW_VERSION' ) ) {
 if ( ! defined( 'GRAVITY_FLOW_PLUGIN_BASENAME' ) ) {
 	define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
 }
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $key, $value, $url ) {
+		return $url . '?' . rawurlencode( (string) $key ) . '=' . rawurlencode( (string) $value );
+	}
+}
+if ( ! function_exists( 'esc_url' ) ) {
+	function esc_url( $url ) {
+		return (string) $url;
+	}
+}
 
 require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-persian-time-digits-presentation-adapter.php';
 
@@ -28,23 +38,29 @@ final class G008GravityFlowTimelinePersianTimeDigitsPresentationTest extends Tes
 		$GLOBALS['pgr_test_locale']   = 'en_US';
 	}
 
-	public function test_registers_only_the_source_authenticated_timeline_presentation_signal(): void {
+	public function test_registers_only_bounded_post_render_presentation_hooks(): void {
 		$adapter = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
 		$adapter->hooks();
 
 		$this->assertArrayHasKey( 'pgr_gravity_flow_timeline_header_presented', $GLOBALS['pgr_test_actions'] );
+		$this->assertArrayHasKey( 'gravityflow_entry_detail_content_after', $GLOBALS['pgr_test_actions'] );
+		$this->assertArrayHasKey( 'gravityflow_print_entry_footer', $GLOBALS['pgr_test_actions'] );
 		$this->assertArrayNotHasKey( 'gravityflow_timeline_notes', $GLOBALS['pgr_test_actions'] );
 		$this->assertArrayNotHasKey( 'wp_footer', $GLOBALS['pgr_test_actions'] );
-		$this->assertArrayNotHasKey( 'wp_enqueue_scripts', $GLOBALS['pgr_test_actions'] );
 	}
 
-	public function test_exact_host_and_persian_locale_enqueue_header_shaper_once(): void {
+	public function test_entry_detail_requires_qualified_signal_and_persian_locale_then_enqueues_once(): void {
 		$GLOBALS['pgr_test_locale'] = 'fa_IR';
 		$adapter                    = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
 		$adapter->hooks();
 
+		do_action( 'gravityflow_entry_detail_content_after', array(), array() );
+		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
+
 		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+		do_action( 'gravityflow_entry_detail_content_after', array(), array() );
 		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+		do_action( 'gravityflow_entry_detail_content_after', array(), array() );
 
 		$this->assertSame(
 			array( 'pgr-gravity-flow-timeline-persian-time-digits' ),
@@ -52,14 +68,40 @@ final class G008GravityFlowTimelinePersianTimeDigitsPresentationTest extends Tes
 		);
 	}
 
-	public function test_non_persian_locale_preserves_native_ascii_time_presentation(): void {
+	public function test_non_persian_locale_consumes_signal_without_enqueuing(): void {
 		$GLOBALS['pgr_test_locale'] = 'en_US';
 		$adapter                    = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
 		$adapter->hooks();
 
 		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+		do_action( 'gravityflow_entry_detail_content_after', array(), array() );
 
 		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
+	}
+
+	public function test_print_requires_qualified_signal_and_emits_one_owned_script_tag(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
+		$adapter->hooks();
+
+		ob_start();
+		do_action( 'gravityflow_print_entry_footer', array(), array() );
+		$without_signal = (string) ob_get_clean();
+		$this->assertSame( '', $without_signal );
+
+		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+		ob_start();
+		do_action( 'gravityflow_print_entry_footer', array(), array() );
+		$first = (string) ob_get_clean();
+
+		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+		ob_start();
+		do_action( 'gravityflow_print_entry_footer', array(), array() );
+		$second = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'pgr-flow-timeline-persian-time-digits.js', $first );
+		$this->assertStringContainsString( 'ver=4.7.0', $first );
+		$this->assertSame( '', $second );
 	}
 
 	public function test_timeline_calendar_adapter_emits_signal_only_after_successful_conversion_guard(): void {
@@ -84,7 +126,9 @@ final class G008GravityFlowTimelinePersianTimeDigitsPresentationTest extends Tes
 		);
 
 		$this->assertStringContainsString( "'pgr_gravity_flow_timeline_header_presented'", $source );
-		$this->assertStringContainsString( "'fa_IR' !== determine_locale()", $source );
+		$this->assertStringContainsString( "'gravityflow_entry_detail_content_after'", $source );
+		$this->assertStringContainsString( "'gravityflow_print_entry_footer'", $source );
+		$this->assertStringContainsString( "'fa_IR' === determine_locale()", $source );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringNotContainsString( "'gravityflow_timeline_notes'", $source );
 		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
