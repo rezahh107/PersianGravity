@@ -201,14 +201,9 @@ update_post_meta(
 $search_fields_shortcode = wp_json_encode(
 	array(
 		array(
-			'field' => 'date_created',
+			'field' => 'entry_date',
 			'input' => 'date',
-			'label' => 'Date Created Search',
-		),
-		array(
-			'field' => 'date_updated',
-			'input' => 'date',
-			'label' => 'Date Updated Search',
+			'label' => 'Entry Date Search',
 		),
 	),
 	JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
