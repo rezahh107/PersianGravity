@@ -129,10 +129,24 @@ foreach ( $notes as $note ) {
 	}
 
 	$native_header = Gravity_Flow_Common::format_date( $raw, '', false, true );
-	$time_tail     = '';
-	if ( is_string( $native_header ) && false !== strpos( $native_header, '@' ) ) {
-		$parts     = explode( '@', $native_header, 2 );
-		$time_tail = trim( $parts[1] );
+	$time_tail     = $civil->format( 'g:i' );
+	$persian_time  = strtr(
+		$time_tail,
+		array(
+			'0' => '۰',
+			'1' => '۱',
+			'2' => '۲',
+			'3' => '۳',
+			'4' => '۴',
+			'5' => '۵',
+			'6' => '۶',
+			'7' => '۷',
+			'8' => '۸',
+			'9' => '۹',
+		)
+	);
+	if ( ! is_string( $native_header ) || false === strpos( $native_header, $time_tail ) ) {
+		throw new RuntimeException( 'Native Timeline fixture did not expose the independently expected ASCII time token.' );
 	}
 	if ( $duplicate_timestamp === $raw ) {
 		++$duplicate_count;
@@ -146,6 +160,7 @@ foreach ( $notes as $note ) {
 		'expected_header'           => $native_header,
 		'expected_jalali_date'      => $oracle[ $local_day ],
 		'expected_native_time_tail' => $time_tail,
+		'expected_persian_time'     => $persian_time,
 		'event_kind'                => 0 === (int) $note->id ? 'initial' : 'stored',
 	);
 }
