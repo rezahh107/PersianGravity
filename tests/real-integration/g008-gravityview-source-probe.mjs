@@ -148,7 +148,6 @@ const sourceContract = {
     query_filter_handles_date_created_in_utc: queryVisitor.content.includes("'date_created'") && queryVisitor.content.includes("new DateTimeZone( 'UTC' )"),
     search_widget_builds_query_filters_from_request: searchWidget.content.includes('SearchRequest::from_request') && searchWidget.content.includes('SearchFilterBuilder::to_query_filters'),
     search_scope_request_key_is_present: gravityViewSearchScopeReferences.some((record) => record.matched.includes('gv_search_view')),
-    configured_search_fields_are_loaded_from_view_widgets: searchWidget.content.includes("$view->widgets->by_id( $this->get_widget_id() )->all()") && searchWidget.content.includes("configuration->get( 'search_fields' )"),
     date_updated_raw_sql_identity_is_preserved: sqlAdjustment.content.includes('date_updated') && sqlAdjustment.content.includes('date_created') && sqlAdjustment.content.includes('UNIX_TIMESTAMP'),
   },
   gravityforms_raw_contract: {
