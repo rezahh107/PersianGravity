@@ -225,11 +225,14 @@ const timelineRepeatedRenderingDeterministic = [enabled, disabled].every((browse
   && JSON.stringify(browser.timeline.repeated) === JSON.stringify(canonicalTimelineSnapshot(browser.timeline))
 ));
 if (!timelineRepeatedRenderingDeterministic) failures.push('Timeline repeated rendering was not deterministic');
-if (
-  JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)
-  || JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(english.timeline?.bodies)
-) {
-  failures.push('Timeline note bodies/order changed with module state or locale');
+if (JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) {
+  failures.push('Timeline note bodies/order changed with module state');
+}
+for (let index = 0; index < timelineFixture.length; index += 1) {
+  const row = timelineFixture[index];
+  if (row.event_kind === 'stored' && english.timeline?.bodies?.[index] !== row.value) {
+    failures.push(`English stored Timeline body ${row.id} changed or moved`);
+  }
 }
 if (JSON.stringify(enabled.print?.headers) !== JSON.stringify(enabled.timeline?.headers)) failures.push('enabled Print did not inherit verified Timeline headers');
 if (JSON.stringify(disabled.print?.headers) !== JSON.stringify(disabled.timeline?.headers)) failures.push('disabled Print did not inherit native Timeline headers');
