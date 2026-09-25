@@ -551,13 +551,13 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$matches = array();
 		foreach ( $this->contexts as $format => $context ) {
 			if (
-				$note !== ( $context['note'] ?? null ) ||
+				( $context['note'] ?? null ) !== $note ||
 				get_object_vars( $note ) !== ( $context['note_snapshot'] ?? null ) ||
-				$notes !== ( $context['notes'] ?? null ) ||
+				( $context['notes'] ?? null ) !== $notes ||
 				$this->note_identity_order( $notes ) !== ( $context['notes_order'] ?? null ) ||
-				$entry !== ( $context['entry'] ?? null ) ||
+				( $context['entry'] ?? null ) !== $entry ||
 				$this->entry_key( $entry ) !== ( $context['entry_key'] ?? null ) ||
-				$form !== ( $context['form'] ?? null )
+				( $context['form'] ?? null ) !== $form
 			) {
 				continue;
 			}
