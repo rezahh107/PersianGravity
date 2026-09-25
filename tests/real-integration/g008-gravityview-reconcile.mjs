@@ -143,6 +143,9 @@ assert(
 
 const qualification = {
   schema_version: '2.0.0',
+  evidence_class: 'G008_GRAVITYVIEW_DATE_QUALIFICATION_RECONCILIATION',
+  status: 'PASS',
+  source_contract_proven: true,
   program: 'G-008',
   product: 'GravityView',
   exact_version: '3.3.4',
