@@ -96,6 +96,17 @@ const searchWidget = read(roots.gravityview, 'src/Widget/Types/SearchWidget.php'
 const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-filters/src/Sql/SqlAdjustmentCallbacks.php');
 const gfApi = read(roots.gravityforms, 'includes/api.php');
 
+const gravityFormsDateUpdatedReferences = findWindows(
+  roots.gravityforms,
+  ['date_updated', "current_time( 'mysql', true )", "current_time('mysql', true)"],
+  12,
+);
+const gravityFormsDateUpdatedUtcWindows = gravityFormsDateUpdatedReferences.filter((record) => {
+  const excerpt = record.excerpt.lines.map((line) => line.text).join('\n');
+  return record.matched.includes('date_updated')
+    && (excerpt.includes("current_time( 'mysql', true )") || excerpt.includes("current_time('mysql', true)"));
+});
+
 const sourceContract = {
   date_created: {
     field_name: /var\s+\$name\s*=\s*['"]date_created['"]/.test(dateCreated.content),
@@ -132,6 +143,7 @@ const sourceContract = {
   gravityforms_raw_contract: {
     date_created_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
     update_entry_property_api_present: /function\s+update_entry_property\s*\(/.test(gfApi.content),
+    date_updated_utc_write_path_present: gravityFormsDateUpdatedUtcWindows.length > 0,
   },
 };
 
@@ -139,9 +151,6 @@ function allTrue(value) {
   if (typeof value === 'boolean') return value;
   if (value && typeof value === 'object') return Object.values(value).every(allTrue);
   return true;
-}
-if (!allTrue(sourceContract)) {
-  throw new Error(`Exact GravityView/Gravity Forms source contract drifted: ${JSON.stringify(sourceContract)}`);
 }
 
 const evidence = {
@@ -167,13 +176,13 @@ const evidence = {
     gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
     gravityforms_update_entry_property: around(gfApi, 'update_entry_property', 12, 44),
   },
-  gravityforms_date_updated_references: findWindows(
-    roots.gravityforms,
-    ['date_updated', "current_time( 'mysql', true )", 'current_time( \'mysql\', true )'],
-    10,
-  ).slice(0, 160),
+  gravityforms_date_updated_references: gravityFormsDateUpdatedReferences.slice(0, 160),
+  gravityforms_date_updated_utc_windows: gravityFormsDateUpdatedUtcWindows.slice(0, 40),
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
 fs.writeFileSync(path.join(artifactDir, 'g008-gravityview-source-probe.json'), JSON.stringify(evidence, null, 2) + '\n');
+if (!allTrue(sourceContract)) {
+  throw new Error(`Exact GravityView/Gravity Forms source contract drifted: ${JSON.stringify(sourceContract)}`);
+}
 console.log('GravityView G-008 source contract proven for exact 3.3.4; targeted provenance captured.');
