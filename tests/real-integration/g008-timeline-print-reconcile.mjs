@@ -11,6 +11,7 @@ const enabledState = read('g008-residual-adversarial-state-enabled.json');
 const disabledState = read('g008-residual-adversarial-state-disabled.json');
 const enabledBrowser = read('g008-entry-detail-candidate-browser-enabled.json');
 const disabledBrowser = read('g008-entry-detail-candidate-browser-disabled.json');
+const englishBrowser = read('g008-entry-detail-candidate-browser-english.json');
 const enabledHook = read('g008-timeline-production-hook-enabled.json');
 const disabledHook = read('g008-timeline-production-hook-disabled.json');
 
@@ -25,6 +26,11 @@ const expectedFingerprints = {
   flow_print: 'df969bf8a37ed4f5619e0e8b2a753dd1133fa0c7551b158d740248c67fcb95c6',
   gf_common: 'ac4ed495ee02a119a4fd08c77279f0db0905e6f20f59c472d5e6bffc801ca355',
 };
+
+const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+const asciiDigits = (value) => typeof value === 'string'
+  ? value.replace(/[۰-۹]/g, (digit) => String(persianDigits.indexOf(digit)))
+  : value;
 
 const timelineContract = source?.source_contract?.timeline_history;
 const printContract = source?.source_contract?.print;
@@ -73,16 +79,19 @@ function browserIdentity(browser, mode) {
 }
 browserIdentity(enabledBrowser, 'enabled');
 browserIdentity(disabledBrowser, 'disabled');
+browserIdentity(englishBrowser, 'english');
 
 if (
   enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
   || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
+  || enabledHook.time_digit_class_loaded !== true || enabledHook.time_digit_action_hooks !== 1
 ) {
   failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
 }
 if (
   disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
   || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
+  || disabledHook.time_digit_class_loaded !== false || disabledHook.time_digit_action_hooks !== 0
 ) {
   failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
 }
@@ -136,17 +145,26 @@ if (enabledState.csv?.sha256 !== disabledState.csv?.sha256 || enabledState.csv?.
 const expectedNativeHeaders = expectedTimeline.map((row) => row.expected_header);
 const enabledHeaders = enabledBrowser.timeline?.headers ?? [];
 const disabledHeaders = disabledBrowser.timeline?.headers ?? [];
+const englishHeaders = englishBrowser.timeline?.headers ?? [];
 if (JSON.stringify(disabledHeaders) !== JSON.stringify(expectedNativeHeaders)) failures.push('disabled Timeline is not exact native output');
 if (enabledHeaders.length !== expectedTimeline.length) failures.push('enabled Timeline header count mismatch');
+if (englishHeaders.length !== expectedTimeline.length) failures.push('English Timeline header count mismatch');
 for (let index = 0; index < expectedTimeline.length; index += 1) {
   const row = expectedTimeline[index];
-  const header = enabledHeaders[index] ?? '';
-  if (!header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} Jalali date mismatch`);
-  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
+  const enabledHeader = enabledHeaders[index] ?? '';
+  const englishHeader = englishHeaders[index] ?? '';
+  if (!enabledHeader.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} Jalali date mismatch`);
+  if (row.expected_native_time_tail && !asciiDigits(enabledHeader).includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time value`);
+  if (row.expected_native_time_tail && enabledHeader.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} retained ASCII time digits`);
+  if (row.expected_persian_time && !enabledHeader.includes(row.expected_persian_time)) failures.push(`enabled Timeline row ${row.id} Persian time digit mismatch`);
+  if (!englishHeader.startsWith(row.expected_jalali_date)) failures.push(`English Timeline row ${row.id} changed existing Jalali date behavior`);
+  if (row.expected_native_time_tail && !englishHeader.includes(row.expected_native_time_tail)) failures.push(`English Timeline row ${row.id} did not retain ASCII time digits`);
+  if (row.expected_persian_time && englishHeader.includes(row.expected_persian_time)) failures.push(`English Timeline row ${row.id} leaked Persian time digits`);
 }
 if (JSON.stringify(enabledHeaders) === JSON.stringify(disabledHeaders)) failures.push('enabled Timeline did not differ from native control');
-if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
-for (const browser of [enabledBrowser, disabledBrowser]) {
+if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false || englishBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
+if (enabledBrowser.timeline?.time_digit_script_count !== 1 || disabledBrowser.timeline?.time_digit_script_count !== 0 || englishBrowser.timeline?.time_digit_script_count !== 0) failures.push('Timeline time-digit script activation did not stay bounded to enabled Persian UI');
+for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   const timeline = browser.timeline ?? {};
   if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
     failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
@@ -175,23 +193,34 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
-if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+const englishBodies = englishBrowser.timeline?.bodies ?? [];
+if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies) || JSON.stringify(englishBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+const enabledMachineRows = (enabledBrowser.timeline?.rows ?? []).map((row) => row.machine);
+const disabledMachineRows = (disabledBrowser.timeline?.rows ?? []).map((row) => row.machine);
+const englishMachineRows = (englishBrowser.timeline?.rows ?? []).map((row) => row.machine);
+if (JSON.stringify(enabledMachineRows) !== JSON.stringify(disabledMachineRows) || JSON.stringify(englishMachineRows) !== JSON.stringify(disabledMachineRows)) failures.push('Timeline time-digit shaping changed note IDs, attributes, links or controls');
 for (const stored of expectedStored) {
-  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
+  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value) || !englishBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
 }
 const duplicateExpectedBodies = expectedTimeline.filter((row) => row.date_created === fixture.duplicate_timestamp).map((row) => row.value);
-if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1)) {
+if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1 || englishBodies.filter((value) => value === body).length !== 1)) {
   failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
 }
 
-for (const browser of [enabledBrowser, disabledBrowser]) {
+for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   if (browser.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push(`${browser.mode}: Print inheritance relation missing`);
   if (JSON.stringify(browser.print?.headers) !== JSON.stringify(browser.timeline?.headers)) failures.push(`${browser.mode}: Print headers do not exactly inherit Timeline`);
   if (JSON.stringify(browser.print?.bodies) !== JSON.stringify(browser.timeline?.bodies)) failures.push(`${browser.mode}: Print bodies/order do not match Timeline`);
   if (browser.print?.collector?.row_count !== expectedTimeline.length) failures.push(`${browser.mode}: Print row count does not equal authoritative Timeline fixture count`);
   if (browser.print?.marker_leaked !== false) failures.push(`${browser.mode}: Print marker leaked`);
   if (Object.values(browser.print?.workflow_sidebar_presence ?? {}).some((value) => value !== 0)) failures.push(`${browser.mode}: Print unexpectedly contains workflow-sidebar date fields`);
+  const expectedDigitScripts = browser.mode === 'enabled' ? 1 : 0;
+  if (browser.print?.timeline_time_digit_script_count !== expectedDigitScripts) failures.push(`${browser.mode}: Print Timeline time-digit script activation mismatch`);
 }
+const enabledPrintMachine = (enabledBrowser.print?.rows ?? []).map((row) => row.machine);
+const disabledPrintMachine = (disabledBrowser.print?.rows ?? []).map((row) => row.machine);
+const englishPrintMachine = (englishBrowser.print?.rows ?? []).map((row) => row.machine);
+if (JSON.stringify(enabledPrintMachine) !== JSON.stringify(disabledPrintMachine) || JSON.stringify(englishPrintMachine) !== JSON.stringify(disabledPrintMachine)) failures.push('Print Timeline time-digit shaping changed note IDs, attributes, links or controls');
 
 const passed = failures.length === 0;
 const result = {
@@ -218,6 +247,10 @@ const result = {
     adapter_hook_lifecycle_proven: passed,
     native_disabled_fallback_proven: passed,
     enabled_jalali_presentation_proven: passed,
+    enabled_persian_time_digits_proven: passed,
+    english_ascii_time_digits_proven: passed,
+    time_digit_activation_fail_closed_proven: passed,
+    machine_dom_unchanged: passed,
     body_vector_mode_equality_proven: passed,
     fixture_row_mapping_proven: passed,
     marker_non_leakage_proven: passed,
@@ -232,6 +265,9 @@ const result = {
     workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
     body_vector_inheritance_proven: passed,
     native_disabled_inheritance_proven: passed,
+    persian_time_digit_inheritance_proven: passed,
+    english_ascii_time_digit_inheritance_proven: passed,
+    machine_dom_inheritance_unchanged: passed,
     marker_non_leakage_proven: passed,
   },
   failures,
