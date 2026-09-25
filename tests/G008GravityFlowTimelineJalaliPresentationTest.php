@@ -34,7 +34,7 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
 	}
 
-	public function test_exact_cached_host_contract_registers_only_first_seam_until_row_arms(): void {
+	public function test_exact_cached_host_contract_registers_only_format_seams_until_row_arms(): void {
 		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
 		$reflection = new ReflectionClass( $adapter );
 		$property   = $reflection->getProperty( 'host_contract_valid' );
@@ -42,7 +42,7 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$adapter->hooks();
 
 		$this->assertArrayHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
-		$this->assertArrayNotHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_timeline_notes', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_due_date_timestamp', $GLOBALS['pgr_test_filters'] );
