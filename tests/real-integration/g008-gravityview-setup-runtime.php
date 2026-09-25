@@ -22,8 +22,10 @@ if ( ! post_type_exists( 'gravityview' ) ) {
 	throw new RuntimeException( 'GravityView post type is unavailable.' );
 }
 
+$original_date_format = get_option( 'date_format' );
 update_option( 'timezone_string', 'Asia/Tehran' );
 update_option( 'gmt_offset', 3.5 );
+update_option( 'date_format', 'Y-m-d' );
 update_option( 'gravityformsaddon_gravityformswebapi_settings', array( 'enabled' => '1' ) );
 if ( 'Asia/Tehran' !== wp_timezone_string() || 'UTC' !== date_default_timezone_get() ) {
 	throw new RuntimeException( 'GravityView qualification requires PHP UTC and site Asia/Tehran.' );
@@ -182,7 +184,33 @@ update_post_meta(
 		),
 	)
 );
-update_post_meta( $view_id, '_gravityview_directory_widgets', array() );
+update_post_meta(
+	$view_id,
+	'_gravityview_directory_widgets',
+	array(
+		'header_top' => array(
+			'wu008_g008_search' => array(
+				'id'            => 'search_bar',
+				'label'         => 'G008 Date Search',
+				'search_layout' => 'horizontal',
+				'search_clear'  => '1',
+				'search_fields' => wp_json_encode(
+					array(
+						array(
+							'field' => 'date_created',
+							'input' => 'date',
+						),
+						array(
+							'field' => 'date_updated',
+							'input' => 'date',
+						),
+					)
+				),
+				'search_mode'   => 'all',
+			),
+		),
+	)
+);
 
 $page_id = wp_insert_post(
 	array(
@@ -210,6 +238,8 @@ $baseline = array(
 	'exact_gravityview_sha256'   => (string) getenv( 'WU008_VIEW_SHA256' ),
 	'site_timezone'              => wp_timezone_string(),
 	'php_timezone'               => date_default_timezone_get(),
+	'original_date_format'        => is_string( $original_date_format ) ? $original_date_format : '',
+	'qualification_date_format'   => (string) get_option( 'date_format' ),
 	'form_id'                    => $form_id,
 	'view_id'                    => $view_id,
 	'page_id'                    => $page_id,
