@@ -483,11 +483,18 @@ jobs:
           php -r '
             $path = $argv[1];
             $content = file_get_contents($path);
-            $updated = str_replace("Version: 3.3.4", "Version: 3.3.5", $content, $count);
-            if ($count !== 1) { fwrite(STDERR, "GravityView header drift injection failed\n"); exit(1); }
+            if (!is_string($content)) { fwrite(STDERR, "GravityView header read failed\n"); exit(1); }
+            $updated = preg_replace(
+              "/^([ \\t\\/*#@]*Version:[ \\t]*)3\\.3\\.4([ \\t]*)$/mi",
+              "$1" . "3.3.5" . "$2",
+              $content,
+              1,
+              $count
+            );
+            if (!is_string($updated) || $count !== 1) { fwrite(STDERR, "GravityView header drift injection failed\n"); exit(1); }
             file_put_contents($path, $updated);
           ' "$gv_main"
-          grep -q 'Version: 3.3.5' "$gv_main"
+          test "$(php -r 'require $argv[1] . "/wp-load.php"; $d=get_file_data($argv[2], ["Version"=>"Version"], "plugin"); echo $d["Version"] ?? "";' "$WU008_WP_PATH" "$gv_main")" = "3.3.5"
 
           node tests/real-integration/g008-gravityview-production-browser.mjs
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
