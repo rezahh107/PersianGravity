@@ -63,9 +63,13 @@ test( 'only exact header text nodes change while body text and machine values re
 	assert.equal( JSON.stringify( machine ), beforeMachine );
 } );
 
-test( 'Entry Detail and inherited Print selectors are both exact header-only seams', () => {
-	assert.match( adapter.HEADER_SELECTOR, /\.gravityflow-timeline > \.inside/ );
-	assert.match( adapter.HEADER_SELECTOR, /#view-container > \.gravityflow-note/ );
-	assert.doesNotMatch( adapter.HEADER_SELECTOR, /gravityflow-note-body(?:['", ]|$)/ );
-	assert.match( adapter.HEADER_SELECTOR, /gravityflow-note-meta/ );
+test( 'Entry Detail and inherited Print selectors target only exact header meta nodes', () => {
+	const selectors = adapter.HEADER_SELECTOR.split( ', ' );
+	assert.equal( selectors.length, 2 );
+	assert.match( selectors[ 0 ], /^\.gravityflow-timeline > \.inside/ );
+	assert.match( selectors[ 1 ], /^#view-container > \.gravityflow-note/ );
+	for ( const selector of selectors ) {
+		assert.match( selector, /> \.gravityflow-note-meta$/ );
+		assert.doesNotMatch( selector, /> \.gravityflow-note-body$/ );
+	}
 } );
