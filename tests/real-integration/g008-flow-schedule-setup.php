@@ -114,11 +114,11 @@ $build = static function ( $key, $schedule_settings, $date_field_value = '' ) {
 	}
 
 	return array(
-		'key'                 => $key,
-		'form_id'             => (int) $form_id,
-		'entry_id'            => (int) $entry_id,
-		'step_id'             => (int) $step_id,
-		'entry_url'           => add_query_arg(
+		'key'                  => $key,
+		'form_id'              => (int) $form_id,
+		'entry_id'             => (int) $entry_id,
+		'step_id'              => (int) $step_id,
+		'entry_url'            => add_query_arg(
 			array(
 				'page_id' => (int) $page_id,
 				'view'    => 'entry',
@@ -126,15 +126,15 @@ $build = static function ( $key, $schedule_settings, $date_field_value = '' ) {
 			),
 			home_url( '/' )
 		),
-		'schedule_type'       => (string) $current_step->schedule_type,
-		'scheduled'           => (bool) $current_step->scheduled,
-		'schedule_date'       => isset( $current_step->schedule_date ) ? (string) $current_step->schedule_date : '',
-		'schedule_date_field' => isset( $current_step->schedule_date_field ) ? (string) $current_step->schedule_date_field : '',
-		'date_field_value'    => (string) rgar( $entry, '2' ),
-		'step_timestamp'      => (int) $current_step->get_step_timestamp(),
-		'schedule_timestamp'  => false === $schedule_timestamp ? false : (int) $schedule_timestamp,
-		'is_queued'           => $is_queued,
-		'expected_display'    => $expected_display,
+		'schedule_type'        => (string) $current_step->schedule_type,
+		'scheduled'            => (bool) $current_step->scheduled,
+		'schedule_date'        => isset( $current_step->schedule_date ) ? (string) $current_step->schedule_date : '',
+		'schedule_date_field'  => isset( $current_step->schedule_date_field ) ? (string) $current_step->schedule_date_field : '',
+		'date_field_value'     => (string) rgar( $entry, '2' ),
+		'step_timestamp'       => (int) $current_step->get_step_timestamp(),
+		'schedule_timestamp'   => false === $schedule_timestamp ? false : (int) $schedule_timestamp,
+		'is_queued'            => $is_queued,
+		'expected_display'     => $expected_display,
 		'workflow_final_status'=> (string) gform_get_meta( (int) $entry_id, 'workflow_final_status' ),
 	);
 };
@@ -248,12 +248,11 @@ foreach ( $branches as $branch ) {
 	}
 }
 
-$manifest['schema_version']               = '1.8.0';
-$manifest['g008_flow_schedule_branches']  = $branches;
+$manifest['schema_version']              = '1.8.0';
+$manifest['g008_flow_schedule_branches'] = $branches;
 file_put_contents(
 	$manifest_path,
-	wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "
-"
+	wp_json_encode( $manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n"
 );
 file_put_contents(
 	$artifact_dir . '/g008-flow-schedule-fixture.json',
@@ -267,8 +266,11 @@ file_put_contents(
 			'branches'             => $branches,
 		),
 		JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-	) . "
-"
+	) . "\n"
 );
-echo wp_json_encode( array( 'branches' => $branches ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "
-";
+echo wp_json_encode( array( 'branches' => $branches ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+
+// The preceding residual setup created the Timeline host fixture. Extend it
+// here, in the same WU008 fixture phase, with the production-only duplicate
+// timestamp and independent Jalali oracle metadata.
+require __DIR__ . '/g008-timeline-production-setup.php';

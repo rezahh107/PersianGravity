@@ -311,10 +311,10 @@
         {
           "id": "gravityflow.timeline-history",
           "ui_surface": "Entry Detail Timeline/history timestamps",
-          "raw_source": "Initial timeline event uses Gravity Forms Entry date_created UTC Y-m-d H:i:s; workflow note/event timestamps are Gravity Forms note date_created values stored with utc_timestamp() and returned raw by get_lead_notes()",
+          "raw_source": "Initial Timeline event uses Gravity Forms Entry date_created UTC Y-m-d H:i:s; stored workflow note/event timestamps are Gravity Forms note date_created values persisted in UTC and returned raw by get_lead_notes(); PersianGravity does not mutate either authority.",
           "source_calendar": "Gregorian UTC date/time strings representing authoritative history event instants",
-          "source_timezone": "UTC for Entry date_created and Gravity Forms note date_created; Gravity_Flow_Common::format_date() performs the native display localization",
-          "presentation_seam": "FINAL_NO_ADMISSION: get_note_header() consumes note date_created directly. gravityflow_timeline_notes runs after host array_reverse() ordering and before rendering; authentic cloned-display experiments prove a separate display-only property is ignored downstream while replacing cloned date_created changes the header. Storage, IDs, order and bodies remain unchanged, so the rejection is the downstream Gregorian date_created representation requirement/no date-only display property—not full-array access by itself.",
+          "source_timezone": "UTC for Entry date_created and Gravity Forms note date_created; Gravity_Flow_Common::format_date() performs the native display localization before the bounded Jalali date replacement.",
+          "presentation_seam": "Exact Gravity Flow 3.1.0 renderer-context seam: the adapter arms a request-local one-shot marker only on the qualified get_note_header() -> Gravity_Flow_Common::format_date() -> GFCommon::format_date() caller chain, consumes it at date_i18n(), and replaces only the localized Gregorian date component through PGR_Jalali_Presentation while preserving host-owned Timeline objects, IDs, order, bodies and surrounding time semantics.",
           "semantic_dependencies": [
             "timeline event ordering",
             "initial-entry event identity",
@@ -322,35 +322,35 @@
             "history chronology",
             "user-authored note content separation"
           ],
-          "fallback": "native Timeline/history date presentation and unchanged note bodies/order",
-          "discovery_state": "SOURCE_PROVEN",
-          "support_state": "NOT_PROVEN",
-          "adapter_identity": null,
-          "evidence": "Exact Flow/GF source plus authentic multi-note runtime/browser evidence proves UTC note storage/raw retrieval, post-array_reverse hook ordering, unchanged storage/IDs/order/bodies/date-looking user text, ignored separate display property, and downstream consumption of date_created for Entry Detail and Print Timeline headers.",
-          "drift_behavior": "Evidence-qualified final no-admission for this exact Gravity Flow 3.1.0 surface. Requalify if a newly discovered supported bounded presentation seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
-          "exact_version_disposition": "FINAL_NO_ADMISSION",
-          "runtime_evidence": "g008-flow-residual-no-admission.json"
+          "fallback": "exact native Timeline/history date presentation with unchanged note storage, identities, order and bodies whenever module/host/version/source/caller/context/format/range/conversion is unavailable or ambiguous",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-timeline-print-qualification.json",
+          "evidence": "Exact Flow 3.1.0 and Gravity Forms 3.1.1.1 source fingerprints plus current-Head WU008 production hook/runtime/browser reconciliation prove admitted initial and stored Timeline events, exact native disabled fallback, unchanged storage/IDs/order/bodies including duplicate-timestamp identities and date-looking user text, bounded hook lifecycle, and marker non-leakage.",
+          "drift_behavior": "Exact Gravity Flow 3.1.0, Gravity Forms 3.1.1.1, qualified source fingerprints, caller chains and supported date-format profiles are required; any drift fails closed to native rendering and requires requalification.",
+          "exact_version_disposition": "ADMITTED_FOR_EXACT_VERSION"
         },
         {
           "id": "gravityflow.print",
           "ui_surface": "Gravity Flow Print rendering of Entry Detail/Timeline",
-          "raw_source": "No independent Print date authority; Gravity_Flow_Print_Entries::render() reuses Entry Detail field-grid rendering and optionally Gravity_Flow_Entry_Detail::timeline() for history timestamps",
-          "source_calendar": "inherits the native underlying Entry Detail/Timeline sources",
-          "source_timezone": "inherits the native underlying Entry Detail/Timeline timezone semantics",
-          "presentation_seam": "FINAL_NO_ADMISSION for an independent Print date seam: Gravity_Flow_Print_Entries::render() reuses entry_detail_grid() and optional timeline(), has no print-specific date formatter, and gravityflow_print_styles is CSS-only. Exact source/runtime also proves workflow_entry_detail_status_box(), maybe_display_entry_detail_workflow_info() and display_queued_step_details() are not rendered by this Print path, so workflow-sidebar dates are absent/not-applicable rather than propagated.",
+          "raw_source": "No independent Print date authority; Gravity_Flow_Print_Entries::render() reuses Entry Detail field-grid rendering and optionally Gravity_Flow_Entry_Detail::timeline() for history timestamps.",
+          "source_calendar": "inherits the verified underlying Entry Detail/Timeline sources",
+          "source_timezone": "inherits the verified underlying Entry Detail/Timeline timezone semantics",
+          "presentation_seam": "INHERITS_VERIFIED_TIMELINE_RENDERER: There is no independent Print date seam. Its optional Timeline path reuses Gravity_Flow_Entry_Detail::timeline(), so exact Flow 3.1.0 Print presentation inherits PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter only when the already-qualified Timeline renderer path is active; workflow-sidebar dates remain absent from this Print path.",
           "semantic_dependencies": [
             "dependent Entry Detail rendering",
             "dependent Timeline/history rendering",
             "print-only CSS/header/footer hooks"
           ],
-          "fallback": "native Gravity Flow Print output",
-          "discovery_state": "SOURCE_PROVEN",
-          "support_state": "NOT_PROVEN",
-          "adapter_identity": null,
-          "evidence": "Exact source and authentic multi-note Print browser evidence prove field-grid reuse, Timeline reuse, native initial/stored Timeline headers, unchanged note bodies, absence of workflow-sidebar Submitted/Last Updated/Due/Scheduled/Expiration fields, and no independent Print calendar seam.",
-          "drift_behavior": "Evidence-qualified final no-admission for this exact Gravity Flow 3.1.0 surface. Requalify if a newly discovered supported bounded presentation seam is found even in the same exact 3.1.0 package, or if host version/source changes.",
-          "exact_version_disposition": "FINAL_NO_ADMISSION",
-          "runtime_evidence": "g008-flow-residual-no-admission.json"
+          "fallback": "native Gravity Flow Print output; no independent Print conversion path is introduced",
+          "discovery_state": "RUNTIME_PROVEN",
+          "support_state": "ADMITTED_VERIFIED",
+          "adapter_identity": "PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter",
+          "runtime_evidence": "g008-timeline-print-qualification.json",
+          "evidence": "Exact source and authentic multi-note WU008 production reconciliation prove Print field-grid reuse, exact inheritance of the corresponding verified Timeline header/body presentation, absence of workflow-sidebar date fields, unchanged Timeline bodies/order, and no independent Print date seam.",
+          "drift_behavior": "Print admission is valid only through the exact verified Timeline renderer on the qualified Gravity Flow 3.1.0 package; any renderer/source/version drift fails closed to native output and requires requalification.",
+          "exact_version_disposition": "ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE"
         }
       ]
     },

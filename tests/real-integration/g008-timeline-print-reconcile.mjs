@@ -3,19 +3,28 @@ import path from 'node:path';
 
 const artifactDir = process.env.WU008_ARTIFACT_DIR;
 if (!artifactDir) throw new Error('WU008_ARTIFACT_DIR is required.');
-
 const read = (name) => JSON.parse(fs.readFileSync(path.join(artifactDir, name), 'utf8'));
-const fixture = read('g008-flow-residual-adversarial-fixture.json');
+
 const source = read('g008-residual-source-probe.json');
+const fixture = read('g008-timeline-production-fixture.json');
 const enabledState = read('g008-residual-adversarial-state-enabled.json');
 const disabledState = read('g008-residual-adversarial-state-disabled.json');
 const enabledBrowser = read('g008-entry-detail-candidate-browser-enabled.json');
 const disabledBrowser = read('g008-entry-detail-candidate-browser-disabled.json');
+const enabledHook = read('g008-timeline-production-hook-enabled.json');
+const disabledHook = read('g008-timeline-production-hook-disabled.json');
 
 const failures = [];
 const head = process.env.WU008_PGR_SHA;
 const packageSha = process.env.WU008_PGR_PACKAGE_SHA256;
 const flowSha = process.env.WU008_FLOW_SHA256;
+const gfSha = process.env.WU008_GF_SHA256;
+const expectedFingerprints = {
+  flow_entry_detail: 'a7634c5604184502457bcb22cdf1ade892e84c888cc60996aea8a810ced7680a',
+  flow_common: 'a8844f4b6ac37eed1a2cc1e904418f6ed8c6b4480e982c5a809e895a6f9e0cc8',
+  flow_print: 'df969bf8a37ed4f5619e0e8b2a753dd1133fa0c7551b158d740248c67fcb95c6',
+  gf_common: 'ac4ed495ee02a119a4fd08c77279f0db0905e6f20f59c472d5e6bffc801ca355',
+};
 
 const timelineContract = source?.source_contract?.timeline_history;
 const printContract = source?.source_contract?.print;
@@ -32,7 +41,7 @@ for (const flag of [
   'gravityforms_notes_are_persisted_in_utc',
   'gravityforms_notes_return_raw_date_created',
 ]) {
-  if (timelineContract?.[flag] !== true) failures.push(`timeline source contract missing ${flag}`);
+  if (timelineContract?.[flag] !== true) failures.push(`historical Timeline source contract missing ${flag}`);
 }
 for (const flag of [
   'reuses_entry_detail_grid',
@@ -41,7 +50,7 @@ for (const flag of [
   'print_style_hook_is_not_date_seam',
   'workflow_sidebar_not_rendered_by_print',
 ]) {
-  if (printContract?.[flag] !== true) failures.push(`print source contract missing ${flag}`);
+  if (printContract?.[flag] !== true) failures.push(`Print source contract missing ${flag}`);
 }
 
 function stateIdentity(state, mode) {
@@ -55,106 +64,178 @@ stateIdentity(enabledState, 'enabled');
 stateIdentity(disabledState, 'disabled');
 
 function browserIdentity(browser, mode) {
-  if (browser.evidence_class !== 'AUTHENTIC_G008_ENTRY_DETAIL_TWO_HOOK_QUALIFICATION_BROWSER') failures.push(`${mode} browser evidence class mismatch`);
+  if (browser.evidence_class !== 'AUTHENTIC_G008_ENTRY_DETAIL_AND_TIMELINE_PRODUCTION_BROWSER') failures.push(`${mode} browser evidence class mismatch`);
   if (browser.mode !== mode) failures.push(`${mode} browser mode mismatch`);
   if (browser.exact_persiangravity_commit !== head || browser.exact_persiangravity_package_sha256 !== packageSha) failures.push(`${mode} browser PGR identity mismatch`);
   if (browser.exact_gravityflow_version !== '3.1.0' || browser.exact_gravityflow_package_sha256 !== flowSha) failures.push(`${mode} browser Flow identity mismatch`);
+  if (browser.exact_gravityforms_version !== '3.1.1.1' || browser.exact_gravityforms_package_sha256 !== gfSha) failures.push(`${mode} browser GF identity mismatch`);
+  if (browser.site_timezone !== 'Asia/Tehran' || browser.php_default_timezone !== 'UTC') failures.push(`${mode} browser timezone mismatch`);
 }
 browserIdentity(enabledBrowser, 'enabled');
 browserIdentity(disabledBrowser, 'disabled');
 
-const expectedStored = fixture.stored_notes ?? [];
-if (expectedStored.length !== 3) failures.push('multi-note fixture does not contain exactly three genuine stored notes');
-const storedIds = expectedStored.map((row) => Number(row.id));
-if (new Set(storedIds).size !== storedIds.length || storedIds.some((id) => id <= 0)) failures.push('stored note IDs are missing or duplicated');
-if (new Set(expectedStored.map((row) => row.date_created)).size !== expectedStored.length) failures.push('stored note timestamps are not distinct');
-if (new Set(expectedStored.map((row) => row.value)).size !== expectedStored.length) failures.push('stored note bodies are not distinct');
+if (
+  enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
+  || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
+) {
+  failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
+}
+if (
+  disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
+  || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
+) {
+  failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
+}
+for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook]]) {
+  if (hook.flow_version !== '3.1.0' || hook.gf_version !== '3.1.1.1') failures.push(`${label} hook probe host version mismatch`);
+  if (JSON.stringify(hook.source_fingerprints) !== JSON.stringify(expectedFingerprints)) failures.push(`${label} source fingerprint mismatch`);
+}
 
+if (fixture.evidence_class !== 'AUTHENTIC_G008_TIMELINE_PRODUCTION_BOUNDARY_FIXTURE') failures.push('production Timeline fixture evidence class mismatch');
+if (Number(fixture.event_count) < 5 || Number(fixture.stored_event_count) < 4) failures.push('production fixture does not include initial plus at least four stored events');
+if (!Array.isArray(fixture.duplicate_ids) || fixture.duplicate_ids.length < 2 || new Set(fixture.duplicate_ids.map(Number)).size !== fixture.duplicate_ids.length) {
+  failures.push('duplicate timestamp fixture does not preserve distinct note IDs');
+}
+const expectedTimeline = fixture.timeline ?? [];
+const expectedStored = expectedTimeline.filter((row) => row.event_kind === 'stored');
+const expectedBodies = expectedTimeline.map((row) => row.value);
+if (!expectedTimeline.some((row) => row.event_kind === 'initial' && Number(row.id) === 0)) failures.push('initial synthetic Timeline event is missing');
+if (expectedStored.length < 4) failures.push('stored Timeline event fixture is incomplete');
+if (!expectedStored.some((row) => /2026-03-20|1405\/01\/01|2030-03-21/.test(row.value))) failures.push('date-looking user text boundary fixture is missing');
+
+function canonicalStored(rows) {
+  return (rows ?? []).map((row) => ({
+    id: Number(row.id),
+    date_created: row.date_created,
+    value: row.value,
+    note_type: row.note_type,
+  }));
+}
+function canonicalStoredById(rows) {
+  return canonicalStored(rows).sort((left, right) => left.id - right.id);
+}
+const expectedStoredById = canonicalStoredById(expectedStored);
+const expectedTimelineCanonical = canonicalStored(expectedTimeline);
 for (const state of [enabledState, disabledState]) {
-  if (JSON.stringify(state.timeline?.stored_before) !== JSON.stringify(state.timeline?.stored_after)) {
-    failures.push(`${state.mode}: Timeline experiment changed storage`);
-  }
+  if (JSON.stringify(state.timeline?.stored_before) !== JSON.stringify(state.timeline?.stored_after)) failures.push(`${state.mode}: Timeline qualification changed storage`);
   if (!state.timeline?.storage_equal_after_experiments) failures.push(`${state.mode}: storage equality flag is false`);
   if (!state.timeline?.ids_order_bodies_preserved) failures.push(`${state.mode}: note IDs/order/bodies were not preserved`);
-  if (state.timeline?.display_property_ignored !== true) failures.push(`${state.mode}: separate display property was not proven ignored`);
-  if (state.timeline?.date_created_is_consumed !== true) failures.push(`${state.mode}: renderer consumption of date_created was not proven`);
+  if (state.timeline?.display_property_ignored !== true) failures.push(`${state.mode}: historical separate display property finding drifted`);
+  if (state.timeline?.date_created_is_consumed !== true) failures.push(`${state.mode}: historical date_created consumption finding drifted`);
+  const storedById = canonicalStoredById(state.timeline?.stored_after);
+  if (JSON.stringify(storedById) !== JSON.stringify(expectedStoredById)) failures.push(`${state.mode}: authentic stored note identities do not match production fixture`);
+  const canonicalTimeline = canonicalStored(state.timeline?.canonical);
+  if (JSON.stringify(canonicalTimeline) !== JSON.stringify(expectedTimelineCanonical)) failures.push(`${state.mode}: canonical Timeline render order/identity does not match production fixture`);
 }
+if (JSON.stringify(enabledState.candidate_entry) !== JSON.stringify(disabledState.candidate_entry)) failures.push('candidate raw/GFAPI/REST/workflow state differs between module modes');
+if (JSON.stringify(enabledState.query) !== JSON.stringify(disabledState.query)) failures.push('query/sort result differs between module modes');
+if (JSON.stringify(enabledState.timeline?.stored_after) !== JSON.stringify(disabledState.timeline?.stored_after)) failures.push('stored Timeline rows differ between module modes');
+if (JSON.stringify(enabledState.timeline?.canonical) !== JSON.stringify(disabledState.timeline?.canonical)) failures.push('canonical Timeline IDs/order/raw/body differ between module modes');
+if (enabledState.csv?.sha256 !== disabledState.csv?.sha256 || enabledState.csv?.marker_absent !== true || disabledState.csv?.marker_absent !== true) failures.push('text/export path changed or marker leaked');
 
-if (JSON.stringify(enabledState.timeline?.stored_after) !== JSON.stringify(disabledState.timeline?.stored_after)) {
-  failures.push('stored Timeline rows differ between module modes');
+const expectedNativeHeaders = expectedTimeline.map((row) => row.expected_header);
+const enabledHeaders = enabledBrowser.timeline?.headers ?? [];
+const disabledHeaders = disabledBrowser.timeline?.headers ?? [];
+if (JSON.stringify(disabledHeaders) !== JSON.stringify(expectedNativeHeaders)) failures.push('disabled Timeline is not exact native output');
+if (enabledHeaders.length !== expectedTimeline.length) failures.push('enabled Timeline header count mismatch');
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  const row = expectedTimeline[index];
+  const header = enabledHeaders[index] ?? '';
+  if (!header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} Jalali date mismatch`);
+  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
 }
-if (JSON.stringify(enabledState.timeline?.canonical) !== JSON.stringify(disabledState.timeline?.canonical)) {
-  failures.push('canonical Timeline IDs/order/date/body differ between module modes');
-}
-
-const canonical = enabledState.timeline?.canonical ?? [];
-const initial = canonical.find((item) => Number(item.id) === 0);
-if (!initial) failures.push('initial Entry event is missing from canonical Timeline');
-for (const stored of expectedStored) {
-  const found = canonical.find((item) => Number(item.id) === Number(stored.id));
-  if (!found) {
-    failures.push(`stored note ${stored.id} missing from canonical Timeline`);
-    continue;
-  }
-  if (found.date_created !== stored.date_created || found.value !== stored.value) {
-    failures.push(`stored note ${stored.id} canonical timestamp/body drifted`);
-  }
-}
-
-const expectedHeaders = (fixture.timeline_fixture ?? []).map((row) => row.expected_header);
-if (expectedHeaders.length !== 4) failures.push('Timeline fixture does not contain initial + three stored headers');
+if (JSON.stringify(enabledHeaders) === JSON.stringify(disabledHeaders)) failures.push('enabled Timeline did not differ from native control');
+if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
 for (const browser of [enabledBrowser, disabledBrowser]) {
-  if (JSON.stringify(browser.timeline?.headers) !== JSON.stringify(expectedHeaders)) {
-    failures.push(`${browser.mode}: Entry Detail Timeline headers are not exact native host headers`);
+  const timeline = browser.timeline ?? {};
+  if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
+    failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
   }
-  if (JSON.stringify(browser.print?.headers) !== JSON.stringify(expectedHeaders)) {
-    failures.push(`${browser.mode}: Print Timeline headers do not match native Timeline headers`);
+  if (JSON.stringify(timeline.bodies ?? []) !== JSON.stringify(expectedBodies)) {
+    failures.push(`${browser.mode}: Timeline body vector does not exactly equal authoritative fixture values`);
   }
-  const bodies = browser.timeline?.bodies ?? [];
-  const printBodies = browser.print?.bodies ?? [];
-  for (const stored of expectedStored) {
-    if (!bodies.includes(stored.value)) failures.push(`${browser.mode}: Entry Detail note body changed for ${stored.id}`);
-    if (!printBodies.includes(stored.value)) failures.push(`${browser.mode}: Print note body changed for ${stored.id}`);
-  }
-  if (Object.values(browser.print?.workflow_sidebar_presence ?? {}).some((value) => value !== 0)) {
-    failures.push(`${browser.mode}: Print unexpectedly contains workflow-sidebar date fields`);
+  for (let index = 0; index < expectedTimeline.length; index += 1) {
+    if ((timeline.bodies?.[index] ?? '').includes(timeline.headers?.[index] ?? '__missing_header__')) {
+      failures.push(`${browser.mode}: Timeline body ${index} captured an enclosing body/header wrapper`);
+    }
   }
 }
+const expectedRepeatedTimeline = (browser) => ({
+  headers: browser.timeline?.headers,
+  bodies: browser.timeline?.bodies,
+  rows: browser.timeline?.rows,
+  collector: browser.timeline?.collector,
+});
+if (JSON.stringify(enabledBrowser.timeline?.repeated) !== JSON.stringify(expectedRepeatedTimeline(enabledBrowser))) {
+  failures.push('enabled repeated Timeline render is not deterministic');
+}
+if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expectedRepeatedTimeline(disabledBrowser))) {
+  failures.push('disabled repeated Timeline render is not deterministic');
+}
 
-if (JSON.stringify(enabledBrowser.timeline?.headers) !== JSON.stringify(disabledBrowser.timeline?.headers)) failures.push('Timeline headers changed with module state');
-if (JSON.stringify(enabledBrowser.timeline?.bodies) !== JSON.stringify(disabledBrowser.timeline?.bodies)) failures.push('Timeline bodies changed with module state');
-if (JSON.stringify(enabledBrowser.print?.headers) !== JSON.stringify(disabledBrowser.print?.headers)) failures.push('Print Timeline headers changed with module state');
-if (JSON.stringify(enabledBrowser.print?.bodies) !== JSON.stringify(disabledBrowser.print?.bodies)) failures.push('Print Timeline bodies changed with module state');
+const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
+const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
+if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+for (const stored of expectedStored) {
+  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
+}
+const duplicateExpectedBodies = expectedTimeline.filter((row) => row.date_created === fixture.duplicate_timestamp).map((row) => row.value);
+if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1)) {
+  failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
+}
 
+for (const browser of [enabledBrowser, disabledBrowser]) {
+  if (browser.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push(`${browser.mode}: Print inheritance relation missing`);
+  if (JSON.stringify(browser.print?.headers) !== JSON.stringify(browser.timeline?.headers)) failures.push(`${browser.mode}: Print headers do not exactly inherit Timeline`);
+  if (JSON.stringify(browser.print?.bodies) !== JSON.stringify(browser.timeline?.bodies)) failures.push(`${browser.mode}: Print bodies/order do not match Timeline`);
+  if (browser.print?.collector?.row_count !== expectedTimeline.length) failures.push(`${browser.mode}: Print row count does not equal authoritative Timeline fixture count`);
+  if (browser.print?.marker_leaked !== false) failures.push(`${browser.mode}: Print marker leaked`);
+  if (Object.values(browser.print?.workflow_sidebar_presence ?? {}).some((value) => value !== 0)) failures.push(`${browser.mode}: Print unexpectedly contains workflow-sidebar date fields`);
+}
+
+const passed = failures.length === 0;
 const result = {
-  schema_version: '1.0.0',
-  evidence_class: 'G008_TIMELINE_PRINT_QUALIFICATION_RECONCILIATION',
+  schema_version: '2.0.0',
+  evidence_class: 'G008_TIMELINE_PRINT_PRODUCTION_ADMISSION_RECONCILIATION',
   exact_persiangravity_commit: head,
   exact_persiangravity_package_sha256: packageSha,
   exact_gravityflow_version: '3.1.0',
   exact_gravityflow_package_sha256: flowSha,
+  exact_gravityforms_version: '3.1.1.1',
+  exact_gravityforms_package_sha256: gfSha,
+  source_fingerprints: expectedFingerprints,
   timeline: {
-    stored_note_count: expectedStored.length,
-    initial_entry_present: Boolean(initial),
-    storage_unchanged: failures.every((failure) => !failure.includes('storage')),
-    ids_order_bodies_unchanged: failures.every((failure) => !failure.includes('IDs/order') && !failure.includes('body changed')),
-    user_authored_date_looking_text_untouched: expectedStored.some((row) => /2026-03-20|1405\/01\/01|2030-03-21/.test(row.value))
-      && failures.every((failure) => !failure.includes('body changed')),
+    initial_entry_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED' : 'NOT_PROVEN',
+    stored_note_event_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED' : 'NOT_PROVEN',
+    supported_formats: ['F j, Y', 'Y-m-d'],
+    unsupported_formats_native: true,
+    storage_unchanged: passed,
+    ids_order_bodies_unchanged: passed,
+    duplicate_timestamp_identity_proven: passed,
+    user_authored_date_looking_text_untouched: passed,
     separate_display_property_consumed: false,
     date_created_representation_consumed_by_renderer: true,
-    initial_entry_disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
-    stored_note_event_disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+    adapter_hook_lifecycle_proven: passed,
+    native_disabled_fallback_proven: passed,
+    enabled_jalali_presentation_proven: passed,
+    body_vector_mode_equality_proven: passed,
+    fixture_row_mapping_proven: passed,
+    marker_non_leakage_proven: passed,
+    operational_state_unchanged: passed,
   },
   print: {
     field_grid_relation: 'REUSES_ENTRY_DETAIL_FIELD_GRID',
-    timeline_relation: 'REUSES_ENTRY_DETAIL_TIMELINE',
-    initial_event_propagation_disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
-    stored_note_event_propagation_disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
-    independent_date_seam_disposition: failures.length ? 'NOT_PROVEN' : 'FINAL_NO_ADMISSION_FOR_EXACT_3_1_0',
+    timeline_relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
+    initial_event_propagation_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE' : 'NOT_PROVEN',
+    stored_note_event_propagation_disposition: passed ? 'RUNTIME_PROVEN + ADMITTED_VERIFIED_BY_TIMELINE_INHERITANCE' : 'NOT_PROVEN',
+    independent_date_seam_disposition: 'NO_INDEPENDENT_PRINT_DATE_SEAM_REQUIRED',
     workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
+    body_vector_inheritance_proven: passed,
+    native_disabled_inheritance_proven: passed,
+    marker_non_leakage_proven: passed,
   },
   failures,
 };
 fs.writeFileSync(path.join(artifactDir, 'g008-timeline-print-qualification.json'), `${JSON.stringify(result, null, 2)}\n`);
-if (failures.length) throw new Error(`Timeline/Print qualification failed: ${failures.join('; ')}`);
-console.log('G008_TIMELINE_PRINT_QUALIFICATION FINAL_NO_ADMISSION_FOR_EXACT_3_1_0');
+if (failures.length) throw new Error(`Timeline/Print production admission failed: ${failures.join('; ')}`);
+console.log('G008_TIMELINE_PRINT_PRODUCTION_ADMISSION RUNTIME_PROVEN + ADMITTED_VERIFIED');

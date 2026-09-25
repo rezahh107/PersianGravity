@@ -39,23 +39,47 @@ function normalize(values) {
   return values.map((value) => value.trim()).filter(Boolean);
 }
 
+function assertModePresentation(actual, label) {
+  const native = manifest.g008_flow_timeline_native;
+  if (actual.length !== native.length || actual.length === 0) {
+    throw new Error(`${label} Timeline row count drifted.`);
+  }
+  if (mode === 'disabled') {
+    if (JSON.stringify(actual) !== JSON.stringify(native)) {
+      throw new Error(`${label} disabled Timeline did not return exact native host timestamps: ${JSON.stringify({ actual, native })}`);
+    }
+    return;
+  }
+  for (const header of actual) {
+    if (!/^[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(header)) {
+      throw new Error(`${label} enabled Timeline did not expose bounded Jalali presentation: ${header}`);
+    }
+  }
+  if (JSON.stringify(actual) === JSON.stringify(native)) {
+    throw new Error(`${label} enabled Timeline unexpectedly remained native.`);
+  }
+}
+
 await login();
 
 const detailResponse = await page.goto(manifest.g008_flow_entry_detail_url, { waitUntil: 'domcontentloaded' });
 if (!detailResponse?.ok()) throw new Error(`Entry Detail request failed: ${detailResponse?.status()}`);
 await page.locator('.gravityflow-timeline').first().waitFor({ timeout: 15000 });
 const detailTimeline = normalize(await page.locator('.gravityflow-timeline .gravityflow-note-meta').allTextContents());
-if (JSON.stringify(detailTimeline) !== JSON.stringify(manifest.g008_flow_timeline_native)) {
-  throw new Error(`Entry Detail timeline native timestamps drifted: ${JSON.stringify({ detailTimeline, expected: manifest.g008_flow_timeline_native })}`);
-}
+const detailBody = await page.locator('body').innerText();
+if (detailBody.includes('PGRTIMELINE')) throw new Error('Residual Entry Detail leaked a Timeline marker.');
+assertModePresentation(detailTimeline, 'Entry Detail');
 await page.screenshot({ path: path.join(artifactDir, `g008-flow-residual-entry-detail-${mode}.png`), fullPage: true });
 
 const printResponse = await page.goto(manifest.g008_flow_print_url, { waitUntil: 'domcontentloaded' });
 if (!printResponse?.ok()) throw new Error(`Gravity Flow Print request failed: ${printResponse?.status()}`);
 await page.locator('#view-container .gravityflow-note-meta').first().waitFor({ timeout: 15000 });
 const printTimeline = normalize(await page.locator('#view-container .gravityflow-note-meta').allTextContents());
-if (JSON.stringify(printTimeline) !== JSON.stringify(manifest.g008_flow_timeline_native)) {
-  throw new Error(`Print timeline native timestamps drifted: ${JSON.stringify({ printTimeline, expected: manifest.g008_flow_timeline_native })}`);
+const printBody = await page.locator('body').innerText();
+if (printBody.includes('PGRTIMELINE')) throw new Error('Residual Print leaked a Timeline marker.');
+assertModePresentation(printTimeline, 'Print');
+if (JSON.stringify(printTimeline) !== JSON.stringify(detailTimeline)) {
+  throw new Error('Residual Print did not inherit the exact Entry Detail Timeline presentation.');
 }
 await page.screenshot({ path: path.join(artifactDir, `g008-flow-residual-print-${mode}.png`), fullPage: true });
 
@@ -64,8 +88,8 @@ if (diagnostics.pageErrors.length || diagnostics.requestFailures.length) {
 }
 
 const evidence = {
-  schema_version: '1.0.0',
-  evidence_class: 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_NO_ADMISSION_BROWSER',
+  schema_version: '2.0.0',
+  evidence_class: 'AUTHENTIC_GRAVITY_FLOW_RESIDUAL_BROWSER',
   mode,
   exact_persiangravity_commit: process.env.WU008_PGR_SHA || null,
   exact_persiangravity_package_sha256: process.env.WU008_PGR_PACKAGE_SHA256 || null,
@@ -76,16 +100,13 @@ const evidence = {
   entry_id: Number(manifest.g008_flow_residual_entry_id),
   entry_detail: {
     url: manifest.g008_flow_entry_detail_url,
-    timeline_native: detailTimeline,
+    timeline: detailTimeline,
+    presentation: mode === 'enabled' ? 'JALALI' : 'NATIVE',
   },
   print: {
     url: manifest.g008_flow_print_url,
-    timeline_native: printTimeline,
-    propagation: 'native underlying Timeline rendering reused; no independent Print date adapter',
-  },
-  dispositions: {
-    'gravityflow.timeline-history': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
-    'gravityflow.print': 'FINAL_NO_ADMISSION_GRAVITY_FLOW_3_1_0',
+    timeline: printTimeline,
+    relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
   },
   diagnostics,
 };
