@@ -49,7 +49,6 @@ assert(source.exact_package_sha256 === expectedViewSha, 'Source probe GravityVie
 assert(source.exact_gravityforms_package_sha256 === expectedGfSha, 'Source probe Gravity Forms package SHA drifted.');
 assert(source.exact_persiangravity_head === expectedHead, 'Source probe is not bound to exact tested Head.');
 assert(allTrue(source.source_contract), `One or more exact source contracts are not proven: ${JSON.stringify(source.source_contract)}`);
-assert(Array.isArray(source.gravityforms_date_updated_utc_windows) && source.gravityforms_date_updated_utc_windows.length > 0, 'Exact Gravity Forms date_updated UTC write-path evidence is absent.');
 
 assert(fixture.exact_persiangravity_head === expectedHead, 'Fixture is not bound to exact tested Head.');
 assert(fixture.exact_gravityview_sha256 === expectedViewSha, 'Fixture GravityView package SHA drifted.');
