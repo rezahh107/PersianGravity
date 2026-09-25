@@ -223,7 +223,7 @@ $search_request->set_body(
 	)
 );
 $search_request->set_header( 'content-type', 'application/json' );
-$search_response = ( new \\GravityKit\\GravityView\\REST\\InspectorRoute() )->add_search_bar( $search_request );
+$search_response = ( new \GravityKit\GravityView\REST\InspectorRoute() )->add_search_bar( $search_request );
 if ( is_wp_error( $search_response ) ) {
 	throw new RuntimeException( 'GravityView host search-bar API rejected the qualification fixture: ' . $search_response->get_error_code() . ' ' . $search_response->get_error_message() );
 }
