@@ -62,15 +62,16 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertStringContainsString( 'Print owns no independent calendar adapter', $readme );
 		$this->assertStringContainsString( 'Print owns no independent calendar adapter', $github );
-		$this->assertStringContainsString( 'Timeline/history and Print remain outside this digit-shaping adapter', $readme );
-		$this->assertStringContainsString( 'Timeline/history and Print remain outside this digit-shaping adapter', $github );
+		$this->assertStringContainsString( 'Timeline/history and its inherited Print Timeline now use a separate exact-contract header-only time-digit adapter', $readme );
+		$this->assertStringContainsString( 'Timeline/history and Print remain outside the Entry Detail status-box digit adapter', $github );
 		$this->assertStringNotContainsString( 'Timeline initial/stored event dates, and any independent Print date seam remain evidence-qualified final no-admission', $github );
 
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'Gravity Flow Print → inherited verified Timeline rendering only; no independent calendar adapter', $architecture );
 		$this->assertStringContainsString( 'Status `due_date` and Entry Detail Scheduled', $architecture );
-		$this->assertStringContainsString( 'Timeline and Print remain outside this digit-shaping adapter', $architecture );
+		$this->assertStringContainsString( 'Timeline/history and Print remain outside the Entry Detail status-box digit adapter', $architecture );
+		$this->assertStringContainsString( 'gravityflow_print_entry_footer', $architecture );
 	}
 
 	public function test_bounded_module_catalog_and_help_are_complete() {
