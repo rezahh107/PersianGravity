@@ -59,6 +59,10 @@ const needles = [
   'from_view',
   'get_search_criteria',
   'filter_%s',
+  'public static function format_date',
+  'get_local_timestamp',
+  'date as stored by Gravity Forms',
+  'mysql2date',
 ];
 
 for (const file of files) {
@@ -79,6 +83,7 @@ for (const file of files) {
 const dateHits = hits.filter((hit) => hit.matched.includes('date_created') || hit.matched.includes('date_updated'));
 const filterHits = hits.filter((hit) => hit.matched.some((needle) => needle.startsWith('gravityview/template/field/')));
 const queryHits = hits.filter((hit) => hit.matched.some((needle) => ['orderby','search_criteria','sorting','GFAPI::get_entries','GF_Query','filter_','gv_search','entry_date','sort_columns','is_field_sortable','from_search_criteria','date_range','to_utc','search-general','search_bar','Search_Field_Collection','from_view','get_search_criteria','filter_%s'].includes(needle)));
+const formattingHits = hits.filter((hit) => hit.matched.some((needle) => ['public static function format_date','get_local_timestamp','date as stored by Gravity Forms','mysql2date'].includes(needle)));
 
 if (dateHits.length === 0) throw new Error('No exact GravityView date_created/date_updated source hits found.');
 if (filterHits.length === 0) throw new Error('No GravityView field output filter family source hits found.');
@@ -94,6 +99,7 @@ const evidence = {
   date_hits: dateHits,
   field_output_filter_hits: filterHits,
   query_sort_filter_hits: queryHits,
+  formatting_hits: formattingHits,
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
