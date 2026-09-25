@@ -168,10 +168,19 @@ async function readTimeline(selectorPrefix) {
       if (headers.length !== 1 || bodyLeaves.length !== 1) {
         throw new Error(`Timeline row ${index} is ambiguous: ${headers.length} headers, ${bodyLeaves.length} body leaves.`);
       }
+      const note = row.closest('.gravityflow-note');
       return {
         index,
         header: headers[0].textContent?.trim() ?? '',
         body: bodyLeaves[0].textContent?.trim() ?? '',
+        machine: {
+          note_id_attribute: note?.getAttribute('id') ?? null,
+          note_attributes: note ? Object.fromEntries([...note.attributes].map((attribute) => [attribute.name, attribute.value])) : {},
+          header_attributes: Object.fromEntries([...headers[0].attributes].map((attribute) => [attribute.name, attribute.value])),
+          body_attributes: Object.fromEntries([...bodyLeaves[0].attributes].map((attribute) => [attribute.name, attribute.value])),
+          header_link_hrefs: [...headers[0].querySelectorAll('a')].map((link) => link.getAttribute('href')),
+          header_control_values: [...headers[0].querySelectorAll('input, select, textarea, button')].map((control) => control.value ?? null),
+        },
       };
     });
     return {
@@ -191,7 +200,7 @@ function assertTimelinePresentation(snapshot, label) {
     throw new Error(`${label} row/header/body count drifted: ${JSON.stringify({ headers: snapshot.headers.length, bodies: snapshot.bodies.length, rows: snapshot.collector?.row_count, expected: timelineFixture.length })}`);
   }
   const expectedBodies = timelineFixture.map((item) => item.value);
-  if (mode !== 'english' && JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
+  if (JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
     throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
   }
   for (let index = 0; index < timelineFixture.length; index += 1) {
@@ -211,8 +220,28 @@ function assertTimelinePresentation(snapshot, label) {
       if (!header.startsWith(row.expected_jalali_date)) {
         throw new Error(`${label} row ${row.id} did not start with the independently expected Jalali date: ${header}`);
       }
+      if (row.expected_native_time_tail && !asciiDigits(header).includes(row.expected_native_time_tail)) {
+        throw new Error(`${label} row ${row.id} changed native time value: ${JSON.stringify({ header, expected: row.expected_native_time_tail })}`);
+      }
+      if (row.expected_native_time_tail && header.includes(row.expected_native_time_tail)) {
+        throw new Error(`${label} row ${row.id} still exposes ASCII time digits: ${header}`);
+      }
+      if (row.expected_persian_time && !header.includes(row.expected_persian_time)) {
+        throw new Error(`${label} row ${row.id} did not expose Persian time digits: ${header}`);
+      }
+    }
+  } else if (mode === 'english') {
+    for (let index = 0; index < timelineFixture.length; index += 1) {
+      const row = timelineFixture[index];
+      const header = snapshot.headers[index] ?? '';
+      if (!header.startsWith(row.expected_jalali_date)) {
+        throw new Error(`${label} English row ${row.id} changed existing Timeline calendar behavior: ${header}`);
+      }
       if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) {
-        throw new Error(`${label} row ${row.id} changed native time output: ${JSON.stringify({ header, expected: row.expected_native_time_tail })}`);
+        throw new Error(`${label} English row ${row.id} did not preserve ASCII time digits: ${header}`);
+      }
+      if (row.expected_persian_time && header.includes(row.expected_persian_time)) {
+        throw new Error(`${label} English row ${row.id} leaked Persian time digits: ${header}`);
       }
     }
   }
@@ -389,6 +418,11 @@ const timelineUrl = withCase(manifest.g008_flow_entry_detail_candidate_url, 'exa
 const timelineResponse = await page.goto(timelineUrl, { waitUntil: 'domcontentloaded' });
 if (!timelineResponse?.ok()) throw new Error(`Timeline Entry Detail request failed: ${timelineResponse?.status()}`);
 const timeline = await readTimeline('.gravityflow-timeline');
+const timelineTimeDigitScriptCount = await page.locator('script[src*="pgr-flow-timeline-persian-time-digits.js"]').count();
+const expectedTimelineDigitScripts = mode === 'enabled' ? 1 : 0;
+if (timelineTimeDigitScriptCount !== expectedTimelineDigitScripts) {
+  throw new Error(`Timeline time-digit adapter load state drifted: ${JSON.stringify({ mode, actual: timelineTimeDigitScriptCount, expected: expectedTimelineDigitScripts })}`);
+}
 const timelineBodyText = await page.locator('body').innerText();
 if (timelineBodyText.includes('PGRTIMELINE')) throw new Error('Timeline leaked an owned production marker.');
 assertTimelinePresentation(timeline, 'Entry Detail Timeline');
@@ -426,6 +460,11 @@ if (JSON.stringify(print.bodies) !== JSON.stringify(timeline.bodies)) {
 const printDigitScriptCount = await page.locator('script[src*="pgr-flow-entry-detail-persian-digits.js"]').count();
 if (printDigitScriptCount !== 0) {
   throw new Error('Print unexpectedly loaded the workflow-info Persian digit adapter.');
+}
+const printTimelineTimeDigitScriptCount = await page.locator('script[src*="pgr-flow-timeline-persian-time-digits.js"]').count();
+const expectedPrintTimelineDigitScripts = mode === 'enabled' ? 1 : 0;
+if (printTimelineTimeDigitScriptCount !== expectedPrintTimelineDigitScripts) {
+  throw new Error(`Print Timeline time-digit adapter load state drifted: ${JSON.stringify({ mode, actual: printTimelineTimeDigitScriptCount, expected: expectedPrintTimelineDigitScripts })}`);
 }
 const printSidebarPresence = {
   submitted: await page.locator('#view-container .gravityflow-status-box-field-submitted-time').count(),
@@ -466,12 +505,14 @@ const evidence = {
     fixture: timelineFixture,
     duplicate_timestamp: duplicateRaw,
     duplicate_ids: duplicateIds,
+    time_digit_script_count: timelineTimeDigitScriptCount,
     marker_leaked: false,
   },
   print: {
     ...print,
     workflow_sidebar_presence: printSidebarPresence,
     digit_script_count: printDigitScriptCount,
+    timeline_time_digit_script_count: printTimelineTimeDigitScriptCount,
     marker_leaked: false,
     relation: 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION',
   },
