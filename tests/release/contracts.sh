@@ -99,6 +99,10 @@ sed -i "0,/Version: $CURRENT/{s/Version: $CURRENT/Version: 9.9.9/}" "$fixture/pe
 expect_fail 'plugin header and PGR_VERSION mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
 
 fixture="$(make_fixture)"
+sed -i "s/define( 'PGR_VERSION', '$CURRENT' );/define( 'PGR_VERSION', '9.9.9' );/" "$fixture/persian-gravityforms.php"
+expect_fail 'PGR_VERSION and plugin header mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
+
+fixture="$(make_fixture)"
 sed -i "s/^Stable tag: $CURRENT$/Stable tag: 9.9.9/" "$fixture/readme.txt"
 expect_fail 'Stable tag mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
 
