@@ -426,6 +426,54 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 	}
 
 	/**
+	 * Resolve exact host identity through its basename plus approved manifest.
+	 *
+	 * @param string       $flow_version  Runtime Flow version.
+	 * @param string       $gf_version    Runtime Gravity Forms version.
+	 * @param string       $flow_basename Host-owned plugin basename.
+	 * @param array<mixed> $products      Approved product manifest.
+	 * @return string|null
+	 */
+	private function resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products ) {
+		$flow_basename = str_replace( '\\', '/', $flow_basename );
+		if (
+			self::FLOW_VERSION !== $flow_version ||
+			self::GF_VERSION !== $gf_version ||
+			'' === $flow_basename ||
+			'/' === substr( $flow_basename, 0, 1 ) ||
+			false !== strpos( $flow_basename, '..' )
+		) {
+			return null;
+		}
+
+		$product_slug = dirname( $flow_basename );
+		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
+			return null;
+		}
+
+		foreach ( $products as $product ) {
+			if ( ! is_array( $product ) || (string) ( $product['product'] ?? '' ) !== $product_slug ) {
+				continue;
+			}
+
+			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
+			return self::FLOW_VERSION === $target && $flow_version === $target ? $product_slug : null;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Compare calculated source hashes with the exact qualified set.
+	 *
+	 * @param array<string,string> $actual Calculated source hashes.
+	 * @return bool
+	 */
+	private function fingerprints_match( $actual ) {
+		return self::SOURCE_FINGERPRINTS === $actual;
+	}
+
+	/**
 	 * Admit only the exact qualified Flow/GF source contract.
 	 *
 	 * @return bool
@@ -459,27 +507,8 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 		$flow_version  = (string) constant( self::FLOW_VERSION_CONSTANT );
 		$gf_version    = (string) GFForms::$version;
 		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
-		if ( self::FLOW_VERSION !== $flow_version || self::GF_VERSION !== $gf_version ) {
-			return false;
-		}
-
-		$product_slug = dirname( $flow_basename );
-		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug || false !== strpos( $flow_basename, '..' ) ) {
-			return false;
-		}
-
-		$manifest_match = false;
-		foreach ( $products as $product ) {
-			if (
-				is_array( $product ) &&
-				(string) ( $product['product'] ?? '' ) === $product_slug &&
-				self::FLOW_VERSION === (string) ( $product['target_version'] ?? '' )
-			) {
-				$manifest_match = true;
-				break;
-			}
-		}
-		if ( ! $manifest_match ) {
+		$product_slug  = $this->resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products );
+		if ( null === $product_slug ) {
 			return false;
 		}
 
@@ -513,7 +542,7 @@ final class PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter {
 			$actual[ $key ] = $hash;
 		}
 
-		$this->host_contract_valid = self::SOURCE_FINGERPRINTS === $actual;
+		$this->host_contract_valid = $this->fingerprints_match( $actual );
 		return $this->host_contract_valid;
 	}
 }
