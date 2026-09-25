@@ -19,7 +19,10 @@ on:
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-timeline-persian-time-digits-presentation-adapter.php'
       - 'assets/js/pgr-flow-entry-detail-persian-digits.js'
+      - 'assets/js/pgr-flow-timeline-persian-time-digits.js'
       - 'docs/WU008_REAL_INTEGRATION.md'
       - 'docs/G009_RTL_BIDI_COMPATIBILITY.md'
       - 'docs/G008_JALALI_PRESENTATION.md'
@@ -151,6 +154,7 @@ jobs:
           node --check tests/real-integration/g008-entry-detail-candidate-browser.mjs
           node --check tests/real-integration/g008-entry-detail-candidate-reconcile.mjs
           node --check assets/js/pgr-flow-entry-detail-persian-digits.js
+          node --check assets/js/pgr-flow-timeline-persian-time-digits.js
           node --check tests/real-integration/g008-flow-schedule-browser.mjs
           node --check tests/real-integration/g008-flow-schedule-reconcile.mjs
           node --check tests/real-integration/g008-timeline-print-reconcile.mjs
@@ -158,6 +162,7 @@ jobs:
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
+          node --test tests/js/flow-timeline-persian-time-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2

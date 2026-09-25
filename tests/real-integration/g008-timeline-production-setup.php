@@ -129,10 +129,24 @@ foreach ( $notes as $note ) {
 	}
 
 	$native_header = Gravity_Flow_Common::format_date( $raw, '', false, true );
-	$time_tail     = '';
-	if ( is_string( $native_header ) && false !== strpos( $native_header, '@' ) ) {
-		$parts     = explode( '@', $native_header, 2 );
-		$time_tail = trim( $parts[1] );
+	$time_tail     = $civil->format( 'g:i' );
+	$persian_time  = strtr(
+		$time_tail,
+		array(
+			'0' => '۰',
+			'1' => '۱',
+			'2' => '۲',
+			'3' => '۳',
+			'4' => '۴',
+			'5' => '۵',
+			'6' => '۶',
+			'7' => '۷',
+			'8' => '۸',
+			'9' => '۹',
+		)
+	);
+	if ( ! is_string( $native_header ) || false === strpos( $native_header, $time_tail ) ) {
+		throw new RuntimeException( 'Native Timeline fixture did not expose the independently expected ASCII time token.' );
 	}
 	if ( $duplicate_timestamp === $raw ) {
 		++$duplicate_count;
@@ -146,6 +160,7 @@ foreach ( $notes as $note ) {
 		'expected_header'           => $native_header,
 		'expected_jalali_date'      => $oracle[ $local_day ],
 		'expected_native_time_tail' => $time_tail,
+		'expected_persian_time'     => $persian_time,
 		'event_kind'                => 0 === (int) $note->id ? 'initial' : 'stored',
 	);
 }
@@ -217,8 +232,9 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 add_action(
 	'wp_footer',
 	static function () {
-		$class     = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
-		$flow_root = WP_PLUGIN_DIR . '/gravityflow';
+		$class            = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
+		$time_digit_class = 'PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter';
+		$flow_root        = WP_PLUGIN_DIR . '/gravityflow';
 		$gf_main   = class_exists( 'GFForms', false ) ? ( new ReflectionClass( 'GFForms' ) )->getFileName() : null;
 		$paths     = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
@@ -235,7 +251,11 @@ add_action(
 			'module_enabled'           => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
 			'option_date_format_hooks' => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
 			'date_i18n_hooks'          => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
-			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
+			'time_digit_class_loaded'          => class_exists( $time_digit_class, false ),
+			'time_digit_signal_hooks'          => pgr_wu008_timeline_callback_count( 'pgr_gravity_flow_timeline_header_presented', $time_digit_class, 'mark_qualified_timeline_presentation' ),
+			'time_digit_entry_detail_hooks'    => pgr_wu008_timeline_callback_count( 'gravityflow_entry_detail_content_after', $time_digit_class, 'enqueue_entry_detail_shaper' ),
+			'time_digit_print_footer_hooks'    => pgr_wu008_timeline_callback_count( 'gravityflow_print_entry_footer', $time_digit_class, 'print_standalone_shaper' ),
+			'flow_version'                     => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
 			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
 			'source_fingerprints'      => $hashes,
 		);
