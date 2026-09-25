@@ -370,6 +370,7 @@ test('positive control: all current G-008 claim families coexist without omissio
     g008_source_proven_claims_reconciled: 7,
     g008_runtime_admitted_claims_reconciled: 5,
     g008_final_no_admission_claims_reconciled: 2,
+    g008_runtime_qualified_not_admitted_claims_reconciled: 0,
   });
   for (const id of [...ordinaryFamilies.map((family) => family.id), ...dedicatedIds]) {
     assert.equal(flowSurface(input, id).support_state, 'ADMITTED_VERIFIED', id);
