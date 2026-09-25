@@ -239,8 +239,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'form'          => $form,
 			'raw'           => $raw,
 			'timestamp'     => $timestamp,
-			'time_format'   => $format,
-			'event_kind'    => $event_kind,
+			'time_format'       => $format,
+			'event_kind'        => $event_kind,
+			'calendar_admitted' => false,
 		);
 
 		return $format;
@@ -274,7 +275,8 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $this->shape_timeline_time_digits( $fallback, $format, $timestamp, $gmt, $path );
 		}
 
-		$context = $this->contexts[ $format ];
+		$context  = $this->contexts[ $format ];
+		$time_key = is_object( $context['note'] ?? null ) ? spl_object_id( $context['note'] ) : null;
 		unset( $this->contexts[ $format ] );
 
 		$note  = $path[4]['args'][0] ?? null;
@@ -301,6 +303,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind'] ||
 			! in_array( $context['native_format'], self::SUPPORTED_FORMATS, true )
 		) {
+			if ( null !== $time_key ) {
+				unset( $this->time_contexts[ $time_key ] );
+			}
 			return $fallback;
 		}
 
@@ -312,10 +317,24 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			);
 		} catch ( Throwable $exception ) {
 			unset( $exception );
+			if ( null !== $time_key ) {
+				unset( $this->time_contexts[ $time_key ] );
+			}
 			return $fallback;
 		}
 
-		return null === $formatted ? $fallback : $formatted;
+		if ( null === $formatted ) {
+			if ( null !== $time_key ) {
+				unset( $this->time_contexts[ $time_key ] );
+			}
+			return $fallback;
+		}
+
+		if ( null !== $time_key && isset( $this->time_contexts[ $time_key ] ) ) {
+			$this->time_contexts[ $time_key ]['calendar_admitted'] = true;
+		}
+
+		return $formatted;
 	}
 
 
@@ -344,7 +363,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$key = spl_object_id( $note );
-		if ( ! isset( $this->time_contexts[ $key ] ) || $format !== $this->time_contexts[ $key ]['time_format'] ) {
+		if (
+			! isset( $this->time_contexts[ $key ] ) ||
+			$format !== $this->time_contexts[ $key ]['time_format'] ||
+			true !== $this->time_contexts[ $key ]['calendar_admitted']
+		) {
 			return $date;
 		}
 
