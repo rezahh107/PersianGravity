@@ -28,11 +28,47 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$adapter->hooks();
 
 		$this->assertArrayHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_timeline_notes', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_due_date_timestamp', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_schedule_timestamp', $GLOBALS['pgr_test_filters'] );
 		$this->assertArrayNotHasKey( 'gravityflow_step_expiration_timestamp', $GLOBALS['pgr_test_filters'] );
+	}
+
+
+	public function test_persian_locale_registers_bounded_time_format_capture_without_extra_date_hook(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+		$adapter->hooks();
+
+		$this->assertArrayHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'option_time_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
+	}
+
+	public function test_unrelated_time_format_call_fails_closed_byte_for_byte(): void {
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+
+		$this->assertSame( 'g:i a', $adapter->filter_time_format( 'g:i a', 'time_format' ) );
+		$this->assertSame( 'g:i a', $adapter->filter_time_format( 'g:i a', 'not_time_format' ) );
+	}
+
+	public function test_time_glyph_shaper_changes_ascii_only_and_preserves_existing_persian_digits(): void {
+		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection = new ReflectionClass( $adapter );
+		$method     = $reflection->getMethod( 'shape_ascii_digits' );
+
+		$this->assertSame( '۱۲:۰۱ ق.ظ', $method->invoke( $adapter, '12:01 ق.ظ' ) );
+		$this->assertSame( '۱۱:۵۹ ب.ظ', $method->invoke( $adapter, '11:59 ب.ظ' ) );
+		$this->assertSame( 'already ۱۲:۰۱', $method->invoke( $adapter, 'already ۱۲:۰۱' ) );
 	}
 
 	public function test_unrelated_option_date_format_call_never_arms(): void {
@@ -167,12 +203,20 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$source = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 
 		$this->assertStringContainsString( "add_filter( 'option_date_format'", $source );
+		$this->assertStringContainsString( "add_filter( 'option_time_format'", $source );
+		$this->assertStringContainsString( "'fa_IR' === determine_locale()", $source );
 		$this->assertStringContainsString( "add_filter( 'date_i18n'", $source );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( 'PGR_Jalali_Presentation::format_date', $source );
 		$this->assertStringContainsString( "hash_file( 'sha256'", $source );
 		$this->assertStringNotContainsString( "'gravityflow'", $source );
 		$this->assertStringNotContainsString( "add_filter( 'gravityflow_timeline_notes'", $source );
+		$this->assertStringNotContainsString( '->value', $source );
+		$this->assertStringNotContainsString( 'wp_enqueue_script', $source );
+		$this->assertStringNotContainsString( 'querySelector', $source );
+		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
+		$this->assertStringNotContainsString( 'get_schedule_timestamp()', $source );
+		$this->assertStringNotContainsString( 'get_expiration_timestamp()', $source );
 		$this->assertStringNotContainsString( '->date_created =', $source );
 		$this->assertStringNotContainsString( 'ob_start(', $source );
 		$this->assertStringNotContainsString( 'preg_replace(', $source );
