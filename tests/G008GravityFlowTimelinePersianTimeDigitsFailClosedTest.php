@@ -8,7 +8,7 @@ final class G008GravityFlowTimelinePersianTimeDigitsFailClosedTest extends TestC
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
-	public function test_gravity_flow_version_drift_never_enqueues_timeline_time_shaper(): void {
+	public function test_gravity_flow_version_drift_never_enqueues_digit_shaper(): void {
 		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
@@ -21,14 +21,15 @@ final class G008GravityFlowTimelinePersianTimeDigitsFailClosedTest extends TestC
 		$GLOBALS['pgr_test_locale']   = 'fa_IR';
 		$GLOBALS['pgr_test_enqueued'] = array();
 		$adapter                     = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
-		$adapter->enqueue_time_digit_shaper();
+		$adapter->mark_qualified_timeline_presentation();
+		$adapter->enqueue_entry_detail_shaper( array(), array() );
 
 		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
 	}
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
-	public function test_gravity_flow_plugin_identity_drift_never_enqueues_timeline_time_shaper(): void {
+	public function test_gravity_flow_plugin_identity_drift_never_enqueues_digit_shaper(): void {
 		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
@@ -41,7 +42,8 @@ final class G008GravityFlowTimelinePersianTimeDigitsFailClosedTest extends TestC
 		$GLOBALS['pgr_test_locale']   = 'fa_IR';
 		$GLOBALS['pgr_test_enqueued'] = array();
 		$adapter                     = new PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter();
-		$adapter->enqueue_time_digit_shaper();
+		$adapter->mark_qualified_timeline_presentation();
+		$adapter->enqueue_entry_detail_shaper( array(), array() );
 
 		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
 	}
