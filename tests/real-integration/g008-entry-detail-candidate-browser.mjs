@@ -201,7 +201,7 @@ function assertTimelinePresentation(snapshot, label) {
   if (JSON.stringify(actualRowIds) !== JSON.stringify(expectedRowIds)) {
     throw new Error(`${label} row identity/order drifted: ${JSON.stringify({ actualRowIds, expectedRowIds })}`);
   }
-  if (mode !== 'english' && JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
+  if (JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
     throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
   }
   for (let index = 0; index < timelineFixture.length; index += 1) {
@@ -232,11 +232,18 @@ function assertTimelinePresentation(snapshot, label) {
     for (let index = 0; index < timelineFixture.length; index += 1) {
       const row = timelineFixture[index];
       const header = snapshot.headers[index] ?? '';
-      if (!row.expected_native_time || !header.includes(row.expected_native_time)) {
-        throw new Error(`${label} English row ${row.id} did not keep ASCII host time: ${JSON.stringify({ header, expected: row.expected_native_time })}`);
+      const expectedAsciiTime = typeof row.expected_native_time === 'string'
+        ? row.expected_native_time.match(/[0-9]{1,2}:[0-9]{2}/)?.[0]
+        : null;
+      const expectedGregorianYear = typeof row.date_created === 'string' ? row.date_created.slice(0, 4) : '';
+      if (!expectedAsciiTime || !header.includes(expectedAsciiTime)) {
+        throw new Error(`${label} English row ${row.id} did not keep the native ASCII time digits: ${JSON.stringify({ header, expectedAsciiTime })}`);
       }
-      if (row.expected_persian_time && row.expected_persian_time !== row.expected_native_time && header.includes(row.expected_persian_time)) {
-        throw new Error(`${label} English row ${row.id} leaked Persian time digits: ${header}`);
+      if (!expectedGregorianYear || !header.includes(expectedGregorianYear) || header.includes(row.expected_jalali_date)) {
+        throw new Error(`${label} English row ${row.id} did not fail closed to native Gregorian date presentation: ${header}`);
+      }
+      if (/[۰-۹]/.test(header)) {
+        throw new Error(`${label} English row ${row.id} leaked Persian digit glyphs: ${header}`);
       }
     }
   }
@@ -249,6 +256,9 @@ function assertTimelinePresentation(snapshot, label) {
   } else if (mode === 'disabled' || mode === 'english') {
     if (!headersText.includes('11:59') || headersText.includes('۱۱:۵۹') || !headersText.includes('12:01') || headersText.includes('۱۲:۰۱')) {
       throw new Error(`${label} native/English boundary time glyphs did not remain ASCII: ${JSON.stringify(snapshot.headers)}`);
+    }
+    if (mode === 'english' && /[۰-۹]/.test(headersText)) {
+      throw new Error(`${label} English Timeline leaked Persian digit glyphs: ${JSON.stringify(snapshot.headers)}`);
     }
   }
 
