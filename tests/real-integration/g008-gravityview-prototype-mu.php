@@ -111,7 +111,6 @@ function pgr_wu008_gv_filter_system_date( $output, $context ) {
 		$entry = $context->entry->as_entry();
 	}
 
-	$expected_view_id = (int) get_option( 'wu008_gv_qualification_view_id', 0 );
 	$mode             = pgr_wu008_gv_probe_mode();
 	$raw              = is_array( $entry ) && null !== $field_id && array_key_exists( $field_id, $entry ) ? (string) $entry[ $field_id ] : '';
 	$record           = array(
@@ -129,14 +128,18 @@ function pgr_wu008_gv_filter_system_date( $output, $context ) {
 		'locale'              => function_exists( 'determine_locale' ) ? determine_locale() : null,
 		'module_enabled'      => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
 		'exact_version'       => pgr_wu008_gv_exact_version(),
-		'expected_view_match' => $expected_view_id > 0 && $view_id === $expected_view_id,
 		'is_admin'            => is_admin(),
 	);
 
-	$eligible = in_array( $mode, array( 'enabled', 'english', 'drift' ), true )
+	$expected_hook = null === $field_id ? '' : 'gravityview/template/field/' . $field_id . '/output';
+	$eligible      = in_array( $mode, array( 'enabled', 'english', 'drift' ), true )
 		&& in_array( $field_id, array( 'date_created', 'date_updated' ), true )
-		&& $expected_view_id > 0
-		&& $view_id === $expected_view_id
+		&& current_filter() === $expected_hook
+		&& $field_type === $field_id
+		&& is_object( $context )
+		&& isset( $context->view )
+		&& is_object( $context->view )
+		&& ! empty( $entry['id'] )
 		&& ! is_admin()
 		&& 'fa_IR' === ( function_exists( 'determine_locale' ) ? determine_locale() : '' )
 		&& pgr_wu008_gv_exact_version()
@@ -186,4 +189,5 @@ function pgr_wu008_gv_filter_system_date( $output, $context ) {
 	);
 }
 
-add_filter( 'gravityview/template/field/output', 'pgr_wu008_gv_filter_system_date', 20, 2 );
+add_filter( 'gravityview/template/field/date_created/output', 'pgr_wu008_gv_filter_system_date', 20, 2 );
+add_filter( 'gravityview/template/field/date_updated/output', 'pgr_wu008_gv_filter_system_date', 20, 2 );
