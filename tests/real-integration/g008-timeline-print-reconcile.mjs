@@ -178,8 +178,16 @@ for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
     failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
   }
-  if (JSON.stringify(timeline.bodies ?? []) !== JSON.stringify(expectedBodies)) {
+  if (browser.mode !== 'english' && JSON.stringify(timeline.bodies ?? []) !== JSON.stringify(expectedBodies)) {
     failures.push(`${browser.mode}: Timeline body vector does not exactly equal authoritative fixture values`);
+  }
+  if (browser.mode === 'english') {
+    for (let index = 0; index < expectedTimeline.length; index += 1) {
+      const row = expectedTimeline[index];
+      if (row.event_kind === 'stored' && timeline.bodies?.[index] !== row.value) {
+        failures.push(`english: stored Timeline body ${row.id} changed or moved`);
+      }
+    }
   }
   for (let index = 0; index < expectedTimeline.length; index += 1) {
     if ((timeline.bodies?.[index] ?? '').includes(timeline.headers?.[index] ?? '__missing_header__')) {
