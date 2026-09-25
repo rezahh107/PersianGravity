@@ -2,7 +2,7 @@
 
 Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*` runtime.
 
-- Plugin version: `4.7.0`
+- Plugin version: `4.8.0`
 - WordPress minimum: `6.7`
 - PHP minimum: `8.2`
 - Gravity Forms minimum: `3.0`

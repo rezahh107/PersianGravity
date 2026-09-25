@@ -2,7 +2,7 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.7.0
+Stable tag: 4.8.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
@@ -101,6 +101,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+
+= 4.8.0 =
 * Fixed mixed-digit exact Gravity Flow 3.1.0 Timeline/history and inherited Print presentation in `fa_IR`: admitted Jalali dates now keep the host-owned time value while rendering its visible digits with Persian glyphs. Timeline bodies, note IDs/order, raw timestamps, timezone/workflow semantics, APIs and native disabled/English controls remain unchanged.
 * Added presentation-only Persian digit shaping for exact Gravity Flow 3.1.0 Entry Detail status-box field text in `fa_IR`, including visible Entry ID and native time text, while preserving ASCII/native storage, API, URLs/query values, attributes, controls, workflow state and non-Persian/module-disabled output. Timeline and Print remain untouched by this Entry Detail digit-shaping adapter, and Scheduled remains calendar-unadmitted.
 * Added bounded Jalali calendar presentation for exact Gravity Flow 3.1.0 Timeline/history. Print inherits that verified Timeline rendering rather than owning a separate date adapter. Raw/storage/workflow values, note/event identity, order and bodies, and surrounding native time semantics remain unchanged; unsupported formats or exact version/source/caller-chain drift fail closed to native output. Status `due_date` and Entry Detail Scheduled remain calendar-unadmitted.

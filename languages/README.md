@@ -1,8 +1,8 @@
 # Persian Gravity Forms translations
 
-Root catalog files serve the `persian-gravityforms` own-plugin text domain in 4.7.0. The separate `providers/` tree contains bounded generic `fa_IR` overlay sources and build metadata.
+Root catalog files serve the `persian-gravityforms` own-plugin text domain in 4.8.0. The separate `providers/` tree contains bounded generic `fa_IR` overlay sources and build metadata.
 
-Version 4.7.0 ships:
+Version 4.8.0 ships:
 
 - `persian-gravityforms.pot`
 - `persian-gravityforms-fa_IR.po`
