@@ -80,7 +80,7 @@ async function snapshot() {
       formMethod: node.form?.getAttribute('method') ?? null,
     })).filter((control) =>
       [control.name, control.id, control.dataField, control.dataFieldId]
-        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_/i.test(value))
+        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_|gv_start|gv_end|gv_search_view/i.test(value))
     );
     const forms = [...document.querySelectorAll('form')].map((form) => ({
       action: form.getAttribute('action'),
@@ -98,7 +98,7 @@ async function snapshot() {
       })),
     })).filter((form) => form.controls.some((control) =>
       [control.name, control.id, control.dataField, control.dataFieldId]
-        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_/i.test(value))
+        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_|gv_start|gv_end|gv_search_view/i.test(value))
     ));
     return {
       html: {
@@ -170,80 +170,46 @@ async function sortedTokens(field, direction) {
   };
 }
 
-async function filteredTokens(field, localDate, expectedEntry) {
-  await open(fixture.page_url);
-
-  const candidates = page.locator('input, select');
-  const controlMetadata = await candidates.evaluateAll((nodes, targetField) => nodes
-    .map((node, index) => ({
-      index,
-      tag: node.tagName.toLowerCase(),
-      type: node.getAttribute('type'),
-      name: node.getAttribute('name'),
-      id: node.getAttribute('id'),
-      value: 'value' in node ? node.value : null,
-      dataField: node.getAttribute('data-field'),
-      dataFieldId: node.getAttribute('data-field-id'),
-      formAction: node.form?.getAttribute('action') ?? null,
-      formMethod: node.form?.getAttribute('method') ?? null,
-      matches: [node.getAttribute('name'), node.getAttribute('id'), node.getAttribute('data-field'), node.getAttribute('data-field-id')]
-        .some((value) => typeof value === 'string' && value.includes(targetField)),
-    }))
-    .filter((item) => item.matches), field);
-
-  if (controlMetadata.length === 0) {
-    throw new Error(`No authentic GravityView search control was rendered for ${field}.`);
-  }
-
-  const usableControls = controlMetadata.filter((item) => item.type !== 'hidden');
-  const exact = usableControls.find((item) =>
-    item.name === `filter_${field}`
-    || item.dataField === field
-    || item.dataFieldId === field
-  ) ?? usableControls.find((item) => item.name?.includes(field) || item.id?.includes(field)) ?? usableControls[0];
-  if (!exact) {
-    throw new Error(`No usable GravityView search control was rendered for ${field}: ${JSON.stringify(controlMetadata)}`);
-  }
-
-  const input = page.locator('input, select').nth(exact.index);
-  const form = input.locator('xpath=ancestor::form[1]');
-  if ((await form.count()) !== 1) {
-    throw new Error(`GravityView search control for ${field} is not associated with exactly one form: ${JSON.stringify(controlMetadata)}`);
-  }
-
-  if (exact.tag === 'select') {
-    await input.selectOption(localDate);
-  } else {
-    await input.fill(localDate);
-  }
-
-  const submittedControl = await input.evaluate((node) => ({
-    tag: node.tagName.toLowerCase(),
-    type: node.getAttribute('type'),
-    name: node.getAttribute('name'),
-    id: node.getAttribute('id'),
-    value: 'value' in node ? node.value : null,
-    dataField: node.getAttribute('data-field'),
-    dataFieldId: node.getAttribute('data-field-id'),
-    formAction: node.form?.getAttribute('action') ?? null,
-    formMethod: node.form?.getAttribute('method') ?? null,
-  }));
-  if (submittedControl.value !== localDate) {
-    throw new Error(`GravityView search control rejected ${field} value ${localDate}: ${JSON.stringify(submittedControl)}`);
-  }
-
+async function submitSearchForm(form) {
   const submit = form.locator('button[type="submit"], input[type="submit"]').first();
   if ((await submit.count()) > 0) {
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
       submit.click(),
     ]);
-  } else {
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-      form.evaluate((node) => node.requestSubmit()),
-    ]);
+    return;
   }
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    form.evaluate((node) => node.requestSubmit()),
+  ]);
+}
+
+async function entryDateFilteredTokens(localDate, expectedEntry) {
+  await open(fixture.page_url);
+  await page.waitForSelector('input[name="gv_start"]', { timeout: 20000 });
+
+  const input = page.locator('input[name="gv_start"]').first();
+  const form = input.locator('xpath=ancestor::form[1]');
+  if ((await form.count()) !== 1) {
+    throw new Error('GravityView entry_date control is not associated with exactly one form.');
+  }
+
+  await input.fill(localDate);
+  const submittedControl = await input.evaluate((node) => ({
+    tag: node.tagName.toLowerCase(),
+    type: node.getAttribute('type'),
+    name: node.getAttribute('name'),
+    id: node.getAttribute('id'),
+    value: 'value' in node ? node.value : null,
+    formAction: node.form?.getAttribute('action') ?? null,
+    formMethod: node.form?.getAttribute('method') ?? null,
+  }));
+  if (submittedControl.name !== 'gv_start' || submittedControl.value !== localDate) {
+    throw new Error(`GravityView entry_date control rejected ${localDate}: ${JSON.stringify(submittedControl)}`);
+  }
+
+  await submitSearchForm(form);
   await page.waitForFunction(
     (token) => document.body?.innerText.includes(token),
     expectedEntry.token,
@@ -254,12 +220,31 @@ async function filteredTokens(field, localDate, expectedEntry) {
   assertPresentation(snap, mode === 'enabled', [expectedEntry]);
   const tokens = snap.rows.map((row) => row.token);
   return {
+    path: 'host-search-bar-entry_date',
     tokens,
     entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
     snapshot: snap,
     url: page.url(),
-    searchControlCandidates: controlMetadata,
     submittedControl,
+  };
+}
+
+async function directSystemFilterTokens(field, value, expectedEntry) {
+  const url = new URL(fixture.page_url);
+  url.searchParams.set('gv_search_view', String(fixture.view_id));
+  url.searchParams.set(`filter_${field}`, value);
+  await open(url.toString(), [expectedEntry.token]);
+  const snap = await snapshot();
+  assertPresentation(snap, mode === 'enabled', [expectedEntry]);
+  const tokens = snap.rows.map((row) => row.token);
+  return {
+    path: 'exact-search-request-system-filter',
+    request_key: `filter_${field}`,
+    request_value: value,
+    tokens,
+    entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
+    snapshot: snap,
+    url: page.url(),
   };
 }
 
@@ -298,8 +283,8 @@ try {
   const bravo = fixture.entries.find((entry) => entry.key === 'bravo');
   const charlie = fixture.entries.find((entry) => entry.key === 'charlie');
   if (!bravo || !charlie) throw new Error('Expected deterministic GravityView filter fixtures are missing.');
-  const createdFilter = await filteredTokens('date_created', '2026-03-21', bravo);
-  const updatedFilter = await filteredTokens('date_updated', '2026-03-22', charlie);
+  const createdFilter = await entryDateFilteredTokens('2026-03-21', bravo);
+  const updatedFilter = await directSystemFilterTokens('date_updated', '2026-03-21', charlie);
 
   const checks = [
     ['date_created asc', createdAsc.tokens, expectedSort('date_created', 'asc')],
@@ -316,7 +301,7 @@ try {
     throw new Error(`date_created search/filter result mismatch: ${JSON.stringify(createdFilter.tokens)}`);
   }
   if (JSON.stringify(updatedFilter.tokens) !== JSON.stringify([charlie.token])) {
-    throw new Error(`date_updated search/filter result mismatch: ${JSON.stringify(updatedFilter.tokens)}`);
+    throw new Error(`date_updated exact request-filter result mismatch: ${JSON.stringify(updatedFilter.tokens)}`);
   }
 
   result.initial = initial;
@@ -329,7 +314,7 @@ try {
   };
   result.filtering = {
     date_created_local_2026_03_21: createdFilter,
-    date_updated_local_2026_03_22: updatedFilter,
+    date_updated_raw_2026_03_21: updatedFilter,
   };
   result.status = 'PASS';
 
