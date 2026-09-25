@@ -31,12 +31,12 @@ page.on('console', (msg) => diagnostics.console.push({ type: msg.type(), text: m
 page.on('pageerror', (error) => diagnostics.pageErrors.push(String(error?.stack || error).slice(0, 3000)));
 page.on('requestfailed', (request) => diagnostics.requestFailures.push({ url: request.url(), error: request.failure()?.errorText || 'unknown' }));
 
-async function open(url) {
+async function open(url, expectedTokens = fixture.entries.map((entry) => entry.token)) {
   const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
   if (!response || !response.ok()) throw new Error(`GravityView response failed: ${response?.status()} ${url}`);
   await page.waitForFunction(
     (tokens) => tokens.every((token) => document.body?.innerText.includes(token)),
-    fixture.entries.map((entry) => entry.token),
+    expectedTokens,
     { timeout: 20000 },
   );
   if (/There has been a critical error|Fatal error/i.test(await page.locator('body').innerText())) {
@@ -80,19 +80,22 @@ async function snapshot() {
   }, fixture.entries.map((entry) => entry.token));
 }
 
-function assertTokensUnchanged(snap) {
-  for (const expected of fixture.entries) {
+function assertTokensUnchanged(snap, expectedEntries = fixture.entries) {
+  for (const expected of expectedEntries) {
     const row = snap.rows.find((item) => item.token === expected.token);
     if (!row) throw new Error(`Missing GravityView row for token ${expected.token}`);
     if (!row.text.includes(expected.token)) throw new Error(`User-authored token changed: ${expected.token}`);
   }
+  const expectedTokens = new Set(expectedEntries.map((entry) => entry.token));
+  const extras = snap.rows.filter((row) => !expectedTokens.has(row.token));
+  if (extras.length) throw new Error(`GravityView result set contains unexpected rows: ${extras.map((row) => row.token).join(', ')}`);
 }
 
-function assertPresentation(snap, shouldPresent) {
-  assertTokensUnchanged(snap);
+function assertPresentation(snap, shouldPresent, expectedEntries = fixture.entries) {
+  assertTokensUnchanged(snap, expectedEntries);
   const spans = snap.rows.flatMap((row) => row.spans);
   if (shouldPresent) {
-    if (spans.length !== 6) throw new Error(`Expected six bounded date spans, got ${spans.length}`);
+    if (spans.length !== expectedEntries.length * 2) throw new Error(`Expected ${expectedEntries.length * 2} bounded date spans, got ${spans.length}`);
     for (const span of spans) {
       const expected = fixture.entries.find((entry) => Number(entry.id) === span.entry);
       if (!expected) throw new Error(`Unknown entry identity in presentation span: ${span.entry}`);
@@ -114,6 +117,23 @@ async function sortedTokens(field, direction) {
   const snap = await snapshot();
   assertPresentation(snap, mode === 'enabled');
   return { tokens: snap.rows.map((row) => row.token), snapshot: snap, url: page.url() };
+}
+
+async function filteredTokens(field, localDate, expectedEntry) {
+  const url = new URL(fixture.page_url);
+  url.searchParams.set(`filter_${field}`, localDate);
+  await open(url.toString(), [expectedEntry.token]);
+  const snap = await snapshot();
+  assertPresentation(snap, mode === 'enabled', [expectedEntry]);
+  const searchInput = await page.locator(`input[name="filter_${field}"]`).first().evaluate((node) => ({
+    name: node.getAttribute('name'),
+    value: node.value,
+    type: node.getAttribute('type'),
+  })).catch(() => null);
+  if (!searchInput || searchInput.value !== localDate) {
+    throw new Error(`Authentic GravityView search input did not consume filter_${field}=${localDate}`);
+  }
+  return { tokens: snap.rows.map((row) => row.token), snapshot: snap, url: page.url(), searchInput };
 }
 
 const result = {
@@ -148,6 +168,12 @@ try {
   const updatedAsc = await sortedTokens('date_updated', 'asc');
   const updatedDesc = await sortedTokens('date_updated', 'desc');
 
+  const bravo = fixture.entries.find((entry) => entry.key === 'bravo');
+  const charlie = fixture.entries.find((entry) => entry.key === 'charlie');
+  if (!bravo || !charlie) throw new Error('Expected deterministic GravityView filter fixtures are missing.');
+  const createdFilter = await filteredTokens('date_created', '2026-03-21', bravo);
+  const updatedFilter = await filteredTokens('date_updated', '2026-03-22', charlie);
+
   const checks = [
     ['date_created asc', createdAsc.tokens, expectedSort('date_created', 'asc')],
     ['date_created desc', createdDesc.tokens, expectedSort('date_created', 'desc')],
@@ -159,6 +185,12 @@ try {
       throw new Error(`${name} GravityView ordering mismatch: actual=${JSON.stringify(actual)} expected=${JSON.stringify(expected)}`);
     }
   }
+  if (JSON.stringify(createdFilter.tokens) !== JSON.stringify([bravo.token])) {
+    throw new Error(`date_created search/filter result mismatch: ${JSON.stringify(createdFilter.tokens)}`);
+  }
+  if (JSON.stringify(updatedFilter.tokens) !== JSON.stringify([charlie.token])) {
+    throw new Error(`date_updated search/filter result mismatch: ${JSON.stringify(updatedFilter.tokens)}`);
+  }
 
   result.initial = initial;
   result.repeated = repeated;
@@ -167,6 +199,10 @@ try {
     date_created_desc: createdDesc,
     date_updated_asc: updatedAsc,
     date_updated_desc: updatedDesc,
+  };
+  result.filtering = {
+    date_created_local_2026_03_21: createdFilter,
+    date_updated_local_2026_03_22: updatedFilter,
   };
   result.status = 'PASS';
 
