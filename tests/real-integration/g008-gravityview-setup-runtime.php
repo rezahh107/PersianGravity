@@ -58,13 +58,13 @@ $fixture_specs = array(
 	array(
 		'key'          => 'alpha',
 		'date_created' => '2026-03-20 20:29:00',
-		'date_updated' => '2026-03-20 20:31:00',
+		'date_updated' => '2026-03-21 20:31:00',
 		'token'        => 'GV-ALPHA user text 2026-03-20 20:29:00 must stay native',
 	),
 	array(
 		'key'          => 'bravo',
 		'date_created' => '2026-03-20 20:31:00',
-		'date_updated' => '2026-03-21 20:29:00',
+		'date_updated' => '2026-03-20 20:31:00',
 		'token'        => 'GV-BRAVO user text 2026-03-20 20:31:00 must stay native',
 	),
 	array(
