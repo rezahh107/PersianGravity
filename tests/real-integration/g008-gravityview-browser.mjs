@@ -103,6 +103,7 @@ async function snapshot() {
     return {
       html: {
         dir: document.documentElement.getAttribute('dir'),
+        computedDir: getComputedStyle(document.documentElement).direction,
         lang: document.documentElement.getAttribute('lang'),
       },
       rows: mapped,
