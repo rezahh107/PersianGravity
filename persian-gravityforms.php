@@ -116,6 +116,7 @@ function pgr_initialize() {
 		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php';
 		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php';
 		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php';
+		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-timeline-persian-digits-presentation-adapter.php';
 		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
 	}
 	if ( $scanner_enabled ) {
