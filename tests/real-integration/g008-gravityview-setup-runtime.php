@@ -247,13 +247,37 @@ if (
 	throw new RuntimeException( 'GravityView host search-bar API persisted an unexpected widget identity.' );
 }
 
+$search_fields_shortcode = wp_json_encode(
+	array(
+		array(
+			'field' => 'date_created',
+			'input' => 'date',
+			'label' => 'Date Created Search',
+		),
+		array(
+			'field' => 'date_updated',
+			'input' => 'date',
+			'label' => 'Date Updated Search',
+		),
+	),
+	JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+);
+if ( ! is_string( $search_fields_shortcode ) || '' === $search_fields_shortcode ) {
+	throw new RuntimeException( 'GravityView qualification search-field shortcode configuration could not be encoded.' );
+}
+
 $page_id = wp_insert_post(
 	array(
 		'post_type'    => 'page',
 		'post_status'  => 'publish',
 		'post_title'   => 'WU008 G008 GravityView Date Qualification',
 		'post_name'    => 'wu008-g008-gravityview-dates',
-		'post_content' => sprintf( '[gravityview id="%d"]', $view_id ),
+		'post_content' => sprintf(
+			'[gravityview id="%1$d"]' . "\n" .
+			'[gravityview_widget_search view_id="%1$d" search_fields=\'%2$s\' search_layout="horizontal" search_clear="1" search_mode="all"]',
+			$view_id,
+			$search_fields_shortcode
+		),
 	),
 	true
 );
