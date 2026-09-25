@@ -170,62 +170,22 @@ async function sortedTokens(field, direction) {
   };
 }
 
-async function submitSearchForm(form) {
-  const submit = form.locator('button[type="submit"], input[type="submit"]').first();
-  if ((await submit.count()) > 0) {
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-      submit.click(),
-    ]);
-    return;
-  }
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-    form.evaluate((node) => node.requestSubmit()),
-  ]);
-}
-
 async function entryDateFilteredTokens(localDate, expectedEntry) {
-  await open(fixture.page_url);
-  await page.waitForSelector('input[name="gv_start"]', { timeout: 20000 });
-
-  const input = page.locator('input[name="gv_start"]').first();
-  const form = input.locator('xpath=ancestor::form[1]');
-  if ((await form.count()) !== 1) {
-    throw new Error('GravityView entry_date control is not associated with exactly one form.');
-  }
-
-  await input.fill(localDate);
-  const submittedControl = await input.evaluate((node) => ({
-    tag: node.tagName.toLowerCase(),
-    type: node.getAttribute('type'),
-    name: node.getAttribute('name'),
-    id: node.getAttribute('id'),
-    value: 'value' in node ? node.value : null,
-    formAction: node.form?.getAttribute('action') ?? null,
-    formMethod: node.form?.getAttribute('method') ?? null,
-  }));
-  if (submittedControl.name !== 'gv_start' || submittedControl.value !== localDate) {
-    throw new Error(`GravityView entry_date control rejected ${localDate}: ${JSON.stringify(submittedControl)}`);
-  }
-
-  await submitSearchForm(form);
-  await page.waitForFunction(
-    (token) => document.body?.innerText.includes(token),
-    expectedEntry.token,
-    { timeout: 20000 },
-  );
-
+  const url = new URL(fixture.page_url);
+  url.searchParams.set('gv_search_view', String(fixture.view_id));
+  url.searchParams.set('gv_start', localDate);
+  await open(url.toString(), [expectedEntry.token]);
   const snap = await snapshot();
   assertPresentation(snap, mode === 'enabled', [expectedEntry]);
   const tokens = snap.rows.map((row) => row.token);
   return {
-    path: 'host-search-bar-entry_date',
+    path: 'exact-search-request-entry_date',
+    request_key: 'gv_start',
+    request_value: localDate,
     tokens,
     entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
     snapshot: snap,
     url: page.url(),
-    submittedControl,
   };
 }
 
