@@ -127,6 +127,7 @@ const wpFunctions = readFrom(wpRoot, 'wp-includes/functions.php');
 
 const statusDueMethod = methodSource(status, 'column_due_date');
 const statusExportMethod = methodSource(status, 'export');
+const entryDetailRenderMethod = methodSource(entryDetail, 'entry_detail');
 const entryWorkflowBoxMethod = methodSource(flowMain, 'workflow_entry_detail_status_box');
 const entryWorkflowInfoMethod = methodContaining(flowMain, 'gravityflow-status-box-field-due-date');
 const entryQueuedMethod = methodSource(flowMain, 'display_queued_step_details');
@@ -251,6 +252,9 @@ const sourceContract = {
       entryStepStatusMethod.includes('display_queued_step_details') && entryStepStatusMethod.includes('queued'),
   },
   timeline_history: {
+    entry_detail_content_after_runs_after_timeline:
+      entryDetailRenderMethod.includes("do_action( 'gravityflow_entry_detail_content_after', $form, $entry )")
+      && entryDetailRenderMethod.indexOf("do_action( 'gravityflow_entry_detail_content_after', $form, $entry )") > entryDetailRenderMethod.indexOf('self::maybe_show_timeline( $entry, $form, $show_timeline )'),
     header_formats_note_date_directly: noteHeaderMethod.includes('Gravity_Flow_Common::format_date( $date_created') && !noteHeaderMethod.includes('apply_filters('),
     note_body_is_separate_escaped_content: noteBodyMethod.includes('nl2br( esc_html( $note->value ) )'),
     timeline_reads_gravityforms_notes: timelineNotesMethod.includes('RGFormsModel::get_lead_notes'),
@@ -267,6 +271,13 @@ const sourceContract = {
   print: {
     reuses_entry_detail_grid: printRenderMethod.includes('Gravity_Flow_Entry_Detail::entry_detail_grid'),
     optional_timeline_reuses_entry_detail_timeline: printRenderMethod.includes('Gravity_Flow_Entry_Detail::timeline'),
+    entry_footer_runs_after_optional_timeline:
+      printRenderMethod.includes("do_action( 'gravityflow_print_entry_footer', $form, $entry )")
+      && printRenderMethod.indexOf("do_action( 'gravityflow_print_entry_footer', $form, $entry )") > printRenderMethod.indexOf('Gravity_Flow_Entry_Detail::timeline( $entry, $form )'),
+    standalone_document_has_no_wordpress_footer_script_printer:
+      !printEntries.content.includes('wp_footer(')
+      && !printEntries.content.includes('wp_print_footer_scripts(')
+      && !printEntries.content.includes('admin_print_footer_scripts'),
     no_print_specific_date_formatter: !printRenderMethod.includes('format_date('),
     print_style_hook_is_not_date_seam: printEntries.content.includes("apply_filters( 'gravityflow_print_styles'") && !printRenderMethod.includes('gravityflow_print_styles'),
     workflow_sidebar_not_rendered_by_print:
@@ -284,6 +295,7 @@ const evidence = {
   method_sources: {
     status_due_date: statusDueMethod,
     status_export: statusExportMethod,
+    entry_detail_render: entryDetailRenderMethod,
     entry_workflow_box: entryWorkflowBoxMethod,
     entry_workflow_info: entryWorkflowInfoMethod,
     entry_queued_details: entryQueuedMethod,
