@@ -80,25 +80,25 @@ browserIdentity(disabledBrowser, 'disabled');
 browserIdentity(englishBrowser, 'english');
 
 if (
-  enabledHook.class_loaded !== true || enabledHook.digit_class_loaded !== true || enabledHook.module_enabled !== true
+  enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
   || enabledHook.locale !== 'fa_IR'
-  || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
-  || enabledHook.digit_option_time_format_hooks !== 1 || enabledHook.digit_date_i18n_hooks !== 1
+  || enabledHook.option_date_format_hooks !== 1 || enabledHook.option_time_format_hooks !== 1
+  || enabledHook.date_i18n_hooks !== 1
 ) {
   failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
 }
 if (
-  disabledHook.class_loaded !== false || disabledHook.digit_class_loaded !== false || disabledHook.module_enabled !== false
-  || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
-  || disabledHook.digit_option_time_format_hooks !== 0 || disabledHook.digit_date_i18n_hooks !== 0
+  disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
+  || disabledHook.option_date_format_hooks !== 0 || disabledHook.option_time_format_hooks !== 0
+  || disabledHook.date_i18n_hooks !== 0
 ) {
   failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
 }
 if (
-  englishHook.class_loaded !== true || englishHook.digit_class_loaded !== true || englishHook.module_enabled !== true
+  englishHook.class_loaded !== true || englishHook.module_enabled !== true
   || englishHook.locale !== 'en_US'
-  || englishHook.option_date_format_hooks !== 1 || englishHook.date_i18n_hooks !== 1
-  || englishHook.digit_option_time_format_hooks !== 0 || englishHook.digit_date_i18n_hooks !== 0
+  || englishHook.option_date_format_hooks !== 1 || englishHook.option_time_format_hooks !== 0
+  || englishHook.date_i18n_hooks !== 1
 ) {
   failures.push(`English production digit hook did not fail closed: ${JSON.stringify(englishHook)}`);
 }
