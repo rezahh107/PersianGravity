@@ -200,11 +200,16 @@ for (let index = 0; index < timelineFixture.length; index += 1) {
   const row = timelineFixture[index];
   const header = enabled.timeline?.headers?.[index] ?? '';
   if (typeof row.expected_jalali_date !== 'string' || !header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} did not use independently expected Jalali date`);
-  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
+  if (typeof row.expected_persian_time !== 'string' || !header.includes(row.expected_persian_time)) failures.push(`enabled Timeline row ${row.id} did not preserve the host time value with Persian digits`);
+  if (row.expected_native_time && /[0-9]/.test(row.expected_native_time) && header.includes(row.expected_native_time)) failures.push(`enabled Timeline row ${row.id} retained ASCII time digits`);
 }
 const duplicateIds = enabled.timeline?.duplicate_ids ?? [];
 if (duplicateIds.length < 2 || new Set(duplicateIds.map(Number)).size !== duplicateIds.length) failures.push('duplicate-timestamp Timeline events lost distinct note identity');
-if (enabled.timeline?.marker_leaked !== false || disabled.timeline?.marker_leaked !== false) failures.push('Timeline production marker leaked');
+const enabledTimelineText = (enabled.timeline?.headers ?? []).join('\n');
+if (enabledTimelineText.includes('11:59') || !enabledTimelineText.includes('۱۱:۵۹') || enabledTimelineText.includes('12:01') || !enabledTimelineText.includes('۱۲:۰۱')) failures.push('enabled Timeline mixed-digit regression remains visible');
+const englishTimelineText = (english.timeline?.headers ?? []).join('\n');
+if (!englishTimelineText.includes('11:59') || englishTimelineText.includes('۱۱:۵۹') || !englishTimelineText.includes('12:01') || englishTimelineText.includes('۱۲:۰۱')) failures.push('English Timeline time digits did not remain ASCII');
+if (enabled.timeline?.marker_leaked !== false || disabled.timeline?.marker_leaked !== false || english.timeline?.marker_leaked !== false) failures.push('Timeline production marker leaked');
 const timelineRepeatedRenderingDeterministic = [enabled, disabled].every((browser) => (
   Boolean(browser.timeline?.repeated)
   && JSON.stringify(browser.timeline.repeated) === JSON.stringify(canonicalTimelineSnapshot(browser.timeline))
@@ -213,8 +218,9 @@ if (!timelineRepeatedRenderingDeterministic) failures.push('Timeline repeated re
 if (JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Timeline note bodies/order changed with module state');
 if (JSON.stringify(enabled.print?.headers) !== JSON.stringify(enabled.timeline?.headers)) failures.push('enabled Print did not inherit verified Timeline headers');
 if (JSON.stringify(disabled.print?.headers) !== JSON.stringify(disabled.timeline?.headers)) failures.push('disabled Print did not inherit native Timeline headers');
+if (JSON.stringify(english.print?.headers) !== JSON.stringify(english.timeline?.headers)) failures.push('English Print did not inherit ASCII Timeline headers');
 if (JSON.stringify(enabled.print?.bodies) !== JSON.stringify(enabled.timeline?.bodies) || JSON.stringify(disabled.print?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Print changed Timeline bodies/order');
-if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push('Print inheritance evidence relation is missing');
+if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || english.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push('Print inheritance evidence relation is missing');
 if (enabled.print?.marker_leaked !== false || disabled.print?.marker_leaked !== false) failures.push('Print Timeline production marker leaked');
 if (enabled.print.digit_script_count !== 0 || disabled.print.digit_script_count !== 0 || english.print.digit_script_count !== 0) failures.push('Print unexpectedly loaded the workflow-info digit adapter');
 for (const [key, count] of Object.entries(enabled.print.workflow_sidebar_presence ?? {})) {
