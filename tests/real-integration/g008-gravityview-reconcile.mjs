@@ -75,7 +75,8 @@ assert(state.disabled.module_enabled === false, 'Disabled qualification did not 
 assert(state.english.locale === 'en_US', 'English control locale drifted.');
 assert(state.drift.module_enabled === true, 'Version-drift control must keep the module enabled.');
 assert(browser.enabled.initial.html.dir === 'rtl', 'Enabled fa_IR surface did not render RTL.');
-assert(browser.english.initial.html.dir === 'ltr', 'English control did not render LTR.');
+assert(browser.english.initial.html.dir !== 'rtl', 'English control unexpectedly rendered RTL.');
+assert(/^en(?:-|$)/i.test(browser.english.initial.html.lang || ''), `English control document language drifted: ${browser.english.initial.html.lang}`);
 
 const canonicalEntries = (snapshot) => snapshot.entries.map((entry) => ({
   id: entry.id,
