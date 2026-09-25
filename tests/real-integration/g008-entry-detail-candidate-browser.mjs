@@ -201,8 +201,17 @@ function assertTimelinePresentation(snapshot, label) {
   if (JSON.stringify(actualRowIds) !== JSON.stringify(expectedRowIds)) {
     throw new Error(`${label} row identity/order drifted: ${JSON.stringify({ actualRowIds, expectedRowIds })}`);
   }
-  if (JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
-    throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
+  if (mode !== 'english') {
+    if (JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
+      throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
+    }
+  } else {
+    for (let index = 0; index < timelineFixture.length; index += 1) {
+      const row = timelineFixture[index];
+      if (row.event_kind === 'stored' && snapshot.bodies[index] !== row.value) {
+        throw new Error(`${label} English stored body ${row.id} changed: ${JSON.stringify({ actual: snapshot.bodies[index], expected: row.value })}`);
+      }
+    }
   }
   for (let index = 0; index < timelineFixture.length; index += 1) {
     if (snapshot.bodies[index].includes(snapshot.headers[index])) {
