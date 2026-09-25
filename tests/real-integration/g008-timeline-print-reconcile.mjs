@@ -203,7 +203,12 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
 const englishBodies = englishBrowser.timeline?.bodies ?? [];
-if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies) || JSON.stringify(englishBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed between enabled and disabled Persian modes');
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  if (expectedTimeline[index]?.event_kind === 'stored' && englishBodies[index] !== expectedTimeline[index].value) {
+    failures.push(`English stored Timeline body ${expectedTimeline[index].id} changed or moved`);
+  }
+}
 const enabledMachineRows = (enabledBrowser.timeline?.rows ?? []).map((row) => row.machine);
 const disabledMachineRows = (disabledBrowser.timeline?.rows ?? []).map((row) => row.machine);
 const englishMachineRows = (englishBrowser.timeline?.rows ?? []).map((row) => row.machine);
