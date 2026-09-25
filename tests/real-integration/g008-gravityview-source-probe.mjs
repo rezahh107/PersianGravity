@@ -1,5 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  assertMetadataOnlySourceEvidence,
+  assertTargetFieldContracts,
+  evaluateTargetFieldContracts,
+  proveIndependentTargetFailClosed,
+  sourceLocation,
+} from './g008-gravityview-source-evidence.mjs';
 
 const wpPath = process.env.WU008_WP_PATH;
 const artifactDir = process.env.WU008_ARTIFACT_DIR;
@@ -31,58 +38,13 @@ function read(root, relative) {
   return { relative, content: fs.readFileSync(file, 'utf8') };
 }
 
-function numberedExcerpt(source, startLine, endLine) {
-  const lines = source.content.split(/\r?\n/);
-  const start = Math.max(1, startLine);
-  const end = Math.min(lines.length, endLine);
-  return {
-    file: source.relative,
-    start_line: start,
-    end_line: end,
-    lines: lines.slice(start - 1, end).map((text, index) => ({ line: start + index, text })),
-  };
-}
-
-function around(source, needle, before = 12, after = 24) {
-  const lines = source.content.split(/\r?\n/);
-  const index = lines.findIndex((line) => line.includes(needle));
-  if (index < 0) throw new Error(`Required token not found in ${source.relative}: ${needle}`);
-  return numberedExcerpt(source, index + 1 - before, index + 1 + after);
-}
-
-function walk(root) {
-  const out = [];
-  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-    const full = path.join(root, entry.name);
-    if (entry.isDirectory()) out.push(...walk(full));
-    else if (/\.php$/i.test(entry.name)) out.push(full);
+function allTrue(value) {
+  if (typeof value === 'boolean') return value;
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const values = Object.values(value);
+    return values.length > 0 && values.every(allTrue);
   }
-  return out.sort();
-}
-
-function findWindows(root, needles, radius = 8) {
-  const results = [];
-  for (const file of walk(root)) {
-    const relative = path.relative(root, file).replaceAll(path.sep, '/');
-    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
-    for (let i = 0; i < lines.length; i += 1) {
-      const matched = needles.filter((needle) => lines[i].includes(needle));
-      if (matched.length === 0) continue;
-      const start = Math.max(0, i - radius);
-      const end = Math.min(lines.length, i + radius + 1);
-      results.push({
-        file: relative,
-        line: i + 1,
-        matched,
-        excerpt: {
-          start_line: start + 1,
-          end_line: end,
-          lines: lines.slice(start, end).map((text, offset) => ({ line: start + offset + 1, text })),
-        },
-      });
-    }
-  }
-  return results;
+  return false;
 }
 
 const dateCreated = read(roots.gravityview, 'src/Field/Types/DateCreated.php');
@@ -102,58 +64,12 @@ const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-
 const gfApi = read(roots.gravityforms, 'includes/api.php');
 const gfRestEntries = read(roots.gravityforms, 'includes/webapi/v2/includes/controllers/class-controller-form-entries.php');
 
-const gravityFormsDateUpdatedReferences = findWindows(
-  roots.gravityforms,
-  ['date_updated', 'utc_timestamp()', 'updated, in UTC'],
-  12,
-);
-const gravityViewSearchScopeReferences = findWindows(
-  roots.gravityview,
-  ['gv_search_view', 'SearchScope::matches', 'by_id( $this->get_widget_id() )->all()', "configuration->get( 'search_fields' )"],
-  14,
-).slice(0, 120);
-
-const gravityViewSearchRequestReferences = findWindows(
-  roots.gravityview,
-  ['class SearchRequest', 'filter_', 'from_request', 'SearchFilterBuilder', 'SearchScope', 'field_filters'],
-  18,
-).filter((record) =>
-  /Search|Request|Widget|Filter/i.test(record.file)
-).slice(0, 240);
-
-const gravityViewWidgetLayoutReferences = findWindows(
-  roots.gravityview,
-  ['_gravityview_directory_widgets', 'header_top', 'header_bottom', 'footer_top', 'footer_bottom', "'search_bar'", 'search_fields'],
-  18,
-).filter((record) => /Widget|Template|View|Admin|Metabox|Legacy/i.test(record.file)).slice(0, 260);
-
-const gravityViewModernSearchFieldShapeReferences = findWindows(
-  roots.gravityview,
-  ['search_fields_section', 'from_configuration', 'area_settings', "'field' =>", "'input' =>", 'Search_Field_Collection'],
-  24,
-).filter((record) => /Search|Widget|View|Abilities/i.test(record.file)).slice(0, 320);
-
-const gravityViewSearchFieldShapeReferences = findWindows(
-  roots.gravityview,
-  ['class Search_Field_Collection', 'from_legacy_configuration', 'from_configuration', 'Search_Field_Date', 'search-general_', 'input_type'],
-  28,
-).filter((record) => /Search|Widget|Grid/i.test(record.file)).slice(0, 320);
+const targetFieldContracts = evaluateTargetFieldContracts(dateCreated.content, dateUpdated.content);
+assertTargetFieldContracts(targetFieldContracts);
+const independentFailClosed = proveIndependentTargetFailClosed(dateCreated.content, dateUpdated.content);
 
 const sourceContract = {
-  date_created: {
-    field_name: /var\s+\$name\s*=\s*['"]date_created['"]/.test(dateCreated.content),
-    searchable: /var\s+\$is_searchable\s*=\s*true/.test(dateCreated.content),
-    operators: /var\s+\$search_operators\s*=\s*\[['"]less_than['"],\s*['"]greater_than['"],\s*['"]is['"],\s*['"]isnot['"]\]/.test(dateCreated.content),
-    contexts: /var\s+\$contexts\s*=\s*\[['"]single['"],\s*['"]multiple['"],\s*['"]export['"]\]/.test(dateCreated.content),
-    get_content_reads_raw_field_value: /get_content[\s\S]{0,700}GVCommon::format_date\(\s*\$field\['value'\]/.test(dateCreated.content),
-  },
-  date_updated: {
-    extends_date_created: /class\s+DateUpdated\s+extends\s+\\GravityView_Field_Date_Created/.test(dateUpdated.content),
-    field_name: /var\s+\$name\s*=\s*['"]date_updated['"]/.test(dateUpdated.content),
-    searchable: /var\s+\$is_searchable\s*=\s*true/.test(dateUpdated.content),
-    operators: /var\s+\$search_operators\s*=\s*\[['"]less_than['"],\s*['"]greater_than['"],\s*['"]is['"],\s*['"]isnot['"]\]/.test(dateUpdated.content),
-    contexts: /var\s+\$contexts\s*=\s*\[['"]single['"],\s*['"]multiple['"],\s*['"]export['"]\]/.test(dateUpdated.content),
-  },
+  ...targetFieldContracts,
   formatting: {
     gv_common_format_date_uses_gf_local_timestamp: /function\s+format_date\s*\([\s\S]{0,2200}GFCommon::get_local_timestamp\(\s*\$date_gmt_time\s*\)/.test(gvCommon.content),
     gv_common_format_date_reads_gmt_timestamp: /function\s+format_date\s*\([\s\S]{0,1800}mysql2date\(\s*'G'\s*,\s*\$date_string\s*\)/.test(gvCommon.content),
@@ -170,7 +86,7 @@ const sourceContract = {
     date_created_search_policy_marks_utc_storage: searchPolicy.content.includes('date_created') && searchPolicy.content.includes('stored in UTC format'),
     query_filter_handles_date_created_in_utc: queryVisitor.content.includes("'date_created'") && queryVisitor.content.includes("new DateTimeZone( 'UTC' )"),
     search_widget_builds_query_filters_from_request: searchWidget.content.includes('SearchRequest::from_request') && searchWidget.content.includes('SearchFilterBuilder::to_query_filters'),
-    search_scope_request_key_is_present: gravityViewSearchScopeReferences.some((record) => record.matched.includes('gv_search_view')),
+    search_scope_request_key_is_present: searchScope.content.includes('gv_search_view'),
     date_updated_raw_sql_identity_is_preserved: sqlAdjustment.content.includes('date_updated') && sqlAdjustment.content.includes('date_created') && sqlAdjustment.content.includes('UNIX_TIMESTAMP'),
     search_bar_exposes_entry_date_not_direct_system_date_slots: searchFieldCollection.content.includes('new Search_Field_Entry_Date()') && searchFieldEntryDate.content.includes("get_request_value( 'gv_start'") && searchWidget.content.includes('gravityview_get_form_fields( $form_id, true, true )'),
     request_parser_accepts_registered_meta_filter_keys: searchRequest.content.includes("(?:filter|input)_") && searchRequest.content.includes('FieldRegistry::get_all()'),
@@ -184,14 +100,142 @@ const sourceContract = {
   },
 };
 
-function allTrue(value) {
-  if (typeof value === 'boolean') return value;
-  if (value && typeof value === 'object') return Object.values(value).every(allTrue);
-  return true;
+if (!allTrue(sourceContract)) {
+  throw new Error(`Exact GravityView/Gravity Forms source contract drifted: ${JSON.stringify(sourceContract)}`);
 }
 
+const provenance = {
+  date_created_field: sourceLocation(
+    dateCreated,
+    'date_created',
+    [
+      'date_created.field_name',
+      'date_created.searchable',
+      'date_created.operators',
+      'date_created.contexts',
+    ],
+  ),
+  date_created_renderer: sourceLocation(
+    dateCreated,
+    'get_content',
+    ['date_created.get_content_reads_raw_field_value'],
+    'GVCommon::format_date',
+  ),
+  date_updated_field: sourceLocation(
+    dateUpdated,
+    'class DateUpdated',
+    [
+      'date_updated.extends_date_created',
+      'date_updated.field_name',
+      'date_updated.searchable',
+      'date_updated.operators',
+      'date_updated.contexts',
+    ],
+    'date_updated',
+  ),
+  template_field_output: sourceLocation(
+    templateField,
+    'gravityview/template/field/{$field->type}/output',
+    [
+      'presentation_seam.field_specific_output_filter',
+      'presentation_seam.generic_output_filter',
+      'presentation_seam.context_exposes_entry_to_compat_path',
+    ],
+  ),
+  gv_format_date: sourceLocation(
+    gvCommon,
+    'function format_date',
+    [
+      'formatting.gv_common_format_date_uses_gf_local_timestamp',
+      'formatting.gv_common_format_date_reads_gmt_timestamp',
+    ],
+    'GFCommon::get_local_timestamp',
+  ),
+  gravityview_gfapi_query_bridge: sourceLocation(
+    formGf,
+    '$filter::merge_search_criteria',
+    [
+      'query_path.filters_merge_to_search_criteria',
+      'query_path.sorts_translate_raw_field_id_direction_and_numeric_mode',
+      'query_path.gfapi_consumes_search_and_sort',
+    ],
+    'GFAPI::get_entries',
+  ),
+  date_created_search_policy: sourceLocation(
+    searchPolicy,
+    'stored in UTC format',
+    ['query_path.date_created_search_policy_marks_utc_storage'],
+  ),
+  query_filter_date_created: sourceLocation(
+    queryVisitor,
+    "'date_created'",
+    ['query_path.query_filter_handles_date_created_in_utc'],
+    "new DateTimeZone( 'UTC' )",
+  ),
+  search_widget_query_builder: sourceLocation(
+    searchWidget,
+    'SearchRequest::from_request',
+    ['query_path.search_widget_builds_query_filters_from_request'],
+    'SearchFilterBuilder::to_query_filters',
+  ),
+  search_scope: sourceLocation(
+    searchScope,
+    'gv_search_view',
+    ['query_path.search_scope_request_key_is_present'],
+  ),
+  date_updated_raw_sql_adjustment: sourceLocation(
+    sqlAdjustment,
+    'date_updated',
+    ['query_path.date_updated_raw_sql_identity_is_preserved'],
+    'UNIX_TIMESTAMP',
+  ),
+  search_field_collection_entry_date: sourceLocation(
+    searchFieldCollection,
+    'new Search_Field_Entry_Date()',
+    ['query_path.search_bar_exposes_entry_date_not_direct_system_date_slots'],
+  ),
+  search_field_entry_date_request_keys: sourceLocation(
+    searchFieldEntryDate,
+    "get_request_value( 'gv_start'",
+    ['query_path.search_bar_exposes_entry_date_not_direct_system_date_slots'],
+  ),
+  search_request_parser: sourceLocation(
+    searchRequest,
+    'FieldRegistry::get_all()',
+    ['query_path.request_parser_accepts_registered_meta_filter_keys'],
+  ),
+  search_bar_host_api: sourceLocation(
+    inspectorRoute,
+    'function add_search_bar',
+    ['query_path.host_search_bar_api_validates_searchable_field_identity'],
+    'gv_rest_invalid_search_input',
+  ),
+  gravityforms_date_created_contract: sourceLocation(
+    gfApi,
+    'date_created value',
+    ['gravityforms_raw_contract.date_created_utc_y_m_d_h_i_s'],
+  ),
+  gravityforms_update_entry_property: sourceLocation(
+    gfApi,
+    'function update_entry_property',
+    ['gravityforms_raw_contract.update_entry_property_api_present'],
+  ),
+  gravityforms_date_updated_utc_rest_contract: sourceLocation(
+    gfRestEntries,
+    'date the entry was updated',
+    ['gravityforms_raw_contract.date_updated_rest_contract_explicitly_utc'],
+  ),
+  gravityforms_add_entry_date_updated_utc_default: sourceLocation(
+    gfApi,
+    '$date_updated',
+    ['gravityforms_raw_contract.add_entry_defaults_date_updated_to_utc_timestamp'],
+    'utc_timestamp()',
+  ),
+};
+
 const evidence = {
-  schema_version: '2.0.0',
+  schema_version: '3.0.0',
+  evidence_class: 'G008_GRAVITYVIEW_METADATA_ONLY_SOURCE_PROBE',
   program: 'G-008',
   product: 'GravityView',
   exact_version: '3.3.4',
@@ -200,36 +244,18 @@ const evidence = {
   exact_gravityforms_package_sha256: expectedGfSha,
   exact_persiangravity_head: expectedHead,
   source_contract: sourceContract,
-  provenance: {
-    date_created_field: numberedExcerpt(dateCreated, 17, 115),
-    date_updated_field: numberedExcerpt(dateUpdated, 17, 70),
-    template_output_filters: numberedExcerpt(templateField, 390, 526),
-    gv_format_date: around(gvCommon, 'GFCommon::get_local_timestamp( $date_gmt_time )', 42, 48),
-    gravityview_gfapi_query_bridge: numberedExcerpt(formGf, 103, 150),
-    date_created_search_policy: around(searchPolicy, "stored in UTC format", 14, 18),
-    query_filter_date_created: around(queryVisitor, "'date_created'", 24, 34),
-    search_request_parser: numberedExcerpt(searchRequest, 118, 460),
-    search_scope: numberedExcerpt(searchScope, 10, 130),
-    search_widget_query_builder: around(searchWidget, 'SearchRequest::from_request', 18, 36),
-    search_field_collection_entry_date: around(searchFieldCollection, 'new Search_Field_Entry_Date()', 12, 24),
-    search_field_entry_date_request_keys: around(searchFieldEntryDate, "get_request_value( 'gv_start'", 18, 26),
-    search_bar_host_api: around(inspectorRoute, 'function add_search_bar', 18, 120),
-    date_updated_raw_sql_adjustment: around(sqlAdjustment, 'date_updated =', 10, 34),
-    gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
-    gravityforms_update_entry_property: around(gfApi, 'update_entry_property', 12, 44),
-    gravityforms_date_updated_utc_rest_contract: around(gfRestEntries, 'The date the entry was updated, in UTC.', 8, 12),
-    gravityforms_add_entry_date_updated_utc_default: around(gfApi, '$date_updated', 8, 18),
+  independent_fail_closed: independentFailClosed,
+  evidence_boundary: {
+    metadata_only: true,
+    raw_source_persisted: false,
   },
-  gravityforms_date_updated_references: gravityFormsDateUpdatedReferences.slice(0, 160),
-  gravityview_search_scope_references: gravityViewSearchScopeReferences,
-  gravityview_search_request_references: gravityViewSearchRequestReferences,
-  gravityview_widget_layout_references: gravityViewWidgetLayoutReferences,
-  gravityview_search_field_shape_references: gravityViewSearchFieldShapeReferences,
+  provenance,
 };
 
+assertMetadataOnlySourceEvidence(evidence);
+const serialized = JSON.stringify(evidence, null, 2) + '\n';
+assertMetadataOnlySourceEvidence(JSON.parse(serialized));
+
 fs.mkdirSync(artifactDir, { recursive: true });
-fs.writeFileSync(path.join(artifactDir, 'g008-gravityview-source-probe.json'), JSON.stringify(evidence, null, 2) + '\n');
-if (!allTrue(sourceContract)) {
-  throw new Error(`Exact GravityView/Gravity Forms source contract drifted: ${JSON.stringify(sourceContract)}`);
-}
-console.log('GravityView G-008 source contract proven for exact 3.3.4; targeted provenance captured.');
+fs.writeFileSync(path.join(artifactDir, 'g008-gravityview-source-probe.json'), serialized);
+console.log('GravityView G-008 exact source contract proven; persisted evidence is metadata-only.');
