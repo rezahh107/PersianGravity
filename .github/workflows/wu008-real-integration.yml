@@ -415,10 +415,12 @@ jobs:
         run: |
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "enabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
-          node tests/real-integration/g008-gravityview-browser.mjs
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-enabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-enabled.json"
+          test "$browser_rc" -eq 0
 
       - name: Prove GravityView module-disabled native fallback
         shell: bash
@@ -427,10 +429,12 @@ jobs:
         run: |
           set -euo pipefail
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); update_option( "wu008_gv_qualification_mode", "disabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
-          node tests/real-integration/g008-gravityview-browser.mjs
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-disabled.json"
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-disabled.json"
+          test "$browser_rc" -eq 0
 
       - name: Prove GravityView en_US LTR control stays native
         shell: bash
@@ -442,10 +446,12 @@ jobs:
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "en_US"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
-          node tests/real-integration/g008-gravityview-browser.mjs
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-english.json"
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-english.json"
+          test "$browser_rc" -eq 0
 
       - name: Prove GravityView exact-version gate fails closed
         shell: bash
@@ -456,10 +462,12 @@ jobs:
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "drift", false ); update_option( "wu008_gv_qualification_force_version_drift", true, false ); delete_option( "wu008_gv_qualification_trace" );'
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "fa_IR"
-          node tests/real-integration/g008-gravityview-browser.mjs
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-drift.json"
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-drift.json"
+          test "$browser_rc" -eq 0
 
       - name: Reconcile and remove qualification-only GravityView prototype
         shell: bash
