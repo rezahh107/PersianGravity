@@ -207,24 +207,45 @@ const duplicateIds = enabled.timeline?.duplicate_ids ?? [];
 if (duplicateIds.length < 2 || new Set(duplicateIds.map(Number)).size !== duplicateIds.length) failures.push('duplicate-timestamp Timeline events lost distinct note identity');
 const enabledTimelineText = (enabled.timeline?.headers ?? []).join('\n');
 if (enabledTimelineText.includes('11:59') || !enabledTimelineText.includes('۱۱:۵۹') || enabledTimelineText.includes('12:01') || !enabledTimelineText.includes('۱۲:۰۱')) failures.push('enabled Timeline mixed-digit regression remains visible');
-const englishTimelineText = (english.timeline?.headers ?? []).join('\n');
+const englishHeaders = english.timeline?.headers ?? [];
+const englishTimelineText = englishHeaders.join('\n');
 if (!englishTimelineText.includes('11:59') || englishTimelineText.includes('۱۱:۵۹') || !englishTimelineText.includes('12:01') || englishTimelineText.includes('۱۲:۰۱')) failures.push('English Timeline time digits did not remain ASCII');
+if (/[۰-۹]/.test(englishTimelineText)) failures.push('English Timeline leaked Persian digit glyphs');
+for (let index = 0; index < timelineFixture.length; index += 1) {
+  const row = timelineFixture[index];
+  const header = englishHeaders[index] ?? '';
+  const gregorianYear = typeof row.date_created === 'string' ? row.date_created.slice(0, 4) : '';
+  if (!gregorianYear || !header.includes(gregorianYear) || header.includes(row.expected_jalali_date)) {
+    failures.push(`English Timeline row ${row.id} did not remain native Gregorian presentation`);
+  }
+}
 if (enabled.timeline?.marker_leaked !== false || disabled.timeline?.marker_leaked !== false || english.timeline?.marker_leaked !== false) failures.push('Timeline production marker leaked');
 const timelineRepeatedRenderingDeterministic = [enabled, disabled].every((browser) => (
   Boolean(browser.timeline?.repeated)
   && JSON.stringify(browser.timeline.repeated) === JSON.stringify(canonicalTimelineSnapshot(browser.timeline))
 ));
 if (!timelineRepeatedRenderingDeterministic) failures.push('Timeline repeated rendering was not deterministic');
-if (JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Timeline note bodies/order changed with module state');
+if (
+  JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(disabled.timeline?.bodies)
+  || JSON.stringify(enabled.timeline?.bodies) !== JSON.stringify(english.timeline?.bodies)
+) {
+  failures.push('Timeline note bodies/order changed with module state or locale');
+}
 if (JSON.stringify(enabled.print?.headers) !== JSON.stringify(enabled.timeline?.headers)) failures.push('enabled Print did not inherit verified Timeline headers');
 if (JSON.stringify(disabled.print?.headers) !== JSON.stringify(disabled.timeline?.headers)) failures.push('disabled Print did not inherit native Timeline headers');
 if (JSON.stringify(english.print?.headers) !== JSON.stringify(english.timeline?.headers)) failures.push('English Print did not inherit ASCII Timeline headers');
-if (JSON.stringify(enabled.print?.bodies) !== JSON.stringify(enabled.timeline?.bodies) || JSON.stringify(disabled.print?.bodies) !== JSON.stringify(disabled.timeline?.bodies)) failures.push('Print changed Timeline bodies/order');
+if (
+  JSON.stringify(enabled.print?.bodies) !== JSON.stringify(enabled.timeline?.bodies)
+  || JSON.stringify(disabled.print?.bodies) !== JSON.stringify(disabled.timeline?.bodies)
+  || JSON.stringify(english.print?.bodies) !== JSON.stringify(english.timeline?.bodies)
+) {
+  failures.push('Print changed Timeline bodies/order');
+}
 if (enabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || disabled.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION' || english.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push('Print inheritance evidence relation is missing');
-if (enabled.print?.marker_leaked !== false || disabled.print?.marker_leaked !== false) failures.push('Print Timeline production marker leaked');
+if (enabled.print?.marker_leaked !== false || disabled.print?.marker_leaked !== false || english.print?.marker_leaked !== false) failures.push('Print Timeline production marker leaked');
 if (enabled.print.digit_script_count !== 0 || disabled.print.digit_script_count !== 0 || english.print.digit_script_count !== 0) failures.push('Print unexpectedly loaded the workflow-info digit adapter');
 for (const [key, count] of Object.entries(enabled.print.workflow_sidebar_presence ?? {})) {
-  if (count !== 0 || disabled.print.workflow_sidebar_presence?.[key] !== 0) failures.push(`Print unexpectedly contains workflow-sidebar ${key}`);
+  if (count !== 0 || disabled.print.workflow_sidebar_presence?.[key] !== 0 || english.print.workflow_sidebar_presence?.[key] !== 0) failures.push(`Print unexpectedly contains workflow-sidebar ${key}`);
 }
 
 const result = {
