@@ -91,6 +91,8 @@ const templateField = read(roots.gravityview, 'src/Template/TemplateField.php');
 const gvCommon = read(roots.gravityview, 'src/Legacy/Utility/Common.php');
 const formGf = read(roots.gravityview, 'src/Form/FormGravityForms.php');
 const searchPolicy = read(roots.gravityview, 'src/Search/SearchPolicy.php');
+const searchRequest = read(roots.gravityview, 'src/Search/Querying/SearchRequest.php');
+const searchScope = read(roots.gravityview, 'src/Search/Querying/SearchScope.php');
 const queryVisitor = read(roots.gravityview, 'src/Search/Querying/Visitors/QueryFilterVisitor.php');
 const searchWidget = read(roots.gravityview, 'src/Widget/Types/SearchWidget.php');
 const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-filters/src/Sql/SqlAdjustmentCallbacks.php');
@@ -182,6 +184,8 @@ const evidence = {
     gravityview_gfapi_query_bridge: numberedExcerpt(formGf, 103, 150),
     date_created_search_policy: around(searchPolicy, "stored in UTC format", 14, 18),
     query_filter_date_created: around(queryVisitor, "'date_created'", 24, 34),
+    search_request_parser: numberedExcerpt(searchRequest, 118, 460),
+    search_scope: numberedExcerpt(searchScope, 10, 130),
     search_widget_query_builder: around(searchWidget, 'SearchRequest::from_request', 18, 36),
     date_updated_raw_sql_adjustment: around(sqlAdjustment, 'date_updated =', 10, 34),
     gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
