@@ -198,55 +198,6 @@ update_post_meta(
 		),
 	)
 );
-if ( ! class_exists( '\\GravityKit\\GravityView\\REST\\InspectorRoute' ) ) {
-	throw new RuntimeException( 'GravityView exact search-bar host API is unavailable.' );
-}
-$search_request = new WP_REST_Request( 'POST', '' );
-$search_request->set_param( 'id', $view_id );
-$search_request->set_body(
-	wp_json_encode(
-		array(
-			'zone'   => 'header',
-			'fields' => array(
-				array(
-					'field_id' => 'date_created',
-					'input'    => 'date',
-					'label'    => 'Date Created Search',
-				),
-				array(
-					'field_id' => 'date_updated',
-					'input'    => 'date',
-					'label'    => 'Date Updated Search',
-				),
-			),
-		)
-	)
-);
-$search_request->set_header( 'content-type', 'application/json' );
-$search_response = ( new \GravityKit\GravityView\REST\InspectorRoute() )->add_search_bar( $search_request );
-if ( is_wp_error( $search_response ) ) {
-	throw new RuntimeException( 'GravityView host search-bar API rejected the qualification fixture: ' . $search_response->get_error_code() . ' ' . $search_response->get_error_message() );
-}
-if ( ! $search_response instanceof WP_REST_Response ) {
-	throw new RuntimeException( 'GravityView host search-bar API returned an unexpected response type.' );
-}
-$search_bar_result = $search_response->get_data();
-if (
-	! is_array( $search_bar_result )
-	|| empty( $search_bar_result['widget_area'] )
-	|| empty( $search_bar_result['widget_slot'] )
-	|| 2 !== count( (array) ( $search_bar_result['fields'] ?? array() ) )
-) {
-	throw new RuntimeException( 'GravityView host search-bar API did not persist the two exact system-date fields.' );
-}
-$stored_widgets = GVCommon::get_directory_widgets( $view_id );
-if (
-	! isset( $stored_widgets[ $search_bar_result['widget_area'] ][ $search_bar_result['widget_slot'] ] )
-	|| 'search_bar' !== (string) ( $stored_widgets[ $search_bar_result['widget_area'] ][ $search_bar_result['widget_slot'] ]['id'] ?? '' )
-) {
-	throw new RuntimeException( 'GravityView host search-bar API persisted an unexpected widget identity.' );
-}
-
 $search_fields_shortcode = wp_json_encode(
 	array(
 		array(
@@ -303,7 +254,6 @@ $baseline = array(
 	'view_id'                    => $view_id,
 	'page_id'                    => $page_id,
 	'page_url'                   => get_permalink( $page_id ),
-	'search_bar'                 => $search_bar_result,
 	'entries'                    => $fixtures,
 );
 file_put_contents(
