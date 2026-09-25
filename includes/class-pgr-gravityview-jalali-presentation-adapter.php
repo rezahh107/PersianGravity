@@ -121,7 +121,7 @@ final class PGR_GravityView_Jalali_Presentation_Adapter {
 			return false;
 		}
 
-		$field_type = isset( $context->field->type ) && is_scalar( $context->field->type )
+		$field_type     = isset( $context->field->type ) && is_scalar( $context->field->type )
 			? (string) $context->field->type
 			: '';
 		$field_id_value = isset( $context->field->ID ) && is_scalar( $context->field->ID )
@@ -208,7 +208,7 @@ final class PGR_GravityView_Jalali_Presentation_Adapter {
 			return false;
 		}
 
-		$data = get_file_data(
+		$data    = get_file_data(
 			$plugin_file,
 			array( 'Version' => 'Version' ),
 			'plugin'
