@@ -224,7 +224,8 @@ try {
   assertPresentation(initial, shouldPresent);
 
   if (mode === 'enabled' && initial.html.dir !== 'rtl') throw new Error(`Expected RTL enabled surface, got ${initial.html.dir}`);
-  if (mode === 'english' && initial.html.dir !== 'ltr') throw new Error(`Expected LTR English control, got ${initial.html.dir}`);
+  if (mode === 'english' && initial.html.dir === 'rtl') throw new Error('English control unexpectedly rendered RTL.');
+  if (mode === 'english' && !/^en(?:-|$)/i.test(initial.html.lang || '')) throw new Error(`Expected English document language, got ${initial.html.lang}`);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForFunction(
