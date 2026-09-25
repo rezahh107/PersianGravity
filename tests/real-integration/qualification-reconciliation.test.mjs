@@ -189,6 +189,23 @@ function qualifyGravityView(input) {
     evidence_class: 'G008_GRAVITYVIEW_DATE_QUALIFICATION_RECONCILIATION',
     status: 'PASS',
     source_contract_proven: true,
+    source_evidence_boundary: {
+      metadata_only: true,
+      raw_source_persisted: false,
+    },
+    independent_source_fail_closed: {
+      date_created: true,
+      date_updated: true,
+    },
+    source_provenance: {
+      target_fields: {
+        file: 'src/Field/Types/DateCreated.php',
+        start_line: 20,
+        end_line: 40,
+        file_sha256: '9'.repeat(64),
+        contract_keys: ['date_created.field_name', 'date_updated.field_name'],
+      },
+    },
     exact_persiangravity_commit: identity.head,
     exact_persiangravity_tree: identity.tree,
     exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
@@ -539,6 +556,25 @@ test('G-008 GravityView qualification reconciles without production admission', 
     && surface.adapter_identity === null
     && surface.exact_version_disposition === 'QUALIFIED_FOR_PRODUCTION_ADAPTER'
   ), true);
+});
+
+test('G-008 GravityView qualification falsifies source-evidence privacy and independent-field drift', () => {
+  const privacy = fixtures();
+  qualifyGravityView(privacy);
+  privacy.g008GravityViewQualificationEvidence.source_provenance.target_fields.lines = [
+    { line: 20, text: 'licensed source' },
+  ];
+  expectFailure(privacy, /sanitized source provenance contract failed/);
+
+  const created = fixtures();
+  qualifyGravityView(created);
+  created.g008GravityViewQualificationEvidence.independent_source_fail_closed.date_created = false;
+  expectFailure(created, /independent date_created\/date_updated source fail-closed proof is incomplete/);
+
+  const updated = fixtures();
+  qualifyGravityView(updated);
+  updated.g008GravityViewQualificationEvidence.independent_source_fail_closed.date_updated = false;
+  expectFailure(updated, /independent date_created\/date_updated source fail-closed proof is incomplete/);
 });
 
 test('G-008 GravityView qualification falsifies disposition and production-adapter drift', () => {
