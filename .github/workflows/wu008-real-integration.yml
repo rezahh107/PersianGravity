@@ -479,7 +479,7 @@ jobs:
           test -n "$original_date_format"
           php "$WU008_WP_CLI" option update date_format "$original_date_format" --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); delete_option( "wu008_gv_qualification_mode" ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" ); delete_option( "wu008_gv_qualification_view_id" );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); delete_option( "wu008_gv_qualification_mode" ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" ); delete_option( "wu008_gv_qualification_view_id" );'
           rm "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
           test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
 
