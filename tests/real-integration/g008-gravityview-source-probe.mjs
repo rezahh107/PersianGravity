@@ -102,6 +102,13 @@ const gravityFormsDateUpdatedReferences = findWindows(
   ['date_updated', 'utc_timestamp()', 'updated, in UTC'],
   12,
 );
+const gravityViewSearchRequestReferences = findWindows(
+  roots.gravityview,
+  ['class SearchRequest', 'filter_', 'from_request', 'SearchFilterBuilder', 'SearchScope', 'field_filters'],
+  18,
+).filter((record) =>
+  /Search|Request|Widget|Filter/i.test(record.file)
+).slice(0, 240);
 
 const sourceContract = {
   date_created: {
@@ -176,6 +183,7 @@ const evidence = {
     gravityforms_add_entry_date_updated_utc_default: around(gfApi, '$date_updated', 8, 18),
   },
   gravityforms_date_updated_references: gravityFormsDateUpdatedReferences.slice(0, 160),
+  gravityview_search_request_references: gravityViewSearchRequestReferences,
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
