@@ -9,6 +9,9 @@
 defined( 'ABSPATH' ) || exit;
 
 function pgr_wu008_gv_exact_version(): bool {
+	if ( (bool) get_option( 'wu008_gv_qualification_force_version_drift', false ) ) {
+		return false;
+	}
 	if ( ! function_exists( 'get_plugin_data' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	}
@@ -80,7 +83,7 @@ function pgr_wu008_gv_filter_system_date( $output, $context ) {
 		'is_admin'           => is_admin(),
 	);
 
-	$eligible = 'enabled' === $mode
+	$eligible = in_array( $mode, array( 'enabled', 'english', 'drift' ), true )
 		&& in_array( $field_id, array( 'date_created', 'date_updated' ), true )
 		&& $expected_view_id > 0
 		&& $view_id === $expected_view_id
