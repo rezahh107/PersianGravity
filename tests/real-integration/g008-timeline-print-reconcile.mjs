@@ -97,10 +97,10 @@ if (
 if (
   englishHook.class_loaded !== true || englishHook.module_enabled !== true
   || englishHook.locale !== 'en_US'
-  || englishHook.option_date_format_hooks !== 1 || englishHook.option_time_format_hooks !== 0
-  || englishHook.date_i18n_hooks !== 1
+  || englishHook.option_date_format_hooks !== 0 || englishHook.option_time_format_hooks !== 0
+  || englishHook.date_i18n_hooks !== 0
 ) {
-  failures.push(`English production digit hook did not fail closed: ${JSON.stringify(englishHook)}`);
+  failures.push(`English production Timeline adapter did not fail closed: ${JSON.stringify(englishHook)}`);
 }
 for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook], ['english', englishHook]]) {
   if (hook.flow_version !== '3.1.0' || hook.gf_version !== '3.1.1.1') failures.push(`${label} hook probe host version mismatch`);
@@ -170,9 +170,19 @@ const disabledHeaderText = disabledHeaders.join('\n');
 if (!disabledHeaderText.includes('11:59') || disabledHeaderText.includes('۱۱:۵۹') || !disabledHeaderText.includes('12:01') || disabledHeaderText.includes('۱۲:۰۱')) {
   failures.push('disabled Timeline boundary time digits are not exact ASCII native output');
 }
-const englishHeaderText = (englishBrowser.timeline?.headers ?? []).join('\n');
+const englishHeaders = englishBrowser.timeline?.headers ?? [];
+const englishHeaderText = englishHeaders.join('\n');
 if (!englishHeaderText.includes('11:59') || englishHeaderText.includes('۱۱:۵۹') || !englishHeaderText.includes('12:01') || englishHeaderText.includes('۱۲:۰۱')) {
   failures.push('English Timeline boundary time digits did not remain ASCII');
+}
+if (/[۰-۹]/.test(englishHeaderText)) failures.push('English Timeline leaked Persian digit glyphs');
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  const row = expectedTimeline[index];
+  const header = englishHeaders[index] ?? '';
+  const gregorianYear = typeof row.date_created === 'string' ? row.date_created.slice(0, 4) : '';
+  if (!gregorianYear || !header.includes(gregorianYear) || header.includes(row.expected_jalali_date)) {
+    failures.push(`English Timeline row ${row.id} did not remain native Gregorian presentation`);
+  }
 }
 if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false || englishBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
 for (const browser of [enabledBrowser, disabledBrowser]) {
@@ -212,7 +222,13 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
-if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+const englishBodies = englishBrowser.timeline?.bodies ?? [];
+if (
+  JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)
+  || JSON.stringify(enabledBodies) !== JSON.stringify(englishBodies)
+) {
+  failures.push('Timeline bodies/order changed with presentation mode or locale');
+}
 
 const timelineMachine = (browser) => (browser.timeline?.rows ?? []).map((row) => ({
   row_id: row.row_id,
@@ -224,10 +240,19 @@ if (JSON.stringify(timelineMachine(enabledBrowser)) !== JSON.stringify(timelineM
   failures.push('Timeline DOM IDs/attributes changed with Persian time digit presentation');
 }
 for (const stored of expectedStored) {
-  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
+  if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value) || !englishBodies.includes(stored.value)) {
+    failures.push(`stored body ${stored.id} changed or disappeared`);
+  }
 }
 const duplicateExpectedBodies = expectedTimeline.filter((row) => row.date_created === fixture.duplicate_timestamp).map((row) => row.value);
-if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) => enabledBodies.filter((value) => value === body).length !== 1 || disabledBodies.filter((value) => value === body).length !== 1)) {
+if (
+  duplicateExpectedBodies.length < 2
+  || duplicateExpectedBodies.some((body) => (
+    enabledBodies.filter((value) => value === body).length !== 1
+    || disabledBodies.filter((value) => value === body).length !== 1
+    || englishBodies.filter((value) => value === body).length !== 1
+  ))
+) {
   failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
 }
 
@@ -266,7 +291,7 @@ const result = {
     native_disabled_fallback_proven: passed,
     enabled_jalali_presentation_proven: passed,
     enabled_persian_time_digits_proven: passed,
-    english_ascii_time_digits_proven: passed,
+    english_native_gregorian_ascii_presentation_proven: passed,
     dom_ids_attributes_unchanged: passed,
     body_vector_mode_equality_proven: passed,
     fixture_row_mapping_proven: passed,
@@ -283,7 +308,7 @@ const result = {
     body_vector_inheritance_proven: passed,
     native_disabled_inheritance_proven: passed,
     persian_time_digit_inheritance_proven: passed,
-    english_ascii_time_digit_inheritance_proven: passed,
+    english_native_gregorian_ascii_inheritance_proven: passed,
     marker_non_leakage_proven: passed,
   },
   failures,
