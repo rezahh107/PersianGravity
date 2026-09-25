@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { assertSanitizedProvenance } from './g008-gravityview-source-evidence.mjs';
 
 export class EvidenceReconciliationError extends Error {
   constructor(errors) {
@@ -523,6 +524,23 @@ function validateG008GravityViewQualification(registry, product, surface, eviden
   }
   if (evidence.source_contract_proven !== true) {
     errors.push(`G-008 ${surface.id}: exact GravityView source contract is not proven.`);
+  }
+  if (
+    evidence.source_evidence_boundary?.metadata_only !== true
+    || evidence.source_evidence_boundary?.raw_source_persisted !== false
+  ) {
+    errors.push(`G-008 ${surface.id}: GravityView source evidence is not metadata-only.`);
+  }
+  if (
+    evidence.independent_source_fail_closed?.date_created !== true
+    || evidence.independent_source_fail_closed?.date_updated !== true
+  ) {
+    errors.push(`G-008 ${surface.id}: independent date_created/date_updated source fail-closed proof is incomplete.`);
+  }
+  try {
+    assertSanitizedProvenance(evidence.source_provenance);
+  } catch (error) {
+    errors.push(`G-008 ${surface.id}: sanitized source provenance contract failed: ${error.message}`);
   }
   errors.push(...exactIdentityErrors(evidence, expectedIdentity, label));
   if (evidence.exact_version !== product.version || evidence.exact_package_sha256 !== product.package_sha256) {
