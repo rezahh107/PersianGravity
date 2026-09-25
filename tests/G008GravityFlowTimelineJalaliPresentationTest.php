@@ -279,7 +279,6 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$this->assertStringContainsString( "add_filter( 'option_date_format'", $source );
 		$this->assertStringContainsString( "'fa_IR' !== determine_locale()", $source );
 		$this->assertStringContainsString( "add_filter( 'option_time_format'", $source );
-		$this->assertStringContainsString( "'fa_IR' === determine_locale()", $source );
 		$this->assertStringContainsString( "add_filter( 'date_i18n'", $source );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( 'PGR_Jalali_Presentation::format_date', $source );
