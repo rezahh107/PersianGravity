@@ -95,6 +95,9 @@ const searchRequest = read(roots.gravityview, 'src/Search/Querying/SearchRequest
 const searchScope = read(roots.gravityview, 'src/Search/Querying/SearchScope.php');
 const queryVisitor = read(roots.gravityview, 'src/Search/Querying/Visitors/QueryFilterVisitor.php');
 const searchWidget = read(roots.gravityview, 'src/Widget/Types/SearchWidget.php');
+const searchFieldCollection = read(roots.gravityview, 'src/Search/SearchFieldCollection.php');
+const searchFieldEntryDate = read(roots.gravityview, 'src/Search/Fields/SearchFieldEntryDate.php');
+const inspectorRoute = read(roots.gravityview, 'src/REST/InspectorRoute.php');
 const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-filters/src/Sql/SqlAdjustmentCallbacks.php');
 const gfApi = read(roots.gravityforms, 'includes/api.php');
 const gfRestEntries = read(roots.gravityforms, 'includes/webapi/v2/includes/controllers/class-controller-form-entries.php');
@@ -157,6 +160,9 @@ const sourceContract = {
     search_widget_builds_query_filters_from_request: searchWidget.content.includes('SearchRequest::from_request') && searchWidget.content.includes('SearchFilterBuilder::to_query_filters'),
     search_scope_request_key_is_present: gravityViewSearchScopeReferences.some((record) => record.matched.includes('gv_search_view')),
     date_updated_raw_sql_identity_is_preserved: sqlAdjustment.content.includes('date_updated') && sqlAdjustment.content.includes('date_created') && sqlAdjustment.content.includes('UNIX_TIMESTAMP'),
+    search_bar_exposes_entry_date_not_direct_system_date_slots: searchFieldCollection.content.includes('new Search_Field_Entry_Date()') && searchFieldEntryDate.content.includes("get_request_value( 'gv_start'") && searchWidget.content.includes('gravityview_get_form_fields( $form_id, true, true )'),
+    request_parser_accepts_registered_meta_filter_keys: searchRequest.content.includes("(?:filter|input)_") && searchRequest.content.includes('FieldRegistry::get_all()'),
+    host_search_bar_api_validates_searchable_field_identity: inspectorRoute.content.includes('function add_search_bar') && inspectorRoute.content.includes('assert_searchable_id') && inspectorRoute.content.includes('gv_rest_invalid_search_input'),
   },
   gravityforms_raw_contract: {
     date_created_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
@@ -193,6 +199,9 @@ const evidence = {
     search_request_parser: numberedExcerpt(searchRequest, 118, 460),
     search_scope: numberedExcerpt(searchScope, 10, 130),
     search_widget_query_builder: around(searchWidget, 'SearchRequest::from_request', 18, 36),
+    search_field_collection_entry_date: around(searchFieldCollection, 'new Search_Field_Entry_Date()', 12, 24),
+    search_field_entry_date_request_keys: around(searchFieldEntryDate, "get_request_value( 'gv_start'", 18, 26),
+    search_bar_host_api: around(inspectorRoute, 'function add_search_bar', 18, 120),
     date_updated_raw_sql_adjustment: around(sqlAdjustment, 'date_updated =', 10, 34),
     gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
     gravityforms_update_entry_property: around(gfApi, 'update_entry_property', 12, 44),
