@@ -112,12 +112,22 @@ foreach ( $fixture_specs as $spec ) {
 		throw new RuntimeException( 'Typed Jalali presentation authority is unavailable for fixture generation.' );
 	}
 
+	$native_created = GVCommon::format_date( $spec['date_created'], 'format=Y-m-d H:i:s' );
+	$native_updated = GVCommon::format_date( $spec['date_updated'], 'format=Y-m-d H:i:s' );
+	$local_created  = $created->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s' );
+	$local_updated  = $updated->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s' );
+	if ( $native_created !== $local_created || $native_updated !== $local_updated ) {
+		throw new RuntimeException( 'GravityView native formatter timezone semantics differ from the authoritative UTC-to-site-time fixture contract.' );
+	}
+
 	$fixtures[] = array(
 		'key'                     => $spec['key'],
 		'id'                      => $entry_id,
 		'token'                   => $spec['token'],
 		'date_created'            => $spec['date_created'],
 		'date_updated'            => $spec['date_updated'],
+		'expected_created_native' => $native_created,
+		'expected_updated_native' => $native_updated,
 		'expected_created_jalali' => PGR_Jalali_Presentation::format_datetime( $created ),
 		'expected_updated_jalali' => PGR_Jalali_Presentation::format_datetime( $updated ),
 	);
