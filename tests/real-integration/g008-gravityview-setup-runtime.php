@@ -232,7 +232,7 @@ $page_id = wp_insert_post(
 		'post_status'  => 'publish',
 		'post_title'   => 'WU008 G008 GravityView Date Qualification',
 		'post_name'    => 'wu008-g008-gravityview-dates',
-		'post_content' => sprintf( '[gravityview id="%d"]\n[gravityview_widget_search]', $view_id ),
+		'post_content' => sprintf( '[gravityview id="%d"]', $view_id ),
 	),
 	true
 );
