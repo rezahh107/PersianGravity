@@ -327,7 +327,7 @@
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter",
           "runtime_evidence": "g008-timeline-print-qualification.json",
-          "evidence": "Exact Flow 3.1.0 and Gravity Forms 3.1.1.1 source fingerprints plus current-Head WU008 production hook/runtime/browser reconciliation prove admitted initial and stored Timeline events, Jalali dates with Persian-visible 11:59/12:01 time digits in fa_IR, exact native disabled and ASCII English controls, unchanged storage/IDs/order/bodies/DOM attributes including duplicate-timestamp identities and date-looking user text, bounded hook lifecycle, and marker non-leakage.",
+          "evidence": "Exact Flow 3.1.0 and Gravity Forms 3.1.1.1 source fingerprints plus current-Head WU008 production hook/runtime/browser reconciliation prove admitted initial and stored Timeline events, Jalali dates with Persian-visible 11:59/12:01 time digits in fa_IR, exact native disabled control and native Gregorian/ASCII English control, unchanged storage/IDs/order/bodies/DOM attributes including duplicate-timestamp identities and date-looking user text, bounded hook lifecycle, and marker non-leakage.",
           "drift_behavior": "Exact Gravity Flow 3.1.0, Gravity Forms 3.1.1.1, qualified source fingerprints, caller chains and supported date-format profiles are required; any drift fails closed to native rendering and requires requalification.",
           "exact_version_disposition": "ADMITTED_FOR_EXACT_VERSION"
         },
@@ -348,7 +348,7 @@
           "support_state": "ADMITTED_VERIFIED",
           "adapter_identity": "PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter",
           "runtime_evidence": "g008-timeline-print-qualification.json",
-          "evidence": "Exact source and authentic multi-note WU008 production reconciliation prove Print field-grid reuse, exact inheritance of the corresponding verified Timeline Jalali/Persian-time header presentation, ASCII English/native controls, absence of workflow-sidebar date fields, unchanged Timeline bodies/order/identity, and no independent Print calendar or digit seam.",
+          "evidence": "Exact source and authentic multi-note WU008 production reconciliation prove Print field-grid reuse, exact inheritance of the corresponding verified Timeline Jalali/Persian-time header presentation, native Gregorian/ASCII English control and native disabled control, absence of workflow-sidebar date fields, unchanged Timeline bodies/order/identity, and no independent Print calendar or digit seam.",
           "drift_behavior": "Print admission is valid only through the exact verified Timeline renderer on the qualified Gravity Flow 3.1.0 package; any renderer/source/version drift fails closed to native output and requires requalification.",
           "exact_version_disposition": "ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE"
         }
