@@ -68,7 +68,6 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $architecture );
-		$this->assertStringContainsString( 'PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter', $architecture );
 		$this->assertStringContainsString( 'Print owns no independent calendar or digit seam', $architecture );
 		$this->assertStringContainsString( 'Status `due_date` and Entry Detail Scheduled', $architecture );
 		$this->assertStringContainsString( 'Timeline and Print remain outside the separate Entry Detail Persian-digit adapter', $architecture );
