@@ -31,8 +31,12 @@ if ( 'Asia/Tehran' !== wp_timezone_string() || 'UTC' !== date_default_timezone_g
 	throw new RuntimeException( 'GravityView qualification requires PHP UTC and site Asia/Tehran.' );
 }
 
-if ( ! class_exists( 'PGR_Module_Registry' ) || ! PGR_Module_Registry::set_enabled( 'jalali_presentation', true ) ) {
-	throw new RuntimeException( 'Could not enable jalali_presentation for GravityView qualification.' );
+if (
+	! class_exists( 'PGR_Module_Registry' ) ||
+	! PGR_Module_Registry::is_enabled( 'jalali_presentation' ) ||
+	! class_exists( 'PGR_Jalali_Presentation', false )
+) {
+	throw new RuntimeException( 'jalali_presentation must be enabled before the GravityView fixture request so its typed facade loads at gform_loaded.' );
 }
 
 $form = array(
