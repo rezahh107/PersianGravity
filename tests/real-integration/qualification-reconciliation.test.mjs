@@ -23,6 +23,10 @@ function flowProduct(input) {
   return input.g008Registry.products.find((product) => product.product === 'Gravity Flow');
 }
 
+function gravityViewProduct(input) {
+  return input.g008Registry.products.find((product) => product.product === 'GravityView');
+}
+
 function fixtures() {
   const g009Registry = {
     native_pass_runtime_requirements: {
@@ -67,6 +71,9 @@ function fixtures() {
           { id: 'gravityflow.status.workflow-timestamp', raw_source: 'workflow_timestamp sortable/raw field', presentation_seam: 'gravityflow_field_value_status_table filters the display value', discovery_state: 'SOURCE_PROVEN', support_state: 'NOT_PROVEN' },
           { id: 'gravityflow.status.due-date', raw_source: 'due_date', presentation_seam: 'NOT_PROVEN', discovery_state: 'NOT_PROVEN', support_state: 'NOT_PROVEN', adapter_identity: null },
         ],
+      },
+      {
+        product: 'GravityView', version: '3.3.4', package_sha256: 'c'.repeat(64), surfaces: [],
       },
     ],
   };
@@ -151,7 +158,79 @@ function fixtures() {
     g008FlowStatusBrowserDisabledEvidence: null,
     g008FlowScheduleQualificationEvidence: null,
     g008TimelinePrintQualificationEvidence: null,
+    g008GravityViewQualificationEvidence: null,
     expectedIdentity: structuredClone(identity),
+  };
+}
+
+function qualifyGravityView(input) {
+  const product = gravityViewProduct(input);
+  product.surfaces = [
+    {
+      id: 'gravityview.date-created',
+      discovery_state: 'RUNTIME_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+      runtime_evidence: 'g008-gravityview-date-qualification.json',
+      exact_version_disposition: 'QUALIFIED_FOR_PRODUCTION_ADAPTER',
+    },
+    {
+      id: 'gravityview.date-updated',
+      discovery_state: 'RUNTIME_PROVEN',
+      support_state: 'NOT_PROVEN',
+      adapter_identity: null,
+      runtime_evidence: 'g008-gravityview-date-qualification.json',
+      exact_version_disposition: 'QUALIFIED_FOR_PRODUCTION_ADAPTER',
+    },
+  ];
+  input.sourceDiscoveryEvidence.exact_versions.gravityview = '3.3.4';
+  input.sourceDiscoveryEvidence.exact_package_sha256.gravityview = 'c'.repeat(64);
+  input.g008GravityViewQualificationEvidence = {
+    evidence_class: 'G008_GRAVITYVIEW_DATE_QUALIFICATION_RECONCILIATION',
+    status: 'PASS',
+    source_contract_proven: true,
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_tree: identity.tree,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_version: '3.3.4',
+    exact_package_sha256: 'c'.repeat(64),
+    exact_gravityforms_version: '3.1.1.1',
+    exact_gravityforms_package_sha256: 'a'.repeat(64),
+    dispositions: {
+      'gravityview.date-created': 'QUALIFIED_FOR_PRODUCTION_ADAPTER',
+      'gravityview.date-updated': 'QUALIFIED_FOR_PRODUCTION_ADAPTER',
+    },
+    source_findings: {
+      consumed_seams: [
+        'gravityview/template/field/date_created/output',
+        'gravityview/template/field/date_updated/output',
+      ],
+    },
+    runtime_findings: {
+      field_specific_hooks_consumed: true,
+      typed_raw_entry_values_available: true,
+      boundary_sensitive_utc_to_site_local_native_behavior: true,
+      enabled_jalali_visible: true,
+      disabled_native_fallback: true,
+      english_ltr_native_control: true,
+      forced_version_gate_failure_native_fallback: true,
+      repeated_render_stable: true,
+      raw_db_gfapi_rest_equal_across_modes: true,
+      gfapi_sort_equal_across_modes: true,
+      gravityview_browser_sort_equal_across_modes: true,
+      gravityview_browser_filter_equal_across_modes: true,
+      query_inputs_and_result_entry_ids_recorded: true,
+      row_and_sort_link_attributes_preserved: true,
+      unrelated_tokens_preserved: true,
+    },
+    production_boundary: {
+      production_adapter_added: false,
+      qualification_only_mu_prototype: true,
+      exact_version_fail_closed_required: true,
+      locale_context_fail_closed_required: true,
+      arbitrary_display_string_parsing_required: false,
+      machine_semantics_mutation_required: false,
+    },
   };
 }
 
@@ -443,6 +522,35 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
   assert.deepEqual(input.g009Registry, beforeG009);
   assert.deepEqual(input.g008Registry, beforeG008);
   assert.equal(flowProduct(input).surfaces.every((surface) => surface.support_state === 'NOT_PROVEN'), true);
+});
+
+test('G-008 GravityView qualification reconciles without production admission', () => {
+  const input = fixtures();
+  qualifyGravityView(input);
+  const before = structuredClone(input.g008Registry);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.status, 'PASS');
+  assert.equal(result.g008_runtime_qualified_not_admitted_claims_reconciled, 2);
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 0);
+  assert.deepEqual(input.g008Registry, before);
+  assert.equal(gravityViewProduct(input).surfaces.every((surface) =>
+    surface.discovery_state === 'RUNTIME_PROVEN'
+    && surface.support_state === 'NOT_PROVEN'
+    && surface.adapter_identity === null
+    && surface.exact_version_disposition === 'QUALIFIED_FOR_PRODUCTION_ADAPTER'
+  ), true);
+});
+
+test('G-008 GravityView qualification falsifies disposition and production-adapter drift', () => {
+  const disposition = fixtures();
+  qualifyGravityView(disposition);
+  disposition.g008GravityViewQualificationEvidence.dispositions['gravityview.date-created'] = 'NOT_PROVEN';
+  expectFailure(disposition, /gravityview\.date-created.*runtime qualification does not close the committed disposition/);
+
+  const adapter = fixtures();
+  qualifyGravityView(adapter);
+  gravityViewProduct(adapter).surfaces.find((surface) => surface.id === 'gravityview.date-updated').adapter_identity = 'UnexpectedProductionAdapter';
+  expectFailure(adapter, /gravityview\.date-updated.*qualification-only claim must not name a production adapter/);
 });
 
 test('G-009 downgrade falsification rejects NOT_PROVEN for one required runtime scenario', () => {
