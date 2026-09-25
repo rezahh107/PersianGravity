@@ -469,6 +469,98 @@ function validateG008FinalNoAdmission(
   return errors;
 }
 
+const gravityViewQualificationSurfaceIds = new Set([
+  'gravityview.date-created',
+  'gravityview.date-updated',
+]);
+
+const gravityViewQualificationHooks = {
+  'gravityview.date-created': 'gravityview/template/field/date_created/output',
+  'gravityview.date-updated': 'gravityview/template/field/date_updated/output',
+};
+
+const gravityViewQualificationRuntimeFlags = [
+  'field_specific_hooks_consumed',
+  'typed_raw_entry_values_available',
+  'boundary_sensitive_utc_to_site_local_native_behavior',
+  'enabled_jalali_visible',
+  'disabled_native_fallback',
+  'english_ltr_native_control',
+  'forced_version_gate_failure_native_fallback',
+  'repeated_render_stable',
+  'raw_db_gfapi_rest_equal_across_modes',
+  'gfapi_sort_equal_across_modes',
+  'gravityview_browser_sort_equal_across_modes',
+  'gravityview_browser_filter_equal_across_modes',
+  'query_inputs_and_result_entry_ids_recorded',
+  'row_and_sort_link_attributes_preserved',
+  'unrelated_tokens_preserved',
+];
+
+function validateG008GravityViewQualification(registry, product, surface, evidence, expectedIdentity) {
+  const errors = [];
+  const label = `G-008 ${surface.id} GravityView qualification`;
+  const gravityForms = (registry.products ?? []).find((candidate) => candidate.product === 'Gravity Forms');
+
+  if (surface.discovery_state !== 'RUNTIME_PROVEN' || surface.support_state !== 'NOT_PROVEN') {
+    errors.push(`G-008 ${surface.id}: qualification must be RUNTIME_PROVEN while remaining production support_state NOT_PROVEN.`);
+  }
+  if (surface.adapter_identity !== null) {
+    errors.push(`G-008 ${surface.id}: qualification-only claim must not name a production adapter.`);
+  }
+  if (surface.exact_version_disposition !== 'QUALIFIED_FOR_PRODUCTION_ADAPTER') {
+    errors.push(`G-008 ${surface.id}: exact-version qualification disposition mismatch.`);
+  }
+  if (surface.runtime_evidence !== 'g008-gravityview-date-qualification.json') {
+    errors.push(`G-008 ${surface.id}: GravityView qualification runtime evidence reference mismatch.`);
+  }
+
+  if (!isObject(evidence)) {
+    return [...errors, `G-008 ${surface.id}: dedicated GravityView qualification evidence is missing.`];
+  }
+  if (evidence.evidence_class !== 'G008_GRAVITYVIEW_DATE_QUALIFICATION_RECONCILIATION' || evidence.status !== 'PASS') {
+    errors.push(`G-008 ${surface.id}: GravityView qualification evidence class/status mismatch.`);
+  }
+  if (evidence.source_contract_proven !== true) {
+    errors.push(`G-008 ${surface.id}: exact GravityView source contract is not proven.`);
+  }
+  errors.push(...exactIdentityErrors(evidence, expectedIdentity, label));
+  if (evidence.exact_version !== product.version || evidence.exact_package_sha256 !== product.package_sha256) {
+    errors.push(`G-008 ${surface.id}: exact GravityView version/package identity mismatch.`);
+  }
+  if (!gravityForms) {
+    errors.push(`G-008 ${surface.id}: Gravity Forms registry identity is missing.`);
+  } else if (
+    evidence.exact_gravityforms_version !== gravityForms.version
+    || evidence.exact_gravityforms_package_sha256 !== gravityForms.package_sha256
+  ) {
+    errors.push(`G-008 ${surface.id}: exact Gravity Forms version/package identity mismatch.`);
+  }
+  if (evidence.dispositions?.[surface.id] !== 'QUALIFIED_FOR_PRODUCTION_ADAPTER') {
+    errors.push(`G-008 ${surface.id}: runtime qualification does not close the committed disposition.`);
+  }
+  const hook = gravityViewQualificationHooks[surface.id];
+  if (!hook || !Array.isArray(evidence.source_findings?.consumed_seams) || !evidence.source_findings.consumed_seams.includes(hook)) {
+    errors.push(`G-008 ${surface.id}: exact field-specific GravityView output seam is not bound in evidence.`);
+  }
+  for (const flag of gravityViewQualificationRuntimeFlags) {
+    if (evidence.runtime_findings?.[flag] !== true) {
+      errors.push(`G-008 ${surface.id}: GravityView runtime qualification flag ${flag} is not proven.`);
+    }
+  }
+  if (
+    evidence.production_boundary?.production_adapter_added !== false
+    || evidence.production_boundary?.qualification_only_mu_prototype !== true
+    || evidence.production_boundary?.exact_version_fail_closed_required !== true
+    || evidence.production_boundary?.locale_context_fail_closed_required !== true
+    || evidence.production_boundary?.arbitrary_display_string_parsing_required !== false
+    || evidence.production_boundary?.machine_semantics_mutation_required !== false
+  ) {
+    errors.push(`G-008 ${surface.id}: qualification/production boundary is incomplete or widened.`);
+  }
+  return errors;
+}
+
 const timelinePrintAdmissionSurfaceIds = new Set([
   'gravityflow.timeline-history',
   'gravityflow.print',
@@ -582,12 +674,14 @@ function validateG008(
   statusBrowserDisabledEvidence,
   scheduleQualificationEvidence,
   timelinePrintQualificationEvidence,
+  gravityViewQualificationEvidence,
   expectedIdentity
 ) {
   const errors = [];
   const sourceClaims = [];
   const runtimeClaims = [];
   const finalNoAdmissionClaims = [];
+  const qualifiedNotAdmittedClaims = [];
 
   if (!isObject(sourceEvidence)) {
     return { errors: ['G-008 source-discovery evidence artifact is missing.'], sourceClaims: 0, runtimeClaims: 0, finalNoAdmissionClaims: 0 };
@@ -600,6 +694,9 @@ function validateG008(
   for (const product of registry.products ?? []) {
     for (const surface of product.surfaces ?? []) {
       const isTimelinePrintAdmission = timelinePrintAdmissionSurfaceIds.has(surface.id);
+      const isGravityViewQualification = product.product === 'GravityView'
+        && gravityViewQualificationSurfaceIds.has(surface.id)
+        && surface.exact_version_disposition === 'QUALIFIED_FOR_PRODUCTION_ADAPTER';
       const isFinalNoAdmission = surface.exact_version_disposition === 'FINAL_NO_ADMISSION';
       const isOrdinaryRuntimeAdmission = product.product === 'Gravity Flow'
         && !isTimelinePrintAdmission
@@ -607,6 +704,7 @@ function validateG008(
         && hasG008RuntimeAdmissionSignal(surface);
       const isSourceOnlyClaim = surface.discovery_state === 'SOURCE_PROVEN';
       const participates = isTimelinePrintAdmission
+        || isGravityViewQualification
         || isFinalNoAdmission
         || isOrdinaryRuntimeAdmission
         || isSourceOnlyClaim;
@@ -628,6 +726,18 @@ function validateG008(
           product,
           surface,
           timelinePrintQualificationEvidence,
+          expectedIdentity
+        ));
+        continue;
+      }
+
+      if (isGravityViewQualification) {
+        qualifiedNotAdmittedClaims.push({ product, surface });
+        errors.push(...validateG008GravityViewQualification(
+          registry,
+          product,
+          surface,
+          gravityViewQualificationEvidence,
           expectedIdentity
         ));
         continue;
@@ -673,7 +783,13 @@ function validateG008(
     }
   }
 
-  return { errors, sourceClaims: sourceClaims.length, runtimeClaims: runtimeClaims.length, finalNoAdmissionClaims: finalNoAdmissionClaims.length };
+  return {
+    errors,
+    sourceClaims: sourceClaims.length,
+    runtimeClaims: runtimeClaims.length,
+    finalNoAdmissionClaims: finalNoAdmissionClaims.length,
+    qualifiedNotAdmittedClaims: qualifiedNotAdmittedClaims.length,
+  };
 }
 
 export function reconcileQualificationEvidence({
@@ -694,6 +810,7 @@ export function reconcileQualificationEvidence({
   g008FlowStatusBrowserDisabledEvidence,
   g008FlowScheduleQualificationEvidence,
   g008TimelinePrintQualificationEvidence,
+  g008GravityViewQualificationEvidence,
   expectedIdentity,
 }) {
   void g008ResidualBrowserEnabledEvidence;
@@ -723,6 +840,7 @@ export function reconcileQualificationEvidence({
     g008FlowStatusBrowserDisabledEvidence,
     g008FlowScheduleQualificationEvidence,
     g008TimelinePrintQualificationEvidence,
+    g008GravityViewQualificationEvidence,
     expectedIdentity
   );
   const errors = [...g009.errors, ...g008.errors];
@@ -734,6 +852,7 @@ export function reconcileQualificationEvidence({
     g008_source_proven_claims_reconciled: g008.sourceClaims,
     g008_runtime_admitted_claims_reconciled: g008.runtimeClaims,
     g008_final_no_admission_claims_reconciled: g008.finalNoAdmissionClaims,
+    g008_runtime_qualified_not_admitted_claims_reconciled: g008.qualifiedNotAdmittedClaims,
   };
 }
 
@@ -767,6 +886,7 @@ function runCli() {
     g008FlowStatusBrowserDisabledEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-status-browser-disabled.json')),
     g008FlowScheduleQualificationEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-flow-schedule-qualification.json')),
     g008TimelinePrintQualificationEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-timeline-print-qualification.json')),
+    g008GravityViewQualificationEvidence: readJsonIfPresent(path.join(artifactDir, 'g008-gravityview-date-qualification.json')),
     expectedIdentity: {
       head: process.env.WU008_PGR_SHA,
       tree: process.env.WU008_PGR_TREE,
