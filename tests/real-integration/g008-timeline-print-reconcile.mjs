@@ -35,6 +35,7 @@ const asciiDigits = (value) => typeof value === 'string'
 const timelineContract = source?.source_contract?.timeline_history;
 const printContract = source?.source_contract?.print;
 for (const flag of [
+  'entry_detail_content_after_runs_after_timeline',
   'header_formats_note_date_directly',
   'note_body_is_separate_escaped_content',
   'timeline_reads_gravityforms_notes',
@@ -52,6 +53,8 @@ for (const flag of [
 for (const flag of [
   'reuses_entry_detail_grid',
   'optional_timeline_reuses_entry_detail_timeline',
+  'entry_footer_runs_after_optional_timeline',
+  'standalone_document_has_no_wordpress_footer_script_printer',
   'no_print_specific_date_formatter',
   'print_style_hook_is_not_date_seam',
   'workflow_sidebar_not_rendered_by_print',
