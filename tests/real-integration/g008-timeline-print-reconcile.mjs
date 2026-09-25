@@ -173,7 +173,7 @@ if (!englishHeaderText.includes('11:59') || englishHeaderText.includes('۱۱:۵�
   failures.push('English Timeline boundary time digits did not remain ASCII');
 }
 if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false || englishBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
-for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
+for (const browser of [enabledBrowser, disabledBrowser]) {
   const timeline = browser.timeline ?? {};
   if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
     failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
@@ -186,6 +186,14 @@ for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
       failures.push(`${browser.mode}: Timeline body ${index} captured an enclosing body/header wrapper`);
     }
   }
+}
+const englishTimeline = englishBrowser.timeline ?? {};
+if (englishTimeline.collector?.row_count !== expectedTimeline.length || englishTimeline.headers?.length !== expectedTimeline.length || englishTimeline.rows?.length !== expectedTimeline.length) {
+  failures.push('English Timeline row/header count does not equal authoritative fixture count');
+}
+const expectedRowIds = expectedTimeline.map((row) => `gravityflow-note-${row.id}`);
+if (JSON.stringify((englishTimeline.rows ?? []).map((row) => row.row_id)) !== JSON.stringify(expectedRowIds)) {
+  failures.push('English Timeline row identity/order drifted');
 }
 const expectedRepeatedTimeline = (browser) => ({
   headers: browser.timeline?.headers,
@@ -221,7 +229,7 @@ if (duplicateExpectedBodies.length < 2 || duplicateExpectedBodies.some((body) =>
   failures.push('duplicate timestamp note identities are not represented by distinct one-to-one body rows');
 }
 
-for (const browser of [enabledBrowser, disabledBrowser]) {
+for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   if (browser.print?.relation !== 'PRINT_INHERITS_VERIFIED_TIMELINE_PRESENTATION') failures.push(`${browser.mode}: Print inheritance relation missing`);
   if (JSON.stringify(browser.print?.headers) !== JSON.stringify(browser.timeline?.headers)) failures.push(`${browser.mode}: Print headers do not exactly inherit Timeline`);
   if (JSON.stringify(browser.print?.bodies) !== JSON.stringify(browser.timeline?.bodies)) failures.push(`${browser.mode}: Print bodies/order do not match Timeline`);
