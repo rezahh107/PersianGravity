@@ -85,6 +85,62 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$this->assertSame( 'already ۱۲:۰۱', $method->invoke( $adapter, 'already ۱۲:۰۱' ) );
 	}
 
+	public function test_time_capture_reuses_exact_active_calendar_row_context(): void {
+		$adapter    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection = new ReflectionClass( $adapter );
+		$contexts   = $reflection->getProperty( 'contexts' );
+		$resolve    = $reflection->getMethod( 'active_calendar_context_for_time_path' );
+		$order      = $reflection->getMethod( 'note_identity_order' );
+
+		$raw   = '2030-03-20 20:31:00';
+		$note  = (object) array(
+			'id'           => 7,
+			'date_created' => $raw,
+			'note_type'    => 'gravityflow',
+		);
+		$notes = array( $note );
+		$entry = array(
+			'id'           => 12,
+			'form_id'      => 3,
+			'date_created' => $raw,
+		);
+		$form    = array( 'id' => 3 );
+		$context = array(
+			'note'          => $note,
+			'note_snapshot' => get_object_vars( $note ),
+			'notes'         => $notes,
+			'notes_order'   => $order->invoke( $adapter, $notes ),
+			'entry'         => $entry,
+			'entry_key'     => '3:12',
+			'form'          => $form,
+			'raw'           => $raw,
+			'timestamp'     => 1900281660,
+			'native_format' => 'F j, Y',
+			'event_kind'    => 'stored',
+		);
+		$marked  = '\\P\\G\\R\\T\\I\\M\\E\\L\\I\\N\\E\\a\\b\\c\\X' . 'F j, Y';
+		$contexts->setValue( $adapter, array( $marked => $context ) );
+
+		$path = array_fill( 0, 8, array() );
+		$path[5] = array( 'args' => array( $note, 'Runtime Admin' ) );
+		$path[6] = array( 'args' => array( $notes ) );
+		$path[7] = array( 'args' => array( $entry, $form ) );
+
+		$owned = $resolve->invoke( $adapter, $path );
+		$this->assertIsArray( $owned );
+		$this->assertSame( $marked, $owned['format'] );
+		$this->assertSame( $context, $owned['context'] );
+
+		$contexts->setValue(
+			$adapter,
+			array(
+				$marked            => $context,
+				$marked . '\\2' => $context,
+			)
+		);
+		$this->assertNull( $resolve->invoke( $adapter, $path ) );
+	}
+
 	public function test_unrelated_option_date_format_call_never_arms(): void {
 		$adapter = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
 
