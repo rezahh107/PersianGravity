@@ -41,6 +41,7 @@ final class PGR_Core {
 			( new PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter() )->hooks();
 			( new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter() )->hooks();
 			( new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter() )->hooks();
+			( new PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter() )->hooks();
 			( new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter() )->hooks();
 		}
 
