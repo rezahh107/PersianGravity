@@ -15,7 +15,7 @@ Current repository source exposes six bounded source-defined modules enabled by 
 
 * Iranian National ID (`pgr_national_id`).
 * Jalali Date (`pgr_jalali_date`).
-* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; verified presentation covers Gravity Forms Entries List `date_created`, exact Gravity Flow 3.1.0 Inbox/Status/Entry Detail/Timeline with inherited Print presentation, and exact GravityView 3.3.4 `date_created`/`date_updated`. Stored/native timestamps, DB/API/query/search/sort/filter semantics and workflow-owned operational values remain host-owned; unsupported locale/context/version/source states fail closed to native output.
+* Jalali System-Date Presentation (`jalali_presentation`) — opt-in; verified presentation covers Gravity Forms Entries List `date_created`, exact Gravity Flow 3.1.0 Inbox `date_created`/`last_updated`/`due_date`, Status `date_created`/`workflow_timestamp`, Entry Detail Submitted / Last Updated / Due / Expiration, Timeline/history with inherited Print presentation, and exact GravityView 3.3.4 `date_created`/`date_updated`. Stored/native timestamps, DB/API/query/search/sort/filter semantics and workflow-owned operational values remain host-owned; unsupported locale/context/version/source states fail closed to native output.
 * Iranian Address type and province choices.
 * Form-level Persian/Arabic digit normalization (`pgr_normalize_digits`).
 * Iranian Rial (IRR) and Toman (IRT) currency definitions.
