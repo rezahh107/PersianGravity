@@ -31,9 +31,11 @@ final class RepositoryConsistencyTest extends TestCase {
 
 		$this->assertSame( 1, preg_match( '/^Stable tag:\s*([^\r\n]+)$/m', $readme, $stable_tag_match ) );
 		$this->assertSame( $version, trim( $stable_tag_match[1] ) );
-		$this->assertStringContainsString( 'Version ' . $version . ' exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module', $readme );
+		$this->assertStringContainsString( 'Current repository source exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module', $readme );
+		$this->assertStringNotContainsString( 'Version ' . $version . ' exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module', $readme );
 		$this->assertStringContainsString( '- Plugin version: `' . $version . '`', $github );
-		$this->assertStringContainsString( 'PersianGravity ' . $version . ' exposes six bounded default-enabled modules plus one bounded opt-in module', $github );
+		$this->assertStringContainsString( 'Current repository source exposes six bounded default-enabled modules plus one bounded opt-in module', $github );
+		$this->assertStringNotContainsString( 'PersianGravity ' . $version . ' exposes six bounded default-enabled modules plus one bounded opt-in module', $github );
 		$this->assertStringContainsString( '- Version: `' . $version . '`', $agents );
 		$this->assertStringContainsString( 'own-plugin text domain in ' . $version, $languages_readme );
 		$this->assertStringContainsString( 'Version ' . $version . ' ships:', $languages_readme );
@@ -41,6 +43,32 @@ final class RepositoryConsistencyTest extends TestCase {
 		$this->assertStringContainsString( 'active repository identity is **' . $version . '**', $localization );
 		$this->assertStringContainsString( '"Project-Id-Version: Persian Gravity Forms ' . $version . '\\n"', $pot );
 		$this->assertStringContainsString( '"Project-Id-Version: Persian Gravity Forms ' . $version . '\\n"', $po );
+	}
+
+
+	public function test_current_g008_documentation_matches_timeline_admission() {
+		$root         = dirname( __DIR__ );
+		$readme       = file_get_contents( $root . '/readme.txt' );
+		$github       = file_get_contents( $root . '/README.md' );
+		$architecture = file_get_contents( $root . '/docs/ARCHITECTURE.md' );
+
+		foreach ( array( $readme, $github ) as $document ) {
+			$this->assertStringContainsString( 'Entry Detail Submitted / Last Updated / Due / Expiration', $document );
+			$this->assertStringContainsString( 'Timeline/history', $document );
+			$this->assertStringContainsString( 'Print', $document );
+			$this->assertStringContainsString( 'Status `due_date`', $document );
+			$this->assertStringContainsString( 'Entry Detail Scheduled', $document );
+		}
+
+		$this->assertStringContainsString( 'Print owns no independent calendar adapter', $github );
+		$this->assertStringContainsString( 'Timeline/history and Print remain outside this digit-shaping adapter', $github );
+		$this->assertStringNotContainsString( 'Timeline initial/stored event dates, and any independent Print date seam remain evidence-qualified final no-admission', $github );
+
+		$this->assertStringContainsString( 'PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter', $architecture );
+		$this->assertStringContainsString( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $architecture );
+		$this->assertStringContainsString( 'Gravity Flow Print → inherited verified Timeline rendering only; no independent calendar adapter', $architecture );
+		$this->assertStringContainsString( 'Status `due_date` and Entry Detail Scheduled', $architecture );
+		$this->assertStringContainsString( 'Timeline and Print remain outside this digit-shaping adapter', $architecture );
 	}
 
 	public function test_bounded_module_catalog_and_help_are_complete() {
