@@ -111,13 +111,15 @@ final class PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter {
 			return;
 		}
 
-		$src = add_query_arg(
-			'ver',
-			rawurlencode( (string) PGR_VERSION ),
-			PGR_URL . 'assets/js/pgr-flow-timeline-persian-time-digits.js'
+		wp_enqueue_script(
+			self::SCRIPT_HANDLE,
+			PGR_URL . 'assets/js/pgr-flow-timeline-persian-time-digits.js',
+			array(),
+			PGR_VERSION,
+			false
 		);
+		wp_print_scripts( self::SCRIPT_HANDLE );
 
-		printf( '<script src="%s"></script>', esc_url( $src ) );
 		$this->print_script_emitted = true;
 	}
 
