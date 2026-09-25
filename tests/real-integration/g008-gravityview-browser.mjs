@@ -189,13 +189,13 @@ async function entryDateFilteredTokens(localDate, expectedEntry) {
   };
 }
 
-async function directSystemFilterTokens(field, value, expectedEntry) {
+async function directSystemFilterTokens(field, value, expectedEntries) {
   const url = new URL(fixture.page_url);
   url.searchParams.set('gv_search_view', String(fixture.view_id));
   url.searchParams.set(`filter_${field}`, value);
-  await open(url.toString(), [expectedEntry.token]);
+  await open(url.toString(), expectedEntries.map((entry) => entry.token));
   const snap = await snapshot();
-  assertPresentation(snap, mode === 'enabled', [expectedEntry]);
+  assertPresentation(snap, mode === 'enabled', expectedEntries);
   const tokens = snap.rows.map((row) => row.token);
   return {
     path: 'exact-search-request-system-filter',
@@ -241,10 +241,9 @@ try {
   const updatedDesc = await sortedTokens('date_updated', 'desc');
 
   const bravo = fixture.entries.find((entry) => entry.key === 'bravo');
-  const charlie = fixture.entries.find((entry) => entry.key === 'charlie');
-  if (!bravo || !charlie) throw new Error('Expected deterministic GravityView filter fixtures are missing.');
+  if (!bravo) throw new Error('Expected deterministic GravityView date_created filter fixture is missing.');
   const createdFilter = await entryDateFilteredTokens('03/21/2026', bravo);
-  const updatedFilter = await directSystemFilterTokens('date_updated', '2026-03-21 20:31:00', charlie);
+  const updatedFilter = await directSystemFilterTokens('date_updated', '2026-03-21 20:31:00', fixture.entries);
 
   const checks = [
     ['date_created asc', createdAsc.tokens, expectedSort('date_created', 'asc')],
