@@ -195,11 +195,15 @@ async function filteredTokens(field, localDate, expectedEntry) {
     throw new Error(`No authentic GravityView search control was rendered for ${field}.`);
   }
 
-  const exact = controlMetadata.find((item) =>
+  const usableControls = controlMetadata.filter((item) => item.type !== 'hidden');
+  const exact = usableControls.find((item) =>
     item.name === `filter_${field}`
     || item.dataField === field
     || item.dataFieldId === field
-  ) ?? controlMetadata[0];
+  ) ?? usableControls.find((item) => item.name?.includes(field) || item.id?.includes(field)) ?? usableControls[0];
+  if (!exact) {
+    throw new Error(`No usable GravityView search control was rendered for ${field}: ${JSON.stringify(controlMetadata)}`);
+  }
 
   const input = page.locator('input, select').nth(exact.index);
   const form = input.locator('xpath=ancestor::form[1]');
