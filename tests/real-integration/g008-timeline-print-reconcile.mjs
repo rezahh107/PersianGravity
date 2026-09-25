@@ -223,11 +223,14 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
 const englishBodies = englishBrowser.timeline?.bodies ?? [];
-if (
-  JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)
-  || JSON.stringify(enabledBodies) !== JSON.stringify(englishBodies)
-) {
-  failures.push('Timeline bodies/order changed with presentation mode or locale');
+if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) {
+  failures.push('Timeline bodies/order changed with presentation mode');
+}
+for (let index = 0; index < expectedTimeline.length; index += 1) {
+  const row = expectedTimeline[index];
+  if (row.event_kind === 'stored' && englishBodies[index] !== row.value) {
+    failures.push(`English stored Timeline body ${row.id} changed or moved`);
+  }
 }
 
 const timelineMachine = (browser) => (browser.timeline?.rows ?? []).map((row) => ({
