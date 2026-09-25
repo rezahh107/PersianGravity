@@ -118,6 +118,12 @@ const gravityViewSearchRequestReferences = findWindows(
   /Search|Request|Widget|Filter/i.test(record.file)
 ).slice(0, 240);
 
+const gravityViewWidgetLayoutReferences = findWindows(
+  roots.gravityview,
+  ['_gravityview_directory_widgets', 'header_top', 'header_bottom', 'footer_top', 'footer_bottom', "'search_bar'", 'search_fields'],
+  18,
+).filter((record) => /Widget|Template|View|Admin|Metabox|Legacy/i.test(record.file)).slice(0, 260);
+
 const sourceContract = {
   date_created: {
     field_name: /var\s+\$name\s*=\s*['"]date_created['"]/.test(dateCreated.content),
@@ -196,6 +202,7 @@ const evidence = {
   gravityforms_date_updated_references: gravityFormsDateUpdatedReferences.slice(0, 160),
   gravityview_search_scope_references: gravityViewSearchScopeReferences,
   gravityview_search_request_references: gravityViewSearchRequestReferences,
+  gravityview_widget_layout_references: gravityViewWidgetLayoutReferences,
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
