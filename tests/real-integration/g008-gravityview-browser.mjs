@@ -232,10 +232,18 @@ async function filteredTokens(field, localDate, expectedEntry) {
     throw new Error(`GravityView search control rejected ${field} value ${localDate}: ${JSON.stringify(submittedControl)}`);
   }
 
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-    form.evaluate((node) => node.requestSubmit()),
-  ]);
+  const submit = form.locator('button[type="submit"], input[type="submit"]').first();
+  if ((await submit.count()) > 0) {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      submit.click(),
+    ]);
+  } else {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      form.evaluate((node) => node.requestSubmit()),
+    ]);
+  }
   await page.waitForFunction(
     (token) => document.body?.innerText.includes(token),
     expectedEntry.token,
