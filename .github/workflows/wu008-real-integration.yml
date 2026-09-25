@@ -138,10 +138,18 @@ jobs:
           php -l tests/real-integration/g008-flow-residual-adversarial-setup.php
           php -l tests/real-integration/g008-flow-residual-adversarial-state.php
           php -l tests/real-integration/g008-flow-schedule-setup.php
+          php -l tests/real-integration/g008-gravityview-prototype-mu.php
+          php -l tests/real-integration/g008-gravityview-setup-runtime.php
+          php -l tests/real-integration/g008-gravityview-state.php
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
           node --check tests/real-integration/g008-residual-source-probe.mjs
+          node --check tests/real-integration/g008-gravityview-source-evidence.mjs
+          node --check tests/real-integration/g008-gravityview-source-probe.mjs
+          node --check tests/real-integration/g008-gravityview-artifact-privacy.mjs
+          node --check tests/real-integration/g008-gravityview-browser.mjs
+          node --check tests/real-integration/g008-gravityview-reconcile.mjs
           node --check tests/real-integration/g009-browser.mjs
           node --check tests/real-integration/g009-perks-source-probe.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
@@ -160,6 +168,7 @@ jobs:
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
+          node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
           if git ls-files '*.zip' | grep -q .; then
             echo "Licensed ZIP archives must never be committed." >&2
             exit 1
@@ -303,9 +312,12 @@ jobs:
           set -euo pipefail
           node tests/real-integration/source-discovery.mjs
           node tests/real-integration/g008-residual-source-probe.mjs
+          node tests/real-integration/g008-gravityview-source-probe.mjs
           node tests/real-integration/g009-perks-source-probe.mjs
           test -s "$WU008_ARTIFACT_DIR/source-discovery.json"
           test -s "$WU008_ARTIFACT_DIR/g008-residual-source-probe.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-source-probe.json"
+          node tests/real-integration/g008-gravityview-artifact-privacy.mjs
           test -s "$WU008_ARTIFACT_DIR/g009-perks-source-probe.json"
 
       - name: Create deterministic runtime fixtures and assert provider/fallback semantics
@@ -387,6 +399,95 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gravityperks --field=version --path="$WU008_WP_PATH")" = "$WU008_PERKS_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gp-file-upload-pro --field=version --path="$WU008_WP_PATH")" = "$WU008_FUP_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
+
+      - name: Create deterministic GravityView G008 qualification fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          cp tests/real-integration/g008-gravityview-prototype-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) ? "enabled" : "disabled";')" = "disabled"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'if ( ! PGR_Module_Registry::set_enabled( "jalali_presentation", true ) ) { exit( 1 ); }'
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) && class_exists( "PGR_Jalali_Presentation", false ) ? "ready" : "not-ready";')" = "ready"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-setup-runtime.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-fixture-baseline.json"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo wp_timezone_string();')" = "Asia/Tehran"
+
+      - name: Qualify GravityView dates with bounded prototype enabled
+        shell: bash
+        env:
+          WU008_GV_MODE: enabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "enabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-enabled.json"
+          test "$browser_rc" -eq 0
+
+      - name: Prove GravityView module-disabled native fallback
+        shell: bash
+        env:
+          WU008_GV_MODE: disabled
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); update_option( "wu008_gv_qualification_mode", "disabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-disabled.json"
+          test "$browser_rc" -eq 0
+
+      - name: Prove GravityView en_US LTR control stays native
+        shell: bash
+        env:
+          WU008_GV_MODE: english
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "english", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "en_US"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-english.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-english.json"
+          test "$browser_rc" -eq 0
+
+      - name: Prove GravityView exact-version gate fails closed
+        shell: bash
+        env:
+          WU008_GV_MODE: drift
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "drift", false ); update_option( "wu008_gv_qualification_force_version_drift", true, false ); delete_option( "wu008_gv_qualification_trace" );'
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "fa_IR"
+          browser_rc=0
+          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-drift.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-drift.json"
+          test "$browser_rc" -eq 0
+
+      - name: Reconcile and remove qualification-only GravityView prototype
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g008-gravityview-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-date-qualification.json"
+          node tests/real-integration/g008-gravityview-artifact-privacy.mjs
+          original_date_format="$(php -r '$d=json_decode(file_get_contents($argv[1]),true); echo $d["original_date_format"] ?? "";' "$WU008_ARTIFACT_DIR/g008-gravityview-fixture-baseline.json")"
+          test -n "$original_date_format"
+          php "$WU008_WP_CLI" option update date_format "$original_date_format" --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); delete_option( "wu008_gv_qualification_mode" ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" ); delete_option( "wu008_gv_qualification_view_id" );'
+          rm "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
 
       - name: Create G008 Flow Inbox fixtures after G009 isolation checks
         shell: bash
@@ -541,13 +642,29 @@ jobs:
           set -euo pipefail
           node tests/real-integration/reconcile-qualification-evidence.mjs
 
+      - name: Stage privacy-checked bounded evidence for upload
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          upload_dir=/tmp/wu008-upload
+          rm -rf "$upload_dir"
+          if test -f "$WU008_ARTIFACT_DIR/g008-gravityview-source-probe.json"; then
+            node tests/real-integration/g008-gravityview-artifact-privacy.mjs
+          fi
+          mkdir -p "$upload_dir"
+          if test -d "$WU008_ARTIFACT_DIR"; then
+            cp -a "$WU008_ARTIFACT_DIR/." "$upload_dir/"
+          fi
+          if test -f /tmp/wu008-wp-server.log; then
+            cp /tmp/wu008-wp-server.log "$upload_dir/"
+          fi
+
       - name: Upload bounded runtime evidence only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /tmp/wu008-artifacts
-            /tmp/wu008-wp-server.log
+          path: /tmp/wu008-upload
           if-no-files-found: ignore
           retention-days: 30

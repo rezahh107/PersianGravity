@@ -364,42 +364,46 @@
         {
           "id": "gravityview.date-created",
           "ui_surface": "GravityView date_created output",
-          "raw_source": "Gravity Forms Entry date_created field is present in exact GravityView 3.3.4 date field source",
-          "source_calendar": "Gregorian candidate",
-          "source_timezone": "raw Gravity Forms date_created is UTC; exact GravityView output timezone contract NOT_PROVEN",
-          "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
+          "raw_source": "Gravity Forms Entry date_created UTC Y-m-d H:i:s; exact GravityView 3.3.4 DateCreated reads that Entry property and formats it before the field-specific output seam",
+          "source_calendar": "Gregorian instant",
+          "source_timezone": "UTC Y-m-d H:i:s per exact Gravity Forms contract; exact GravityView native rendering localizes the raw instant to the WordPress site timezone before the qualified output seam",
+          "presentation_seam": "gravityview/template/field/date_created/output after native GVCommon::format_date(), with Template_Context exposing exact field identity and the authoritative Entry via as_entry(); qualification prototype reads raw date_created and never parses display text",
           "semantic_dependencies": [
             "query",
             "search",
             "sort",
             "filter"
           ],
-          "fallback": "native GravityView output",
-          "discovery_state": "NOT_PROVEN",
+          "fallback": "No production adapter is present. A future adapter must return native GravityView output whenever module/locale/exact host version/field identity/raw source/range/facade/conversion is unavailable or drifted.",
+          "discovery_state": "RUNTIME_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact GravityView 3.3.4 source discovery confirms date_created implementation and output-filter inventory, but does not yet bind a safe supported field-specific presentation seam or authentic Jalali browser behavior.",
-          "drift_behavior": "No adapter admission unless exact output seam/version and raw-query separation are proven."
+          "evidence": "Exact GravityView 3.3.4 source plus authentic current-Head WordPress/browser qualification proves the field-specific post-format output seam, UTC-to-Asia/Tehran boundary handling, visible Jalali prototype output, native module-disabled/en_US/version-drift fallback, unchanged DB/GFAPI/REST values, unchanged raw GFAPI and GravityView sorting, preserved host entry_date filtering, stable row/sort-link structure and untouched user-authored date-looking text. This is qualification evidence only; no production adapter is added.",
+          "drift_behavior": "Qualified only for exact GravityView 3.3.4 source/seam identity. Production implementation requires a separate bounded adapter; unsupported version/seam/context must fail closed to native output.",
+          "runtime_evidence": "g008-gravityview-date-qualification.json",
+          "exact_version_disposition": "QUALIFIED_FOR_PRODUCTION_ADAPTER"
         },
         {
           "id": "gravityview.date-updated",
           "ui_surface": "GravityView date_updated output",
-          "raw_source": "Gravity Forms Entry date_updated field is present in exact GravityView 3.3.4 date field source",
-          "source_calendar": "Gregorian candidate",
-          "source_timezone": "exact storage/output timezone semantics NOT_PROVEN",
-          "presentation_seam": "GravityView output filter/context inventory exists, but the exact supported output-only seam for this field is NOT_PROVEN",
+          "raw_source": "Gravity Forms Entry date_updated UTC Y-m-d H:i:s; exact GravityView 3.3.4 DateUpdated inherits DateCreated rendering while retaining its distinct date_updated field identity",
+          "source_calendar": "Gregorian instant",
+          "source_timezone": "UTC system datetime per exact Gravity Forms REST/write contracts; exact GravityView native rendering localizes the raw instant to the WordPress site timezone before the qualified output seam",
+          "presentation_seam": "gravityview/template/field/date_updated/output after the inherited native DateCreated renderer, with Template_Context exposing exact field identity and the authoritative Entry via as_entry(); qualification prototype reads raw date_updated and never parses display text",
           "semantic_dependencies": [
             "query",
             "search",
             "sort",
             "filter"
           ],
-          "fallback": "native GravityView output",
-          "discovery_state": "NOT_PROVEN",
+          "fallback": "No production adapter is present. A future adapter must return native GravityView output whenever module/locale/exact host version/field identity/raw source/range/facade/conversion is unavailable or drifted.",
+          "discovery_state": "RUNTIME_PROVEN",
           "support_state": "NOT_PROVEN",
           "adapter_identity": null,
-          "evidence": "Exact GravityView 3.3.4 source discovery confirms date_updated implementation and output-filter inventory, but exact source-timezone semantics, safe field-specific seam and browser proof remain unresolved.",
-          "drift_behavior": "No adapter admission unless exact output seam/version and raw-query separation are proven."
+          "evidence": "Exact GravityView 3.3.4 and Gravity Forms 3.1.1.1 source plus authentic current-Head WordPress/browser qualification proves the distinct date_updated output seam, UTC raw authority, visible Jalali prototype output, native module-disabled/en_US/version-drift fallback, unchanged DB/GFAPI/REST values and unchanged raw GFAPI/GravityView sorting. A direct filter_date_updated request without a configured date_updated Search Bar field remains the same native no-op in all modes; exhaustive optional date_updated search configurations are not claimed. This is qualification evidence only; no production adapter is added.",
+          "drift_behavior": "Qualified only for exact GravityView 3.3.4 source/seam identity. Production implementation requires a separate bounded adapter; unsupported version/seam/context must fail closed to native output.",
+          "runtime_evidence": "g008-gravityview-date-qualification.json",
+          "exact_version_disposition": "QUALIFIED_FOR_PRODUCTION_ADAPTER"
         }
       ]
     }

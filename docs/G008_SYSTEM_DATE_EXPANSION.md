@@ -161,9 +161,24 @@ The adversarial review reopened the Entry Detail workflow-info date family and s
 
 `g008-timeline-print-qualification.json` is the dedicated authoritative runtime artifact for the admitted Timeline and inherited Print presentation. `g008-flow-residual-no-admission.json` is authoritative only for the genuinely residual `gravityflow.status.due-date` and `gravityflow.entry-detail.schedule` no-admission claims. A final no-admission record is an evidence-qualified disposition for the exact 3.1.0 surface, not a claim of permanent impossibility: discovery of a new supported bounded seam even in the same exact package requires fresh qualification. Workflow deadline/schedule/expiration/history truth remains owned by Gravity Flow/Gravity Forms.
 
-## GravityView remains unproven
+## GravityView 3.3.4 date qualification
 
-GravityView 3.3.4 `date_created` and `date_updated` remain `NOT_PROVEN`. Existing discovery evidence is retained, but no GravityView production system-date adapter is added by this batch.
+Exact GravityView `3.3.4` package SHA-256 `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` now has bounded source plus authentic runtime/browser qualification for both `gravityview.date-created` and `gravityview.date-updated`. This batch still adds **no production GravityView system-date adapter**; both registry rows therefore retain `support_state: NOT_PROVEN` while recording the independent exact-version disposition `QUALIFIED_FOR_PRODUCTION_ADAPTER`.
+
+Exact source proves `DateCreated::get_content()` reads the authoritative Entry `date_created` value and formats it through `GVCommon::format_date()`, while `DateUpdated` inherits that renderer under its distinct `date_updated` identity. After native rendering, `Template_Field::field_output()` exposes the supported field-specific filters `gravityview/template/field/date_created/output` and `gravityview/template/field/date_updated/output` with `Template_Context`, including field identity and the Entry object. Gravity Forms `3.1.1.1` defines `date_created` as UTC `Y-m-d H:i:s`; its REST/write contracts likewise establish `date_updated` as UTC. The qualification prototype therefore reads the raw Entry property from context and passes a strict UTC `DateTimeImmutable` to the existing `PGR_Jalali_Presentation` facade instead of parsing GravityView's localized display string.
+
+The disposable WU008 fixture sets WordPress to `Asia/Tehran` while PHP remains `UTC` and uses timestamps that cross local midnight. Authentic rendering proves GravityView first maps the UTC system instant to site-local civil time, and the bounded prototype produces the corresponding Jalali date/time only under `fa_IR`, exact GravityView `3.3.4`, the exact field-specific hook and enabled `jalali_presentation`. Module-disabled, `en_US`, and forced-version-drift controls remain native. The prototype is an MU-plugin fixture copied only into the disposable runtime and is deleted before the pre-existing Flow regression lane.
+
+Machine semantics remain host-owned in the qualification: DB, GFAPI and REST `date_created`/`date_updated` values are byte/text-equal across enabled and control modes; raw GFAPI sorting and authentic GravityView ascending/descending sorting are unchanged for both fields; the host-native `entry_date` search path for `date_created` returns the same boundary-sensitive result set in every mode; and an unconfigured direct `filter_date_updated` request remains the same native no-op in every mode. That latter check is deliberately narrow and does not claim exhaustive browser coverage of every optional `date_updated` search configuration. Row attributes, sort links, entry identity/order, repeated rendering and user-authored date-looking text remain stable. The authoritative qualification artifact is `g008-gravityview-date-qualification.json`.
+
+Exact vendor source is inspected only inside the disposable CI runtime. Persisted `g008-gravityview-source-probe.json` uses a metadata-only schema: exact product/package/Head identity, boolean contract results, normalized relative file paths, bounded line ranges, file SHA-256 fingerprints and contract IDs. Raw source lines/windows are neither serialized nor staged for upload. The probe also mutates each target identity independently in memory and proves that loss/drift of `date_created` or `date_updated` independently fails the exact target-field contract. A structural privacy guard validates the source probe and the qualification artifact's embedded provenance before WU008 copies evidence into its upload staging directory.
+
+Independent exact-version dispositions:
+
+- `gravityview.date-created`: `QUALIFIED_FOR_PRODUCTION_ADAPTER`
+- `gravityview.date-updated`: `QUALIFIED_FOR_PRODUCTION_ADAPTER`
+
+These dispositions mean a future production adapter may be implemented against the qualified exact seams with the demonstrated fail-closed constraints. They do **not** mean either GravityView surface is currently admitted or supported in production.
 
 ## G-009 remains independent
 
