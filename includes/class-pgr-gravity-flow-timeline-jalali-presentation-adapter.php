@@ -225,7 +225,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $fallback;
 		}
 
-		return null === $formatted ? $fallback : $formatted;
+		if ( null === $formatted ) {
+			return $fallback;
+		}
+
+		/**
+		 * Fires only after an authentic exact-contract Timeline header date has
+		 * been converted successfully. Presentation-only consumers may use this
+		 * signal without re-entering host timestamp or workflow semantics.
+		 */
+		do_action( 'pgr_gravity_flow_timeline_header_presented' );
+
+		return $formatted;
 	}
 
 	/**
