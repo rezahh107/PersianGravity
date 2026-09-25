@@ -67,4 +67,12 @@ The LTR control intentionally asserts WordPress' effective `get_locale()` and `i
 
 G-008 source discovery also reuses the exact installed vendor packages. `source-discovery.json` records only product/package identity plus normalized file/line references and candidate classifications; licensed source content itself is not uploaded. G-008 support/admission remains separate from source discovery.
 
+### GravityView G-008 qualification lane
+
+The same WU008 runtime also carries a qualification-only exact GravityView `3.3.4` lane for `gravityview.date-created` and `gravityview.date-updated`. A test-only MU prototype is copied into the disposable site after the existing G-009 RTL/LTR checks, consumes only the two field-specific GravityView output filters, and is removed before existing Gravity Flow G-008 fixtures run. The lane asserts the pre-qualification `jalali_presentation` module state and restores that state, the site locale, and the date format before downstream regressions, so qualification state cannot leak into older gates.
+
+Fixture construction uses GravityView's own `InspectorRoute::add_search_bar()` host API to persist a native `entry_date` Search Bar field instead of synthesizing internal widget metadata. Browser/state evidence exercises Persian enabled, module-disabled, effective English/LTR, and forced exact-version-drift modes; authentic ascending/descending sorting for both system fields; the native `entry_date` filter path for `date_created`; raw DB/GFAPI/REST equality; stable row/sort-link structure; and untouched date-looking user text. The `date_updated` direct-request check is intentionally limited to the unconfigured native no-op case and does not claim exhaustive optional search-field coverage.
+
+A passing `g008-gravityview-date-qualification.json` may close only the exact research disposition `QUALIFIED_FOR_PRODUCTION_ADAPTER`. It does not create production support: the committed registry must still retain `support_state: NOT_PROVEN`, no adapter identity, and no production runtime file. The shared qualification reconciler rejects evidence/package/Head drift or any accidental promotion to production admission.
+
 A green workflow can support only the exact scenarios it actually ran. It does not prove future vendor versions, absent AG Grid states, unlisted/future Gravity Perks products, exhaustive accessibility, or a production repair for `gform_admin`.
