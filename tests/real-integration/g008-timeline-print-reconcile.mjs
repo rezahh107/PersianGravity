@@ -32,6 +32,8 @@ const timelineContract = source?.source_contract?.timeline_history;
 const printContract = source?.source_contract?.print;
 for (const flag of [
   'header_formats_note_date_directly',
+  'gravityforms_reads_host_time_format',
+  'gravityforms_renders_date_and_time_separately',
   'note_body_is_separate_escaped_content',
   'timeline_reads_gravityforms_notes',
   'timeline_inserts_initial_entry_event',
