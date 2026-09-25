@@ -295,7 +295,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->second_path_arguments_match( $path, $context, $format ) ||
+			! $this->time_path_arguments_match( $path, $context ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind'] ||
 			! in_array( $context['native_format'], self::SUPPORTED_FORMATS, true )
 		) {
@@ -569,6 +569,24 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		return 1 === count( $matches ) ? $matches[0] : null;
+	}
+
+	/**
+	 * Validate the time date_i18n call against the date format still owned by
+	 * the same GFCommon::format_date() invocation.
+	 *
+	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
+	 * @param array<string,mixed>            $context Owned time context.
+	 * @return bool
+	 */
+	private function time_path_arguments_match( $path, $context ) {
+		if ( ! isset( $path[1]['args'], $path[2]['args'], $context['date_format'] ) ) {
+			return false;
+		}
+
+		$raw = $context['raw'];
+		return array( $raw, false, $context['date_format'], true ) === $path[1]['args'] &&
+			array( $raw, '', false, true ) === $path[2]['args'];
 	}
 
 	/**
