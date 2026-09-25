@@ -96,6 +96,10 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( 'PGR_Jalali_Presentation', $registry['conversion_authority']['facade'] );
 		$this->assertSame( array( 'ADMITTED_VERIFIED', 'NOT_PROVEN', 'FAIL_CLOSED_VERSION_DRIFT' ), $registry['support_states'] );
 		$this->assertSame( array( 'RUNTIME_PROVEN', 'SOURCE_PROVEN', 'NOT_PROVEN' ), $registry['discovery_states'] );
+		$this->assertSame(
+			array( 'QUALIFIED_FOR_PRODUCTION_ADAPTER', 'FINAL_NO_ADMISSION_FOR_EXACT_3_3_4', 'NOT_PROVEN' ),
+			$registry['qualification_dispositions']
+		);
 
 		$required = array( 'id', 'ui_surface', 'raw_source', 'source_calendar', 'source_timezone', 'presentation_seam', 'semantic_dependencies', 'fallback', 'discovery_state', 'support_state', 'adapter_identity', 'evidence', 'drift_behavior' );
 		$states   = array();
@@ -155,6 +159,15 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE', $states['gravityflow.print']['exact_version_disposition'] );
 		$this->assertStringContainsString( 'INHERITS_VERIFIED_TIMELINE_RENDERER', $states['gravityflow.print']['presentation_seam'] );
 		$this->assertStringContainsString( 'no independent Print calendar or digit-shaping seam', $states['gravityflow.print']['presentation_seam'] );
+
+		foreach ( array( 'gravityview.date-created', 'gravityview.date-updated' ) as $qualified_id ) {
+			$this->assertSame( 'RUNTIME_PROVEN', $states[ $qualified_id ]['discovery_state'], $qualified_id );
+			$this->assertSame( 'NOT_PROVEN', $states[ $qualified_id ]['support_state'], $qualified_id );
+			$this->assertSame( 'QUALIFIED_FOR_PRODUCTION_ADAPTER', $states[ $qualified_id ]['qualification_disposition'], $qualified_id );
+			$this->assertSame( 'g008-gravityview-qualification.json', $states[ $qualified_id ]['runtime_evidence'], $qualified_id );
+			$this->assertNull( $states[ $qualified_id ]['adapter_identity'], $qualified_id );
+			$this->assertStringContainsString( 'default unlinked', $states[ $qualified_id ]['qualified_scope'], $qualified_id );
+		}
 
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
