@@ -95,17 +95,13 @@ const queryVisitor = read(roots.gravityview, 'src/Search/Querying/Visitors/Query
 const searchWidget = read(roots.gravityview, 'src/Widget/Types/SearchWidget.php');
 const sqlAdjustment = read(roots.gravityview, 'vendor_prefixed/gravitykit/query-filters/src/Sql/SqlAdjustmentCallbacks.php');
 const gfApi = read(roots.gravityforms, 'includes/api.php');
+const gfRestEntries = read(roots.gravityforms, 'includes/webapi/v2/includes/controllers/class-controller-form-entries.php');
 
 const gravityFormsDateUpdatedReferences = findWindows(
   roots.gravityforms,
-  ['date_updated', "current_time( 'mysql', true )", "current_time('mysql', true)"],
+  ['date_updated', 'utc_timestamp()', 'updated, in UTC'],
   12,
 );
-const gravityFormsDateUpdatedUtcWindows = gravityFormsDateUpdatedReferences.filter((record) => {
-  const excerpt = record.excerpt.lines.map((line) => line.text).join('\n');
-  return record.matched.includes('date_updated')
-    && (excerpt.includes("current_time( 'mysql', true )") || excerpt.includes("current_time('mysql', true)"));
-});
 
 const sourceContract = {
   date_created: {
@@ -143,7 +139,8 @@ const sourceContract = {
   gravityforms_raw_contract: {
     date_created_utc_y_m_d_h_i_s: gfApi.content.includes("The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC)."),
     update_entry_property_api_present: /function\s+update_entry_property\s*\(/.test(gfApi.content),
-    date_updated_utc_write_path_present: gravityFormsDateUpdatedUtcWindows.length > 0,
+    date_updated_rest_contract_explicitly_utc: gfRestEntries.content.includes('The date the entry was updated, in UTC.'),
+    add_entry_defaults_date_updated_to_utc_timestamp: /\$date_updated\s*=\s*isset\(\s*\$entry\['date_updated'\]\s*\)[\s\S]{0,220}utc_timestamp\(\)/.test(gfApi.content),
   },
 };
 
@@ -175,9 +172,10 @@ const evidence = {
     date_updated_raw_sql_adjustment: around(sqlAdjustment, 'date_updated =', 10, 34),
     gravityforms_date_created_contract: around(gfApi, "The date_created value, if set, is expected to be in 'Y-m-d H:i:s' format (UTC).", 10, 20),
     gravityforms_update_entry_property: around(gfApi, 'update_entry_property', 12, 44),
+    gravityforms_date_updated_utc_rest_contract: around(gfRestEntries, 'The date the entry was updated, in UTC.', 8, 12),
+    gravityforms_add_entry_date_updated_utc_default: around(gfApi, '$date_updated', 8, 18),
   },
   gravityforms_date_updated_references: gravityFormsDateUpdatedReferences.slice(0, 160),
-  gravityforms_date_updated_utc_windows: gravityFormsDateUpdatedUtcWindows.slice(0, 40),
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
