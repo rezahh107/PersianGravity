@@ -127,6 +127,12 @@ const gravityViewWidgetLayoutReferences = findWindows(
   18,
 ).filter((record) => /Widget|Template|View|Admin|Metabox|Legacy/i.test(record.file)).slice(0, 260);
 
+const gravityViewSearchFieldShapeReferences = findWindows(
+  roots.gravityview,
+  ['class Search_Field_Collection', 'from_legacy_configuration', 'from_configuration', 'Search_Field_Date', 'search-general_', 'input_type'],
+  28,
+).filter((record) => /Search|Widget|Grid/i.test(record.file)).slice(0, 320);
+
 const sourceContract = {
   date_created: {
     field_name: /var\s+\$name\s*=\s*['"]date_created['"]/.test(dateCreated.content),
@@ -212,6 +218,7 @@ const evidence = {
   gravityview_search_scope_references: gravityViewSearchScopeReferences,
   gravityview_search_request_references: gravityViewSearchRequestReferences,
   gravityview_widget_layout_references: gravityViewWidgetLayoutReferences,
+  gravityview_search_field_shape_references: gravityViewSearchFieldShapeReferences,
 };
 
 fs.mkdirSync(artifactDir, { recursive: true });
