@@ -119,8 +119,8 @@ const sourceContract = {
     contexts: /var\s+\$contexts\s*=\s*\[['"]single['"],\s*['"]multiple['"],\s*['"]export['"]\]/.test(dateUpdated.content),
   },
   formatting: {
-    gv_common_comment_without_site_timezone: gvCommon.content.includes("Formats date without applying site's timezone."),
-    gv_common_is_copy_of_gf_formatter: gvCommon.content.includes('This is a copy of {@see GFCommon::format_date()}'),
+    gv_common_format_date_uses_gf_local_timestamp: /function\s+format_date\s*\([\s\S]{0,2200}GFCommon::get_local_timestamp\(\s*\$date_gmt_time\s*\)/.test(gvCommon.content),
+    gv_common_format_date_reads_gmt_timestamp: /function\s+format_date\s*\([\s\S]{0,1800}mysql2date\(\s*'G'\s*,\s*\$date_string\s*\)/.test(gvCommon.content),
   },
   presentation_seam: {
     field_specific_output_filter: templateField.content.includes('apply_filters( "gravityview/template/field/{$field->type}/output", $output, $context )'),
@@ -164,7 +164,7 @@ const evidence = {
     date_created_field: numberedExcerpt(dateCreated, 17, 115),
     date_updated_field: numberedExcerpt(dateUpdated, 17, 70),
     template_output_filters: numberedExcerpt(templateField, 390, 526),
-    gv_format_date: around(gvCommon, "Formats date without applying site's timezone.", 2, 85),
+    gv_format_date: around(gvCommon, 'GFCommon::get_local_timestamp( $date_gmt_time )', 42, 48),
     gravityview_gfapi_query_bridge: numberedExcerpt(formGf, 103, 150),
     date_created_search_policy: around(searchPolicy, "stored in UTC format", 14, 18),
     query_filter_date_created: around(queryVisitor, "'date_created'", 24, 34),
