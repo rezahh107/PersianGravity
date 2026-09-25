@@ -243,8 +243,8 @@ try {
   const bravo = fixture.entries.find((entry) => entry.key === 'bravo');
   const charlie = fixture.entries.find((entry) => entry.key === 'charlie');
   if (!bravo || !charlie) throw new Error('Expected deterministic GravityView filter fixtures are missing.');
-  const createdFilter = await entryDateFilteredTokens('2026-03-21', bravo);
-  const updatedFilter = await directSystemFilterTokens('date_updated', '2026-03-21', charlie);
+  const createdFilter = await entryDateFilteredTokens('03/21/2026', bravo);
+  const updatedFilter = await directSystemFilterTokens('date_updated', '2026-03-21 20:31:00', charlie);
 
   const checks = [
     ['date_created asc', createdAsc.tokens, expectedSort('date_created', 'asc')],
@@ -260,8 +260,9 @@ try {
   if (JSON.stringify(createdFilter.tokens) !== JSON.stringify([bravo.token])) {
     throw new Error(`date_created search/filter result mismatch: ${JSON.stringify(createdFilter.tokens)}`);
   }
-  if (JSON.stringify(updatedFilter.tokens) !== JSON.stringify([charlie.token])) {
-    throw new Error(`date_updated exact request-filter result mismatch: ${JSON.stringify(updatedFilter.tokens)}`);
+  const nativeUnscopedUpdatedTokens = fixture.entries.map((entry) => entry.token);
+  if (JSON.stringify(updatedFilter.tokens) !== JSON.stringify(nativeUnscopedUpdatedTokens)) {
+    throw new Error(`date_updated direct request must remain the exact 3.3.4 unscoped/no-op boundary: ${JSON.stringify(updatedFilter.tokens)}`);
   }
 
   result.initial = initial;
@@ -274,7 +275,7 @@ try {
   };
   result.filtering = {
     date_created_local_2026_03_21: createdFilter,
-    date_updated_raw_2026_03_21: updatedFilter,
+    date_updated_direct_request_noop: updatedFilter,
   };
   result.status = 'PASS';
 
