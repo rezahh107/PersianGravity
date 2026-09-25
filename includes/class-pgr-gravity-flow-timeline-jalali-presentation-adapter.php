@@ -212,45 +212,27 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		$note  = $path[5]['args'][0] ?? null;
-		$notes = $path[6]['args'][0] ?? null;
-		$entry = $path[7]['args'][0] ?? null;
-		$form  = $path[7]['args'][1] ?? null;
-		if ( ! is_object( $note ) || ! is_array( $notes ) || ! is_array( $entry ) || ! in_array( $note, $notes, true ) ) {
+		$owned = $this->active_calendar_context_for_time_path( $path );
+		if ( null === $owned ) {
 			return $format;
 		}
 
-		$raw = isset( $note->date_created ) && is_string( $note->date_created ) ? $note->date_created : null;
-		if ( null === $raw ) {
-			return $format;
-		}
-
-		$date_format = $this->owned_date_format_for_time_path( $path, $raw, $note );
-		if ( null === $date_format ) {
-			return $format;
-		}
-
-		$event_kind = $this->event_kind( $note, $entry, $raw );
-		$timestamp  = $this->expected_localized_timestamp( $raw );
-		$entry_key  = $this->entry_key( $entry );
-		$note_order = $this->note_identity_order( $notes );
-		if ( null === $event_kind || null === $timestamp || null === $entry_key || null === $note_order ) {
-			return $format;
-		}
+		$note    = $owned['context']['note'];
+		$context = $owned['context'];
 
 		$this->time_contexts[ spl_object_id( $note ) ] = array(
 			'note'              => $note,
-			'note_snapshot'     => get_object_vars( $note ),
-			'notes'             => $notes,
-			'notes_order'       => $note_order,
-			'entry'             => $entry,
-			'entry_key'         => $entry_key,
-			'form'              => $form,
-			'raw'               => $raw,
-			'timestamp'         => $timestamp,
+			'note_snapshot'     => $context['note_snapshot'],
+			'notes'             => $context['notes'],
+			'notes_order'       => $context['notes_order'],
+			'entry'             => $context['entry'],
+			'entry_key'         => $context['entry_key'],
+			'form'              => $context['form'],
+			'raw'               => $context['raw'],
+			'timestamp'         => $context['timestamp'],
 			'time_format'       => $format,
-			'date_format'       => $date_format,
-			'event_kind'        => $event_kind,
+			'date_format'       => $owned['format'],
+			'event_kind'        => $context['event_kind'],
 			'calendar_admitted' => false,
 		);
 
@@ -405,7 +387,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->time_path_arguments_match( $path, $context ) ||
+			! $this->second_path_arguments_match( $path, $context, $format ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
 		) {
 			return $date;
@@ -547,59 +529,46 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Resolve the already-owned marked date format visible from the exact time-format lookup.
+	 * Bind the time-format lookup to the row already admitted by the date seam.
 	 *
-	 * GFCommon::format_date() mutates its local date-format parameter from the
-	 * caller's empty string to our owned marked format before it asks WordPress
-	 * for the time format. The time seam must therefore bind to that active date
-	 * context instead of reusing the pre-date-lookup argument matcher.
+	 * Exact runtime evidence shows the host requests its time format after the
+	 * date-format filter has armed the same Timeline row. Reuse that owned
+	 * context instead of trying to infer mutated local GFCommon parameters from
+	 * debug_backtrace(), whose argument vector reflects call-time values.
 	 *
 	 * @param array<int,array<string,mixed>> $path Qualified time-format chain.
-	 * @param string                         $raw  Raw date_created.
-	 * @param object                         $note Exact Timeline note object.
-	 * @return string|null Owned marked date format.
+	 * @return array{format:string,context:array<string,mixed>}|null
 	 */
-	private function owned_date_format_for_time_path( $path, $raw, $note ) {
-		if ( ! isset( $path[2]['args'], $path[3]['args'] ) || 4 !== count( $path[2]['args'] ) ) {
+	private function active_calendar_context_for_time_path( $path ) {
+		$note  = $path[5]['args'][0] ?? null;
+		$notes = $path[6]['args'][0] ?? null;
+		$entry = $path[7]['args'][0] ?? null;
+		$form  = $path[7]['args'][1] ?? null;
+		if ( ! is_object( $note ) || ! is_array( $notes ) || ! is_array( $entry ) || ! in_array( $note, $notes, true ) ) {
 			return null;
 		}
 
-		$args        = $path[2]['args'];
-		$date_format = $args[2] ?? null;
-		if (
-			$raw !== ( $args[0] ?? null ) ||
-			false !== ( $args[1] ?? null ) ||
-			true !== ( $args[3] ?? null ) ||
-			! is_string( $date_format ) ||
-			! isset( $this->contexts[ $date_format ] ) ||
-			array( $raw, '', false, true ) !== $path[3]['args']
-		) {
-			return null;
+		$matches = array();
+		foreach ( $this->contexts as $format => $context ) {
+			if (
+				$note !== ( $context['note'] ?? null ) ||
+				get_object_vars( $note ) !== ( $context['note_snapshot'] ?? null ) ||
+				$notes !== ( $context['notes'] ?? null ) ||
+				$this->note_identity_order( $notes ) !== ( $context['notes_order'] ?? null ) ||
+				$entry !== ( $context['entry'] ?? null ) ||
+				$this->entry_key( $entry ) !== ( $context['entry_key'] ?? null ) ||
+				$form !== ( $context['form'] ?? null )
+			) {
+				continue;
+			}
+
+			$matches[] = array(
+				'format'  => $format,
+				'context' => $context,
+			);
 		}
 
-		$context = $this->contexts[ $date_format ];
-		return (
-			( $context['note'] ?? null ) === $note &&
-			( $context['raw'] ?? null ) === $raw
-		) ? $date_format : null;
-	}
-
-	/**
-	 * Validate the time date_i18n call against the marked date-format state that
-	 * GFCommon::format_date() still owns for this exact Timeline row.
-	 *
-	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
-	 * @param array<string,mixed>            $context Owned time context.
-	 * @return bool
-	 */
-	private function time_path_arguments_match( $path, $context ) {
-		if ( ! isset( $path[1]['args'], $path[2]['args'], $context['date_format'] ) ) {
-			return false;
-		}
-
-		$raw = $context['raw'];
-		return array( $raw, false, $context['date_format'], true ) === $path[1]['args'] &&
-			array( $raw, '', false, true ) === $path[2]['args'];
+		return 1 === count( $matches ) ? $matches[0] : null;
 	}
 
 	/**
