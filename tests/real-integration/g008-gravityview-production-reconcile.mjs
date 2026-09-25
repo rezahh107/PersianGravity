@@ -170,7 +170,10 @@ for (const forbidden of [
   'data-native',
   '<span',
   'wp_date(',
-  'filter_date_updated',
+  'filter_date_updated=',
+  '$_GET',
+  '$_REQUEST',
+  'GFAPI::get_entries',
 ]) {
   assert(!adapterSource.includes(forbidden), `Production adapter contains forbidden/test-only behavior: ${forbidden}`);
 }
