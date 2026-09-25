@@ -45,6 +45,14 @@ const needles = [
   'sorting',
   'GFAPI::get_entries',
   'GF_Query',
+  'filter_',
+  'gv_search',
+  'entry_date',
+  'sort_columns',
+  'is_field_sortable',
+  'from_search_criteria',
+  'date_range',
+  'to_utc',
 ];
 
 for (const file of files) {
