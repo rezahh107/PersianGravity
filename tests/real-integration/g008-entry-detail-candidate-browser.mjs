@@ -168,10 +168,15 @@ async function readTimeline(selectorPrefix) {
       if (headers.length !== 1 || bodyLeaves.length !== 1) {
         throw new Error(`Timeline row ${index} is ambiguous: ${headers.length} headers, ${bodyLeaves.length} body leaves.`);
       }
+      const rowElement = row.closest('.gravityflow-note');
       return {
         index,
+        row_id: rowElement?.getAttribute('id') ?? null,
+        row_attributes: rowElement ? Object.fromEntries([...rowElement.attributes].map((attribute) => [attribute.name, attribute.value])) : {},
         header: headers[0].textContent?.trim() ?? '',
+        header_attributes: Object.fromEntries([...headers[0].attributes].map((attribute) => [attribute.name, attribute.value])),
         body: bodyLeaves[0].textContent?.trim() ?? '',
+        body_attributes: Object.fromEntries([...bodyLeaves[0].attributes].map((attribute) => [attribute.name, attribute.value])),
       };
     });
     return {
@@ -191,6 +196,11 @@ function assertTimelinePresentation(snapshot, label) {
     throw new Error(`${label} row/header/body count drifted: ${JSON.stringify({ headers: snapshot.headers.length, bodies: snapshot.bodies.length, rows: snapshot.collector?.row_count, expected: timelineFixture.length })}`);
   }
   const expectedBodies = timelineFixture.map((item) => item.value);
+  const expectedRowIds = timelineFixture.map((item) => `gravityflow-note-${item.id}`);
+  const actualRowIds = snapshot.rows.map((row) => row.row_id);
+  if (JSON.stringify(actualRowIds) !== JSON.stringify(expectedRowIds)) {
+    throw new Error(`${label} row identity/order drifted: ${JSON.stringify({ actualRowIds, expectedRowIds })}`);
+  }
   if (mode !== 'english' && JSON.stringify(snapshot.bodies) !== JSON.stringify(expectedBodies)) {
     throw new Error(`${label} bodies do not map one-to-one to the authoritative fixture: ${JSON.stringify({ actual: snapshot.bodies, expected: expectedBodies })}`);
   }
@@ -211,11 +221,37 @@ function assertTimelinePresentation(snapshot, label) {
       if (!header.startsWith(row.expected_jalali_date)) {
         throw new Error(`${label} row ${row.id} did not start with the independently expected Jalali date: ${header}`);
       }
-      if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) {
-        throw new Error(`${label} row ${row.id} changed native time output: ${JSON.stringify({ header, expected: row.expected_native_time_tail })}`);
+      if (!row.expected_persian_time || !header.includes(row.expected_persian_time)) {
+        throw new Error(`${label} row ${row.id} did not shape the native time digits: ${JSON.stringify({ header, expected: row.expected_persian_time })}`);
+      }
+      if (row.expected_native_time && /[0-9]/.test(row.expected_native_time) && header.includes(row.expected_native_time)) {
+        throw new Error(`${label} row ${row.id} retained ASCII native time digits: ${header}`);
+      }
+    }
+  } else if (mode === 'english') {
+    for (let index = 0; index < timelineFixture.length; index += 1) {
+      const row = timelineFixture[index];
+      const header = snapshot.headers[index] ?? '';
+      if (!row.expected_native_time || !header.includes(row.expected_native_time)) {
+        throw new Error(`${label} English row ${row.id} did not keep ASCII host time: ${JSON.stringify({ header, expected: row.expected_native_time })}`);
+      }
+      if (row.expected_persian_time && row.expected_persian_time !== row.expected_native_time && header.includes(row.expected_persian_time)) {
+        throw new Error(`${label} English row ${row.id} leaked Persian time digits: ${header}`);
       }
     }
   }
+
+  const headersText = snapshot.headers.join('\n');
+  if (mode === 'enabled') {
+    if (headersText.includes('11:59') || !headersText.includes('۱۱:۵۹') || headersText.includes('12:01') || !headersText.includes('۱۲:۰۱')) {
+      throw new Error(`${label} Persian boundary time glyphs are incoherent: ${JSON.stringify(snapshot.headers)}`);
+    }
+  } else if (mode === 'disabled' || mode === 'english') {
+    if (!headersText.includes('11:59') || headersText.includes('۱۱:۵۹') || !headersText.includes('12:01') || headersText.includes('۱۲:۰۱')) {
+      throw new Error(`${label} native/English boundary time glyphs did not remain ASCII: ${JSON.stringify(snapshot.headers)}`);
+    }
+  }
+
   for (const stored of manifest.g008_flow_timeline_stored_notes ?? []) {
     if (!snapshot.bodies.includes(stored.value)) {
       throw new Error(`${label} changed or omitted stored Timeline body ${stored.id}.`);
