@@ -295,7 +295,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->time_path_arguments_match( $path, $context ) ||
+			! $this->second_path_arguments_match( $path, $context, $format ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind'] ||
 			! in_array( $context['native_format'], self::SUPPORTED_FORMATS, true )
 		) {
@@ -387,7 +387,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->second_path_arguments_match( $path, $context, $format ) ||
+			! $this->time_path_arguments_match( $path, $context ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
 		) {
 			return $date;
