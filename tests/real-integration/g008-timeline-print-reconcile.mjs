@@ -87,14 +87,20 @@ browserIdentity(englishBrowser, 'english');
 if (
   enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
   || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
-  || enabledHook.time_digit_class_loaded !== true || enabledHook.time_digit_action_hooks !== 1
+  || enabledHook.time_digit_class_loaded !== true
+  || enabledHook.time_digit_signal_hooks !== 1
+  || enabledHook.time_digit_entry_detail_hooks !== 1
+  || enabledHook.time_digit_print_footer_hooks !== 1
 ) {
   failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
 }
 if (
   disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
   || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
-  || disabledHook.time_digit_class_loaded !== false || disabledHook.time_digit_action_hooks !== 0
+  || disabledHook.time_digit_class_loaded !== false
+  || disabledHook.time_digit_signal_hooks !== 0
+  || disabledHook.time_digit_entry_detail_hooks !== 0
+  || disabledHook.time_digit_print_footer_hooks !== 0
 ) {
   failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
 }
