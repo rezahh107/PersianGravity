@@ -158,7 +158,7 @@ final class G008GravityViewJalaliPresentationTest extends TestCase {
 				$content = (string) file_get_contents( $file );
 				$result  = array();
 				foreach ( $headers as $key => $label ) {
-					$result[ $key ] = preg_match( '/^\\s*' . preg_quote( $label, '/' ) . ':\\s*(.+)$/mi', $content, $match )
+					$result[ $key ] = preg_match( '/^[\\t *\/#@]*' . preg_quote( $label, '/' ) . ':\\s*(.+)$/mi', $content, $match )
 						? trim( $match[1] )
 						: '';
 				}
