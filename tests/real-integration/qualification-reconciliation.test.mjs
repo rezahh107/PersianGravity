@@ -438,6 +438,7 @@ test('positive control: evidence matching declared G-009/G-008 claims passes wit
     g008_source_proven_claims_reconciled: 5,
     g008_runtime_admitted_claims_reconciled: 0,
     g008_final_no_admission_claims_reconciled: 0,
+    g008_runtime_qualified_not_admitted_claims_reconciled: 0,
   });
   assert.deepEqual(input.g009Registry, beforeG009);
   assert.deepEqual(input.g008Registry, beforeG008);
