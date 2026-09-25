@@ -232,8 +232,9 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 add_action(
 	'wp_footer',
 	static function () {
-		$class     = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
-		$flow_root = WP_PLUGIN_DIR . '/gravityflow';
+		$class            = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
+		$time_digit_class = 'PGR_Gravity_Flow_Timeline_Persian_Time_Digits_Presentation_Adapter';
+		$flow_root        = WP_PLUGIN_DIR . '/gravityflow';
 		$gf_main   = class_exists( 'GFForms', false ) ? ( new ReflectionClass( 'GFForms' ) )->getFileName() : null;
 		$paths     = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
@@ -250,6 +251,8 @@ add_action(
 			'module_enabled'           => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
 			'option_date_format_hooks' => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
 			'date_i18n_hooks'          => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
+			'time_digit_class_loaded'  => class_exists( $time_digit_class, false ),
+			'time_digit_action_hooks'  => pgr_wu008_timeline_callback_count( 'pgr_gravity_flow_timeline_header_presented', $time_digit_class, 'enqueue_time_digit_shaper' ),
 			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
 			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
 			'source_fingerprints'      => $hashes,
