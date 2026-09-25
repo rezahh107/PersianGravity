@@ -173,9 +173,7 @@ async function sortedTokens(field, direction) {
 async function filteredTokens(field, localDate, expectedEntry) {
   await open(fixture.page_url);
 
-  const candidates = page.locator('input, select').filter({
-    has: undefined,
-  });
+  const candidates = page.locator('input, select');
   const controlMetadata = await candidates.evaluateAll((nodes, targetField) => nodes
     .map((node, index) => ({
       index,
