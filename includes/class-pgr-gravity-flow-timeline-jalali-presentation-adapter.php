@@ -374,8 +374,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $date;
 		}
 
+		return $this->shape_ascii_digits( $date );
+	}
+
+	/**
+	 * Shape ASCII glyphs only; existing Persian digits and non-digits remain unchanged.
+	 *
+	 * @param string $value Human-visible host time string.
+	 * @return string
+	 */
+	private function shape_ascii_digits( $value ) {
 		return strtr(
-			$date,
+			$value,
 			array(
 				'0' => '۰',
 				'1' => '۱',
