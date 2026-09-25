@@ -154,7 +154,7 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 		$this->assertSame( 'ADMITTED_FOR_EXACT_VERSION', $states['gravityflow.timeline-history']['exact_version_disposition'] );
 		$this->assertSame( 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE', $states['gravityflow.print']['exact_version_disposition'] );
 		$this->assertStringContainsString( 'INHERITS_VERIFIED_TIMELINE_RENDERER', $states['gravityflow.print']['presentation_seam'] );
-		$this->assertStringContainsString( 'no independent Print date seam', $states['gravityflow.print']['presentation_seam'] );
+		$this->assertStringContainsString( 'no independent Print calendar or digit-shaping seam', $states['gravityflow.print']['presentation_seam'] );
 
 		$admitted_ids = array(
 			'gravityforms.entries-list.date-created',
