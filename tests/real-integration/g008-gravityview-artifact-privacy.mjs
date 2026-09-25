@@ -42,6 +42,22 @@ if (fs.existsSync(qualificationPath)) {
   qualificationChecked = true;
 }
 
+const admissionPath = path.join(artifactDir, 'g008-gravityview-admission.json');
+let admissionChecked = false;
+if (fs.existsSync(admissionPath)) {
+  const admission = JSON.parse(fs.readFileSync(admissionPath, 'utf8'));
+  assertSanitizedProvenance(admission.source_provenance);
+  if (
+    admission.source_evidence_boundary?.metadata_only !== true
+    || admission.source_evidence_boundary?.raw_source_persisted !== false
+    || admission.independent_source_fail_closed?.date_created !== true
+    || admission.independent_source_fail_closed?.date_updated !== true
+  ) {
+    throw new Error('GravityView production admission artifact does not preserve the metadata-only source boundary.');
+  }
+  admissionChecked = true;
+}
+
 console.log(
-  `PASS GravityView artifact privacy: metadata-only source evidence; qualification_checked=${qualificationChecked}`,
+  `PASS GravityView artifact privacy: metadata-only source evidence; qualification_checked=${qualificationChecked}; admission_checked=${admissionChecked}`,
 );

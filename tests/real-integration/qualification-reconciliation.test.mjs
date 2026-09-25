@@ -159,6 +159,7 @@ function fixtures() {
     g008FlowScheduleQualificationEvidence: null,
     g008TimelinePrintQualificationEvidence: null,
     g008GravityViewQualificationEvidence: null,
+    g008GravityViewAdmissionEvidence: null,
     expectedIdentity: structuredClone(identity),
   };
 }
@@ -247,6 +248,78 @@ function qualifyGravityView(input) {
       locale_context_fail_closed_required: true,
       arbitrary_display_string_parsing_required: false,
       machine_semantics_mutation_required: false,
+    },
+  };
+}
+
+function admitGravityView(input) {
+  qualifyGravityView(input);
+  const product = gravityViewProduct(input);
+  for (const surface of product.surfaces) {
+    surface.support_state = 'ADMITTED_VERIFIED';
+    surface.adapter_identity = 'PGR_GravityView_Jalali_Presentation_Adapter';
+    surface.runtime_evidence = 'g008-gravityview-admission.json';
+    surface.exact_version_disposition = 'ADMITTED_FOR_EXACT_VERSION';
+  }
+  input.g008GravityViewAdmissionEvidence = {
+    evidence_class: 'G008_GRAVITYVIEW_PRODUCTION_ADMISSION_RECONCILIATION',
+    status: 'PASS',
+    exact_persiangravity_commit: identity.head,
+    exact_persiangravity_tree: identity.tree,
+    exact_persiangravity_package_sha256: identity.persiangravityPackageSha256,
+    exact_version: '3.3.4',
+    exact_package_sha256: 'c'.repeat(64),
+    exact_gravityforms_version: '3.1.1.1',
+    exact_gravityforms_package_sha256: 'a'.repeat(64),
+    adapter_identity: 'PGR_GravityView_Jalali_Presentation_Adapter',
+    surfaces: {
+      'gravityview.date-created': 'ADMITTED_VERIFIED',
+      'gravityview.date-updated': 'ADMITTED_VERIFIED',
+    },
+    source_evidence_boundary: {
+      metadata_only: true,
+      raw_source_persisted: false,
+    },
+    independent_source_fail_closed: {
+      date_created: true,
+      date_updated: true,
+    },
+    source_provenance: {
+      target_fields: {
+        file: 'src/Field/Types/DateCreated.php',
+        start_line: 20,
+        end_line: 40,
+        file_sha256: '9'.repeat(64),
+        contract_keys: ['date_created.field_name', 'date_updated.field_name'],
+      },
+    },
+    runtime_findings: {
+      production_adapter_loaded_and_registered: true,
+      qualification_mu_prototype_absent: true,
+      date_created_visible_jalali: true,
+      date_updated_visible_jalali: true,
+      timezone_boundary_proven: true,
+      module_disabled_native: true,
+      english_ltr_native: true,
+      exact_version_drift_native: true,
+      repeated_render_stable: true,
+      raw_db_gfapi_rest_equal_across_modes: true,
+      gfapi_sort_equal_across_modes: true,
+      gravityview_sort_equal_across_modes: true,
+      date_created_native_filter_equal_across_modes: true,
+      date_updated_unconfigured_direct_request_noop_equal_across_modes: true,
+      row_and_sort_link_attributes_preserved: true,
+      unrelated_user_text_preserved: true,
+      diagnostic_wrapper_absent: true,
+    },
+    production_boundary: {
+      production_adapter_added: true,
+      qualification_only_mu_prototype_used_for_admission: false,
+      exact_version_fail_closed: true,
+      locale_context_fail_closed: true,
+      display_string_reparse: false,
+      machine_semantics_mutation: false,
+      query_filter_sort_mutation: false,
     },
   };
 }
@@ -556,6 +629,27 @@ test('G-008 GravityView qualification reconciles without production admission', 
     && surface.adapter_identity === null
     && surface.exact_version_disposition === 'QUALIFIED_FOR_PRODUCTION_ADAPTER'
   ), true);
+});
+
+test('G-008 GravityView production admission requires exact bounded production evidence', () => {
+  const input = fixtures();
+  admitGravityView(input);
+  const before = structuredClone(input.g008Registry);
+  const result = reconcileQualificationEvidence(input);
+  assert.equal(result.status, 'PASS');
+  assert.equal(result.g008_runtime_admitted_claims_reconciled, 2);
+  assert.equal(result.g008_runtime_qualified_not_admitted_claims_reconciled, 0);
+  assert.deepEqual(input.g008Registry, before);
+
+  const drift = fixtures();
+  admitGravityView(drift);
+  drift.g008GravityViewAdmissionEvidence.runtime_findings.exact_version_drift_native = false;
+  expectFailure(drift, /gravityview\.date-created.*production runtime flag exact_version_drift_native is not proven/);
+
+  const missing = fixtures();
+  admitGravityView(missing);
+  missing.g008GravityViewAdmissionEvidence = null;
+  expectFailure(missing, /gravityview\.date-created.*dedicated GravityView production evidence is missing/);
 });
 
 test('G-008 GravityView qualification falsifies source-evidence privacy and independent-field drift', () => {

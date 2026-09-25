@@ -141,6 +141,7 @@ jobs:
           php -l tests/real-integration/g008-gravityview-prototype-mu.php
           php -l tests/real-integration/g008-gravityview-setup-runtime.php
           php -l tests/real-integration/g008-gravityview-state.php
+          php -l tests/real-integration/g008-gravityview-production-state.php
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
@@ -150,6 +151,8 @@ jobs:
           node --check tests/real-integration/g008-gravityview-artifact-privacy.mjs
           node --check tests/real-integration/g008-gravityview-browser.mjs
           node --check tests/real-integration/g008-gravityview-reconcile.mjs
+          node --check tests/real-integration/g008-gravityview-production-browser.mjs
+          node --check tests/real-integration/g008-gravityview-production-reconcile.mjs
           node --check tests/real-integration/g009-browser.mjs
           node --check tests/real-integration/g009-perks-source-probe.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
@@ -400,93 +403,133 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gp-file-upload-pro --field=version --path="$WU008_WP_PATH")" = "$WU008_FUP_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
 
-      - name: Create deterministic GravityView G008 qualification fixture
+      - name: Create deterministic GravityView G008 production fixture
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
-          cp tests/real-integration/g008-gravityview-prototype-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          rm -f "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) ? "enabled" : "disabled";')" = "disabled"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'if ( ! PGR_Module_Registry::set_enabled( "jalali_presentation", true ) ) { exit( 1 ); }'
-          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) && class_exists( "PGR_Jalali_Presentation", false ) ? "ready" : "not-ready";')" = "ready"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) && class_exists( "PGR_GravityView_Jalali_Presentation_Adapter", false ) ? "ready" : "not-ready";')" = "ready"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-setup-runtime.php
           test -s "$WU008_ARTIFACT_DIR/g008-gravityview-fixture-baseline.json"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo wp_timezone_string();')" = "Asia/Tehran"
 
-      - name: Qualify GravityView dates with bounded prototype enabled
+      - name: Prove GravityView production adapter enabled presentation
         shell: bash
         env:
           WU008_GV_MODE: enabled
         run: |
           set -euo pipefail
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "enabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
-          browser_rc=0
-          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-enabled.json"
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-enabled.json"
-          test "$browser_rc" -eq 0
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          node tests/real-integration/g008-gravityview-production-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-browser-enabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-state-enabled.json"
 
-      - name: Prove GravityView module-disabled native fallback
+      - name: Prove GravityView production module-disabled native fallback
         shell: bash
         env:
           WU008_GV_MODE: disabled
         run: |
           set -euo pipefail
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); update_option( "wu008_gv_qualification_mode", "disabled", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
-          browser_rc=0
-          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-disabled.json"
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-disabled.json"
-          test "$browser_rc" -eq 0
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          node tests/real-integration/g008-gravityview-production-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-browser-disabled.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-state-disabled.json"
 
-      - name: Prove GravityView en_US LTR control stays native
+      - name: Prove GravityView production en_US LTR stays native
         shell: bash
         env:
           WU008_GV_MODE: english
         run: |
           set -euo pipefail
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "english", false ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" );'
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "en_US"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo is_rtl() ? "rtl" : "ltr";')" = "ltr"
-          browser_rc=0
-          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-english.json"
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-english.json"
-          test "$browser_rc" -eq 0
+          node tests/real-integration/g008-gravityview-production-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-browser-english.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-state-english.json"
 
-      - name: Prove GravityView exact-version gate fails closed
+      - name: Prove GravityView production exact-version drift fails closed
         shell: bash
         env:
           WU008_GV_MODE: drift
         run: |
           set -euo pipefail
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true ); update_option( "wu008_gv_qualification_mode", "drift", false ); update_option( "wu008_gv_qualification_force_version_drift", true, false ); delete_option( "wu008_gv_qualification_trace" );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo determine_locale();')" = "fa_IR"
-          browser_rc=0
-          node tests/real-integration/g008-gravityview-browser.mjs || browser_rc=$?
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-state.php
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-browser-drift.json"
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-state-drift.json"
-          test "$browser_rc" -eq 0
 
-      - name: Reconcile and remove qualification-only GravityView prototype
+          gv_main="$WU008_WP_PATH/wp-content/plugins/gravityview/gravityview.php"
+          gv_backup=/tmp/wu008-gravityview-main.php
+          cp "$gv_main" "$gv_backup"
+          gv_sha="$(sha256sum "$gv_main" | awk '{print $1}')"
+          restore_gv() {
+            cp "$gv_backup" "$gv_main"
+            echo "$gv_sha  $gv_main" | sha256sum -c -
+            rm -f "$gv_backup"
+          }
+          trap restore_gv EXIT
+          read_gv_header_version() {
+            php -r '
+              $data = file_get_contents($argv[1], false, null, 0, 8192);
+              if (!is_string($data) || !preg_match("/^(?:[ \\t]*<\\?(?:php)?)?[ \\t\\/*#@]*Version:(.*)$/mi", $data, $m)) { exit(1); }
+              $value = preg_replace("/\\s*(?:\\*\\/|\\?>).*/", "", $m[1]);
+              echo trim((string) $value);
+            ' "$gv_main"
+          }
+          test "$(read_gv_header_version)" = "3.3.4"
+          php -r '
+            $path = $argv[1];
+            $content = file_get_contents($path);
+            if (!is_string($content)) { fwrite(STDERR, "GravityView header read failed\n"); exit(1); }
+            $prefix = substr($content, 0, 8192);
+            if (!preg_match("/^(?:[ \\t]*<\\?(?:php)?)?[ \\t\\/*#@]*Version:(.*)$/mi", $prefix, $match, PREG_OFFSET_CAPTURE)) {
+              fwrite(STDERR, "GravityView plugin Version header not found\n");
+              exit(1);
+            }
+            $line = $match[0][0];
+            $offset = $match[0][1];
+            $updated_line = preg_replace("/3\\.3\\.4/", "3.3.5", $line, 1, $count);
+            if (!is_string($updated_line) || $count !== 1) {
+              fwrite(STDERR, "GravityView plugin Version header drift injection failed\n");
+              exit(1);
+            }
+            $updated = substr_replace($content, $updated_line, $offset, strlen($line));
+            if (false === file_put_contents($path, $updated)) { exit(1); }
+          ' "$gv_main"
+          test "$(read_gv_header_version)" = "3.3.5"
+
+          node tests/real-integration/g008-gravityview-production-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-production-state.php
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-browser-drift.json"
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-production-state-drift.json"
+          restore_gv
+          trap - EXIT
+
+      - name: Reconcile GravityView production admission candidate and restore isolation
         shell: bash
         run: |
           set -euo pipefail
-          node tests/real-integration/g008-gravityview-reconcile.mjs
-          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-date-qualification.json"
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          node tests/real-integration/g008-gravityview-production-reconcile.mjs
+          test -s "$WU008_ARTIFACT_DIR/g008-gravityview-admission.json"
           node tests/real-integration/g008-gravityview-artifact-privacy.mjs
           original_date_format="$(php -r '$d=json_decode(file_get_contents($argv[1]),true); echo $d["original_date_format"] ?? "";' "$WU008_ARTIFACT_DIR/g008-gravityview-fixture-baseline.json")"
           test -n "$original_date_format"
           php "$WU008_WP_CLI" option update date_format "$original_date_format" --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false ); delete_option( "wu008_gv_qualification_mode" ); delete_option( "wu008_gv_qualification_force_version_drift" ); delete_option( "wu008_gv_qualification_trace" ); delete_option( "wu008_gv_qualification_view_id" );'
-          rm "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
           test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
 
       - name: Create G008 Flow Inbox fixtures after G009 isolation checks

@@ -93,9 +93,12 @@ final class RuntimeBootstrapTest extends TestCase {
 		$this->assertTrue( class_exists( 'PGR_Gregorian_Jalali_Converter', false ) );
 		$this->assertTrue( class_exists( 'PGR_Jalali_Presentation', false ) );
 		$this->assertTrue( class_exists( 'PGR_GF_Jalali_Presentation_Adapter', false ) );
+		$this->assertTrue( class_exists( 'PGR_GravityView_Jalali_Presentation_Adapter', false ) );
 		$this->assertFalse( class_exists( 'PGR_Persian_Date', false ) );
 		$this->assertFalse( class_exists( 'PGR_GF_Field_Jalali_Date', false ) );
 		$this->assertArrayHasKey( 'gform_entries_field_value', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'gravityview/template/field/date_created/output', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayHasKey( 'gravityview/template/field/date_updated/output', $GLOBALS['pgr_test_filters'] );
 		$this->assertCount( 0, GF_Fields::$registered );
 	}
 
