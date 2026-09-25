@@ -10,10 +10,24 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 
 	protected function setUp(): void {
 		$GLOBALS['pgr_test_filters'] = array();
+		$GLOBALS['pgr_test_locale']  = 'fa_IR';
 	}
 
 	public function test_missing_exact_host_contract_registers_no_generic_timeline_hook(): void {
 		$adapter = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$adapter->hooks();
+
+		$this->assertArrayNotHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
+		$this->assertArrayNotHasKey( 'date_i18n', $GLOBALS['pgr_test_filters'] );
+	}
+
+	public function test_non_persian_locale_registers_no_timeline_calendar_hooks(): void {
+		$GLOBALS['pgr_test_locale'] = 'en_US';
+		$adapter                    = new PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter();
+		$reflection                 = new ReflectionClass( $adapter );
+		$property                   = $reflection->getProperty( 'host_contract_valid' );
+		$property->setValue( $adapter, true );
+
 		$adapter->hooks();
 
 		$this->assertArrayNotHasKey( 'option_date_format', $GLOBALS['pgr_test_filters'] );
@@ -263,6 +277,7 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 		$source = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 
 		$this->assertStringContainsString( "add_filter( 'option_date_format'", $source );
+		$this->assertStringContainsString( "'fa_IR' !== determine_locale()", $source );
 		$this->assertStringContainsString( "add_filter( 'option_time_format'", $source );
 		$this->assertStringContainsString( "'fa_IR' === determine_locale()", $source );
 		$this->assertStringContainsString( "add_filter( 'date_i18n'", $source );
