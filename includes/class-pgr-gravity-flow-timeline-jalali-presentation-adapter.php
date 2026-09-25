@@ -42,6 +42,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		'Gravity_Flow_Entry_Detail::timeline',
 	);
 
+	/** Exact Timeline time-format lookup chain, nearest frame first. */
+	private const TIME_FORMAT_CHAIN = array(
+		'get_option',
+		'GFCommon::get_default_time_format',
+		'GFCommon::format_date',
+		'Gravity_Flow_Common::format_date',
+		'Gravity_Flow_Entry_Detail::get_note_header',
+		'Gravity_Flow_Entry_Detail::get_note_body',
+		'Gravity_Flow_Entry_Detail::notes_grid',
+		'Gravity_Flow_Entry_Detail::timeline',
+	);
+
 	/** Exact second-seam caller chain, nearest frame first. */
 	private const SECOND_CHAIN = array(
 		'date_i18n',
@@ -55,6 +67,9 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 
 	/** @var array<string,array<string,mixed>> One-shot contexts keyed by marked format. */
 	private $contexts = array();
+
+	/** @var array<int,array<string,mixed>> One-shot time contexts keyed by note object ID. */
+	private $time_contexts = array();
 
 	/** @var array<string,string> Marked format => literal marker for leak-safe fallback. */
 	private $marker_literals = array();
@@ -83,6 +98,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		add_filter( 'option_date_format', array( $this, 'filter_date_format' ), PHP_INT_MAX, 2 );
+
+		if ( function_exists( 'determine_locale' ) && 'fa_IR' === determine_locale() ) {
+			add_filter( 'option_time_format', array( $this, 'filter_time_format' ), PHP_INT_MAX, 2 );
+		}
 	}
 
 	/**
@@ -159,6 +178,74 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return $marked['format'];
 	}
 
+
+	/**
+	 * Capture the host-owned time format only for the exact admitted Timeline row.
+	 *
+	 * The format value is returned byte-for-byte unchanged. The captured context
+	 * is consumed later only by the matching time date_i18n() call.
+	 *
+	 * @param mixed $format Native WordPress time-format option value.
+	 * @param mixed $option Option name.
+	 * @return mixed
+	 */
+	public function filter_time_format( $format, $option = null ) {
+		if (
+			'time_format' !== $option ||
+			! is_string( $format ) ||
+			'' === $format ||
+			! function_exists( 'determine_locale' ) ||
+			'fa_IR' !== determine_locale() ||
+			! $this->is_exact_supported_host()
+		) {
+			return $format;
+		}
+
+		$trace = $this->capture_trace();
+		$this->prune_stale_contexts( $trace );
+		$path = $this->nearest_contiguous_chain( $trace, self::TIME_FORMAT_CHAIN );
+		if ( null === $path ) {
+			return $format;
+		}
+
+		$note  = $path[5]['args'][0] ?? null;
+		$notes = $path[6]['args'][0] ?? null;
+		$entry = $path[7]['args'][0] ?? null;
+		$form  = $path[7]['args'][1] ?? null;
+		if ( ! is_object( $note ) || ! is_array( $notes ) || ! is_array( $entry ) || ! in_array( $note, $notes, true ) ) {
+			return $format;
+		}
+
+		$raw = isset( $note->date_created ) && is_string( $note->date_created ) ? $note->date_created : null;
+		if ( null === $raw || ! $this->first_path_arguments_match( $path, $raw ) ) {
+			return $format;
+		}
+
+		$event_kind = $this->event_kind( $note, $entry, $raw );
+		$timestamp  = $this->expected_localized_timestamp( $raw );
+		$entry_key  = $this->entry_key( $entry );
+		$note_order = $this->note_identity_order( $notes );
+		if ( null === $event_kind || null === $timestamp || null === $entry_key || null === $note_order ) {
+			return $format;
+		}
+
+		$this->time_contexts[ spl_object_id( $note ) ] = array(
+			'note'          => $note,
+			'note_snapshot' => get_object_vars( $note ),
+			'notes'         => $notes,
+			'notes_order'   => $note_order,
+			'entry'         => $entry,
+			'entry_key'     => $entry_key,
+			'form'          => $form,
+			'raw'           => $raw,
+			'timestamp'     => $timestamp,
+			'time_format'   => $format,
+			'event_kind'    => $event_kind,
+		);
+
+		return $format;
+	}
+
 	/**
 	 * Convert only the date carried by an authentic active Timeline marker.
 	 *
@@ -173,15 +260,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 	 */
 	public function filter_date_i18n( $date, $format, $timestamp, $gmt ) {
 		$fallback = $this->strip_owned_markers( $date );
-		if ( ! is_string( $format ) || empty( $this->contexts ) ) {
+		if ( ! is_string( $format ) ) {
 			return $fallback;
 		}
 
 		$trace = $this->capture_trace();
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::SECOND_CHAIN );
-		if ( null === $path || ! isset( $this->contexts[ $format ] ) ) {
+		if ( null === $path ) {
 			return $fallback;
+		}
+		if ( ! isset( $this->contexts[ $format ] ) ) {
+			return $this->shape_timeline_time_digits( $fallback, $format, $timestamp, $gmt, $path );
 		}
 
 		$context = $this->contexts[ $format ];
@@ -226,6 +316,79 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		return null === $formatted ? $fallback : $formatted;
+	}
+
+
+	/**
+	 * Shape only the already-computed host time string for the exact Timeline row.
+	 *
+	 * @param mixed                           $date      Native time presentation.
+	 * @param string                          $format    Native time format.
+	 * @param mixed                           $timestamp Localized timestamp-plus-offset value.
+	 * @param mixed                           $gmt       Native date_i18n GMT flag.
+	 * @param array<int,array<string,mixed>> $path      Qualified date_i18n caller chain.
+	 * @return mixed
+	 */
+	private function shape_timeline_time_digits( $date, $format, $timestamp, $gmt, $path ) {
+		if (
+			! is_string( $date ) ||
+			! function_exists( 'determine_locale' ) ||
+			'fa_IR' !== determine_locale()
+		) {
+			return $date;
+		}
+
+		$note = $path[4]['args'][0] ?? null;
+		if ( ! is_object( $note ) ) {
+			return $date;
+		}
+
+		$key = spl_object_id( $note );
+		if ( ! isset( $this->time_contexts[ $key ] ) || $format !== $this->time_contexts[ $key ]['time_format'] ) {
+			return $date;
+		}
+
+		$context = $this->time_contexts[ $key ];
+		unset( $this->time_contexts[ $key ] );
+
+		$notes = $path[5]['args'][0] ?? null;
+		$entry = $path[6]['args'][0] ?? null;
+		$form  = $path[6]['args'][1] ?? null;
+		if (
+			true !== $gmt ||
+			! is_int( $timestamp ) ||
+			$timestamp !== $context['timestamp'] ||
+			! $this->is_exact_supported_host() ||
+			$note !== $context['note'] ||
+			get_object_vars( $note ) !== $context['note_snapshot'] ||
+			! is_array( $notes ) ||
+			$notes !== $context['notes'] ||
+			$this->note_identity_order( $notes ) !== $context['notes_order'] ||
+			! is_array( $entry ) ||
+			$entry !== $context['entry'] ||
+			$this->entry_key( $entry ) !== $context['entry_key'] ||
+			$form !== $context['form'] ||
+			! $this->second_path_arguments_match( $path, $context, $format ) ||
+			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
+		) {
+			return $date;
+		}
+
+		return strtr(
+			$date,
+			array(
+				'0' => '۰',
+				'1' => '۱',
+				'2' => '۲',
+				'3' => '۳',
+				'4' => '۴',
+				'5' => '۵',
+				'6' => '۶',
+				'7' => '۷',
+				'8' => '۸',
+				'9' => '۹',
+			)
+		);
 	}
 
 	/**
@@ -301,6 +464,24 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 
 			if ( ! $live ) {
 				unset( $this->contexts[ $format ] );
+			}
+		}
+
+		foreach ( $this->time_contexts as $key => $context ) {
+			$live = false;
+			foreach ( $trace as $frame ) {
+				if (
+					'Gravity_Flow_Entry_Detail::get_note_body' === $this->frame_signature( $frame ) &&
+					isset( $frame['args'][0] ) &&
+					$frame['args'][0] === $context['note']
+				) {
+					$live = true;
+					break;
+				}
+			}
+
+			if ( ! $live ) {
+				unset( $this->time_contexts[ $key ] );
 			}
 		}
 	}
