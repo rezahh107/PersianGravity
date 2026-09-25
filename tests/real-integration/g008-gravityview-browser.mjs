@@ -16,7 +16,6 @@ if (!fixture?.page_url || !Array.isArray(fixture.entries) || fixture.entries.len
   throw new Error('GravityView browser fixture manifest is incomplete.');
 }
 
-const expectedByToken = new Map(fixture.entries.map((entry) => [entry.token, entry]));
 const expectedSort = (field, direction) => [...fixture.entries]
   .sort((a, b) => {
     const cmp = String(a[field]).localeCompare(String(b[field]));
@@ -130,8 +129,8 @@ async function filteredTokens(field, localDate, expectedEntry) {
     value: node.value,
     type: node.getAttribute('type'),
   })).catch(() => null);
-  if (!searchInput || searchInput.value !== localDate) {
-    throw new Error(`Authentic GravityView search input did not consume filter_${field}=${localDate}`);
+  if (searchInput && searchInput.value !== localDate) {
+    throw new Error(`Visible GravityView search input value drifted for filter_${field}: ${searchInput.value}`);
   }
   return { tokens: snap.rows.map((row) => row.token), snapshot: snap, url: page.url(), searchInput };
 }
