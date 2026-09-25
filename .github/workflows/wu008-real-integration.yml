@@ -402,6 +402,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
           cp tests/real-integration/g008-gravityview-prototype-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-g008-gravityview-prototype.php"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) ? "enabled" : "disabled";')" = "disabled"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'if ( ! PGR_Module_Registry::set_enabled( "jalali_presentation", true ) ) { exit( 1 ); }'
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled( "jalali_presentation" ) && class_exists( "PGR_Jalali_Presentation", false ) ? "ready" : "not-ready";')" = "ready"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g008-gravityview-setup-runtime.php
