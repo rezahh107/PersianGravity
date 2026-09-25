@@ -99,12 +99,21 @@ sed -i "0,/Version: $CURRENT/{s/Version: $CURRENT/Version: 9.9.9/}" "$fixture/pe
 expect_fail 'plugin header and PGR_VERSION mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
 
 fixture="$(make_fixture)"
+sed -i "s/define( 'PGR_VERSION', '$CURRENT' );/define( 'PGR_VERSION', '9.9.9' );/" "$fixture/persian-gravityforms.php"
+expect_fail 'PGR_VERSION and plugin header mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
+
+fixture="$(make_fixture)"
 sed -i "s/^Stable tag: $CURRENT$/Stable tag: 9.9.9/" "$fixture/readme.txt"
 expect_fail 'Stable tag mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
 
 fixture="$(make_fixture)"
 sed -i "s/- Plugin version: \`$CURRENT\`/- Plugin version: \`9.9.9\`/" "$fixture/README.md"
 expect_fail 'active README version mismatch is refused' "${TOOL[@]}" --root="$fixture" verify
+
+fixture="$(make_fixture)"
+sed -i 's/^Current repository source exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:$/Current repository source capability summary is intentionally unversioned./' "$fixture/readme.txt"
+sed -i 's/^Current repository source exposes six bounded default-enabled modules plus one bounded opt-in module\..*$/Current repository source capability summary is intentionally unversioned./' "$fixture/README.md"
+expect_pass 'unversioned current capability prose is not canonical version metadata' "${TOOL[@]}" --root="$fixture" verify
 
 fixture="$(make_fixture)"
 sed -i "s/- Version: \`$CURRENT\`/- Version: \`9.9.9\`/" "$fixture/AGENTS.md"
@@ -145,9 +154,15 @@ if ($count !== 1) { exit(2); }
 file_put_contents($p, $s);
 ' "$fixture/readme.txt"
 historical_before="$(awk -v version="$CURRENT" '$0 == "= " version " =" { capture=1 } capture { print }' "$fixture/readme.txt" | sha256sum | awk '{print $1}')"
+readme_capability_before="$(grep -F 'Current repository source exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:' "$fixture/readme.txt")"
+github_capability_before="$(grep -F 'Current repository source exposes six bounded default-enabled modules plus one bounded opt-in module.' "$fixture/README.md")"
 expect_pass 'release preparation succeeds with meaningful Unreleased notes' "${TOOL[@]}" --root="$fixture" prepare patch
 historical_after="$(awk -v version="$CURRENT" '$0 == "= " version " =" { capture=1 } capture { print }' "$fixture/readme.txt" | sha256sum | awk '{print $1}')"
+readme_capability_after="$(grep -F 'Current repository source exposes six bounded source-defined modules enabled by default for backward compatibility plus one bounded opt-in module:' "$fixture/readme.txt")"
+github_capability_after="$(grep -F 'Current repository source exposes six bounded default-enabled modules plus one bounded opt-in module.' "$fixture/README.md")"
 [[ "$historical_before" == "$historical_after" ]] || { echo 'Historical changelog changed during release preparation.' >&2; exit 1; }
+[[ "$readme_capability_before" == "$readme_capability_after" && "$github_capability_before" == "$github_capability_after" ]] || { echo 'Current capability prose changed during release preparation.' >&2; exit 1; }
+pass 'release preparation leaves current capability prose untouched'
 grep -Fxq "= $PATCH =" "$fixture/readme.txt" || { echo 'Candidate changelog section missing.' >&2; exit 1; }
 first_unreleased_line="$(awk '/^= Unreleased =$/{getline; print; exit}' "$fixture/readme.txt")"
 [[ -z "$first_unreleased_line" ]] || { echo 'Fresh Unreleased section is not empty.' >&2; exit 1; }

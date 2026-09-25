@@ -6,12 +6,12 @@ This document is the canonical PersianGravity-side responsibility contract for i
 
 Evidence snapshot at this closure:
 
-- PersianGravity inspected merged `main`: `0e060e57a88357f16961d7e2da497f1daea1c8d3`.
+- PersianGravity inspected merged `main`: `d9ed597a600c16d2dcca0e76339be845b84198c6`.
 - GPP inspected merged `main`: `4890d52ce6fad28539592324aa4a743960b359a2`.
-- Latest public PersianGravity release: `v4.6.0`, release source `d134c9ac81b177a32a3138f074fca3d1c1ebfae4`.
+- Latest public PersianGravity release: `v4.7.0`, release source `511870b9152180bae4544f692fdb4e003d4c04e7`.
 - GPP's current qualified PersianGravity provider contract is exactly public release `v4.6.0`.
 
-The repository capability map below describes what current PersianGravity source has actually admitted/verified. It is **not** a statement that post-`v4.6.0` `main` capabilities have already been publicly released, and it does not automatically widen GPP's provider contract.
+The repository capability map below describes what current PersianGravity source has actually admitted/verified. It is **not** a statement that post-`v4.7.0` `main` capabilities, including PR #57 and PR #58, have already been publicly released, and it does not automatically widen GPP's provider contract.
 
 ## 1. Ownership model
 
@@ -108,9 +108,11 @@ Current NON-GravityView source/runtime admissions are bounded to:
 - Gravity Forms Entries List: `date_created`;
 - exact Gravity Flow `3.1.0` Inbox: `date_created`, `last_updated`, `due_date`;
 - exact Gravity Flow `3.1.0` Status table: `date_created`, `workflow_timestamp`;
-- exact Gravity Flow `3.1.0` Entry Detail workflow-info: Submitted, Last Updated, Due and Expiration.
+- exact Gravity Flow `3.1.0` Entry Detail workflow-info: Submitted, Last Updated, Due and Expiration;
+- exact Gravity Flow `3.1.0` Timeline/history initial/stored dates through the verified bounded Timeline renderer;
+- exact Gravity Flow `3.1.0` Print only by inheritance when it reuses that verified Timeline renderer; Print owns no independent date adapter.
 
-Exact Gravity Flow `3.1.0` Status `due_date`, Entry Detail Scheduled, Timeline/history initial/stored dates, and an independent Print date seam are evidence-qualified final no-admission surfaces. A final no-admission record is exact-package evidence, not a permanent impossibility claim; a newly discovered supported bounded seam requires fresh qualification.
+Exact Gravity Flow `3.1.0` Status `due_date` and Entry Detail Scheduled remain evidence-qualified final no-admission calendar surfaces. Timeline/Print admission preserves native storage, raw `date_created`, note/event identity, bodies, ordering, surrounding native time semantics, API/state behavior and workflow semantics; unsupported formats or exact source/version/caller-chain drift fail closed to native output. A final no-admission record is exact-package evidence, not a permanent impossibility claim; a newly discovered supported bounded seam requires fresh qualification.
 
 Most importantly:
 
@@ -199,7 +201,7 @@ GPP independently qualifies that exact release + exact host source seam
 only then may GPP widen its admitted provider contract
 ```
 
-At this closure, GPP's admitted provider version is exactly **PersianGravity `v4.6.0`**. PersianGravity `main` is already ahead of that release, but those post-release changes do not widen GPP compatibility.
+At this closure, GPP's admitted provider version remains exactly **PersianGravity `v4.6.0`**. The latest public PersianGravity release is `v4.7.0`, and PersianGravity `main` is further ahead through unreleased PR #57 and PR #58; none of those facts widens GPP compatibility without separate GPP qualification.
 
 If a newer PersianGravity provider is installed before GPP separately qualifies it, GPP must follow its own fail-safe contract and preserve native behavior rather than weakening the version gate. A future PersianGravity release likewise must not silently activate new GPP behavior.
 
