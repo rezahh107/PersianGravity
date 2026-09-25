@@ -104,9 +104,7 @@ function metadata(string $root): array {
         'plugin_header' => one_match('/^ \* Version:\s*([^\r\n]+)$/m', $plugin, 'plugin header Version'),
         'pgr_version' => one_match("/define\\(\\s*'PGR_VERSION',\\s*'([^']+)'\\s*\\);/", $plugin, 'PGR_VERSION'),
         'stable_tag' => one_match('/^Stable tag:\s*([^\r\n]+)$/m', $readme, 'readme Stable tag'),
-        'readme_active' => one_match('/^Version\s+([0-9]+\.[0-9]+\.[0-9]+)\s+exposes six bounded/m', $readme, 'readme active version sentence'),
         'github_active' => one_match('/^- Plugin version:\s*`([^`]+)`$/m', $github, 'README active plugin version'),
-        'github_capability_active' => one_match('/^PersianGravity\s+([0-9]+\.[0-9]+\.[0-9]+)\s+exposes six bounded/m', $github, 'README active capability version'),
         'agents_active' => one_match('/^- Version:\s*`([^`]+)`$/m', $agents, 'AGENTS active version'),
         'languages_readme_active' => one_match('/own-plugin text domain in\s+([0-9]+\.[0-9]+\.[0-9]+)/', $languagesReadme, 'languages README active version'),
         'languages_readme_ships' => one_match('/^Version\s+([0-9]+\.[0-9]+\.[0-9]+)\s+ships:/m', $languagesReadme, 'languages README ships version'),
@@ -201,9 +199,7 @@ function prepare_release(string $root, string $bump): array {
     $plugin = replace_one('/^ \* Version:\s*' . preg_quote($previous, '/') . '$/m', ' * Version: ' . $candidate, $plugin, 'plugin header Version');
     $plugin = replace_one("/define\\(\\s*'PGR_VERSION',\\s*'" . preg_quote($previous, '/') . "'\\s*\\);/", "define( 'PGR_VERSION', '{$candidate}' );", $plugin, 'PGR_VERSION');
     $readme = replace_one('/^Stable tag:\s*' . preg_quote($previous, '/') . '$/m', 'Stable tag: ' . $candidate, $readme, 'readme Stable tag');
-    $readme = replace_one('/^Version\s+' . preg_quote($previous, '/') . '\s+exposes six bounded/m', 'Version ' . $candidate . ' exposes six bounded', $readme, 'readme active version sentence');
     $github = replace_one('/^- Plugin version:\s*`' . preg_quote($previous, '/') . '`$/m', '- Plugin version: `' . $candidate . '`', $github, 'README active plugin version');
-    $github = replace_one('/^PersianGravity\s+' . preg_quote($previous, '/') . '\s+exposes six bounded/m', 'PersianGravity ' . $candidate . ' exposes six bounded', $github, 'README active capability version');
     $agents = replace_one('/^- Version:\s*`' . preg_quote($previous, '/') . '`$/m', '- Version: `' . $candidate . '`', $agents, 'AGENTS active version');
     $languagesReadme = replace_one('/own-plugin text domain in\s+' . preg_quote($previous, '/') . '/', 'own-plugin text domain in ' . $candidate, $languagesReadme, 'languages README active version');
     $languagesReadme = replace_one('/^Version\s+' . preg_quote($previous, '/') . '\s+ships:/m', 'Version ' . $candidate . ' ships:', $languagesReadme, 'languages README ships version');
