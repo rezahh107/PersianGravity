@@ -221,7 +221,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$raw = isset( $note->date_created ) && is_string( $note->date_created ) ? $note->date_created : null;
-		if ( null === $raw || ! $this->first_path_arguments_match( $path, $raw ) ) {
+		if ( null === $raw ) {
+			return $format;
+		}
+
+		$date_format = $this->owned_date_format_for_time_path( $path, $raw, $note );
+		if ( null === $date_format ) {
 			return $format;
 		}
 
@@ -244,6 +249,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'raw'               => $raw,
 			'timestamp'         => $timestamp,
 			'time_format'       => $format,
+			'date_format'       => $date_format,
 			'event_kind'        => $event_kind,
 			'calendar_admitted' => false,
 		);
@@ -399,7 +405,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			$entry !== $context['entry'] ||
 			$this->entry_key( $entry ) !== $context['entry_key'] ||
 			$form !== $context['form'] ||
-			! $this->second_path_arguments_match( $path, $context, $format ) ||
+			! $this->time_path_arguments_match( $path, $context ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
 		) {
 			return $date;
@@ -538,6 +544,62 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return isset( $path[2]['args'], $path[3]['args'] ) &&
 			array( $raw, false, '', true ) === $path[2]['args'] &&
 			array( $raw, '', false, true ) === $path[3]['args'];
+	}
+
+	/**
+	 * Resolve the already-owned marked date format visible from the exact time-format lookup.
+	 *
+	 * GFCommon::format_date() mutates its local date-format parameter from the
+	 * caller's empty string to our owned marked format before it asks WordPress
+	 * for the time format. The time seam must therefore bind to that active date
+	 * context instead of reusing the pre-date-lookup argument matcher.
+	 *
+	 * @param array<int,array<string,mixed>> $path Qualified time-format chain.
+	 * @param string                         $raw  Raw date_created.
+	 * @param object                         $note Exact Timeline note object.
+	 * @return string|null Owned marked date format.
+	 */
+	private function owned_date_format_for_time_path( $path, $raw, $note ) {
+		if ( ! isset( $path[2]['args'], $path[3]['args'] ) || 4 !== count( $path[2]['args'] ) ) {
+			return null;
+		}
+
+		$args        = $path[2]['args'];
+		$date_format = $args[2] ?? null;
+		if (
+			$raw !== ( $args[0] ?? null ) ||
+			false !== ( $args[1] ?? null ) ||
+			true !== ( $args[3] ?? null ) ||
+			! is_string( $date_format ) ||
+			! isset( $this->contexts[ $date_format ] ) ||
+			array( $raw, '', false, true ) !== $path[3]['args']
+		) {
+			return null;
+		}
+
+		$context = $this->contexts[ $date_format ];
+		return (
+			( $context['note'] ?? null ) === $note &&
+			( $context['raw'] ?? null ) === $raw
+		) ? $date_format : null;
+	}
+
+	/**
+	 * Validate the time date_i18n call against the marked date-format state that
+	 * GFCommon::format_date() still owns for this exact Timeline row.
+	 *
+	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
+	 * @param array<string,mixed>            $context Owned time context.
+	 * @return bool
+	 */
+	private function time_path_arguments_match( $path, $context ) {
+		if ( ! isset( $path[1]['args'], $path[2]['args'], $context['date_format'] ) ) {
+			return false;
+		}
+
+		$raw = $context['raw'];
+		return array( $raw, false, $context['date_format'], true ) === $path[1]['args'] &&
+			array( $raw, '', false, true ) === $path[2]['args'];
 	}
 
 	/**
