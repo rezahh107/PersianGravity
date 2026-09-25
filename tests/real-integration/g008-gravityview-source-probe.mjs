@@ -127,6 +127,12 @@ const gravityViewWidgetLayoutReferences = findWindows(
   18,
 ).filter((record) => /Widget|Template|View|Admin|Metabox|Legacy/i.test(record.file)).slice(0, 260);
 
+const gravityViewModernSearchFieldShapeReferences = findWindows(
+  roots.gravityview,
+  ['search_fields_section', 'from_configuration', 'area_settings', "'field' =>", "'input' =>", 'Search_Field_Collection'],
+  24,
+).filter((record) => /Search|Widget|View|Abilities/i.test(record.file)).slice(0, 320);
+
 const gravityViewSearchFieldShapeReferences = findWindows(
   roots.gravityview,
   ['class Search_Field_Collection', 'from_legacy_configuration', 'from_configuration', 'Search_Field_Date', 'search-general_', 'input_type'],
