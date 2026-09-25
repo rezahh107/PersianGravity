@@ -231,9 +231,8 @@ function pgr_wu008_timeline_callback_count( $hook, $class, $method ) {
 add_action(
 	'wp_footer',
 	static function () {
-		$class       = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
-		$digit_class = 'PGR_Gravity_Flow_Timeline_Persian_Digits_Presentation_Adapter';
-		$flow_root   = WP_PLUGIN_DIR . '/gravityflow';
+		$class     = 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter';
+		$flow_root = WP_PLUGIN_DIR . '/gravityflow';
 		$gf_main   = class_exists( 'GFForms', false ) ? ( new ReflectionClass( 'GFForms' ) )->getFileName() : null;
 		$paths     = array(
 			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
@@ -246,17 +245,15 @@ add_action(
 			$hashes[ $key ] = is_readable( $path ) ? hash_file( 'sha256', $path ) : null;
 		}
 		$evidence = array(
-			'class_loaded'                    => class_exists( $class, false ),
-			'digit_class_loaded'              => class_exists( $digit_class, false ),
-			'module_enabled'                  => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
-			'locale'                          => function_exists( 'determine_locale' ) ? determine_locale() : null,
-			'option_date_format_hooks'        => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
-			'date_i18n_hooks'                 => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
-			'digit_option_time_format_hooks'  => pgr_wu008_timeline_callback_count( 'option_time_format', $digit_class, 'capture_time_format' ),
-			'digit_date_i18n_hooks'           => pgr_wu008_timeline_callback_count( 'date_i18n', $digit_class, 'shape_timeline_time_digits' ),
-			'flow_version'                    => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
-			'gf_version'                      => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
-			'source_fingerprints'             => $hashes,
+			'class_loaded'             => class_exists( $class, false ),
+			'module_enabled'           => class_exists( 'PGR_Module_Registry', false ) && PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
+			'locale'                   => function_exists( 'determine_locale' ) ? determine_locale() : null,
+			'option_date_format_hooks' => pgr_wu008_timeline_callback_count( 'option_date_format', $class, 'filter_date_format' ),
+			'option_time_format_hooks' => pgr_wu008_timeline_callback_count( 'option_time_format', $class, 'filter_time_format' ),
+			'date_i18n_hooks'          => pgr_wu008_timeline_callback_count( 'date_i18n', $class, 'filter_date_i18n' ),
+			'flow_version'             => defined( 'GRAVITY_FLOW_VERSION' ) ? GRAVITY_FLOW_VERSION : null,
+			'gf_version'               => class_exists( 'GFForms', false ) ? (string) GFForms::$version : null,
+			'source_fingerprints'      => $hashes,
 		);
 		$artifact_dir = getenv( 'WU008_ARTIFACT_DIR' );
 		if ( is_string( $artifact_dir ) && '' !== $artifact_dir ) {
