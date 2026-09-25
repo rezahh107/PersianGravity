@@ -151,6 +151,13 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			$this->assertSame( 'PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
 			$this->assertSame( 'g008-timeline-print-qualification.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
 		}
+		foreach ( array( 'gravityview.date-created', 'gravityview.date-updated' ) as $admitted_id ) {
+			$this->assertSame( 'RUNTIME_PROVEN', $states[ $admitted_id ]['discovery_state'], $admitted_id );
+			$this->assertSame( 'ADMITTED_VERIFIED', $states[ $admitted_id ]['support_state'], $admitted_id );
+			$this->assertSame( 'PGR_GravityView_Jalali_Presentation_Adapter', $states[ $admitted_id ]['adapter_identity'], $admitted_id );
+			$this->assertSame( 'g008-gravityview-admission.json', $states[ $admitted_id ]['runtime_evidence'], $admitted_id );
+			$this->assertSame( 'ADMITTED_FOR_EXACT_VERSION', $states[ $admitted_id ]['exact_version_disposition'], $admitted_id );
+		}
 		$this->assertSame( 'ADMITTED_FOR_EXACT_VERSION', $states['gravityflow.timeline-history']['exact_version_disposition'] );
 		$this->assertSame( 'ADMITTED_BY_VERIFIED_TIMELINE_INHERITANCE', $states['gravityflow.print']['exact_version_disposition'] );
 		$this->assertStringContainsString( 'INHERITS_VERIFIED_TIMELINE_RENDERER', $states['gravityflow.print']['presentation_seam'] );
@@ -169,6 +176,8 @@ final class EcosystemFoundationRegistryTest extends TestCase {
 			'gravityflow.entry-detail.expiration',
 			'gravityflow.timeline-history',
 			'gravityflow.print',
+			'gravityview.date-created',
+			'gravityview.date-updated',
 		);
 		foreach ( $states as $id => $surface ) {
 			if ( ! in_array( $id, $admitted_ids, true ) ) {
