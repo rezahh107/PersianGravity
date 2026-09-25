@@ -11,8 +11,10 @@ const enabledState = read('g008-residual-adversarial-state-enabled.json');
 const disabledState = read('g008-residual-adversarial-state-disabled.json');
 const enabledBrowser = read('g008-entry-detail-candidate-browser-enabled.json');
 const disabledBrowser = read('g008-entry-detail-candidate-browser-disabled.json');
+const englishBrowser = read('g008-entry-detail-candidate-browser-english.json');
 const enabledHook = read('g008-timeline-production-hook-enabled.json');
 const disabledHook = read('g008-timeline-production-hook-disabled.json');
+const englishHook = read('g008-timeline-production-hook-english.json');
 
 const failures = [];
 const head = process.env.WU008_PGR_SHA;
@@ -73,20 +75,32 @@ function browserIdentity(browser, mode) {
 }
 browserIdentity(enabledBrowser, 'enabled');
 browserIdentity(disabledBrowser, 'disabled');
+browserIdentity(englishBrowser, 'english');
 
 if (
-  enabledHook.class_loaded !== true || enabledHook.module_enabled !== true
+  enabledHook.class_loaded !== true || enabledHook.digit_class_loaded !== true || enabledHook.module_enabled !== true
+  || enabledHook.locale !== 'fa_IR'
   || enabledHook.option_date_format_hooks !== 1 || enabledHook.date_i18n_hooks !== 1
+  || enabledHook.digit_option_time_format_hooks !== 1 || enabledHook.digit_date_i18n_hooks !== 1
 ) {
   failures.push(`enabled production hook lifecycle mismatch: ${JSON.stringify(enabledHook)}`);
 }
 if (
-  disabledHook.class_loaded !== false || disabledHook.module_enabled !== false
+  disabledHook.class_loaded !== false || disabledHook.digit_class_loaded !== false || disabledHook.module_enabled !== false
   || disabledHook.option_date_format_hooks !== 0 || disabledHook.date_i18n_hooks !== 0
+  || disabledHook.digit_option_time_format_hooks !== 0 || disabledHook.digit_date_i18n_hooks !== 0
 ) {
   failures.push(`disabled production hooks/class were present: ${JSON.stringify(disabledHook)}`);
 }
-for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook]]) {
+if (
+  englishHook.class_loaded !== true || englishHook.digit_class_loaded !== true || englishHook.module_enabled !== true
+  || englishHook.locale !== 'en_US'
+  || englishHook.option_date_format_hooks !== 1 || englishHook.date_i18n_hooks !== 1
+  || englishHook.digit_option_time_format_hooks !== 0 || englishHook.digit_date_i18n_hooks !== 0
+) {
+  failures.push(`English production digit hook did not fail closed: ${JSON.stringify(englishHook)}`);
+}
+for (const [label, hook] of [['enabled', enabledHook], ['disabled', disabledHook], ['english', englishHook]]) {
   if (hook.flow_version !== '3.1.0' || hook.gf_version !== '3.1.1.1') failures.push(`${label} hook probe host version mismatch`);
   if (JSON.stringify(hook.source_fingerprints) !== JSON.stringify(expectedFingerprints)) failures.push(`${label} source fingerprint mismatch`);
 }
@@ -142,11 +156,24 @@ for (let index = 0; index < expectedTimeline.length; index += 1) {
   const row = expectedTimeline[index];
   const header = enabledHeaders[index] ?? '';
   if (!header.startsWith(row.expected_jalali_date)) failures.push(`enabled Timeline row ${row.id} Jalali date mismatch`);
-  if (row.expected_native_time_tail && !header.includes(row.expected_native_time_tail)) failures.push(`enabled Timeline row ${row.id} changed native time output`);
+  if (!row.expected_persian_time || !header.includes(row.expected_persian_time)) failures.push(`enabled Timeline row ${row.id} Persian time digit mismatch`);
+  if (row.expected_native_time && /[0-9]/.test(row.expected_native_time) && header.includes(row.expected_native_time)) failures.push(`enabled Timeline row ${row.id} retained ASCII time digits`);
 }
 if (JSON.stringify(enabledHeaders) === JSON.stringify(disabledHeaders)) failures.push('enabled Timeline did not differ from native control');
-if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
-for (const browser of [enabledBrowser, disabledBrowser]) {
+const enabledHeaderText = enabledHeaders.join('\n');
+if (enabledHeaderText.includes('11:59') || !enabledHeaderText.includes('۱۱:۵۹') || enabledHeaderText.includes('12:01') || !enabledHeaderText.includes('۱۲:۰۱')) {
+  failures.push('enabled Timeline boundary time digits are not coherently Persian');
+}
+const disabledHeaderText = disabledHeaders.join('\n');
+if (!disabledHeaderText.includes('11:59') || disabledHeaderText.includes('۱۱:۵۹') || !disabledHeaderText.includes('12:01') || disabledHeaderText.includes('۱۲:۰۱')) {
+  failures.push('disabled Timeline boundary time digits are not exact ASCII native output');
+}
+const englishHeaderText = (englishBrowser.timeline?.headers ?? []).join('\n');
+if (!englishHeaderText.includes('11:59') || englishHeaderText.includes('۱۱:۵۹') || !englishHeaderText.includes('12:01') || englishHeaderText.includes('۱۲:۰۱')) {
+  failures.push('English Timeline boundary time digits did not remain ASCII');
+}
+if (enabledBrowser.timeline?.marker_leaked !== false || disabledBrowser.timeline?.marker_leaked !== false || englishBrowser.timeline?.marker_leaked !== false) failures.push('Timeline marker leakage flag is not false');
+for (const browser of [enabledBrowser, disabledBrowser, englishBrowser]) {
   const timeline = browser.timeline ?? {};
   if (timeline.collector?.row_count !== expectedTimeline.length || timeline.headers?.length !== expectedTimeline.length || timeline.bodies?.length !== expectedTimeline.length) {
     failures.push(`${browser.mode}: Timeline row/header/body count does not equal authoritative fixture count`);
@@ -176,6 +203,16 @@ if (JSON.stringify(disabledBrowser.timeline?.repeated) !== JSON.stringify(expect
 const enabledBodies = enabledBrowser.timeline?.bodies ?? [];
 const disabledBodies = disabledBrowser.timeline?.bodies ?? [];
 if (JSON.stringify(enabledBodies) !== JSON.stringify(disabledBodies)) failures.push('Timeline bodies/order changed with presentation mode');
+
+const timelineMachine = (browser) => (browser.timeline?.rows ?? []).map((row) => ({
+  row_id: row.row_id,
+  row_attributes: row.row_attributes,
+  header_attributes: row.header_attributes,
+  body_attributes: row.body_attributes,
+}));
+if (JSON.stringify(timelineMachine(enabledBrowser)) !== JSON.stringify(timelineMachine(disabledBrowser))) {
+  failures.push('Timeline DOM IDs/attributes changed with Persian time digit presentation');
+}
 for (const stored of expectedStored) {
   if (!enabledBodies.includes(stored.value) || !disabledBodies.includes(stored.value)) failures.push(`stored body ${stored.id} changed or disappeared`);
 }
@@ -218,6 +255,9 @@ const result = {
     adapter_hook_lifecycle_proven: passed,
     native_disabled_fallback_proven: passed,
     enabled_jalali_presentation_proven: passed,
+    enabled_persian_time_digits_proven: passed,
+    english_ascii_time_digits_proven: passed,
+    dom_ids_attributes_unchanged: passed,
     body_vector_mode_equality_proven: passed,
     fixture_row_mapping_proven: passed,
     marker_non_leakage_proven: passed,
@@ -232,6 +272,8 @@ const result = {
     workflow_sidebar_due_schedule_expiration: 'ABSENT_FROM_PRINT_RENDER_PATH',
     body_vector_inheritance_proven: passed,
     native_disabled_inheritance_proven: passed,
+    persian_time_digit_inheritance_proven: passed,
+    english_ascii_time_digit_inheritance_proven: passed,
     marker_non_leakage_proven: passed,
   },
   failures,
