@@ -96,13 +96,13 @@ for (const mode of ['disabled', 'english', 'drift']) {
   assert(same(browser.enabled.sorting.date_updated_asc.entry_ids, browser[mode].sorting.date_updated_asc.entry_ids), `GravityView date_updated ascending order changed in ${mode} control.`);
   assert(same(browser.enabled.sorting.date_updated_desc.entry_ids, browser[mode].sorting.date_updated_desc.entry_ids), `GravityView date_updated descending order changed in ${mode} control.`);
   assert(same(browser.enabled.filtering.date_created_local_2026_03_21.entry_ids, browser[mode].filtering.date_created_local_2026_03_21.entry_ids), `GravityView date_created filter result changed in ${mode} control.`);
-  assert(same(browser.enabled.filtering.date_updated_raw_2026_03_21.entry_ids, browser[mode].filtering.date_updated_raw_2026_03_21.entry_ids), `GravityView date_updated filter result changed in ${mode} control.`);
+  assert(same(browser.enabled.filtering.date_updated_direct_request_noop.entry_ids, browser[mode].filtering.date_updated_direct_request_noop.entry_ids), `GravityView date_updated filter result changed in ${mode} control.`);
 }
 
 assert(browser.enabled.filtering.date_created_local_2026_03_21.entry_ids.length === 1, 'date_created search/filter did not isolate one boundary-sensitive entry.');
-assert(browser.enabled.filtering.date_updated_raw_2026_03_21.entry_ids.length === 1, 'date_updated search/filter did not isolate one boundary-sensitive entry.');
-assert(browser.enabled.filtering.date_created_local_2026_03_21.url.includes('gv_start=2026-03-21'), 'date_created host entry_date query input was not preserved in evidence.');
-assert(browser.enabled.filtering.date_updated_raw_2026_03_21.url.includes('filter_date_updated=2026-03-21'), 'date_updated exact request-filter input was not preserved in evidence.');
+assert(browser.enabled.filtering.date_updated_direct_request_noop.entry_ids.length === fixture.entries.length, 'date_updated direct request did not retain the exact 3.3.4 native unscoped/no-op result set.');
+assert(new URL(browser.enabled.filtering.date_created_local_2026_03_21.url).searchParams.get('gv_start') === '03/21/2026', 'date_created host entry_date query input was not preserved in evidence.');
+assert(new URL(browser.enabled.filtering.date_updated_direct_request_noop.url).searchParams.get('filter_date_updated') === '2026-03-21 20:31:00', 'date_updated direct request input was not preserved in evidence.');
 
 const enabledSpans = browser.enabled.initial.rows.flatMap((row) => row.spans);
 assert(enabledSpans.filter((span) => span.field === 'date_created').length === fixture.entries.length, 'Enabled date_created presentation was not consumed once per row.');
@@ -165,7 +165,7 @@ const qualification = {
       'gravityview/template/field/date_updated/output',
     ],
     context: 'The consumed field-specific filters receive Template_Context with exact field identity and an Entry object exposing as_entry(); the prototype reads authoritative raw date_created/date_updated from that Entry rather than parsing native display strings.',
-    query_boundary: 'Exact GravityView 3.3.4 does not expose date_created/date_updated as direct Search Bar slots. Its host-native entry_date control maps gv_start/gv_end to raw date_created with UTC-aware query handling; its SearchRequest parser separately recognizes registered meta/system filter keys such as filter_date_updated. Sorting and both query paths remain upstream of the field output filters, so presentation does not participate in DB/GFAPI/REST/query/sort/filter construction.',
+    query_boundary: 'Exact GravityView 3.3.4 does not expose date_created/date_updated as direct Search Bar slots. Its entry_date request contract maps gv_start/gv_end to raw date_created with UTC-aware query handling. Although SearchRequest can parse registered meta/system keys such as filter_date_updated, SearchPolicy does not admit date_updated on this View without a real searchable-field configuration, so the direct request remains a native no-op. Sorting and all query decisions remain upstream of the field output filters, so presentation does not participate in DB/GFAPI/REST/query/sort/filter construction.',
   },
   runtime_findings: {
     field_specific_hooks_consumed: true,
@@ -177,7 +177,7 @@ const qualification = {
     forced_version_gate_failure_native_fallback: true,
     repeated_render_stable: true,
     host_entry_date_filter_for_date_created_pass: true,
-    exact_request_filter_for_date_updated_pass: true,
+    exact_date_updated_direct_request_noop_preserved: true,
     raw_db_gfapi_rest_equal_across_modes: true,
     gfapi_sort_equal_across_modes: true,
     gravityview_browser_sort_equal_across_modes: true,
