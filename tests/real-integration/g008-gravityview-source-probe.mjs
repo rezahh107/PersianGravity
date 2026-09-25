@@ -119,7 +119,7 @@ const sourceContract = {
   },
   query_path: {
     filters_merge_to_search_criteria: formGf.content.includes('$search_criteria = $filter::merge_search_criteria( $search_criteria, $filter->as_search_criteria() );'),
-    sorts_translate_to_gf_sorting: formGf.content.includes('$sorting = $sort->as_gf_sorting();'),
+    sorts_translate_raw_field_id_direction_and_numeric_mode: /foreach\s*\(\s*\$sorts\s+as\s+\$sort\s*\)[\s\S]{0,420}\$sorting\s*=\s*\[[\s\S]{0,220}'key'\s*=>\s*\$sort->field->ID[\s\S]{0,180}'direction'\s*=>\s*\$sort->direction[\s\S]{0,180}'is_numeric'\s*=>\s*\\GV\\Entry_Sort::NUMERIC\s*==\s*\$sort->mode/.test(formGf.content),
     gfapi_consumes_search_and_sort: /GFAPI::get_entries\([\s\S]{0,260}\$search_criteria[\s\S]{0,120}\$sorting/.test(formGf.content),
     query_filter_handles_date_created: queryVisitor.content.includes("'date_created'"),
   },
