@@ -205,6 +205,11 @@ $search_fields_shortcode = wp_json_encode(
 			'input' => 'date',
 			'label' => 'Entry Date Search',
 		),
+		array(
+			'field' => 'search_all',
+			'input' => 'search_all',
+			'label' => 'Search Everything',
+		),
 	),
 	JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
 );
