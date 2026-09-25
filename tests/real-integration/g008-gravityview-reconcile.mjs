@@ -96,13 +96,13 @@ for (const mode of ['disabled', 'english', 'drift']) {
   assert(same(browser.enabled.sorting.date_updated_asc.entry_ids, browser[mode].sorting.date_updated_asc.entry_ids), `GravityView date_updated ascending order changed in ${mode} control.`);
   assert(same(browser.enabled.sorting.date_updated_desc.entry_ids, browser[mode].sorting.date_updated_desc.entry_ids), `GravityView date_updated descending order changed in ${mode} control.`);
   assert(same(browser.enabled.filtering.date_created_local_2026_03_21.entry_ids, browser[mode].filtering.date_created_local_2026_03_21.entry_ids), `GravityView date_created filter result changed in ${mode} control.`);
-  assert(same(browser.enabled.filtering.date_updated_local_2026_03_22.entry_ids, browser[mode].filtering.date_updated_local_2026_03_22.entry_ids), `GravityView date_updated filter result changed in ${mode} control.`);
+  assert(same(browser.enabled.filtering.date_updated_raw_2026_03_21.entry_ids, browser[mode].filtering.date_updated_raw_2026_03_21.entry_ids), `GravityView date_updated filter result changed in ${mode} control.`);
 }
 
 assert(browser.enabled.filtering.date_created_local_2026_03_21.entry_ids.length === 1, 'date_created search/filter did not isolate one boundary-sensitive entry.');
-assert(browser.enabled.filtering.date_updated_local_2026_03_22.entry_ids.length === 1, 'date_updated search/filter did not isolate one boundary-sensitive entry.');
-assert(browser.enabled.filtering.date_created_local_2026_03_21.url.includes('filter_date_created=2026-03-21'), 'date_created authentic query input was not preserved in evidence.');
-assert(browser.enabled.filtering.date_updated_local_2026_03_22.url.includes('filter_date_updated=2026-03-22'), 'date_updated authentic query input was not preserved in evidence.');
+assert(browser.enabled.filtering.date_updated_raw_2026_03_21.entry_ids.length === 1, 'date_updated search/filter did not isolate one boundary-sensitive entry.');
+assert(browser.enabled.filtering.date_created_local_2026_03_21.url.includes('gv_start=2026-03-21'), 'date_created host entry_date query input was not preserved in evidence.');
+assert(browser.enabled.filtering.date_updated_raw_2026_03_21.url.includes('filter_date_updated=2026-03-21'), 'date_updated exact request-filter input was not preserved in evidence.');
 
 const enabledSpans = browser.enabled.initial.rows.flatMap((row) => row.spans);
 assert(enabledSpans.filter((span) => span.field === 'date_created').length === fixture.entries.length, 'Enabled date_created presentation was not consumed once per row.');
@@ -158,14 +158,14 @@ const qualification = {
   source_provenance: source.provenance,
   source_findings: {
     date_created: 'Exact GravityView DateCreated reads the authoritative Entry date_created value, then formats it through GVCommon::format_date before the field-specific output filter. Exact Gravity Forms source defines date_created as UTC Y-m-d H:i:s.',
-    date_updated: 'Exact GravityView DateUpdated inherits the DateCreated renderer with its own date_updated identity. Exact Gravity Forms source contains a UTC date_updated write path, and GravityView raw query handling retains date_updated/date_created as system columns.',
+    date_updated: 'Exact GravityView DateUpdated inherits the DateCreated renderer with its own date_updated identity. Exact Gravity Forms source defines the updated timestamp as UTC, while GravityView keeps date_updated as a raw system-column request/query identity even though exact 3.3.4 does not expose it as a direct Search Bar slot.',
     timezone: 'The authoritative Entry properties are UTC/system datetimes. In the authentic Asia/Tehran runtime, native GravityView rendering converts those raw instants to site-local civil time before the output seam; the qualification prototype passes the raw UTC DateTime to PGR_Jalali_Presentation::format_datetime(), preserving that site-time presentation domain.',
     consumed_seams: [
       'gravityview/template/field/date_created/output',
       'gravityview/template/field/date_updated/output',
     ],
     context: 'The consumed field-specific filters receive Template_Context with exact field identity and an Entry object exposing as_entry(); the prototype reads authoritative raw date_created/date_updated from that Entry rather than parsing native display strings.',
-    query_boundary: 'GravityView builds search filters from request state and keeps sorting/searching on raw Gravity Forms entry properties. date_created search explicitly accounts for UTC storage; date_updated remains a raw system-column query identity. Presentation filters execute after native field formatting and are not part of DB/GFAPI/REST/query/sort/filter construction.',
+    query_boundary: 'Exact GravityView 3.3.4 does not expose date_created/date_updated as direct Search Bar slots. Its host-native entry_date control maps gv_start/gv_end to raw date_created with UTC-aware query handling; its SearchRequest parser separately recognizes registered meta/system filter keys such as filter_date_updated. Sorting and both query paths remain upstream of the field output filters, so presentation does not participate in DB/GFAPI/REST/query/sort/filter construction.',
   },
   runtime_findings: {
     field_specific_hooks_consumed: true,
@@ -176,8 +176,8 @@ const qualification = {
     english_ltr_native_control: true,
     forced_version_gate_failure_native_fallback: true,
     repeated_render_stable: true,
-    authentic_date_created_filter_pass: true,
-    authentic_date_updated_filter_pass: true,
+    host_entry_date_filter_for_date_created_pass: true,
+    exact_request_filter_for_date_updated_pass: true,
     raw_db_gfapi_rest_equal_across_modes: true,
     gfapi_sort_equal_across_modes: true,
     gravityview_browser_sort_equal_across_modes: true,
