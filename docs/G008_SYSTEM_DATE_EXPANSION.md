@@ -171,6 +171,8 @@ The disposable WU008 fixture sets WordPress to `Asia/Tehran` while PHP remains `
 
 Machine semantics remain host-owned in the qualification: DB, GFAPI and REST `date_created`/`date_updated` values are byte/text-equal across enabled and control modes; raw GFAPI sorting and authentic GravityView ascending/descending sorting are unchanged for both fields; the host-native `entry_date` search path for `date_created` returns the same boundary-sensitive result set in every mode; and an unconfigured direct `filter_date_updated` request remains the same native no-op in every mode. That latter check is deliberately narrow and does not claim exhaustive browser coverage of every optional `date_updated` search configuration. Row attributes, sort links, entry identity/order, repeated rendering and user-authored date-looking text remain stable. The authoritative qualification artifact is `g008-gravityview-date-qualification.json`.
 
+Exact vendor source is inspected only inside the disposable CI runtime. Persisted `g008-gravityview-source-probe.json` uses a metadata-only schema: exact product/package/Head identity, boolean contract results, normalized relative file paths, bounded line ranges, file SHA-256 fingerprints and contract IDs. Raw source lines/windows are neither serialized nor staged for upload. The probe also mutates each target identity independently in memory and proves that loss/drift of `date_created` or `date_updated` independently fails the exact target-field contract. A structural privacy guard validates the source probe and the qualification artifact's embedded provenance before WU008 copies evidence into its upload staging directory.
+
 Independent exact-version dispositions:
 
 - `gravityview.date-created`: `QUALIFIED_FOR_PRODUCTION_ADAPTER`
