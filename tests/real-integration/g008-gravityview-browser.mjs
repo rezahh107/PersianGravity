@@ -68,6 +68,38 @@ async function snapshot() {
       ariaLabel: a.getAttribute('aria-label'),
       className: a.className,
     }));
+    const searchControls = [...document.querySelectorAll('input, select, button')].map((node) => ({
+      tag: node.tagName.toLowerCase(),
+      type: node.getAttribute('type'),
+      name: node.getAttribute('name'),
+      id: node.getAttribute('id'),
+      value: 'value' in node ? node.value : null,
+      dataField: node.getAttribute('data-field'),
+      dataFieldId: node.getAttribute('data-field-id'),
+      formAction: node.form?.getAttribute('action') ?? null,
+      formMethod: node.form?.getAttribute('method') ?? null,
+    })).filter((control) =>
+      [control.name, control.id, control.dataField, control.dataFieldId]
+        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_/i.test(value))
+    );
+    const forms = [...document.querySelectorAll('form')].map((form) => ({
+      action: form.getAttribute('action'),
+      method: form.getAttribute('method'),
+      className: form.className,
+      id: form.id,
+      controls: [...form.querySelectorAll('input, select, button')].map((node) => ({
+        tag: node.tagName.toLowerCase(),
+        type: node.getAttribute('type'),
+        name: node.getAttribute('name'),
+        id: node.getAttribute('id'),
+        value: 'value' in node ? node.value : null,
+        dataField: node.getAttribute('data-field'),
+        dataFieldId: node.getAttribute('data-field-id'),
+      })),
+    })).filter((form) => form.controls.some((control) =>
+      [control.name, control.id, control.dataField, control.dataFieldId]
+        .some((value) => typeof value === 'string' && /date_created|date_updated|filter_/i.test(value))
+    ));
     return {
       html: {
         dir: document.documentElement.getAttribute('dir'),
@@ -75,6 +107,8 @@ async function snapshot() {
       },
       rows: mapped,
       sortLinks,
+      searchControls,
+      forms,
     };
   }, fixture.entries.map((entry) => entry.token));
 }
@@ -137,26 +171,85 @@ async function sortedTokens(field, direction) {
 }
 
 async function filteredTokens(field, localDate, expectedEntry) {
-  const url = new URL(fixture.page_url);
-  url.searchParams.set(`filter_${field}`, localDate);
-  await open(url.toString(), [expectedEntry.token]);
+  await open(fixture.page_url);
+
+  const candidates = page.locator('input, select').filter({
+    has: undefined,
+  });
+  const controlMetadata = await candidates.evaluateAll((nodes, targetField) => nodes
+    .map((node, index) => ({
+      index,
+      tag: node.tagName.toLowerCase(),
+      type: node.getAttribute('type'),
+      name: node.getAttribute('name'),
+      id: node.getAttribute('id'),
+      value: 'value' in node ? node.value : null,
+      dataField: node.getAttribute('data-field'),
+      dataFieldId: node.getAttribute('data-field-id'),
+      formAction: node.form?.getAttribute('action') ?? null,
+      formMethod: node.form?.getAttribute('method') ?? null,
+      matches: [node.getAttribute('name'), node.getAttribute('id'), node.getAttribute('data-field'), node.getAttribute('data-field-id')]
+        .some((value) => typeof value === 'string' && value.includes(targetField)),
+    }))
+    .filter((item) => item.matches), field);
+
+  if (controlMetadata.length === 0) {
+    throw new Error(`No authentic GravityView search control was rendered for ${field}.`);
+  }
+
+  const exact = controlMetadata.find((item) =>
+    item.name === `filter_${field}`
+    || item.dataField === field
+    || item.dataFieldId === field
+  ) ?? controlMetadata[0];
+
+  const input = page.locator('input, select').nth(exact.index);
+  const form = input.locator('xpath=ancestor::form[1]');
+  if ((await form.count()) !== 1) {
+    throw new Error(`GravityView search control for ${field} is not associated with exactly one form: ${JSON.stringify(controlMetadata)}`);
+  }
+
+  if (exact.tag === 'select') {
+    await input.selectOption(localDate);
+  } else {
+    await input.fill(localDate);
+  }
+
+  const submittedControl = await input.evaluate((node) => ({
+    tag: node.tagName.toLowerCase(),
+    type: node.getAttribute('type'),
+    name: node.getAttribute('name'),
+    id: node.getAttribute('id'),
+    value: 'value' in node ? node.value : null,
+    dataField: node.getAttribute('data-field'),
+    dataFieldId: node.getAttribute('data-field-id'),
+    formAction: node.form?.getAttribute('action') ?? null,
+    formMethod: node.form?.getAttribute('method') ?? null,
+  }));
+  if (submittedControl.value !== localDate) {
+    throw new Error(`GravityView search control rejected ${field} value ${localDate}: ${JSON.stringify(submittedControl)}`);
+  }
+
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    form.evaluate((node) => node.requestSubmit()),
+  ]);
+  await page.waitForFunction(
+    (token) => document.body?.innerText.includes(token),
+    expectedEntry.token,
+    { timeout: 20000 },
+  );
+
   const snap = await snapshot();
   assertPresentation(snap, mode === 'enabled', [expectedEntry]);
-  const searchInput = await page.locator(`input[name="filter_${field}"]`).first().evaluate((node) => ({
-    name: node.getAttribute('name'),
-    value: node.value,
-    type: node.getAttribute('type'),
-  })).catch(() => null);
-  if (searchInput && searchInput.value !== localDate) {
-    throw new Error(`Visible GravityView search input value drifted for filter_${field}: ${searchInput.value}`);
-  }
   const tokens = snap.rows.map((row) => row.token);
   return {
     tokens,
     entry_ids: tokens.map((token) => Number(fixture.entries.find((entry) => entry.token === token)?.id)),
     snapshot: snap,
     url: page.url(),
-    searchInput,
+    searchControlCandidates: controlMetadata,
+    submittedControl,
   };
 }
 
