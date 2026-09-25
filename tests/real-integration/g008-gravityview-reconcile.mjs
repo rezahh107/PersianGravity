@@ -1,5 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  assertMetadataOnlySourceEvidence,
+  assertSanitizedProvenance,
+} from './g008-gravityview-source-evidence.mjs';
 
 const artifactDir = process.env.WU008_ARTIFACT_DIR;
 const expectedHead = process.env.WU008_PGR_SHA;
@@ -47,7 +51,8 @@ const fixture = read('g008-gravityview-fixture-baseline.json');
 const browser = Object.fromEntries(['enabled', 'disabled', 'english', 'drift'].map((mode) => [mode, read(`g008-gravityview-browser-${mode}.json`)]));
 const state = Object.fromEntries(['enabled', 'disabled', 'english', 'drift'].map((mode) => [mode, read(`g008-gravityview-state-${mode}.json`)]));
 
-assert(source.schema_version === '2.0.0', 'GravityView source-probe schema drifted.');
+assert(source.schema_version === '3.0.0', 'GravityView source-probe schema drifted.');
+assertMetadataOnlySourceEvidence(source);
 assert(source.exact_version === '3.3.4', 'Source probe GravityView version drifted.');
 assert(source.exact_package_sha256 === expectedViewSha, 'Source probe GravityView package SHA drifted.');
 assert(source.exact_gravityforms_package_sha256 === expectedGfSha, 'Source probe Gravity Forms package SHA drifted.');
@@ -167,6 +172,8 @@ const qualification = {
     state: Object.keys(state).map((mode) => `g008-gravityview-state-${mode}.json`),
   },
   source_provenance: source.provenance,
+  source_evidence_boundary: source.evidence_boundary,
+  independent_source_fail_closed: source.independent_fail_closed,
   source_findings: {
     date_created: 'Exact GravityView DateCreated reads the authoritative Entry date_created value, then formats it through GVCommon::format_date before the field-specific output filter. Exact Gravity Forms source defines date_created as UTC Y-m-d H:i:s.',
     date_updated: 'Exact GravityView DateUpdated inherits the DateCreated renderer with its own date_updated identity. Exact Gravity Forms source defines the updated timestamp as UTC, while GravityView keeps date_updated as a raw system-column request/query identity. The qualification preserves the observed native behavior of a direct filter_date_updated request when no date_updated Search Bar field is configured; it does not claim that every possible date_updated search configuration is unavailable or browser-qualified.',
@@ -211,5 +218,14 @@ const qualification = {
   },
 };
 
+assertSanitizedProvenance(qualification.source_provenance);
+if (
+  qualification.source_evidence_boundary?.metadata_only !== true
+  || qualification.source_evidence_boundary?.raw_source_persisted !== false
+  || qualification.independent_source_fail_closed?.date_created !== true
+  || qualification.independent_source_fail_closed?.date_updated !== true
+) {
+  throw new Error('GravityView qualification source-evidence boundary is incomplete.');
+}
 fs.writeFileSync(path.join(artifactDir, 'g008-gravityview-date-qualification.json'), JSON.stringify(qualification, null, 2) + '\n');
 console.log('PASS GravityView G-008 exact-version qualification reconciliation');
