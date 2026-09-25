@@ -191,10 +191,11 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 			'form_id'      => 3,
 			'date_created' => $raw,
 		);
-		$form      = array( 'id' => 3 );
-		$timestamp = 1900269060;
-		$key       = spl_object_id( $note );
-		$context   = array(
+		$form        = array( 'id' => 3 );
+		$timestamp   = 1900269060;
+		$key         = spl_object_id( $note );
+		$date_format = '\\P\\G\\R\\T\\I\\M\\E\\L\\I\\N\\E\\a\\b\\c\\X' . 'F j, Y';
+		$context     = array(
 			'note'              => $note,
 			'note_snapshot'     => get_object_vars( $note ),
 			'notes'             => $notes,
@@ -205,12 +206,13 @@ final class G008GravityFlowTimelineJalaliPresentationTest extends TestCase {
 			'raw'               => $raw,
 			'timestamp'         => $timestamp,
 			'time_format'       => 'g:i a',
+			'date_format'       => $date_format,
 			'event_kind'        => 'stored',
 			'calendar_admitted' => false,
 		);
 		$path      = array(
 			array( 'function' => 'date_i18n' ),
-			array( 'class' => 'GFCommon', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, false, '', true ) ),
+			array( 'class' => 'GFCommon', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, false, $date_format, true ) ),
 			array( 'class' => 'Gravity_Flow_Common', 'type' => '::', 'function' => 'format_date', 'args' => array( $raw, '', false, true ) ),
 			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_header', 'args' => array( 'Runtime Admin', $raw ) ),
 			array( 'class' => 'Gravity_Flow_Entry_Detail', 'type' => '::', 'function' => 'get_note_body', 'args' => array( $note, 'Runtime Admin' ) ),
