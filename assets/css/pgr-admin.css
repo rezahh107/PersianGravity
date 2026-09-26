@@ -64,11 +64,13 @@
 	background: #edfaef;
 }
 
-.pgr-badge[data-state="WARNING"] {
+.pgr-badge[data-state="WARNING"],
+.pgr-badge[data-state="DEGRADED"] {
 	background: #fff8e5;
 }
 
 .pgr-badge[data-state="UNAVAILABLE"],
+.pgr-badge[data-state="NOT_EVALUATED"],
 .pgr-badge[data-state="DISABLED"] {
 	background: #f6f7f7;
 	color: #646970;
