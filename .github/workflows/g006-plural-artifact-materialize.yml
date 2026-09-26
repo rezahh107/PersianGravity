@@ -34,7 +34,7 @@ jobs:
       - name: Check out pinned WordPress translation implementation
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          repository: WordPress/wordpress-develop
+          repository: WordPress/WordPress
           ref: b998fef9238af183f9523b3df71618e6e57498b6
           path: .wordpress-core
           persist-credentials: false
