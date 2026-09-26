@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "product": "gravityflow",
+  "version": "3.1.0",
+  "authority": "OWNER_SUPPLIED_GOOGLE_DRIVE",
+  "google_drive_file_id": "1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf",
+  "expected_filename": "gravityflow-3.1.0-owner-supplied-source-package.zip",
+  "expected_bytes": 2603034,
+  "sha256": "ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404",
+  "plugin_main_file": "gravityflow/gravityflow.php"
+}
