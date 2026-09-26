@@ -282,6 +282,7 @@ jobs:
                   'msgid_plural': e.get('msgid_plural'),
                   'references': e.get('references', []),
                   'draft_msgstr': values,
+                  'generated_msgstr': generated_values,
                   'draft_source': source,
               })
           print('historical_exact_identity_hits=' + str(historical_hits))
