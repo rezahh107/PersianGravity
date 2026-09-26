@@ -1,0 +1,139 @@
+name: G-006 GravityView full-text Google draft
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-google-full-text.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked residual
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+
+      - name: Translate full source strings
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: '6'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time, urllib.parse, urllib.request
+          from pathlib import Path
+          entries=json.loads(Path('/tmp/g006/out/residual.json').read_text())['entries']
+          part=int(os.environ['PART']); parts=int(os.environ['PARTS'])
+          targets=[(idx,e) for idx,e in enumerate(entries) if idx%parts==part]
+
+          def translate(text):
+              url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fa&dt=t&q='+urllib.parse.quote(text)
+              last=None
+              for attempt in range(12):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                      with urllib.request.urlopen(req,timeout=30) as resp:
+                          payload=json.loads(resp.read().decode('utf-8'))
+                      out=''.join(chunk[0] for chunk in payload[0] if chunk and chunk[0]).strip()
+                      if out:return out
+                      raise RuntimeError('empty translation')
+                  except Exception as exc:
+                      last=exc
+                      time.sleep(min(25,2+attempt*2))
+              raise RuntimeError(f'translation failed: {last}')
+
+          output={}
+          print(f'part={part} entries={len(targets)}',flush=True)
+          for n,(idx,e) in enumerate(targets,1):
+              vals=[translate(e['msgid'])]
+              if e.get('msgid_plural') is not None:
+                  vals.append(translate(e['msgid_plural']))
+              output[str(idx)]=vals
+              time.sleep(0.10)
+              if n%75==0:print(f'part={part} done={n}/{len(targets)}',flush=True)
+          Path(f'/tmp/g006/full-text-{part}.json').write_text(json.dumps({
+              'part':part,'parts':parts,'entry_count':len(entries),'translations':output
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-full-text-${{ matrix.part }}
+          path: /tmp/g006/full-text-${{ matrix.part }}.json
+          if-no-files-found: error
+          retention-days: 7
+
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked residual
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: g006-full-text-*
+          path: /tmp/g006/chunks
+          merge-multiple: true
+      - name: Merge draft
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          entries=json.loads(Path('/tmp/g006/out/residual.json').read_text())['entries']
+          tr={}
+          for p in sorted(Path('/tmp/g006/chunks').glob('full-text-*.json')):
+              shard=json.loads(p.read_text())
+              assert shard['entry_count']==len(entries)
+              for k,v in shard['translations'].items():
+                  if k in tr:raise RuntimeError('duplicate index')
+                  tr[k]=v
+          assert len(tr)==len(entries),(len(tr),len(entries))
+          draft=[]
+          for idx,e in enumerate(entries):
+              vals=tr[str(idx)]
+              assert len(vals)==(2 if e.get('msgid_plural') else 1)
+              draft.append({
+                'identity':e['identity'],'msgctxt':e.get('msgctxt'),'msgid':e['msgid'],
+                'msgid_plural':e.get('msgid_plural'),'references':e.get('references',[]),
+                'draft_msgstr':vals,'draft_source':'GOOGLE_FULL_TEXT_DRAFT'
+              })
+          Path('/tmp/g006/out/draft-google-full-text.json').write_text(json.dumps({
+            'schema_version':1,'engine':'translate.googleapis.com gtx full source strings',
+            'status':'DRAFT_ONLY_NOT_ACCEPTED','count':len(draft),'entries':draft
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-full-text-review-input
+          path: |
+            /tmp/g006/out/residual.json
+            /tmp/g006/out/accepted.json
+            /tmp/g006/out/draft-google-full-text.json
+          if-no-files-found: error
+          retention-days: 7
