@@ -127,6 +127,17 @@ jobs:
           print('remainder_keyset_sha256=' + payload['remainder_keyset_sha256'])
           PY
 
+      - name: Upload canonical census before draft generation
+        uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: |
+            /tmp/g006/out/source.json
+            /tmp/g006/out/residual.json
+            /tmp/g006/out/accepted.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Load exact-match historical Persian translation memory
         run: |
           set -euo pipefail
