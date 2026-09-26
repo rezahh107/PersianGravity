@@ -22,7 +22,19 @@ final class CatalogBuildTest extends TestCase {
 		$this->assertArrayNotHasKey( 'Synthetic unreviewed', $jed );
 		$this->assertArrayNotHasKey( 'Synthetic missing', $jed );
 		$this->assertSame( array( 'یکی', 'چندتا' ), $jed['Synthetic one'] );
+		$this->assertArrayNotHasKey( "Synthetic one\0Synthetic many", $jed );
 		$this->assertSame( array( 'زمینه' ), $jed[ "test-context\x04Synthetic context" ] );
+
+		$temp_php = tempnam( sys_get_temp_dir(), 'pgr-l10n-' );
+		try {
+			file_put_contents( $temp_php, $one['php'] );
+			$php_catalog = require $temp_php;
+		} finally {
+			unlink( $temp_php );
+		}
+		$this->assertSame( "یکی\0چندتا", $php_catalog['messages']['Synthetic one'] );
+		$this->assertSame( "یکی\0چندتا", $php_catalog['messages'][ "Synthetic one\0Synthetic many" ] );
+
 		$this->assertStringNotContainsString( 'Synthetic unreviewed', $one['mo'] );
 		$this->assertStringNotContainsString( 'Synthetic missing', $one['php'] );
 	}
