@@ -119,6 +119,8 @@ Do not reintroduce deprecated form-settings paths or private/direct-SQL usage. G
 
 ## 8. Testing and CI
 
+Gravity Flow qualification package authority lives at `tools/compatibility/gravityflow-package.json`. Active qualification consumers must resolve it through the repository helper rather than discovering, substituting, or hard-coding another Gravity Flow package reference.
+
 Required validation categories:
 
 ```bash
