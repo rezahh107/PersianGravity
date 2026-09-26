@@ -1,0 +1,209 @@
+name: G-006 GravityView chunked Google draft
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-google-chunks.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked census
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+      - name: Translate deterministic segment shard
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: '6'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re, time, urllib.parse, urllib.request
+          from pathlib import Path
+
+          data=json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          protected=re.compile(
+              r'(https?://[^\s<>"\']+'
+              r'|%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]'
+              r'|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}|</?[A-Za-z][^>]*>'
+              r'|&#(?:\d+|x[0-9A-Fa-f]+);|\[[A-Za-z][^\]\r\n]*\]'
+              r'|Gravity Forms|GravityView|GravityKit(?:\.com)?|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|REST|API|URLs?|AJAX|OAuth|SMTP|HTTPS?|UTC|UID|SVG|CSV)'
+          )
+          natural=re.compile(r'[A-Za-z]')
+          segments=[]; index={}
+          def register(value):
+              if value is None:return
+              parts=protected.split(value)
+              for idx,part in enumerate(parts):
+                  if not part or idx%2==1 or not natural.search(part) or re.fullmatch(r'[\s\W_\d]+',part):
+                      continue
+                  if part not in index:
+                      index[part]=len(segments); segments.append(part)
+          for e in data['entries']:
+              register(e['msgid']); register(e.get('msgid_plural'))
+
+          part=int(os.environ['PART']); parts=int(os.environ['PARTS'])
+          targets=[(i,s) for i,s in enumerate(segments) if i%parts==part]
+          print(f'part={part} targets={len(targets)} total_segments={len(segments)}', flush=True)
+
+          def translate(text):
+              url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fa&dt=t&q='+urllib.parse.quote(text)
+              last=None
+              for attempt in range(10):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                      with urllib.request.urlopen(req,timeout=30) as resp:
+                          payload=json.loads(resp.read().decode('utf-8'))
+                      out=''.join(chunk[0] for chunk in payload[0] if chunk and chunk[0]).strip()
+                      if out:return out
+                      raise RuntimeError('empty translation')
+                  except Exception as exc:
+                      last=exc
+                      time.sleep(min(20, 2 + attempt * 2))
+              raise RuntimeError(f'translation failed: {last}')
+
+          output={}
+          for n,(idx,text) in enumerate(targets,1):
+              output[str(idx)]=translate(text)
+              time.sleep(0.08)
+              if n%100==0: print(f'part={part} done={n}/{len(targets)}',flush=True)
+          Path(f'/tmp/g006/chunk-{part}.json').write_text(json.dumps({
+              'part':part,'parts':parts,'total_segments':len(segments),'translations':output
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-google-chunk-${{ matrix.part }}
+          path: /tmp/g006/chunk-${{ matrix.part }}.json
+          if-no-files-found: error
+          retention-days: 7
+
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked census
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+      - name: Download all translation shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: g006-google-chunk-*
+          path: /tmp/g006/chunks
+          merge-multiple: true
+      - name: Build complete draft with historical exact-match memory
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet polib==1.2.0
+          curl -fsSL \
+            'https://raw.githubusercontent.com/OscarCampohermoso/Proyectos-Web-PHP-MariaDB/f07be38488f3ec64f3ce1e80e00444e2aedb7b56/htdocs-xampp/wordpress/wp-content/plugins/gravityview/languages/gravityview-fa_IR.po' \
+            -o /tmp/g006/out/historical.po
+          python3 - <<'PY'
+          import hashlib,json,re
+          from pathlib import Path
+          import polib
+          US='\x1f'
+          data=json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          memory={}
+          for entry in polib.pofile('/tmp/g006/out/historical.po'):
+              if not entry.msgid or 'fuzzy' in entry.flags: continue
+              vals=list(entry.msgstr_plural.values()) if entry.msgid_plural else [entry.msgstr]
+              if not vals or not all(isinstance(v,str) and v.strip() for v in vals): continue
+              ident=hashlib.sha256(((entry.msgctxt or '')+US+entry.msgid+US+(entry.msgid_plural or '')).encode()).hexdigest()
+              memory[ident]=vals
+
+          protected=re.compile(
+              r'(https?://[^\s<>"\']+'
+              r'|%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]'
+              r'|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}|</?[A-Za-z][^>]*>'
+              r'|&#(?:\d+|x[0-9A-Fa-f]+);|\[[A-Za-z][^\]\r\n]*\]'
+              r'|Gravity Forms|GravityView|GravityKit(?:\.com)?|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|REST|API|URLs?|AJAX|OAuth|SMTP|HTTPS?|UTC|UID|SVG|CSV)'
+          )
+          natural=re.compile(r'[A-Za-z]')
+          segments=[]; segment_index={}; plans={}
+          def plan(value):
+              if value is None:return None
+              parts=protected.split(value); out=[]
+              for idx,part in enumerate(parts):
+                  if not part: continue
+                  if idx%2==1 or not natural.search(part) or re.fullmatch(r'[\s\W_\d]+',part):
+                      out.append(('literal',part))
+                  else:
+                      if part not in segment_index:
+                          segment_index[part]=len(segments); segments.append(part)
+                      out.append(('segment',segment_index[part]))
+              return out
+          for e in data['entries']:
+              plans[e['identity']]=(plan(e['msgid']),plan(e.get('msgid_plural')))
+
+          translated={}
+          for path in sorted(Path('/tmp/g006/chunks').glob('chunk-*.json')):
+              chunk=json.loads(path.read_text())
+              assert chunk['total_segments']==len(segments)
+              for k,v in chunk['translations'].items():
+                  if k in translated: raise RuntimeError('duplicate segment')
+                  translated[k]=v
+          assert len(translated)==len(segments),(len(translated),len(segments))
+
+          def render(parts):
+              if parts is None:return None
+              return ''.join(v if k=='literal' else translated[str(v)] for k,v in parts).strip()
+
+          drafts=[];hits=0
+          for e in data['entries']:
+              sp,pp=plans[e['identity']]
+              generated=[render(sp)]
+              if pp is not None: generated.append(render(pp))
+              values=memory.get(e['identity'],generated)
+              src='HISTORICAL_EXACT_IDENTITY' if e['identity'] in memory else 'GOOGLE_SHARDED_DRAFT'
+              if src=='HISTORICAL_EXACT_IDENTITY': hits+=1
+              expected=2 if e.get('msgid_plural') is not None else 1
+              if len(values)!=expected:
+                  values=generated;src='GOOGLE_SHARDED_DRAFT_PLURAL_FALLBACK'
+              assert all(isinstance(v,str) and v.strip() for v in values)
+              drafts.append({
+                  'identity':e['identity'],'msgctxt':e.get('msgctxt'),'msgid':e['msgid'],
+                  'msgid_plural':e.get('msgid_plural'),'references':e.get('references',[]),
+                  'draft_msgstr':values,'generated_msgstr':generated,'draft_source':src
+              })
+          assert len(drafts)==2666
+          print('historical_exact_identity_hits='+str(hits))
+          Path('/tmp/g006/out/draft-google-sharded.json').write_text(json.dumps({
+             'schema_version':1,'engine':'translate.googleapis.com gtx; 6 rate-limited shards',
+             'status':'DRAFT_ONLY_NOT_ACCEPTED','count':2666,'entries':drafts
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-google-sharded-review-input
+          path: |
+            /tmp/g006/out/residual.json
+            /tmp/g006/out/accepted.json
+            /tmp/g006/out/draft-google-sharded.json
+          if-no-files-found: error
+          retention-days: 7
