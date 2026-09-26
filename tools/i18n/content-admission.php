@@ -1019,7 +1019,7 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 		// retroactively apply that new rule to historical accepted surface translations.
 		$aggregate_catalog = pgr_content_load_sparse_po( $aggregate_path, $first['domain'], $first['locale'] );
 		if ( $aggregate_catalog['ids'] !== array_keys( $runtime_union_rows ) || $aggregate_catalog['translation_rows'] !== $runtime_union_rows ) {
-			throw new RuntimeException( 'Aggregate sparse provider source is not the exact admitted runtime projection' );
+			throw new RuntimeException( 'Aggregate sparse provider source is not the exact admitted union/runtime projection' );
 		}
 		$aggregate = array(
 			'admitted_message_count'              => count( $union_ids ),
