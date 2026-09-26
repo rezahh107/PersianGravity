@@ -181,7 +181,7 @@
     "validated_script_handles": [],
     "artifact_sha256": {
         "gravityview-fa_IR.mo": "867a5312a04b7939f9af27aadc059fe4bb938627a940d6dd272b6fc11dd78ce2",
-        "gravityview-fa_IR.l10n.php": "d2ac34d10e822ee5e5bc57dec833250b38792cd8860c8fa1c64703cf17b6b877"
+        "gravityview-fa_IR.l10n.php": "8349b1ab5d0f2aff8352f6682f3100a33e256aa18adf8015b9008de584b28e97"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
     "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",
