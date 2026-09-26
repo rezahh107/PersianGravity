@@ -202,7 +202,10 @@ jobs:
               r'|</?[A-Za-z][^>]*>'
               r'|&#(?:\d+|x[0-9A-Fa-f]+);'
               r'|\[[A-Za-z][^\]\r\n]*\]'
-              r'|Gravity Forms|GravityView|GravityKit|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|API|URLs?|AJAX|OAuth|SMTP)'
+              r'|`[^`\\r\\n]+`'
+              r'|\\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\b'
+              r'|\\b[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+\\b'
+              r'|Gravity Forms|GravityView|GravityKit(?:\\.com)?|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|REST|API|URLs?|AJAX|OAuth|SMTP|HTTPS?|UTC|UID|SVG|CSV)'
           )
           natural = re.compile(r'[A-Za-z]')
 
@@ -238,8 +241,8 @@ jobs:
           translated = [''] * len(segments)
 
           with torch.inference_mode():
-              for start in range(0, len(segments), 16):
-                  batch_text = segments[start:start + 16]
+              for start in range(0, len(segments), 32):
+                  batch_text = segments[start:start + 32]
                   batch = tok(batch_text, return_tensors='pt', padding=True, truncation=True, max_length=512)
                   generated = model.generate(
                       **batch,
