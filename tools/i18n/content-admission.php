@@ -150,14 +150,43 @@ function pgr_content_protected_literals( $value ) {
 }
 
 /**
- * Hash the canonical source keyset using the locked source-admission contract.
+ * Hash a canonical source keyset using an explicit admitted source contract.
+ *
+ * Gravity Forms/Flow source admission uses no trailing newline. The historical
+ * GravityView 3.3.4 tokenizer contract includes one trailing newline. Remainder
+ * admission must preserve whichever exact source fingerprint contract produced
+ * the already-admitted canonical keyset; it may not silently normalize between
+ * them.
+ *
+ * @param array  $ids    Identity SHA-256 values.
+ * @param string $method Explicit source keyset hash method.
+ * @return string
+ */
+function pgr_content_source_keyset_hash_with_method( array $ids, $method ) {
+	sort( $ids, SORT_STRING );
+	$joined = implode( "\n", $ids );
+
+	if ( 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE' === $method ) {
+		return hash( 'sha256', $joined );
+	}
+	if ( 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_WITH_TRAILING_NEWLINE' === $method ) {
+		return hash( 'sha256', $joined . ( empty( $ids ) ? '' : "\n" ) );
+	}
+
+	throw new RuntimeException( 'Unsupported canonical source keyset hash method' );
+}
+
+/**
+ * Hash the canonical source keyset using the revision-3 GF/Flow contract.
  *
  * @param array $ids Identity SHA-256 values.
  * @return string
  */
 function pgr_content_source_keyset_hash( array $ids ) {
-	sort( $ids, SORT_STRING );
-	return hash( 'sha256', implode( "\n", $ids ) );
+	return pgr_content_source_keyset_hash_with_method(
+		$ids,
+		'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE'
+	);
 }
 
 /**
@@ -473,7 +502,6 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 		'vendor_pot_sha256'                               => $record['vendor_pot_sha256'],
 		'canonical_message_count'                         => $record['canonical_message_count'],
 		'canonical_keyset_sha256'                         => $record['canonical_keyset_sha256'],
-		'canonical_keyset_hash_method'                    => 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE',
 		'preexisting_accepted_message_count'              => $record['preexisting_accepted_message_count'],
 		'preexisting_accepted_keyset_sha256'              => $record['preexisting_accepted_keyset_sha256'],
 		'preexisting_accepted_translation_content_sha256' => $record['preexisting_accepted_translation_content_sha256'],
@@ -496,9 +524,12 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 		}
 		$canonical_seen[ $id ] = true;
 	}
-	if ( $record['canonical_keyset_sha256'] !== pgr_content_source_keyset_hash( $canonical_ids ) ) {
+	$canonical_hash_method = $evidence['canonical_keyset_hash_method'] ?? null;
+	if ( ! is_string( $canonical_hash_method ) ||
+		$record['canonical_keyset_sha256'] !== pgr_content_source_keyset_hash_with_method( $canonical_ids, $canonical_hash_method ) ) {
 		throw new RuntimeException( 'Canonical source keyset drift in remainder evidence' );
 	}
+	$record['canonical_keyset_hash_method'] = $canonical_hash_method;
 
 	$entries = $evidence['entries'] ?? null;
 	if ( ! is_array( $entries ) || $entries !== array_values( $entries ) || count( $entries ) !== $record['admitted_message_count'] ) {
@@ -845,7 +876,7 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 			$canonical_ids = $remainder['canonical_ids'];
 			sort( $canonical_ids, SORT_STRING );
 			if ( count( $union_rows ) !== $remainder['canonical_message_count'] || $union_ids !== $canonical_ids ||
-				pgr_content_source_keyset_hash( $union_ids ) !== $remainder['canonical_keyset_sha256'] ) {
+				pgr_content_source_keyset_hash_with_method( $union_ids, $remainder['canonical_keyset_hash_method'] ) !== $remainder['canonical_keyset_sha256'] ) {
 				throw new RuntimeException( 'Completed product union does not equal the exact canonical source census: ' . $product );
 			}
 			$content_state    = 'CONTENT_ADMITTED_FULL';
