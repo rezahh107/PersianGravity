@@ -9,7 +9,6 @@ on:
       - 'tests/CatalogBuildTest.php'
       - 'tests/i18n/run-production.php'
       - 'tests/real-integration/g006-gravityview-runtime.php'
-      - 'languages/providers/**'
 
 permissions:
   contents: write
@@ -32,6 +31,14 @@ jobs:
 
       - run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Check out pinned WordPress translation implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: WordPress/wordpress-develop
+          ref: b998fef9238af183f9523b3df71618e6e57498b6
+          path: .wordpress-core
+          persist-credentials: false
+
       - name: Materialize deterministic provider artifacts
         shell: bash
         run: |
@@ -39,12 +46,15 @@ jobs:
           php tools/i18n/build.php --write
           php tools/i18n/build.php --check
           vendor/bin/phpunit --filter 'CatalogBuildTest|GravityViewContentAdmissionTest|CrossProductContentAdmissionIntegrationTest'
-          composer i18n:test
+          PGR_WP_CORE="$GITHUB_WORKSPACE/.wordpress-core" composer i18n:test
 
           mapfile -t changed < <(git status --porcelain=v1 | sed -E 's/^.. //')
           printf 'Generated changes:\n'
           printf '  %s\n' "${changed[@]}"
-          test "${#changed[@]}" -gt 0
+          if test "${#changed[@]}" -eq 0; then
+            echo "Provider artifacts already match the plural-safe generator."
+            exit 0
+          fi
 
           for file in "${changed[@]}"; do
             case "$file" in
