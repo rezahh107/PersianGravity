@@ -7,11 +7,13 @@ This harness is the repository-owned, fail-closed CI path for real WordPress/bro
 | Product | Version | Public Drive file ID | Expected bytes | Required SHA-256 |
 | --- | --- | --- | ---: | --- |
 | Gravity Forms | `3.1.1.1` | `1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy` | `5300290` | `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b` |
-| Gravity Flow | `3.1.0` | `1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf` | `2603034` | `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404` |
+| Gravity Flow | manifest-owned | `tools/compatibility/gravityflow-package.json` | manifest-owned | manifest-owned |
 | GravityView | `3.3.4` | `16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1` | `7569755` | `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` |
 | Gravity Perks | `2.3.16` | `1s6bh8rcc-fGZcPWe2OzJQj48r7zaqeRG` | `156703` | `a160d166fb7894b0dfc558ae92e0c230a1336ed2a81e78fa1216be72b1024e7c` |
 | GP File Upload Pro | `1.5.13` | `1W7rVScg5N0X8_RWyWrc95NU2bUf_boWQ` | `3503920` | `fdab5621dc0c1b9d33384696f554ef9ac0d646a70f8cee652a1bc05c43f8f7ce` |
 | GP Advanced Select | `1.1.21` | `1_if3Eb9MctTgQaeYhGlSsyOsIJPIfJZ5` | `184531` | `d83424bfac712e73d772e54e8740b828c52b7c118cfa9aac71646233a6fdcca2` |
+
+Gravity Flow qualification package identity is intentionally not duplicated here. `tools/compatibility/gravityflow-package.json` is the canonical operational authority for its version, Owner-supplied Drive file ID, expected filename/bytes, SHA-256 and plugin main file; qualification consumers must resolve those values through the repository helper and fail closed if the manifest is invalid.
 
 PersianGravity is no longer fetched from the historical 4.2.0 commit. The workflow checks out the exact PR/workflow source SHA, builds the repository's deterministic production ZIP through `tools/build-production-package.sh`, installs that ZIP into the disposable WordPress site, and verifies the package's generated `release-manifest.json` source commit/tree against the checkout. Plugin version is derived from the same release authority used by the package builder; there is no separately synchronized WU008 PersianGravity version literal.
 
