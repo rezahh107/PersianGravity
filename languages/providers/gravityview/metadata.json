@@ -17,9 +17,33 @@
         "source_evidence_index_sha256": "d07d9c80f4c70d0dc3934b679a5baf51ebdc5cf199ad388d916c291559eb9072",
         "admission_baseline": "tools/i18n/admission/baseline.json",
         "content_admission_manifest": "tools/i18n/admission/content.json",
-        "content_admission_revision": 2,
-        "content_admission_state": "CONTENT_ADMITTED_PARTIAL",
+        "content_admission_revision": 3,
+        "content_admission_state": "CONTENT_ADMITTED_FULL",
         "content_admissions": [
+            {
+                "product": "gravityview",
+                "domain": "gk-gravityview",
+                "locale": "fa_IR",
+                "target_version": "3.3.4",
+                "content_state": "CONTENT_ADMITTED_REMAINDER",
+                "reviewed_source_po_sha256": "2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca",
+                "reviewed_source_message_count": 3127,
+                "authority_scope": "PRODUCT_REMAINDER",
+                "preexisting_accepted_message_count": 461,
+                "preexisting_accepted_keyset_sha256": "f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643",
+                "preexisting_accepted_translation_content_sha256": "2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb",
+                "canonical_message_count": 3127,
+                "canonical_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+                "admitted_message_count": 2666,
+                "admitted_keyset_sha256": "1f7ae31c73666feb75a4039c34ed4c5a5dda646b0ca7662283713ca333e6e67c",
+                "admitted_translation_content_sha256": "5a38119088cc9e61c7e36f1d332a0988ca0a74e35cf7177a32a6c536f6eedc1b",
+                "remainder_evidence_index_path": "tools/i18n/admission/remainders/gravityview.json",
+                "remainder_evidence_index_sha256": "4051a115364e236c02958498a79e01070b0aa895be0bc99afabd80a7419aab14",
+                "review_index_path": "tools/i18n/admission/reviews/gravityview-remainder.json",
+                "review_index_sha256": "45f11b9b57ccf00136339bf8dbca57faf5c12d8b3d738811ba3c7729f79bfc5b",
+                "provider_source_path": "languages/providers/gravityview/source/records/remainder-fa_IR.po",
+                "provider_source_sha256": "53cf106afad15bdc380883958c809038cf54c13991c5d60a88a8765da144453e"
+            },
             {
                 "product": "gravityview",
                 "domain": "gk-gravityview",
@@ -130,39 +154,65 @@
             }
         ],
         "content_aggregate": {
-            "admitted_message_count": 461,
-            "admitted_keyset_sha256": "f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643",
-            "admitted_translation_content_sha256": "2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb",
+            "admitted_message_count": 3127,
+            "admitted_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+            "admitted_translation_content_sha256": "4826c263853976b99037b32fcd6145fbbf64d57841f453c9262aad065cea2aeb",
             "provider_source_path": "languages/providers/gravityview/source/fa_IR.po",
-            "provider_source_sha256": "66ca25e98c622a35b06ff89cac9285259eb08c49e6ac800a348d17e0024e578a"
+            "provider_source_sha256": "f639d6ea7cbc958d8bdcfe051f8e07c1d4ecfa3ae3a46a4cbc482465224df11c",
+            "runtime_provider_message_count": 3126,
+            "runtime_projection_alias_count": 1
         },
         "catalog_revision": 3,
-        "translation_review": "WU003_CLASSIFIED_AUTHORITY_EXACT_ACCEPTED_SIX_SURFACE_UNION",
+        "translation_review": "G006_WU002_FINAL_QA_REUSE_PLUS_CURRENT_SOURCE_CONTEXT_RECONCILIATION_TWO_PASS_REVIEW",
         "native_js_handles_activated": 0,
         "js_translation_json_generated": 0,
         "upstream_fallback_validation": "SYNTHETIC_CORE_SPARSE_PRECEDENCE",
         "wu003_authority_archive_sha256": "c193a49bc896d0aa9f7e4c4204778dc2c7cd1fbec974237a01292e8dfafd233d"
     },
-    "provider_po_sha256": "66ca25e98c622a35b06ff89cac9285259eb08c49e6ac800a348d17e0024e578a",
+    "provider_po_sha256": "f639d6ea7cbc958d8bdcfe051f8e07c1d4ecfa3ae3a46a4cbc482465224df11c",
     "counts_in_committed_po": {
-        "translated": 461,
+        "translated": 3126,
         "untranslated": 0,
         "fuzzy": 0
     },
     "authoritative_total": 3127,
-    "coverage_percent": 14.74,
-    "content_status": "PARTIAL_TRANSLATION_CONTENT_SURFACE_ADMITTED",
+    "coverage_percent": 100,
+    "content_status": "FULL_TRANSLATION_CONTENT_ACCEPTED",
     "validated_script_handles": [],
     "artifact_sha256": {
-        "gravityview-fa_IR.mo": "e2c896e736cd55f191d6b4a324c7aa9a673da9c213b0f8881ac2736c8ae2aa9e",
-        "gravityview-fa_IR.l10n.php": "8edc63d50374655759428d4778c70784b8a63b3363149ea28cdb04f54a1531e2"
+        "gravityview-fa_IR.mo": "867a5312a04b7939f9af27aadc059fe4bb938627a940d6dd272b6fc11dd78ce2",
+        "gravityview-fa_IR.l10n.php": "d2ac34d10e822ee5e5bc57dec833250b38792cd8860c8fa1c64703cf17b6b877"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
     "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",
     "content_admission": {
-        "revision": 2,
-        "state": "CONTENT_ADMITTED_PARTIAL",
+        "revision": 3,
+        "state": "CONTENT_ADMITTED_FULL",
         "admissions": [
+            {
+                "product": "gravityview",
+                "domain": "gk-gravityview",
+                "locale": "fa_IR",
+                "target_version": "3.3.4",
+                "content_state": "CONTENT_ADMITTED_REMAINDER",
+                "reviewed_source_po_sha256": "2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca",
+                "reviewed_source_message_count": 3127,
+                "authority_scope": "PRODUCT_REMAINDER",
+                "preexisting_accepted_message_count": 461,
+                "preexisting_accepted_keyset_sha256": "f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643",
+                "preexisting_accepted_translation_content_sha256": "2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb",
+                "canonical_message_count": 3127,
+                "canonical_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+                "admitted_message_count": 2666,
+                "admitted_keyset_sha256": "1f7ae31c73666feb75a4039c34ed4c5a5dda646b0ca7662283713ca333e6e67c",
+                "admitted_translation_content_sha256": "5a38119088cc9e61c7e36f1d332a0988ca0a74e35cf7177a32a6c536f6eedc1b",
+                "remainder_evidence_index_path": "tools/i18n/admission/remainders/gravityview.json",
+                "remainder_evidence_index_sha256": "4051a115364e236c02958498a79e01070b0aa895be0bc99afabd80a7419aab14",
+                "review_index_path": "tools/i18n/admission/reviews/gravityview-remainder.json",
+                "review_index_sha256": "45f11b9b57ccf00136339bf8dbca57faf5c12d8b3d738811ba3c7729f79bfc5b",
+                "provider_source_path": "languages/providers/gravityview/source/records/remainder-fa_IR.po",
+                "provider_source_sha256": "53cf106afad15bdc380883958c809038cf54c13991c5d60a88a8765da144453e"
+            },
             {
                 "product": "gravityview",
                 "domain": "gk-gravityview",
@@ -273,13 +323,15 @@
             }
         ],
         "aggregate": {
-            "admitted_message_count": 461,
-            "admitted_keyset_sha256": "f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643",
-            "admitted_translation_content_sha256": "2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb",
+            "admitted_message_count": 3127,
+            "admitted_keyset_sha256": "3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95",
+            "admitted_translation_content_sha256": "4826c263853976b99037b32fcd6145fbbf64d57841f453c9262aad065cea2aeb",
             "provider_source_path": "languages/providers/gravityview/source/fa_IR.po",
-            "provider_source_sha256": "66ca25e98c622a35b06ff89cac9285259eb08c49e6ac800a348d17e0024e578a",
+            "provider_source_sha256": "f639d6ea7cbc958d8bdcfe051f8e07c1d4ecfa3ae3a46a4cbc482465224df11c",
             "native_js_handles_activated": 0,
-            "js_translation_json_generated": 0
+            "js_translation_json_generated": 0,
+            "runtime_provider_message_count": 3126,
+            "runtime_projection_alias_count": 1
         }
     }
 }
