@@ -457,3 +457,16 @@ The exact source package contains no vendor POT. The content validator therefore
 `GravityViewContentAdmissionTest`, the generic Content Admission v2 suite, `CatalogBuildTest`, `composer i18n:check`, the PHP 8.2–8.5 test matrix, code style/compatibility checks, and pinned WordPress localization contracts are the automated repository evidence classes for the exact PR Head. Exact PASS/FAIL claims are recorded only after those checks execute on that Head.
 
 Real WordPress + licensed GravityView browser/UI validation remains `NOT_RUN` / `NOT_PROVEN`. This Work Unit establishes bounded `CONTENT_ADMITTED_PARTIAL` evidence only; it does not establish full GravityView translation coverage, product completion, ecosystem completion, or Work Unit/project closure.
+
+## G-010 / WU-02 — Compatibility Diagnostics Foundation
+
+Scope: reporting/governance infrastructure only. The change adds the bounded Gravity Flow diagnostics catalog/recorder/latest reporting snapshot and reuses the existing System Status page. Current Flow adapter eligibility, exact-version/source/caller-chain gates, package authority and presentation behavior are intentionally unchanged.
+
+Executed pre-PR implementation evidence:
+
+- source Head `3eba01fe31046b98b0108a1ffd213cd0d07cb0d4`;
+- CI run `36272863126` — SUCCESS;
+- quality job — SUCCESS, including shipped-PHP syntax, WordPress Coding Standards, PHPCompatibility, JavaScript tests, pinned WordPress Core localization contracts, provider integrity/drift and runtime-integrity guard;
+- PHPUnit jobs on PHP 8.2, 8.3, 8.4 and 8.5 — SUCCESS, including diagnostics governance, System Status reporting, persistence fail-closed behavior, WU-01 package-authority protection and existing adapter guard assertions.
+
+At this pre-PR checkpoint, PR-triggered Artifact Install Smoke, G006 Gravity Forms Runtime, G008 Jalali Presentation Runtime and WU008 Licensed Real Integration are **NOT EXECUTED for WU-02**. They must be evaluated on the final PR Head if path filters trigger them. Green unit/CI evidence does not itself prove authentic licensed-host/browser behavior.
