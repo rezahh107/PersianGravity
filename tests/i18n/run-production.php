@@ -40,8 +40,8 @@ try {
 			'prefix'        => 'gravityview',
 			'admitted'      => 'This View is in the Trash. %1$sClick to restore the View%2$s.',
 			'translation'   => 'این نما در زباله‌دان است. %1$sبرای بازیابی نما کلیک کنید%2$s.',
-			'fallback_probe' => 'API Key',
-			'fallback_scope' => 'non-admitted identity',
+			'fallback_probe' => 'PersianGravity GravityView out-of-census fallback probe.',
+			'fallback_scope' => 'out-of-census identity',
 			'upstream_only' => 'کنترل بالادستی گرویتی ویو',
 		),
 		'gravityperks' => array(
