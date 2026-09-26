@@ -106,6 +106,8 @@ final class GravityViewContentAdmissionTest extends TestCase {
 		$this->assertSame( 'CONTENT_ADMITTED_FULL', $content['gravityview']['content_state'] );
 		$this->assertSame( 3, $content['gravityview']['content_admission_revision'] );
 		$this->assertSame( 3127, $aggregate['admitted_message_count'] );
+		$this->assertSame( 3126, $aggregate['runtime_provider_message_count'] );
+		$this->assertSame( 1, $aggregate['runtime_projection_alias_count'] );
 		$this->assertSame( '3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95', $aggregate['admitted_keyset_sha256'] );
 		$this->assertSame( 'languages/providers/gravityview/source/fa_IR.po', $aggregate['provider_source_path'] );
 		$this->assertSame( $aggregate['provider_source_sha256'], hash_file( 'sha256', $root . '/' . $aggregate['provider_source_path'] ) );
@@ -126,12 +128,16 @@ final class GravityViewContentAdmissionTest extends TestCase {
 			'gk-gravityview',
 			'fa_IR'
 		);
-		$formerly_residual = hash( 'sha256', "\x1fAPI Key\x1f" );
-		$out_of_census     = hash( 'sha256', "\x1fPersianGravity GravityView out-of-census fallback probe.\x1f" );
+		$formerly_residual  = hash( 'sha256', "\x1fAPI Key\x1f" );
+		$projected_singular = '97c6620273066de02eaa136e9cfd212519882d1b997dd78ff66a873f6f501317';
+		$plural_provider     = 'e32a003e4de8416d41266532477c455f28ae29142e42ff5f2a21510fe60aa28f';
+		$out_of_census       = hash( 'sha256', "\x1fPersianGravity GravityView out-of-census fallback probe.\x1f" );
 
 		$this->assertContains( $formerly_residual, $provider['ids'], true );
+		$this->assertContains( $plural_provider, $provider['ids'], true );
+		$this->assertNotContains( $projected_singular, $provider['ids'], true );
 		$this->assertNotContains( $out_of_census, $provider['ids'], true );
-		$this->assertCount( 3127, $provider['ids'] );
+		$this->assertCount( 3126, $provider['ids'] );
 		$this->assertFalse( $source['gravityview']['domain_boundaries']['gk-query-filters']['runtime_manifested_by_persiangravity'] );
 		$this->assertSame( 'BOUNDED_DEPENDENCY_DOMAIN_BOUNDARY_NOT_MERGED_NOT_RUNTIME_ACTIVATED', $source['gravityview']['domain_boundaries']['gk-query-filters']['decision'] );
 		$this->assertSame( 'EXCLUDED_FROM_GRAVITYVIEW_PROVIDER_BOUNDARY', $source['gravityview']['domain_boundaries']['action-scheduler']['decision'] );

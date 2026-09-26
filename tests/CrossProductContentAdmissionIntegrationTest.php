@@ -67,7 +67,8 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 				$contract['domain'],
 				'fa_IR'
 			);
-			$this->assertCount( $contract['union'], $aggregate['ids'] );
+			$runtime_count = $content[ $product ]['aggregate']['runtime_provider_message_count'] ?? $contract['union'];
+			$this->assertCount( $runtime_count, $aggregate['ids'] );
 			$total_records += count( $content[ $product ]['admissions'] );
 		}
 		$this->assertSame( 22, $total_records );

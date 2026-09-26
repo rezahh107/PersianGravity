@@ -132,14 +132,27 @@ foreach ( $catalog as $entry ) {
 }
 
 sort( $ids, SORT_STRING );
-g006_gv_assert( 3127 === $tested_count, 'GravityView full-census runtime count mismatch: ' . $tested_count );
+g006_gv_assert( 3126 === $tested_count, 'GravityView gettext runtime-entry count mismatch: ' . $tested_count );
 g006_gv_assert( 127 === $context_count, 'GravityView context-count mismatch: ' . $context_count );
 g006_gv_assert( 42 === $plural_count, 'GravityView plural-count mismatch: ' . $plural_count );
 g006_gv_assert(
-	'3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95' === hash( 'sha256', implode( "\n", $ids ) . "\n" ),
-	'GravityView canonical runtime keyset fingerprint mismatch.'
+	'bebc8421688876f3d555246e0c1d8fb43abc7f3765065af3f830d7bc194e77d9' === hash( 'sha256', implode( "\n", $ids ) . "\n" ),
+	'GravityView gettext runtime-provider keyset fingerprint mismatch.'
 );
 g006_gv_assert( array() === $runtime_mismatches, 'GravityView provider/runtime mismatch: ' . wp_json_encode( $runtime_mismatches ) );
+
+$remainder_evidence = json_decode(
+	file_get_contents( $pgr_root . '/tools/i18n/admission/remainders/gravityview.json' ),
+	true,
+	512,
+	JSON_THROW_ON_ERROR
+);
+g006_gv_assert( 3127 === $remainder_evidence['canonical_message_count'], 'GravityView source-authority census changed.' );
+g006_gv_assert( 2666 === $remainder_evidence['remainder_message_count'], 'GravityView remainder census changed.' );
+g006_gv_assert( 2665 === $remainder_evidence['runtime_projection']['runtime_entry_count'], 'GravityView remainder runtime projection count changed.' );
+g006_gv_assert( 1 === count( $remainder_evidence['runtime_projection']['source_aliases'] ), 'GravityView runtime projection alias census changed.' );
+g006_gv_assert( '+[count] عملیات' === __( '+[count] action', 'gk-gravityview' ), 'Projected singular gettext lookup failed.' );
+g006_gv_assert( '+[count] عملیات' === _n( '+[count] action', '+[count] actions', 2, 'gk-gravityview' ), 'Projected plural gettext lookup failed.' );
 
 // Preserve a few historical accepted mappings while proving a formerly-residual identity is now provided.
 $historical = array(

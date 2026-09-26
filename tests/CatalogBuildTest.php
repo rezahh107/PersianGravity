@@ -62,7 +62,8 @@ final class CatalogBuildTest extends TestCase {
 			$expected_state    = $is_full ? 'CONTENT_ADMITTED_FULL' : 'CONTENT_ADMITTED_PARTIAL';
 			$expected_revision = $is_full ? 3 : 2;
 			$this->assertSame( $expected_state, $admission['content_state'] );
-			$this->assertSame( $aggregate['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
+			$runtime_count = $aggregate['runtime_provider_message_count'] ?? $aggregate['admitted_message_count'];
+			$this->assertSame( $runtime_count, $meta['counts_in_committed_po']['translated'] );
 			$this->assertSame( $aggregate['provider_source_sha256'], $meta['provider_po_sha256'] );
 			$this->assertSame( $expected_revision, $meta['content_admission']['revision'] );
 			$this->assertSame( $expected_state, $meta['content_admission']['state'] );
@@ -82,9 +83,9 @@ final class CatalogBuildTest extends TestCase {
 					)
 				);
 				$expected_by_product = array(
-					'gravityforms' => array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207 ),
-					'gravityflow'  => array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098 ),
-					'gravityview'  => array( 'records' => 7, 'preexisting' => 461, 'remainder' => 2666, 'total' => 3127 ),
+					'gravityforms' => array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207, 'runtime' => 4207 ),
+					'gravityflow'  => array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098, 'runtime' => 1098 ),
+					'gravityview'  => array( 'records' => 7, 'preexisting' => 461, 'remainder' => 2666, 'total' => 3127, 'runtime' => 3126 ),
 				);
 				$expected_full = $expected_by_product[ $product['product'] ];
 				$this->assertCount( $expected_full['records'], $admission['admissions'] );
@@ -95,7 +96,11 @@ final class CatalogBuildTest extends TestCase {
 				$this->assertSame( $expected_full['total'], $meta['authoritative_total'] );
 				$this->assertSame( 100, $meta['coverage_percent'] );
 				$this->assertSame( 'FULL_TRANSLATION_CONTENT_ACCEPTED', $meta['content_status'] );
-				$this->assertSame( array( 'translated' => $expected_full['total'], 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
+				$this->assertSame( array( 'translated' => $expected_full['runtime'], 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
+				if ( $expected_full['runtime'] !== $expected_full['total'] ) {
+					$this->assertSame( $expected_full['runtime'], $aggregate['runtime_provider_message_count'] );
+					$this->assertSame( $expected_full['total'] - $expected_full['runtime'], $aggregate['runtime_projection_alias_count'] );
+				}
 			}
 		}
 	}

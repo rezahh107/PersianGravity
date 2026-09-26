@@ -46,16 +46,19 @@ foreach ( $products as $domain => $product ) {
 	if ( ( $metadata_only || $unavailable ) && ! $has_content && ( 0 !== $known || array() !== $product['scripts'] ) ) {
 		throw new RuntimeException( 'Non-content source state must remain runtime dormant: ' . $domain );
 	}
+	$runtime_provider_count = $has_content
+		? ( $content['aggregate']['runtime_provider_message_count'] ?? $content['aggregate']['admitted_message_count'] )
+		: null;
 	if ( $has_content &&
 		( ! $metadata_only ||
 			array() !== $product['scripts'] ||
-			$known !== $content['aggregate']['admitted_message_count'] ||
+			$known !== $runtime_provider_count ||
 			hash_file( 'sha256', $source . '/fa_IR.po' ) !== $content['aggregate']['provider_source_sha256'] ) ) {
 		throw new RuntimeException( 'Invalid admitted-content aggregate runtime boundary: ' . $domain );
 	}
 	if ( $full &&
-		( $known !== $source_record['canonical_message_count'] ||
-			$counts['translated'] !== $source_record['canonical_message_count'] ||
+		( $content['aggregate']['admitted_message_count'] !== $source_record['canonical_message_count'] ||
+			$counts['translated'] !== $runtime_provider_count ||
 			0 !== $counts['untranslated'] ||
 			0 !== $counts['fuzzy'] ) ) {
 		throw new RuntimeException( 'Full-content admission does not cover the exact canonical source census: ' . $domain );
@@ -138,7 +141,7 @@ foreach ( $products as $domain => $product ) {
 	if ( $verified && $known > 0 ) {
 		$coverage = round( 100 * $counts['translated'] / $known, 2 );
 	} elseif ( $has_content ) {
-		$coverage = round( 100 * $counts['translated'] / $source_record['canonical_message_count'], 2 );
+		$coverage = round( 100 * $content['aggregate']['admitted_message_count'] / $source_record['canonical_message_count'], 2 );
 	} else {
 		$coverage = $metadata_only ? 0 : null;
 	}
