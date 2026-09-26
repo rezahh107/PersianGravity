@@ -1,12 +1,7 @@
 name: G-006 GravityView translation draft
 
 on:
-  push:
-    branches:
-      - feat/g006-gravityview-full-persian-coverage
-    paths:
-      - .github/workflows/g006-gravityview-draft.yml
-      - tools/i18n/extract-gravityview-source.php
+  workflow_dispatch:
 
 permissions:
   contents: read
