@@ -93,7 +93,7 @@ jobs:
 
           assert len(accepted) == 461, len(accepted)
           accepted_ids = sorted(accepted)
-          assert hashlib.sha256('\n'.join(accepted_ids).encode()).hexdigest() == 'f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643'
+          assert hashlib.sha256(('\n'.join(accepted_ids) + '\n').encode()).hexdigest() == 'f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643'
 
           canonical = {e['identity']: e for e in primary['entries']}
           assert len(canonical) == 3127
@@ -116,9 +116,9 @@ jobs:
               'canonical_keyset_sha256': primary['canonical_keyset_sha256'],
               'source_reference_index_sha256': primary['source_reference_index_sha256'],
               'preexisting_accepted_message_count': 461,
-              'preexisting_accepted_keyset_sha256': hashlib.sha256('\n'.join(accepted_ids).encode()).hexdigest(),
+              'preexisting_accepted_keyset_sha256': hashlib.sha256(('\n'.join(accepted_ids) + '\n').encode()).hexdigest(),
               'remainder_message_count': 2666,
-              'remainder_keyset_sha256': hashlib.sha256('\n'.join(residual_ids).encode()).hexdigest(),
+              'remainder_keyset_sha256': hashlib.sha256(('\n'.join(residual_ids) + '\n').encode()).hexdigest(),
               'entries': residual,
           }
           Path('/tmp/g006/out/residual.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n')
