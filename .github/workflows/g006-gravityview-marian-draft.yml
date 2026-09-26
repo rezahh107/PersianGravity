@@ -1,11 +1,7 @@
 name: G-006 GravityView Marian draft
 
 on:
-  push:
-    branches:
-      - feat/g006-gravityview-full-persian-coverage
-    paths:
-      - .github/workflows/g006-gravityview-marian-draft.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
