@@ -62,13 +62,15 @@ final class GravityViewContentAdmissionTest extends TestCase {
 		$this->assertStringContainsString( '%2$s', $actual['This View is in the Trash. %1$sClick to restore the View%2$s.'] );
 	}
 
-	public function test_gravityview_aggregate_is_exactly_the_six_surface_union_and_js_stays_empty(): void {
+	public function test_gravityview_six_surface_baseline_and_remainder_form_exact_full_union(): void {
 		$root       = dirname( __DIR__ );
 		$products   = require $root . '/includes/localization/products.php';
 		$source     = pgr_validate_admission( $root );
 		$content    = pgr_validate_content_admission( $root, $source, $products );
 		$admissions = $content['gravityview']['admissions'];
 		$aggregate  = $content['gravityview']['aggregate'];
+		$surfaces   = array_values( array_filter( $admissions, static fn( array $record ): bool => isset( $record['surface_id'] ) ) );
+		$remainders = array_values( array_filter( $admissions, static fn( array $record ): bool => 'PRODUCT_REMAINDER' === ( $record['authority_scope'] ?? null ) ) );
 		$expected   = array(
 			'gravityview::admin_builder::post_type:gravityview' => array( 340, '096a6c4d534f103ab93b7d5ff39d4163d80241eeee87c8418296c74138e04bf6', '2b5bb2e2147e8893447b6d515435d728cf668f272825a83c6daa5cbf05baea23', 'c01a1527fb72acb883bb66947926405602e37d39b5197c4157428d872d1ebfa0' ),
 			'gravityview::entry_management_runtime::gravityforms_entry_list:approval' => array( 30, 'f3c4f0b31e54a7ed5aa394564ca2adc95e73a1e83f534255852b2499826f14fd', 'b65f045623216d99908a615582f163dea443d00d31b8a74f66bf84f388f2609f', '150d51ca872546983882f3da7977e5ad0071172d3ef589a1cffa73ea9ad8aa3b' ),
@@ -78,7 +80,7 @@ final class GravityViewContentAdmissionTest extends TestCase {
 			'gravityview::settings_integrations::foundation_settings:gravityview' => array( 41, 'ab0c4e24c80a7c4f82847953994a87f344f4d71ab9effce686ca86949ddcaa93', 'e5e5b2230a92eedb9c528cfe4c757ecc11e287f2e6852594fb1188e35a5f9f6b', '4b4bcfdf4926fd9a286a365690e671cce956c2ce5f0b55534d0447e77c5fdb2c' ),
 		);
 		$actual = array();
-		foreach ( $admissions as $record ) {
+		foreach ( $surfaces as $record ) {
 			$actual[ $record['surface_id'] ] = array(
 				$record['admitted_message_count'],
 				$record['admitted_keyset_sha256'],
@@ -87,12 +89,24 @@ final class GravityViewContentAdmissionTest extends TestCase {
 			);
 		}
 
-		$this->assertCount( 6, $admissions );
+		$this->assertCount( 7, $admissions );
+		$this->assertCount( 6, $surfaces );
+		$this->assertCount( 1, $remainders );
 		$this->assertSame( $expected, $actual );
 		$this->assertSame( 467, array_sum( array_column( $actual, 0 ) ) );
-		$this->assertSame( 461, $aggregate['admitted_message_count'] );
-		$this->assertSame( 'f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643', $aggregate['admitted_keyset_sha256'] );
-		$this->assertSame( '2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb', $aggregate['admitted_translation_content_sha256'] );
+
+		$remainder = $remainders[0];
+		$this->assertSame( 461, $remainder['preexisting_accepted_message_count'] );
+		$this->assertSame( 'f5451db1aad8e945dd50c18bdb703825d4f2a57b36d5feb6a4dba23e65f7d643', $remainder['preexisting_accepted_keyset_sha256'] );
+		$this->assertSame( '2aad82335f66963db669cd32e675c7286c5c57b233a45e946b92bdfac82a03fb', $remainder['preexisting_accepted_translation_content_sha256'] );
+		$this->assertSame( 2666, $remainder['admitted_message_count'] );
+		$this->assertSame( 3127, $remainder['canonical_message_count'] );
+		$this->assertSame( '3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95', $remainder['canonical_keyset_sha256'] );
+
+		$this->assertSame( 'CONTENT_ADMITTED_FULL', $content['gravityview']['content_state'] );
+		$this->assertSame( 3, $content['gravityview']['content_admission_revision'] );
+		$this->assertSame( 3127, $aggregate['admitted_message_count'] );
+		$this->assertSame( '3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95', $aggregate['admitted_keyset_sha256'] );
 		$this->assertSame( 'languages/providers/gravityview/source/fa_IR.po', $aggregate['provider_source_path'] );
 		$this->assertSame( $aggregate['provider_source_sha256'], hash_file( 'sha256', $root . '/' . $aggregate['provider_source_path'] ) );
 		$this->assertSame( array(), $products['gk-gravityview']['scripts'] );
@@ -102,20 +116,25 @@ final class GravityViewContentAdmissionTest extends TestCase {
 		$this->assertSame( array(), glob( $root . '/languages/providers/gravityview/gravityview-fa_IR-*.json' ) ?: array() );
 	}
 
-	public function test_non_admitted_gravityview_identity_and_dependency_domain_remain_outside_provider_authority(): void {
+	public function test_former_residual_identity_is_admitted_while_out_of_census_and_dependency_domains_remain_outside(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
 		$content  = pgr_validate_content_admission( $root, $source, $products );
-		$record   = $this->recordForSurface( $content['gravityview']['admissions'] );
-		$provider = pgr_content_load_sparse_po( $root . '/' . $record['provider_source_path'], 'gk-gravityview', 'fa_IR' );
+		$provider = pgr_content_load_sparse_po(
+			$root . '/languages/providers/gravityview/source/fa_IR.po',
+			'gk-gravityview',
+			'fa_IR'
+		);
+		$formerly_residual = hash( 'sha256', "\x1fAPI Key\x1f" );
+		$out_of_census     = hash( 'sha256', "\x1fPersianGravity GravityView out-of-census fallback probe.\x1f" );
 
-		$this->assertContains( '3fe848f1b629acdcb7bfd703d8a9787cf579eabb1fc3db0c1ba7bae368ed86de', $provider['ids'] );
-		$this->assertContains( '8d69b8871a337eb30ca4da453d62b8fbae894f7859cbdae3129485f8ded2588c', $provider['ids'] );
-		$this->assertNotContains( '1b166b56b6ad41dc0be4659392124a92ad489331fe6c8283d8998fc895809d4a', $provider['ids'] );
-		$this->assertSame( 2, count( $provider['ids'] ) );
+		$this->assertContains( $formerly_residual, $provider['ids'], true );
+		$this->assertNotContains( $out_of_census, $provider['ids'], true );
+		$this->assertCount( 3127, $provider['ids'] );
 		$this->assertFalse( $source['gravityview']['domain_boundaries']['gk-query-filters']['runtime_manifested_by_persiangravity'] );
 		$this->assertSame( 'BOUNDED_DEPENDENCY_DOMAIN_BOUNDARY_NOT_MERGED_NOT_RUNTIME_ACTIVATED', $source['gravityview']['domain_boundaries']['gk-query-filters']['decision'] );
+		$this->assertSame( 'EXCLUDED_FROM_GRAVITYVIEW_PROVIDER_BOUNDARY', $source['gravityview']['domain_boundaries']['action-scheduler']['decision'] );
 	}
 
 	public function test_vendor_pot_null_is_accepted_only_when_the_validated_source_record_is_also_null(): void {
