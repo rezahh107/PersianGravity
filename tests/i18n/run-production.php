@@ -117,6 +117,31 @@ try {
 		}
 	}
 
+	// Core checks singular\0plural before its singular-key fallback. Prove a later
+	// upstream PHP catalog cannot bypass the provider on that exact plural lookup.
+	$gravityview_case = $cases['gk-gravityview'];
+	$provider_plural_catalog = require $provider_root . '/gravityview/gravityview-fa_IR.l10n.php';
+	$provider_plural_forms   = explode( "\0", $provider_plural_catalog['messages']['%d more result'] );
+	production_check( 2 === count( $provider_plural_forms ), 'gravityview provider plural fixture is complete' );
+
+	$upstream_plural_path = $gravityview_case['upstream_base'] . '.l10n.php';
+	$upstream_plural      = require $upstream_plural_path;
+	$upstream_plural['messages'][ "%d more result\0%d more results" ] = "UPSTREAM_PLURAL_ONE\0UPSTREAM_PLURAL_MANY";
+	file_put_contents(
+		$upstream_plural_path,
+		"<?php\nreturn " . var_export( $upstream_plural, true ) . ";\n"
+	);
+	reset_domain( 'gk-gravityview' );
+	$GLOBALS['wp_textdomain_registry']->set_custom_path( 'gk-gravityview', $gravityview_case['upstream_dir'] );
+	production_check(
+		_n( '%d more result', '%d more results', 1, 'gk-gravityview' ) === $provider_plural_forms[0],
+		'gravityview PHP provider wins exact plural collision for singular form'
+	);
+	production_check(
+		_n( '%d more result', '%d more results', 2, 'gk-gravityview' ) === $provider_plural_forms[1],
+		'gravityview PHP provider wins exact plural collision for plural form'
+	);
+
 	foreach ( $cases as $source_domain => $source_case ) {
 		foreach ( $cases as $target_domain => $target_case ) {
 			if ( $source_domain === $target_domain ) {
