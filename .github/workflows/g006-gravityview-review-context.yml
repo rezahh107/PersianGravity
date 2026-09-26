@@ -1,0 +1,107 @@
+name: G-006 GravityView review context
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-review-context.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download locked residual
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+
+      - name: Download exact GravityView 3.3.4 package
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet gdown==5.2.0
+          mkdir -p /tmp/g006/package /tmp/g006/src
+          gdown 16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1 -O /tmp/g006/package/gravityview.zip
+          echo 'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829  /tmp/g006/package/gravityview.zip' | sha256sum -c -
+          unzip -q /tmp/g006/package/gravityview.zip -d /tmp/g006/src
+          gv_root="$(find /tmp/g006/src -type f -path '*/gravityview.php' -printf '%h\n' | head -1)"
+          test -n "$gv_root"
+          grep -Eq '^ \* Version:[[:space:]]*3\.3\.4[[:space:]]*$' "$gv_root/gravityview.php"
+          printf '%s\n' "$gv_root" > /tmp/g006/root.txt
+
+      - name: Extract bounded source context
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+
+          root=Path('/tmp/g006/root.txt').read_text().strip()
+          root=Path(root)
+          data=json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          ref_re=re.compile(r'^(.*):(\d+)$')
+          out=[]
+
+          for entry in data['entries']:
+              contexts=[]
+              for ref in entry.get('references',[]):
+                  m=ref_re.match(ref)
+                  if not m:
+                      contexts.append({'reference':ref,'status':'UNPARSED_REFERENCE','snippet':[]})
+                      continue
+                  rel,line=m.group(1),int(m.group(2))
+                  path=(root/rel).resolve()
+                  try:
+                      path.relative_to(root.resolve())
+                  except ValueError:
+                      raise RuntimeError(f'path escapes package root: {rel}')
+                  if not path.is_file():
+                      contexts.append({'reference':ref,'status':'MISSING_FILE','snippet':[]})
+                      continue
+                  lines=path.read_text(errors='replace').splitlines()
+                  start=max(1,line-5); end=min(len(lines),line+5)
+                  snippet=[{'line':n,'text':lines[n-1]} for n in range(start,end+1)]
+                  contexts.append({'reference':ref,'status':'OK','snippet':snippet})
+              out.append({
+                  'identity':entry['identity'],
+                  'msgctxt':entry.get('msgctxt'),
+                  'msgid':entry['msgid'],
+                  'msgid_plural':entry.get('msgid_plural'),
+                  'contexts':contexts,
+              })
+
+          assert len(out)==2666
+          ok=sum(1 for e in out for c in e['contexts'] if c['status']=='OK')
+          bad=[(e['identity'],c['reference'],c['status']) for e in out for c in e['contexts'] if c['status']!='OK']
+          payload={
+              'schema_version':1,
+              'product':'gravityview',
+              'target_version':'3.3.4',
+              'package_sha256':'af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829',
+              'entry_count':len(out),
+              'ok_context_count':ok,
+              'unresolved_context_count':len(bad),
+              'unresolved_contexts':bad,
+              'entries':out,
+          }
+          Path('/tmp/g006/out/review-context.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n')
+          print(f'context_entries={len(out)} ok_contexts={ok} unresolved={len(bad)}')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-review-context
+          path: /tmp/g006/out/review-context.json
+          if-no-files-found: error
+          retention-days: 7
