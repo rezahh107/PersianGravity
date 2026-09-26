@@ -62,12 +62,6 @@ jobs:
       WU008_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
       WU008_GF_VERSION: 3.1.1.1
 
-      WU008_FLOW_FILE_ID: 1Y90nvrxEEfVZqpmxXkQvwJfw4pvKCoPf
-      WU008_FLOW_FILE: gravityflow-3.1.0-owner-supplied-source-package.zip
-      WU008_FLOW_SIZE: '2603034'
-      WU008_FLOW_SHA256: ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404
-      WU008_FLOW_VERSION: 3.1.0
-
       WU008_VIEW_FILE_ID: 16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1
       WU008_VIEW_FILE: gravityview-3.3.4-source-package.zip
       WU008_VIEW_SIZE: '7569755'
@@ -123,6 +117,12 @@ jobs:
           extensions: mysqli
           tools: composer:2.8.12
 
+      - name: Load canonical Gravity Flow package authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tools/compatibility/gravityflow-package.php env WU008_FLOW >> "$GITHUB_ENV"
+
       - name: Validate harness and repository invariants
         shell: bash
         run: |
@@ -130,6 +130,7 @@ jobs:
           test "$(php -r 'echo PHP_VERSION;')" = "8.2.34"
           composer validate --strict
           bash -n tests/real-integration/verify-package.sh
+          php -l tools/compatibility/gravityflow-package.php
           php -l tests/real-integration/setup-runtime.php
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
@@ -274,7 +275,7 @@ jobs:
           set -euo pipefail
           evidence="$WU008_ARTIFACT_DIR/package-verification.jsonl"
           tests/real-integration/verify-package.sh "Gravity Forms" "$WU008_GF_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_GF_FILE" "$WU008_GF_FILE" "$WU008_GF_SIZE" "$WU008_GF_SHA256" "gravityforms/gravityforms.php" "$WU008_GF_VERSION" "$evidence"
-          tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "gravityflow/gravityflow.php" "$WU008_FLOW_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Flow" "$WU008_FLOW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FLOW_FILE" "$WU008_FLOW_FILE" "$WU008_FLOW_SIZE" "$WU008_FLOW_SHA256" "$WU008_FLOW_MAIN_FILE" "$WU008_FLOW_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "GravityView" "$WU008_VIEW_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_VIEW_FILE" "$WU008_VIEW_FILE" "$WU008_VIEW_SIZE" "$WU008_VIEW_SHA256" "gravityview/gravityview.php" "$WU008_VIEW_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "Gravity Perks" "$WU008_PERKS_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_PERKS_FILE" "$WU008_PERKS_FILE" "$WU008_PERKS_SIZE" "$WU008_PERKS_SHA256" "gravityperks/gravityperks.php" "$WU008_PERKS_VERSION" "$evidence"
           tests/real-integration/verify-package.sh "GP File Upload Pro" "$WU008_FUP_FILE_ID" "$WU008_PACKAGE_DIR/$WU008_FUP_FILE" "$WU008_FUP_FILE" "$WU008_FUP_SIZE" "$WU008_FUP_SHA256" "gp-file-upload-pro/gp-file-upload-pro.php" "$WU008_FUP_VERSION" "$evidence"
