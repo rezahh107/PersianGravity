@@ -64,8 +64,16 @@ final class GravityFlowPackageAuthorityTest extends TestCase {
 				$data['sha256'] = strtoupper( self::SHA256 );
 				return $data;
 			},
-			'wrong plugin main file' => static function ( array $data ): array {
-				$data['plugin_main_file'] = 'gravityflow/plugin.php';
+			'unsafe plugin main file' => static function ( array $data ): array {
+				$data['plugin_main_file'] = '../gravityflow.php';
+				return $data;
+			},
+			'wrong plugin root' => static function ( array $data ): array {
+				$data['plugin_main_file'] = 'other-product/gravityflow.php';
+				return $data;
+			},
+			'non-PHP plugin main file' => static function ( array $data ): array {
+				$data['plugin_main_file'] = 'gravityflow/gravityflow.txt';
 				return $data;
 			},
 		);
@@ -88,12 +96,12 @@ final class GravityFlowPackageAuthorityTest extends TestCase {
 
 	public function test_active_workflows_resolve_gravity_flow_package_from_canonical_authority(): void {
 		$root      = dirname( __DIR__ );
-		$workflows = array(
+		$consumers = array(
 			'.github/workflows/g006-gravityforms-runtime.yml' => 'G006_GF_FLOW',
 			'.github/workflows/wu008-real-integration.yml'   => 'WU008_FLOW',
 		);
 
-		foreach ( $workflows as $relative_path => $prefix ) {
+		foreach ( $consumers as $relative_path => $prefix ) {
 			$content = file_get_contents( $root . '/' . $relative_path );
 			$this->assertNotFalse( $content );
 			$this->assertStringContainsString(
@@ -101,14 +109,26 @@ final class GravityFlowPackageAuthorityTest extends TestCase {
 				$content,
 				$relative_path
 			);
+		}
+
+		$workflow_paths = array_merge(
+			glob( $root . '/.github/workflows/*.yml' ) ?: array(),
+			glob( $root . '/.github/workflows/*.yaml' ) ?: array()
+		);
+		$this->assertNotEmpty( $workflow_paths );
+
+		foreach ( $workflow_paths as $workflow_path ) {
+			$content = file_get_contents( $workflow_path );
+			$this->assertNotFalse( $content );
+			$relative_path = str_replace( $root . '/', '', $workflow_path );
+
 			$this->assertStringNotContainsString( self::FILE_ID, $content, $relative_path );
 			$this->assertStringNotContainsString( self::FILENAME, $content, $relative_path );
-			$this->assertStringNotContainsString( (string) self::BYTES, $content, $relative_path );
 			$this->assertStringNotContainsString( self::SHA256, $content, $relative_path );
 			$this->assertSame(
 				0,
-				preg_match( '/^\s*' . preg_quote( $prefix, '/' ) . '_(?:FILE_ID|FILE|SIZE|SHA256|VERSION|MAIN_FILE):/m', $content ),
-				$relative_path . ' must not own Gravity Flow package env literals.'
+				preg_match( '/^\s*[A-Z0-9_]*FLOW_(?:FILE_ID|FILE|SIZE|SHA256|VERSION|MAIN_FILE):\s*/m', $content ),
+				$relative_path . ' must not own an active Gravity Flow package authority.'
 			);
 		}
 
