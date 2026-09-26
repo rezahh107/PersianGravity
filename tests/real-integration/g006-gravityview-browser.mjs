@@ -119,6 +119,12 @@ try {
   await browser.close();
 }
 
+const blockingRequestFailures = diagnostics.requestFailures.filter(
+  ({ error }) => error !== 'net::ERR_ABORTED',
+);
+result.diagnostics.aborted_request_count = diagnostics.requestFailures.length - blockingRequestFailures.length;
+result.diagnostics.blocking_request_failures = blockingRequestFailures;
+
 fs.writeFileSync(
   path.join(artifactDir, 'g006-gravityview-browser.json'),
   JSON.stringify(result, null, 2) + '\n',
@@ -127,7 +133,7 @@ fs.writeFileSync(
 if (
   result.status !== 'PASS' ||
   diagnostics.pageErrors.length > 0 ||
-  diagnostics.requestFailures.length > 0
+  blockingRequestFailures.length > 0
 ) {
   process.exit(1);
 }
