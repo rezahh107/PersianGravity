@@ -1,0 +1,201 @@
+name: G-006 GravityView full-context Google draft
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-google-full-context.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked census
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+
+      - name: Translate full-context entry shard
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: '6'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re, time, urllib.parse, urllib.request
+          from pathlib import Path
+
+          data=json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          entries=data['entries']
+          part=int(os.environ['PART']); parts=int(os.environ['PARTS'])
+
+          token_re=re.compile(
+              r'https?://[^\s<>"\']+'
+              r'|%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]'
+              r'|\$\{[^{}\r\n]+\}|\{[^{}\r\n]+\}'
+              r'|</?[A-Za-z][^>]*>'
+              r'|&#(?:\d+|x[0-9A-Fa-f]+);'
+              r'|\[[A-Za-z][^\]\r\n]*\]'
+              r'|\b(?:Gravity Forms|GravityView|GravityKit(?:\.com)?|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|REST|API|URLs?|AJAX|OAuth1?|SMTP|HTTPS?|UTC|UID|SVG|CSV|Cloudflare)\b'
+              r'|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b'
+              r'|\b(?:GET|POST|PATCH|PUT|DELETE)\s+/[A-Za-z0-9_{}./?&=:+-]+'
+          )
+
+          def mask(text):
+              tokens=[]
+              def repl(m):
+                  idx=len(tokens); tokens.append(m.group(0))
+                  return f'PGRSAFE{idx:03d}TOKEN'
+              return token_re.sub(repl,text),tokens
+
+          def restore(text,tokens):
+              out=text
+              for idx,token in enumerate(tokens):
+                  marker=f'PGRSAFE{idx:03d}TOKEN'
+                  match=re.search(re.escape(marker),out,re.I)
+                  if match is None:
+                      compact=re.compile(r'PGRSAFE\s*'+str(idx).zfill(3)+r'\s*TOKEN',re.I)
+                      match=compact.search(out)
+                  if match is None:
+                      raise RuntimeError(f'missing protected marker {marker!r} in translated text {out!r}')
+                  out=out[:match.start()]+token+out[match.end():]
+              if re.search(r'PGRSAFE\s*\d+\s*TOKEN',out,re.I):
+                  raise RuntimeError('unrestored marker remains')
+              return out
+
+          def request_translation(text):
+              masked,tokens=mask(text)
+              url='https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fa&dt=t&q='+urllib.parse.quote(masked)
+              last=None
+              for attempt in range(12):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+                      with urllib.request.urlopen(req,timeout=30) as resp:
+                          payload=json.loads(resp.read().decode('utf-8'))
+                      translated=''.join(chunk[0] for chunk in payload[0] if chunk and chunk[0]).strip()
+                      if not translated: raise RuntimeError('empty translation')
+                      return restore(translated,tokens)
+                  except Exception as exc:
+                      last=exc
+                      time.sleep(min(25,2+attempt*2))
+              raise RuntimeError(f'translation failed: {last}')
+
+          targets=[(idx,e) for idx,e in enumerate(entries) if idx%parts==part]
+          output={}
+          print(f'part={part} entries={len(targets)}',flush=True)
+          for n,(idx,e) in enumerate(targets,1):
+              vals=[request_translation(e['msgid'])]
+              if e.get('msgid_plural') is not None:
+                  vals.append(request_translation(e['msgid_plural']))
+              output[str(idx)]=vals
+              time.sleep(0.08)
+              if n%75==0: print(f'part={part} done={n}/{len(targets)}',flush=True)
+
+          Path(f'/tmp/g006/full-context-{part}.json').write_text(json.dumps({
+             'part':part,'parts':parts,'entry_count':len(entries),'translations':output
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-full-context-${{ matrix.part }}
+          path: /tmp/g006/full-context-${{ matrix.part }}.json
+          if-no-files-found: error
+          retention-days: 7
+
+  merge:
+    needs: translate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download locked census
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+      - name: Download full-context shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: g006-full-context-*
+          path: /tmp/g006/chunks
+          merge-multiple: true
+      - name: Merge draft and exact historical translation memory
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet polib==1.2.0
+          curl -fsSL \
+            'https://raw.githubusercontent.com/OscarCampohermoso/Proyectos-Web-PHP-MariaDB/f07be38488f3ec64f3ce1e80e00444e2aedb7b56/htdocs-xampp/wordpress/wp-content/plugins/gravityview/languages/gravityview-fa_IR.po' \
+            -o /tmp/g006/out/historical.po
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          import polib
+          US='\x1f'
+          data=json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          entries=data['entries']
+          translated={}
+          for p in sorted(Path('/tmp/g006/chunks').glob('full-context-*.json')):
+              shard=json.loads(p.read_text())
+              assert shard['entry_count']==len(entries)
+              for k,v in shard['translations'].items():
+                  if k in translated: raise RuntimeError('duplicate entry')
+                  translated[k]=v
+          assert len(translated)==len(entries),(len(translated),len(entries))
+
+          memory={}
+          for entry in polib.pofile('/tmp/g006/out/historical.po'):
+              if not entry.msgid or 'fuzzy' in entry.flags: continue
+              vals=list(entry.msgstr_plural.values()) if entry.msgid_plural else [entry.msgstr]
+              if not vals or not all(isinstance(v,str) and v.strip() for v in vals): continue
+              ident=hashlib.sha256(((entry.msgctxt or '')+US+entry.msgid+US+(entry.msgid_plural or '')).encode()).hexdigest()
+              memory[ident]=vals
+
+          drafts=[]; hits=0
+          for idx,e in enumerate(entries):
+              vals=translated[str(idx)]
+              src='GOOGLE_FULL_CONTEXT_DRAFT'
+              if e['identity'] in memory and len(memory[e['identity']])==len(vals):
+                  vals=memory[e['identity']]
+                  src='HISTORICAL_EXACT_IDENTITY'
+                  hits+=1
+              expected=2 if e.get('msgid_plural') is not None else 1
+              assert len(vals)==expected and all(isinstance(v,str) and v.strip() for v in vals)
+              drafts.append({
+                'identity':e['identity'],'msgctxt':e.get('msgctxt'),'msgid':e['msgid'],
+                'msgid_plural':e.get('msgid_plural'),'references':e.get('references',[]),
+                'draft_msgstr':vals,'draft_source':src
+              })
+          print('historical_exact_identity_hits='+str(hits))
+          Path('/tmp/g006/out/draft-full-context.json').write_text(json.dumps({
+            'schema_version':1,'engine':'Google gtx full-context with protected-token masking',
+            'status':'DRAFT_ONLY_NOT_ACCEPTED','count':2666,'entries':drafts
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-full-context-review-input
+          path: |
+            /tmp/g006/out/residual.json
+            /tmp/g006/out/accepted.json
+            /tmp/g006/out/draft-full-context.json
+          if-no-files-found: error
+          retention-days: 7
