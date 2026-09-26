@@ -218,6 +218,93 @@ final class ContentAdmissionGeneralizationTest extends TestCase {
 		$this->assertSame( $first['alpha']['aggregate']['admitted_translation_content_sha256'], $second['alpha']['aggregate']['admitted_translation_content_sha256'] );
 	}
 
+	public function test_canonical_source_keyset_hash_method_is_explicit_and_fail_closed(): void {
+		$ids = array(
+			hash( 'sha256', 'second' ),
+			hash( 'sha256', 'first' ),
+		);
+		$sorted = $ids;
+		sort( $sorted, SORT_STRING );
+
+		$this->assertSame(
+			hash( 'sha256', implode( "\n", $sorted ) ),
+			pgr_content_source_keyset_hash_with_method(
+				$ids,
+				'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE'
+			)
+		);
+		$this->assertSame(
+			hash( 'sha256', implode( "\n", $sorted ) . "\n" ),
+			pgr_content_source_keyset_hash_with_method(
+				$ids,
+				'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_WITH_TRAILING_NEWLINE'
+			)
+		);
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Unsupported canonical source keyset hash method' );
+		pgr_content_source_keyset_hash_with_method( $ids, 'UNSUPPORTED' );
+	}
+
+	public function test_gettext_runtime_projection_preserves_colliding_source_authority(): void {
+		$singular_id = hash( 'sha256', "\x1f+[count] action\x1f" );
+		$plural_id   = hash( 'sha256', "\x1f+[count] action\x1f+[count] actions" );
+		$provider    = array(
+			'ids'                => array( $plural_id ),
+			'translation_rows'   => array( $plural_id => $plural_id . "\x1f+[count] عملیات\x00+[count] عملیات" ),
+			'translation_values' => array( $plural_id => array( '+[count] عملیات', '+[count] عملیات' ) ),
+			'runtime_keys'       => array( $plural_id => '+[count] action' ),
+		);
+		$source = array(
+			$singular_id => array( 'msgctxt' => null, 'msgid' => '+[count] action', 'msgid_plural' => null ),
+			$plural_id   => array( 'msgctxt' => null, 'msgid' => '+[count] action', 'msgid_plural' => '+[count] actions' ),
+		);
+		$projection = array(
+			'schema_version'      => 1,
+			'runtime_entry_count' => 1,
+			'source_aliases'      => array(
+				array(
+					'source_identity'         => $singular_id,
+					'provider_identity'       => $plural_id,
+					'translation_form_index' => 0,
+				),
+			),
+		);
+
+		$result = pgr_content_apply_runtime_projection( $source, $provider, $projection, true );
+
+		$this->assertCount( 2, $result['translation_rows'] );
+		$this->assertSame( 1, $result['runtime_entry_count'] );
+		$this->assertSame( array( $singular_id => $plural_id ), $result['aliases'] );
+		$this->assertSame( $singular_id . "\x1f+[count] عملیات", $result['translation_rows'][ $singular_id ] );
+	}
+
+	public function test_gettext_runtime_projection_rejects_non_matching_runtime_keys(): void {
+		$singular_id = hash( 'sha256', "\x1fSingular\x1f" );
+		$plural_id   = hash( 'sha256', "\x1fDifferent\x1fPlural" );
+		$provider    = array(
+			'ids'                => array( $plural_id ),
+			'translation_rows'   => array( $plural_id => $plural_id . "\x1fترجمه\x00ترجمه‌ها" ),
+			'translation_values' => array( $plural_id => array( 'ترجمه', 'ترجمه‌ها' ) ),
+			'runtime_keys'       => array( $plural_id => 'Different' ),
+		);
+		$source = array(
+			$singular_id => array( 'msgctxt' => null, 'msgid' => 'Singular', 'msgid_plural' => null ),
+			$plural_id   => array( 'msgctxt' => null, 'msgid' => 'Different', 'msgid_plural' => 'Plural' ),
+		);
+		$projection = array(
+			'schema_version'      => 1,
+			'runtime_entry_count' => 1,
+			'source_aliases'      => array(
+				array( 'source_identity' => $singular_id, 'provider_identity' => $plural_id, 'translation_form_index' => 0 ),
+			),
+		);
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'not an exact singular-to-plural runtime-key collision' );
+		pgr_content_apply_runtime_projection( $source, $provider, $projection, true );
+	}
+
 	public function test_remainder_provider_protected_literal_drift_fails_closed(): void {
 		$root = sys_get_temp_dir() . '/pgr-protected-literal-' . bin2hex( random_bytes( 8 ) );
 		$this->roots[] = $root;

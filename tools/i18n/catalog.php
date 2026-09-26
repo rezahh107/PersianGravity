@@ -32,7 +32,14 @@ function pgr_compile_catalog(string $po, string $domain): array {
         }
         ++$counts['translated'];
         $key = ($entry->getContext() !== null && $entry->getContext() !== '' ? $entry->getContext() . "\x04" : '') . $entry->getOriginal();
-        $messages[$key] = implode("\0", $values);
+        $translation = implode("\0", $values);
+        $messages[$key] = $translation;
+        if ($entry->getPlural() !== null) {
+            // WordPress checks the exact singular\0plural key before its singular-key fallback.
+            // Keep both keys so this provider-first overlay cannot be bypassed by an upstream
+            // PHP catalog that answers the exact plural lookup first.
+            $messages[$key . "\0" . $entry->getPlural()] = $translation;
+        }
         $jed[$key] = $values;
     }
     ksort($messages, SORT_STRING);

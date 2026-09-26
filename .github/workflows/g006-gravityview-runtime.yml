@@ -1,0 +1,190 @@
+name: G006 GravityView Runtime
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/g006-gravityview-runtime.yml'
+      - 'languages/providers/gravityview/**'
+      - 'includes/localization/**'
+      - 'tools/i18n/**'
+      - 'tools/release/**'
+      - 'tests/real-integration/g006-gravityview-runtime.php'
+      - 'tests/real-integration/g006-gravityview-browser.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-runtime:
+    name: Exact GravityView 3.3.4 full authority
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      database:
+        image: mariadb:11.4.8@sha256:bc474f00629f0123c10f9e1bca193a45d18af15a274cf0656acda64f1086c3b6
+        env:
+          MARIADB_ROOT_PASSWORD: g006-gv-root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -pg006-gv-root --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      G006_GV_WP_PATH: /tmp/g006-gv-wordpress
+      G006_GV_PACKAGE_DIR: /tmp/g006-gv-packages
+      G006_GV_ARTIFACT_DIR: /tmp/g006-gv-artifacts
+      G006_GV_WP_CLI: /tmp/wp-cli.phar
+      G006_GV_BASE_URL: http://127.0.0.1:8080
+      G006_GV_ADMIN_USER: runtime_admin
+      G006_GV_ADMIN_PASSWORD: g006-gv-runtime-only
+
+      G006_GV_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
+      G006_GV_GF_FILE: gravityforms-3.1.1.1-source-package.zip
+      G006_GV_GF_SIZE: '5300290'
+      G006_GV_GF_SHA256: 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b
+      G006_GV_GF_VERSION: 3.1.1.1
+
+      G006_GV_VIEW_FILE_ID: 16gDLYvZyA0SYvNl44d2O1n5C9nxFbkm1
+      G006_GV_VIEW_FILE: gravityview-3.3.4-source-package.zip
+      G006_GV_VIEW_SIZE: '7569755'
+      G006_GV_VIEW_SHA256: af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829
+      G006_GV_VIEW_VERSION: 3.3.4
+
+    steps:
+      - name: Checkout exact PR Head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up exact PHP runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.2.34'
+          coverage: none
+          extensions: mysqli
+          tools: composer:2.8.12
+
+      - name: Validate harness and repository boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          test "$(git rev-parse HEAD)" = "$expected"
+          printf 'G006_PGR_SHA=%s\n' "$expected" >> "$GITHUB_ENV"
+          composer validate --strict
+          bash -n tests/real-integration/verify-package.sh
+          php -l tests/real-integration/g006-gravityview-runtime.php
+          node --check tests/real-integration/g006-gravityview-browser.mjs
+          test -z "$(git ls-files '*.zip')"
+          expected_pgr_version="$(php tools/release/release-tool.php current)"
+          test -n "$expected_pgr_version"
+          printf 'G006_PGR_EXPECTED_VERSION=%s\n' "$expected_pgr_version" >> "$GITHUB_ENV"
+          mkdir -p "$G006_GV_WP_PATH" "$G006_GV_PACKAGE_DIR" "$G006_GV_ARTIFACT_DIR"
+
+      - name: Install disposable WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$G006_GV_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $G006_GV_WP_CLI" | sha256sum -c -
+          php "$G006_GV_WP_CLI" core download --path="$G006_GV_WP_PATH" --version=6.8.3 --force
+          php "$G006_GV_WP_CLI" config create --path="$G006_GV_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=g006-gv-root --dbhost=127.0.0.1:3306 --skip-check
+          php "$G006_GV_WP_CLI" core install --path="$G006_GV_WP_PATH" --url="$G006_GV_BASE_URL" --title='G006 GravityView Runtime' --admin_user="$G006_GV_ADMIN_USER" --admin_password="$G006_GV_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$G006_GV_WP_CLI" option update home "$G006_GV_BASE_URL" --path="$G006_GV_WP_PATH"
+          php "$G006_GV_WP_CLI" option update siteurl "$G006_GV_BASE_URL" --path="$G006_GV_WP_PATH"
+          test "$(php "$G006_GV_WP_CLI" option get home --path="$G006_GV_WP_PATH")" = "$G006_GV_BASE_URL"
+          test "$(php "$G006_GV_WP_CLI" option get siteurl --path="$G006_GV_WP_PATH")" = "$G006_GV_BASE_URL"
+          test -n "$(php "$G006_GV_WP_CLI" theme list --status=active --field=name --path="$G006_GV_WP_PATH")"
+          php "$G006_GV_WP_CLI" language core install fa_IR --activate --path="$G006_GV_WP_PATH"
+          test "$(php "$G006_GV_WP_CLI" option get WPLANG --path="$G006_GV_WP_PATH")" = "fa_IR"
+
+      - name: Download and verify exact licensed packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          download() {
+            curl -L --fail --retry 4 --retry-delay 2 --retry-max-time 60 --retry-connrefused --connect-timeout 20 --max-time 180 -o "$2" "https://drive.usercontent.google.com/download?id=$1&export=download&confirm=t"
+          }
+          download "$G006_GV_GF_FILE_ID" "$G006_GV_PACKAGE_DIR/$G006_GV_GF_FILE"
+          download "$G006_GV_VIEW_FILE_ID" "$G006_GV_PACKAGE_DIR/$G006_GV_VIEW_FILE"
+
+          evidence="$G006_GV_ARTIFACT_DIR/package-verification.jsonl"
+          : > "$evidence"
+          tests/real-integration/verify-package.sh "Gravity Forms" "$G006_GV_GF_FILE_ID" "$G006_GV_PACKAGE_DIR/$G006_GV_GF_FILE" "$G006_GV_GF_FILE" "$G006_GV_GF_SIZE" "$G006_GV_GF_SHA256" "gravityforms/gravityforms.php" "$G006_GV_GF_VERSION" "$evidence"
+          tests/real-integration/verify-package.sh "GravityView" "$G006_GV_VIEW_FILE_ID" "$G006_GV_PACKAGE_DIR/$G006_GV_VIEW_FILE" "$G006_GV_VIEW_FILE" "$G006_GV_VIEW_SIZE" "$G006_GV_VIEW_SHA256" "gravityview/gravityview.php" "$G006_GV_VIEW_VERSION" "$evidence"
+          test "$(wc -l < "$evidence")" -eq 2
+
+          unzip -q "$G006_GV_PACKAGE_DIR/$G006_GV_GF_FILE" -d "$G006_GV_WP_PATH/wp-content/plugins"
+          unzip -q "$G006_GV_PACKAGE_DIR/$G006_GV_VIEW_FILE" -d "$G006_GV_WP_PATH/wp-content/plugins"
+
+      - name: Install exact Head and execute full-census runtime assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          pgr="$G006_GV_WP_PATH/wp-content/plugins/persian-gravityforms"
+          mkdir -p "$pgr"
+          tar --exclude=.git -cf - . | tar -xf - -C "$pgr"
+          php "$G006_GV_WP_CLI" plugin activate persian-gravityforms gravityforms gravityview --path="$G006_GV_WP_PATH"
+          test "$(php "$G006_GV_WP_CLI" plugin get gravityforms --field=version --path="$G006_GV_WP_PATH")" = "$G006_GV_GF_VERSION"
+          test "$(php "$G006_GV_WP_CLI" plugin get gravityview --field=version --path="$G006_GV_WP_PATH")" = "$G006_GV_VIEW_VERSION"
+          test "$(php "$G006_GV_WP_CLI" plugin get persian-gravityforms --field=version --path="$G006_GV_WP_PATH")" = "$G006_PGR_EXPECTED_VERSION"
+          G006_GV_ARTIFACT_DIR="$G006_GV_ARTIFACT_DIR" G006_PGR_EXPECTED_VERSION="$G006_PGR_EXPECTED_VERSION" \
+            php "$G006_GV_WP_CLI" --path="$G006_GV_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g006-gravityview-runtime.php"
+          test -s "$G006_GV_ARTIFACT_DIR/g006-gravityview-runtime.json"
+
+      - name: Set up exact browser runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.19.0'
+
+      - name: Install exact Playwright and Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22.19.0"
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+          node -e "const p=require('playwright/package.json'); if(p.version!=='1.55.0') process.exit(1);"
+
+      - name: Start disposable WordPress HTTP server
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$G006_GV_WP_CLI" server --path="$G006_GV_WP_PATH" --host=127.0.0.1 --port=8080 >"$G006_GV_ARTIFACT_DIR/wp-server.log" 2>&1 &
+          echo $! > /tmp/g006-gv-wp-server.pid
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$G006_GV_BASE_URL/" >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$G006_GV_ARTIFACT_DIR/wp-server.log" >&2
+          exit 1
+
+      - name: Execute representative real GravityView browser assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          G006_GV_ARTIFACT_DIR="$G006_GV_ARTIFACT_DIR" \
+          G006_GV_BASE_URL="$G006_GV_BASE_URL" \
+          G006_GV_ADMIN_USER="$G006_GV_ADMIN_USER" \
+          G006_GV_ADMIN_PASSWORD="$G006_GV_ADMIN_PASSWORD" \
+          G006_PGR_SHA="$G006_PGR_SHA" \
+            node tests/real-integration/g006-gravityview-browser.mjs
+          test -s "$G006_GV_ARTIFACT_DIR/g006-gravityview-browser.json"
+
+      - name: Upload bounded runtime evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g006-gravityview-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/g006-gv-artifacts
+          if-no-files-found: ignore
+          retention-days: 30

@@ -176,7 +176,7 @@
     "validated_script_handles": [],
     "artifact_sha256": {
         "gravityforms-fa_IR.mo": "bf3a700e212b34d76884cfcd7ca2b10ad81d2e2d68dc2d284c7539741b4b0589",
-        "gravityforms-fa_IR.l10n.php": "55101f33a4828bab152ce4b6cedb2412da797471e8def4a0ed4bffb3ac083b53"
+        "gravityforms-fa_IR.l10n.php": "4048d130479ea2a11a7683c2e1d38eb035d349e331f11dd8971ef401621e31fa"
     },
     "vendor_surface_drift_check": "STATIC_SOURCE_CONFIRMED",
     "generator": "gettext/gettext 5.7.3 + tools/i18n/catalog.php",

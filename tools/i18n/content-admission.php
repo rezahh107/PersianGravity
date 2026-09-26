@@ -150,14 +150,43 @@ function pgr_content_protected_literals( $value ) {
 }
 
 /**
- * Hash the canonical source keyset using the locked source-admission contract.
+ * Hash a canonical source keyset using an explicit admitted source contract.
+ *
+ * Gravity Forms/Flow source admission uses no trailing newline. The historical
+ * GravityView 3.3.4 tokenizer contract includes one trailing newline. Remainder
+ * admission must preserve whichever exact source fingerprint contract produced
+ * the already-admitted canonical keyset; it may not silently normalize between
+ * them.
+ *
+ * @param array  $ids    Identity SHA-256 values.
+ * @param string $method Explicit source keyset hash method.
+ * @return string
+ */
+function pgr_content_source_keyset_hash_with_method( array $ids, $method ) {
+	sort( $ids, SORT_STRING );
+	$joined = implode( "\n", $ids );
+
+	if ( 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE' === $method ) {
+		return hash( 'sha256', $joined );
+	}
+	if ( 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_WITH_TRAILING_NEWLINE' === $method ) {
+		return hash( 'sha256', $joined . ( empty( $ids ) ? '' : "\n" ) );
+	}
+
+	throw new RuntimeException( 'Unsupported canonical source keyset hash method' );
+}
+
+/**
+ * Hash the canonical source keyset using the revision-3 GF/Flow contract.
  *
  * @param array $ids Identity SHA-256 values.
  * @return string
  */
 function pgr_content_source_keyset_hash( array $ids ) {
-	sort( $ids, SORT_STRING );
-	return hash( 'sha256', implode( "\n", $ids ) );
+	return pgr_content_source_keyset_hash_with_method(
+		$ids,
+		'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE'
+	);
 }
 
 /**
@@ -275,9 +304,11 @@ function pgr_content_load_sparse_po( $path, $domain, $locale, $enforce_protected
 		throw new RuntimeException( 'Invalid sparse provider PO headers: ' . $path );
 	}
 
-	$ids              = array();
-	$translation_rows = array();
-	$seen             = array();
+	$ids                = array();
+	$translation_rows   = array();
+	$translation_values = array();
+	$runtime_keys       = array();
+	$seen               = array();
 	foreach ( $catalog as $entry ) {
 		if ( $entry->isDisabled() ) {
 			continue;
@@ -319,14 +350,110 @@ function pgr_content_load_sparse_po( $path, $domain, $locale, $enforce_protected
 				throw new RuntimeException( 'Protected literal drift in admitted entry: ' . $entry->getOriginal() );
 			}
 		}
-		$translation_rows[ $id ] = $id . "\x1f" . implode( "\x00", $values );
+		$translation_rows[ $id ]   = $id . "\x1f" . implode( "\x00", $values );
+		$translation_values[ $id ] = $values;
+		$runtime_keys[ $id ]       = ( null !== $entry->getContext() && '' !== $entry->getContext() ? $entry->getContext() . "\x04" : '' ) . $entry->getOriginal();
 	}
 
 	sort( $ids, SORT_STRING );
 	ksort( $translation_rows, SORT_STRING );
+	ksort( $translation_values, SORT_STRING );
+	ksort( $runtime_keys, SORT_STRING );
 	return array(
-		'ids'              => $ids,
-		'translation_rows' => $translation_rows,
+		'ids'                => $ids,
+		'translation_rows'   => $translation_rows,
+		'translation_values' => $translation_values,
+		'runtime_keys'       => $runtime_keys,
+	);
+}
+
+/**
+ * Project an exact source-identity set onto the gettext runtime-key space.
+ *
+ * gettext lookup identity is msgctxt + msgid; msgid_plural is metadata on the
+ * same runtime key. Exact source extraction can therefore contain a singular
+ * identity and a plural identity which cannot coexist as independent PO
+ * entries. Such collisions are allowed only when explicitly evidenced, when
+ * the singular source identity aliases form zero of a plural provider identity
+ * with the exact same runtime key.
+ *
+ * @param array $source_by_id               Source records keyed by exact source identity.
+ * @param array $provider                   Parsed runtime provider catalog.
+ * @param mixed $runtime_projection         Optional evidence-bound projection contract.
+ * @param bool  $enforce_protected_literals Whether protected literals must remain byte-identical.
+ * @return array
+ */
+function pgr_content_apply_runtime_projection( array $source_by_id, array $provider, $runtime_projection, $enforce_protected_literals = false ) {
+	$source_ids = array_keys( $source_by_id );
+	sort( $source_ids, SORT_STRING );
+
+	if ( null === $runtime_projection ) {
+		if ( $provider['ids'] !== $source_ids ) {
+			throw new RuntimeException( 'Provider runtime projection does not equal the admitted source identity set' );
+		}
+		return array(
+			'translation_rows'    => $provider['translation_rows'],
+			'aliases'             => array(),
+			'runtime_entry_count' => count( $provider['ids'] ),
+		);
+	}
+
+	if ( ! is_array( $runtime_projection ) ||
+		1 !== ( $runtime_projection['schema_version'] ?? null ) ||
+		! is_int( $runtime_projection['runtime_entry_count'] ?? null ) ||
+		0 > $runtime_projection['runtime_entry_count'] ||
+		! is_array( $runtime_projection['source_aliases'] ?? null ) ||
+		$runtime_projection['source_aliases'] !== array_values( $runtime_projection['source_aliases'] ) ) {
+		throw new RuntimeException( 'Invalid gettext runtime-projection contract' );
+	}
+
+	$aliases = array();
+	$rows    = $provider['translation_rows'];
+	foreach ( $runtime_projection['source_aliases'] as $alias ) {
+		$source_id   = is_array( $alias ) ? ( $alias['source_identity'] ?? null ) : null;
+		$provider_id = is_array( $alias ) ? ( $alias['provider_identity'] ?? null ) : null;
+		$form_index  = is_array( $alias ) ? ( $alias['translation_form_index'] ?? null ) : null;
+		if ( ! is_string( $source_id ) || ! is_string( $provider_id ) ||
+			! preg_match( '/^[a-f0-9]{64}$/D', $source_id ) || ! preg_match( '/^[a-f0-9]{64}$/D', $provider_id ) ||
+			$source_id === $provider_id || isset( $aliases[ $source_id ] ) ||
+			! isset( $source_by_id[ $source_id ], $source_by_id[ $provider_id ] ) ||
+			! isset( $provider['translation_values'][ $provider_id ], $provider['runtime_keys'][ $provider_id ] ) ||
+			0 !== $form_index ) {
+			throw new RuntimeException( 'Invalid gettext runtime-projection alias' );
+		}
+
+		$source_record   = $source_by_id[ $source_id ];
+		$provider_record = $source_by_id[ $provider_id ];
+		$source_key      = ( null !== $source_record['msgctxt'] && '' !== $source_record['msgctxt'] ? $source_record['msgctxt'] . "\x04" : '' ) . $source_record['msgid'];
+		$provider_key    = ( null !== $provider_record['msgctxt'] && '' !== $provider_record['msgctxt'] ? $provider_record['msgctxt'] . "\x04" : '' ) . $provider_record['msgid'];
+		if ( $source_key !== $provider_key || $provider['runtime_keys'][ $provider_id ] !== $provider_key ||
+			null !== $source_record['msgid_plural'] || null === $provider_record['msgid_plural'] ) {
+			throw new RuntimeException( 'Gettext runtime-projection alias is not an exact singular-to-plural runtime-key collision' );
+		}
+
+		$value = $provider['translation_values'][ $provider_id ][0] ?? null;
+		if ( ! is_string( $value ) || '' === $value ||
+			pgr_content_tokens( $source_record['msgid'] ) !== pgr_content_tokens( $value ) ||
+			( $enforce_protected_literals && pgr_content_protected_literals( $source_record['msgid'] ) !== pgr_content_protected_literals( $value ) ) ) {
+			throw new RuntimeException( 'Invalid projected translation for gettext runtime-key collision' );
+		}
+		$aliases[ $source_id ] = $provider_id;
+		$rows[ $source_id ]    = $source_id . "\x1f" . $value;
+	}
+
+	$expected_runtime_ids = array_values( array_diff( $source_ids, array_keys( $aliases ) ) );
+	sort( $expected_runtime_ids, SORT_STRING );
+	if ( $provider['ids'] !== $expected_runtime_ids ||
+		$runtime_projection['runtime_entry_count'] !== count( $provider['ids'] ) ||
+		count( $rows ) !== count( $source_ids ) ) {
+		throw new RuntimeException( 'Gettext runtime projection does not exactly cover the admitted source identities' );
+	}
+	ksort( $rows, SORT_STRING );
+	ksort( $aliases, SORT_STRING );
+	return array(
+		'translation_rows'    => $rows,
+		'aliases'             => $aliases,
+		'runtime_entry_count' => count( $provider['ids'] ),
 	);
 }
 
@@ -473,7 +600,6 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 		'vendor_pot_sha256'                               => $record['vendor_pot_sha256'],
 		'canonical_message_count'                         => $record['canonical_message_count'],
 		'canonical_keyset_sha256'                         => $record['canonical_keyset_sha256'],
-		'canonical_keyset_hash_method'                    => 'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE',
 		'preexisting_accepted_message_count'              => $record['preexisting_accepted_message_count'],
 		'preexisting_accepted_keyset_sha256'              => $record['preexisting_accepted_keyset_sha256'],
 		'preexisting_accepted_translation_content_sha256' => $record['preexisting_accepted_translation_content_sha256'],
@@ -496,9 +622,12 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 		}
 		$canonical_seen[ $id ] = true;
 	}
-	if ( $record['canonical_keyset_sha256'] !== pgr_content_source_keyset_hash( $canonical_ids ) ) {
+	$canonical_hash_method = $evidence['canonical_keyset_hash_method'] ?? null;
+	if ( ! is_string( $canonical_hash_method ) ||
+		$record['canonical_keyset_sha256'] !== pgr_content_source_keyset_hash_with_method( $canonical_ids, $canonical_hash_method ) ) {
 		throw new RuntimeException( 'Canonical source keyset drift in remainder evidence' );
 	}
+	$record['canonical_keyset_hash_method'] = $canonical_hash_method;
 
 	$entries = $evidence['entries'] ?? null;
 	if ( ! is_array( $entries ) || $entries !== array_values( $entries ) || count( $entries ) !== $record['admitted_message_count'] ) {
@@ -525,7 +654,11 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 			throw new RuntimeException( 'Invalid remainder source references' );
 		}
 		pgr_admission_unique_strings( $references, 'remainder source references' );
-		$source_by_id[ $id ] = array( $msgid, $msgid_plural );
+		$source_by_id[ $id ] = array(
+			'msgctxt'      => $msgctxt,
+			'msgid'        => $msgid,
+			'msgid_plural' => $msgid_plural,
+		);
 		$remainder_ids[]     = $id;
 	}
 	sort( $remainder_ids, SORT_STRING );
@@ -537,8 +670,15 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 	if ( ! is_file( $provider_path ) || hash_file( 'sha256', $provider_path ) !== $record['provider_source_sha256'] ) {
 		throw new RuntimeException( 'Remainder provider source drift' );
 	}
-	$provider = pgr_content_load_sparse_po( $provider_path, $record['domain'], $record['locale'], true );
-	if ( $provider['ids'] !== $remainder_ids || $record['admitted_translation_content_sha256'] !== pgr_content_hash_lines( array_values( $provider['translation_rows'] ) ) ) {
+	$provider   = pgr_content_load_sparse_po( $provider_path, $record['domain'], $record['locale'], true );
+	$projection = pgr_content_apply_runtime_projection(
+		$source_by_id,
+		$provider,
+		$evidence['runtime_projection'] ?? null,
+		true
+	);
+	$source_translation_rows = $projection['translation_rows'];
+	if ( $record['admitted_translation_content_sha256'] !== pgr_content_hash_lines( array_values( $source_translation_rows ) ) ) {
 		throw new RuntimeException( 'Remainder provider source is not the reviewed remainder identity set' );
 	}
 
@@ -563,15 +703,15 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 	$corrections = 0;
 	foreach ( $review_entries as $item ) {
 		$id = is_array( $item ) ? ( $item['identity'] ?? null ) : null;
-		if ( ! is_string( $id ) || ! isset( $provider['translation_rows'][ $id ] ) || isset( $review_seen[ $id ] ) || 'ACCEPTED' !== ( $item['status'] ?? null ) ) {
+		if ( ! is_string( $id ) || ! isset( $source_translation_rows[ $id ] ) || isset( $review_seen[ $id ] ) || 'ACCEPTED' !== ( $item['status'] ?? null ) ) {
 			throw new RuntimeException( 'Invalid/duplicate/unaccepted remainder review identity' );
 		}
 		$review_seen[ $id ] = true;
-		$translation_values = substr( $provider['translation_rows'][ $id ], 65 );
+		$translation_values = substr( $source_translation_rows[ $id ], 65 );
 		if ( hash( 'sha256', $translation_values ) !== ( $item['translation_sha256'] ?? null ) ) {
 			throw new RuntimeException( 'Remainder reviewed translation hash drift' );
 		}
-		$expected_flags = pgr_content_review_risk_flags( $source_by_id[ $id ][0], $source_by_id[ $id ][1] );
+		$expected_flags = pgr_content_review_risk_flags( $source_by_id[ $id ]['msgid'], $source_by_id[ $id ]['msgid_plural'] );
 		if ( $expected_flags !== ( $item['risk_flags'] ?? null ) ) {
 			throw new RuntimeException( 'Remainder review risk flags drift' );
 		}
@@ -587,8 +727,10 @@ function pgr_validate_content_remainder_record( $root, array $record, array $sou
 		throw new RuntimeException( 'Second-pass correction count drift' );
 	}
 
-	$record['canonical_ids']   = $canonical_ids;
-	$record['translation_rows'] = $provider['translation_rows'];
+	$record['canonical_ids']                 = $canonical_ids;
+	$record['translation_rows']               = $source_translation_rows;
+	$record['runtime_projection_aliases']     = $projection['aliases'];
+	$record['runtime_provider_message_count'] = $projection['runtime_entry_count'];
 	return $record;
 }
 
@@ -799,9 +941,10 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 	foreach ( $by_product as $product => $admissions ) {
 		usort( $admissions, static fn( $left, $right ) => pgr_content_record_identity( $left ) <=> pgr_content_record_identity( $right ) );
 		$first          = $admissions[0];
-		$surface_rows   = array();
-		$remainder_rows = array();
-		$remainder      = null;
+		$surface_rows    = array();
+		$remainder_rows  = array();
+		$runtime_aliases = array();
+		$remainder       = null;
 		foreach ( $admissions as $admission ) {
 			$target = 'CONTENT_ADMITTED_REMAINDER' === $admission['content_state'] ? 'remainder' : 'surface';
 			if ( 'remainder' === $target ) {
@@ -809,6 +952,12 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 					throw new RuntimeException( 'Multiple product-remainder admissions are not allowed: ' . $product );
 				}
 				$remainder = $admission;
+			}
+			foreach ( $admission['runtime_projection_aliases'] ?? array() as $source_id => $provider_id ) {
+				if ( isset( $runtime_aliases[ $source_id ] ) ) {
+					throw new RuntimeException( 'Duplicate gettext runtime-projection alias: ' . $product );
+				}
+				$runtime_aliases[ $source_id ] = $provider_id;
 			}
 			foreach ( $admission['translation_rows'] as $id => $row ) {
 				if ( 'surface' === $target ) {
@@ -845,14 +994,22 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 			$canonical_ids = $remainder['canonical_ids'];
 			sort( $canonical_ids, SORT_STRING );
 			if ( count( $union_rows ) !== $remainder['canonical_message_count'] || $union_ids !== $canonical_ids ||
-				pgr_content_source_keyset_hash( $union_ids ) !== $remainder['canonical_keyset_sha256'] ) {
+				pgr_content_source_keyset_hash_with_method( $union_ids, $remainder['canonical_keyset_hash_method'] ) !== $remainder['canonical_keyset_sha256'] ) {
 				throw new RuntimeException( 'Completed product union does not equal the exact canonical source census: ' . $product );
 			}
 			$content_state    = 'CONTENT_ADMITTED_FULL';
 			$product_revision = 3;
 		}
 
-		$union_ids = array_keys( $union_rows );
+		$union_ids          = array_keys( $union_rows );
+		$runtime_union_rows = $union_rows;
+		foreach ( $runtime_aliases as $source_id => $provider_id ) {
+			if ( ! isset( $runtime_union_rows[ $source_id ], $runtime_union_rows[ $provider_id ] ) ) {
+				throw new RuntimeException( 'Gettext runtime-projection alias escaped the completed product union: ' . $product );
+			}
+			unset( $runtime_union_rows[ $source_id ] );
+		}
+		ksort( $runtime_union_rows, SORT_STRING );
 		$aggregate_path_relative = 'languages/providers/' . $product . '/source/' . $first['locale'] . '.po';
 		$aggregate_path = pgr_content_repository_path( $root, $aggregate_path_relative, 'aggregate provider source' );
 		if ( ! is_file( $aggregate_path ) ) {
@@ -861,8 +1018,8 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 		// The remainder PO is validated with protected-literal enforcement above. Do not
 		// retroactively apply that new rule to historical accepted surface translations.
 		$aggregate_catalog = pgr_content_load_sparse_po( $aggregate_path, $first['domain'], $first['locale'] );
-		if ( $aggregate_catalog['ids'] !== $union_ids || $aggregate_catalog['translation_rows'] !== $union_rows ) {
-			throw new RuntimeException( 'Aggregate sparse provider source is not the exact admitted union' );
+		if ( $aggregate_catalog['ids'] !== array_keys( $runtime_union_rows ) || $aggregate_catalog['translation_rows'] !== $runtime_union_rows ) {
+			throw new RuntimeException( 'Aggregate sparse provider source is not the exact admitted union/runtime projection' );
 		}
 		$aggregate = array(
 			'admitted_message_count'              => count( $union_ids ),
@@ -873,11 +1030,20 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 			'native_js_handles_activated'          => 0,
 			'js_translation_json_generated'        => 0,
 		);
+		if ( ! empty( $runtime_aliases ) ) {
+			$aggregate['runtime_provider_message_count'] = count( $runtime_union_rows );
+			$aggregate['runtime_projection_alias_count'] = count( $runtime_aliases );
+		}
 
 		$provenance_records = array();
 		foreach ( $admissions as &$admission ) {
 			$provenance_records[] = pgr_content_provenance_record( $admission );
-			unset( $admission['translation_rows'], $admission['canonical_ids'] );
+			unset(
+				$admission['translation_rows'],
+				$admission['canonical_ids'],
+				$admission['runtime_projection_aliases'],
+				$admission['runtime_provider_message_count']
+			);
 		}
 		unset( $admission );
 
@@ -898,6 +1064,11 @@ function pgr_validate_content_admission( $root, array $source_admission, array $
 			'provider_source_path'                 => $aggregate['provider_source_path'],
 			'provider_source_sha256'               => $aggregate['provider_source_sha256'],
 		);
+		foreach ( array( 'runtime_provider_message_count', 'runtime_projection_alias_count' ) as $runtime_field ) {
+			if ( array_key_exists( $runtime_field, $aggregate ) ) {
+				$expected_aggregate[ $runtime_field ] = $aggregate[ $runtime_field ];
+			}
+		}
 		if ( $product_revision !== ( $provenance['content_admission_revision'] ?? null ) ||
 			$content_state !== ( $provenance['content_admission_state'] ?? null ) ||
 			$provenance_records !== ( $provenance['content_admissions'] ?? null ) ||

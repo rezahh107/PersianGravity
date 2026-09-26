@@ -22,7 +22,19 @@ final class CatalogBuildTest extends TestCase {
 		$this->assertArrayNotHasKey( 'Synthetic unreviewed', $jed );
 		$this->assertArrayNotHasKey( 'Synthetic missing', $jed );
 		$this->assertSame( array( 'یکی', 'چندتا' ), $jed['Synthetic one'] );
+		$this->assertArrayNotHasKey( "Synthetic one\0Synthetic many", $jed );
 		$this->assertSame( array( 'زمینه' ), $jed[ "test-context\x04Synthetic context" ] );
+
+		$temp_php = tempnam( sys_get_temp_dir(), 'pgr-l10n-' );
+		try {
+			file_put_contents( $temp_php, $one['php'] );
+			$php_catalog = require $temp_php;
+		} finally {
+			unlink( $temp_php );
+		}
+		$this->assertSame( "یکی\0چندتا", $php_catalog['messages']['Synthetic one'] );
+		$this->assertSame( "یکی\0چندتا", $php_catalog['messages'][ "Synthetic one\0Synthetic many" ] );
+
 		$this->assertStringNotContainsString( 'Synthetic unreviewed', $one['mo'] );
 		$this->assertStringNotContainsString( 'Synthetic missing', $one['php'] );
 	}
@@ -58,11 +70,12 @@ final class CatalogBuildTest extends TestCase {
 			}
 
 			$aggregate         = $admission['aggregate'];
-			$is_full           = in_array( $product['product'], array( 'gravityforms', 'gravityflow' ), true );
+			$is_full           = in_array( $product['product'], array( 'gravityforms', 'gravityflow', 'gravityview' ), true );
 			$expected_state    = $is_full ? 'CONTENT_ADMITTED_FULL' : 'CONTENT_ADMITTED_PARTIAL';
 			$expected_revision = $is_full ? 3 : 2;
 			$this->assertSame( $expected_state, $admission['content_state'] );
-			$this->assertSame( $aggregate['admitted_message_count'], $meta['counts_in_committed_po']['translated'] );
+			$runtime_count = $aggregate['runtime_provider_message_count'] ?? $aggregate['admitted_message_count'];
+			$this->assertSame( $runtime_count, $meta['counts_in_committed_po']['translated'] );
 			$this->assertSame( $aggregate['provider_source_sha256'], $meta['provider_po_sha256'] );
 			$this->assertSame( $expected_revision, $meta['content_admission']['revision'] );
 			$this->assertSame( $expected_state, $meta['content_admission']['state'] );
@@ -81,9 +94,12 @@ final class CatalogBuildTest extends TestCase {
 						static fn( $record ) => 'PRODUCT_REMAINDER' === ( $record['authority_scope'] ?? null )
 					)
 				);
-				$expected_full = 'gravityforms' === $product['product']
-					? array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207 )
-					: array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098 );
+				$expected_by_product = array(
+					'gravityforms' => array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207, 'runtime' => 4207 ),
+					'gravityflow'  => array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098, 'runtime' => 1098 ),
+					'gravityview'  => array( 'records' => 7, 'preexisting' => 461, 'remainder' => 2666, 'total' => 3127, 'runtime' => 3126 ),
+				);
+				$expected_full = $expected_by_product[ $product['product'] ];
 				$this->assertCount( $expected_full['records'], $admission['admissions'] );
 				$this->assertCount( 1, $remainders );
 				$this->assertSame( $expected_full['preexisting'], $remainders[0]['preexisting_accepted_message_count'] );
@@ -92,7 +108,11 @@ final class CatalogBuildTest extends TestCase {
 				$this->assertSame( $expected_full['total'], $meta['authoritative_total'] );
 				$this->assertSame( 100, $meta['coverage_percent'] );
 				$this->assertSame( 'FULL_TRANSLATION_CONTENT_ACCEPTED', $meta['content_status'] );
-				$this->assertSame( array( 'translated' => $expected_full['total'], 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
+				$this->assertSame( array( 'translated' => $expected_full['runtime'], 'untranslated' => 0, 'fuzzy' => 0 ), $meta['counts_in_committed_po'] );
+				if ( $expected_full['runtime'] !== $expected_full['total'] ) {
+					$this->assertSame( $expected_full['runtime'], $aggregate['runtime_provider_message_count'] );
+					$this->assertSame( $expected_full['total'] - $expected_full['runtime'], $aggregate['runtime_projection_alias_count'] );
+				}
 			}
 		}
 	}
