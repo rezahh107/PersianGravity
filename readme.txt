@@ -102,6 +102,7 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 
 = Unreleased =
 * Added bounded production Jalali presentation for exact GravityView 3.3.4 `date_created` and `date_updated`, preserving native DB/API/query/search/sort/filter semantics and returning native output for module-disabled, non-Persian, malformed-context, or exact-version-drift states.
+* Completed bounded Persian localization coverage for exact GravityView 3.3.4 across the accepted 3127/3127 source census: the historical 461-identity surface union remains provenance and the reviewed 2666-identity product remainder completes exact-source content authority. One exact singular/plural source collision yields 3126 canonical runtime provider entries; native script handles remain zero, `gk-query-filters` remains outside `gk-gravityview` provider authority, and no future-version or broader ecosystem compatibility is implied.
 
 
 = 4.8.0 =
