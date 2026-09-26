@@ -64,6 +64,7 @@ try {
   if (frontendHtml.computedDir !== 'rtl') {
     throw new Error(`GravityView frontend is not RTL under fa_IR: ${JSON.stringify(frontendHtml)}`);
   }
+  const frontendUrl = page.url();
   await page.screenshot({ path: path.join(artifactDir, 'g006-gravityview-frontend.png'), fullPage: true });
 
   await assertHealthy(`${baseUrl}/wp-login.php`, 'WordPress login');
@@ -96,7 +97,7 @@ try {
   await page.screenshot({ path: path.join(artifactDir, 'g006-gravityview-admin.png'), fullPage: true });
 
   result.frontend = {
-    url: page.url(),
+    url: frontendUrl,
     fixture_token_present: true,
     html: frontendHtml,
   };
