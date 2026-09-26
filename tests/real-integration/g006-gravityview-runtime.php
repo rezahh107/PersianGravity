@@ -39,19 +39,28 @@ function g006_gv_reset_domain( $domain ) {
 	$GLOBALS['wp_textdomain_registry'] = new WP_Textdomain_Registry();
 }
 
-function g006_gv_runtime_values( $entry ) {
-	$context = $entry->getContext();
-	$original = $entry->getOriginal();
-	$plural = $entry->getPlural();
+function g006_gv_runtime_values( $runtime_key, array $expected, array $plural_by_key ) {
+	$separator = strpos( $runtime_key, "\x04" );
+	if ( false === $separator ) {
+		$context  = null;
+		$original = $runtime_key;
+	} else {
+		$context  = substr( $runtime_key, 0, $separator );
+		$original = substr( $runtime_key, $separator + 1 );
+	}
 	$domain = 'gk-gravityview';
 
-	if ( null === $plural ) {
+	if ( 1 === count( $expected ) ) {
 		return array(
 			null === $context
 				? __( $original, $domain )
 				: _x( $original, $context, $domain ),
 		);
 	}
+
+	g006_gv_assert( 2 === count( $expected ), 'Unexpected GravityView runtime plural-form count.' );
+	$plural = $plural_by_key[ $runtime_key ] ?? null;
+	g006_gv_assert( is_string( $plural ) && '' !== $plural, 'Missing source plural for GravityView runtime key.' );
 
 	return array(
 		null === $context
@@ -79,48 +88,85 @@ g006_gv_assert( '3.3.4' === $versions['gravityview'], 'GravityView runtime versi
 g006_gv_assert( $expected_pgr_version === $versions['persiangravity'], 'PersianGravity runtime version mismatch.' );
 
 $pgr_root = WP_PLUGIN_DIR . '/persian-gravityforms';
-$provider_po = $pgr_root . '/languages/providers/gravityview/source/fa_IR.po';
-g006_gv_assert( is_readable( $provider_po ), 'Committed GravityView provider PO is unavailable.' );
-g006_gv_assert( class_exists( 'Gettext\\Loader\\StrictPoLoader' ), 'Gettext strict PO loader is unavailable.' );
+$provider_php = $pgr_root . '/languages/providers/gravityview/gravityview-fa_IR.l10n.php';
+$remainder_evidence_path = $pgr_root . '/tools/i18n/admission/remainders/gravityview.json';
+g006_gv_assert( is_readable( $provider_php ), 'Generated GravityView PHP provider is unavailable.' );
+g006_gv_assert( is_readable( $remainder_evidence_path ), 'GravityView remainder evidence is unavailable.' );
 
-$catalog = ( new Gettext\Loader\StrictPoLoader() )->loadFile( $provider_po );
+$provider = require $provider_php;
+g006_gv_assert( is_array( $provider ), 'Generated GravityView PHP provider must return an array.' );
+g006_gv_assert( 'fa_IR' === ( $provider['language'] ?? null ), 'GravityView provider locale mismatch.' );
+g006_gv_assert( 'nplurals=2; plural=(n > 1);' === ( $provider['plural-forms'] ?? null ), 'GravityView provider plural rule mismatch.' );
+$messages = $provider['messages'] ?? null;
+g006_gv_assert( is_array( $messages ), 'Generated GravityView PHP provider messages are unavailable.' );
+
+$remainder_evidence = json_decode(
+	file_get_contents( $remainder_evidence_path ),
+	true,
+	512,
+	JSON_THROW_ON_ERROR
+);
+g006_gv_assert( 3127 === $remainder_evidence['canonical_message_count'], 'GravityView source-authority census changed.' );
+g006_gv_assert( 2666 === $remainder_evidence['remainder_message_count'], 'GravityView remainder census changed.' );
+g006_gv_assert( 2665 === $remainder_evidence['runtime_projection']['runtime_entry_count'], 'GravityView remainder runtime projection count changed.' );
+g006_gv_assert( 1 === count( $remainder_evidence['runtime_projection']['source_aliases'] ), 'GravityView runtime projection alias census changed.' );
+
+$plural_by_key = array();
+foreach ( $remainder_evidence['entries'] as $source_entry ) {
+	$plural = $source_entry['msgid_plural'] ?? null;
+	if ( null === $plural ) {
+		continue;
+	}
+	$context = $source_entry['msgctxt'] ?? null;
+	$key = ( is_string( $context ) && '' !== $context ? $context . "\x04" : '' ) . $source_entry['msgid'];
+	g006_gv_assert( ! isset( $plural_by_key[ $key ] ), 'Duplicate GravityView plural runtime key in source evidence.' );
+	$plural_by_key[ $key ] = $plural;
+}
+g006_gv_assert( 42 === count( $plural_by_key ), 'GravityView source plural census mismatch.' );
+
 $ids = array();
 $runtime_mismatches = array();
 $context_count = 0;
 $plural_count = 0;
 $tested_count = 0;
 
-foreach ( $catalog as $entry ) {
-	if ( $entry->isDisabled() ) {
-		continue;
-	}
-	g006_gv_assert( ! $entry->getFlags()->has( 'fuzzy' ), 'Fuzzy GravityView provider entry reached runtime qualification.' );
+foreach ( $messages as $runtime_key => $encoded_translation ) {
+	g006_gv_assert( is_string( $runtime_key ) && '' !== $runtime_key, 'Invalid GravityView runtime provider key.' );
+	g006_gv_assert( is_string( $encoded_translation ) && '' !== $encoded_translation, 'Empty GravityView runtime provider translation.' );
 
-	$expected = array( $entry->getTranslation() );
-	if ( null !== $entry->getPlural() ) {
-		++$plural_count;
-		$expected = array_merge( $expected, $entry->getPluralTranslations() );
-		g006_gv_assert( 2 === count( $expected ), 'Incomplete GravityView plural translation.' );
-	}
-	if ( null !== $entry->getContext() ) {
+	$separator = strpos( $runtime_key, "\x04" );
+	if ( false === $separator ) {
+		$context  = null;
+		$original = $runtime_key;
+	} else {
 		++$context_count;
+		$context  = substr( $runtime_key, 0, $separator );
+		$original = substr( $runtime_key, $separator + 1 );
+	}
+	$expected = explode( "\0", $encoded_translation );
+	$plural   = null;
+	if ( 1 < count( $expected ) ) {
+		++$plural_count;
+		g006_gv_assert( 2 === count( $expected ), 'Incomplete GravityView plural translation.' );
+		$plural = $plural_by_key[ $runtime_key ] ?? null;
+		g006_gv_assert( is_string( $plural ) && '' !== $plural, 'Plural GravityView provider key is not source-evidenced.' );
 	}
 	foreach ( $expected as $value ) {
-		g006_gv_assert( is_string( $value ) && '' !== trim( $value ), 'Empty GravityView translation reached runtime qualification.' );
+		g006_gv_assert( '' !== trim( $value ), 'Empty GravityView translation reached runtime qualification.' );
 	}
 
 	$id = hash(
 		'sha256',
-		(string) ( $entry->getContext() ?? '' ) . "\x1f" .
-		$entry->getOriginal() . "\x1f" .
-		(string) ( $entry->getPlural() ?? '' )
+		(string) $context . "\x1f" .
+		$original . "\x1f" .
+		(string) $plural
 	);
 	$ids[] = $id;
-	$actual = g006_gv_runtime_values( $entry );
+	$actual = g006_gv_runtime_values( $runtime_key, $expected, $plural_by_key );
 	if ( $actual !== $expected ) {
 		$runtime_mismatches[] = array(
 			'identity' => $id,
-			'msgid'    => $entry->getOriginal(),
+			'msgid'    => $original,
 			'expected' => $expected,
 			'actual'   => $actual,
 		);
@@ -141,16 +187,6 @@ g006_gv_assert(
 );
 g006_gv_assert( array() === $runtime_mismatches, 'GravityView provider/runtime mismatch: ' . wp_json_encode( $runtime_mismatches ) );
 
-$remainder_evidence = json_decode(
-	file_get_contents( $pgr_root . '/tools/i18n/admission/remainders/gravityview.json' ),
-	true,
-	512,
-	JSON_THROW_ON_ERROR
-);
-g006_gv_assert( 3127 === $remainder_evidence['canonical_message_count'], 'GravityView source-authority census changed.' );
-g006_gv_assert( 2666 === $remainder_evidence['remainder_message_count'], 'GravityView remainder census changed.' );
-g006_gv_assert( 2665 === $remainder_evidence['runtime_projection']['runtime_entry_count'], 'GravityView remainder runtime projection count changed.' );
-g006_gv_assert( 1 === count( $remainder_evidence['runtime_projection']['source_aliases'] ), 'GravityView runtime projection alias census changed.' );
 g006_gv_assert( '+[count] عملیات' === __( '+[count] action', 'gk-gravityview' ), 'Projected singular gettext lookup failed.' );
 g006_gv_assert( '+[count] عملیات' === _n( '+[count] action', '+[count] actions', 2, 'gk-gravityview' ), 'Projected plural gettext lookup failed.' );
 
