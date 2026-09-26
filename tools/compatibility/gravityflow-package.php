@@ -7,7 +7,6 @@ final class GravityFlowPackageAuthority {
     private const SCHEMA_VERSION = 1;
     private const PRODUCT = 'gravityflow';
     private const AUTHORITY = 'OWNER_SUPPLIED_GOOGLE_DRIVE';
-    private const PLUGIN_MAIN_FILE = 'gravityflow/gravityflow.php';
 
     private const REQUIRED_KEYS = [
         'schema_version',
@@ -87,8 +86,12 @@ final class GravityFlowPackageAuthority {
         if (!is_string($data['sha256']) || preg_match('/^[a-f0-9]{64}$/', $data['sha256']) !== 1) {
             throw new RuntimeException('package authority sha256 is invalid');
         }
-        if ($data['plugin_main_file'] !== self::PLUGIN_MAIN_FILE) {
-            throw new RuntimeException('package authority plugin_main_file must be gravityflow/gravityflow.php');
+        if (
+            !is_string($data['plugin_main_file']) ||
+            preg_match('/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\.php$/', $data['plugin_main_file']) !== 1 ||
+            dirname($data['plugin_main_file']) !== $data['product']
+        ) {
+            throw new RuntimeException('package authority plugin_main_file is invalid');
         }
 
         return $data;
