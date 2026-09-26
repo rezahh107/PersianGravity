@@ -58,7 +58,7 @@ final class CatalogBuildTest extends TestCase {
 			}
 
 			$aggregate         = $admission['aggregate'];
-			$is_full           = in_array( $product['product'], array( 'gravityforms', 'gravityflow' ), true );
+			$is_full           = in_array( $product['product'], array( 'gravityforms', 'gravityflow', 'gravityview' ), true );
 			$expected_state    = $is_full ? 'CONTENT_ADMITTED_FULL' : 'CONTENT_ADMITTED_PARTIAL';
 			$expected_revision = $is_full ? 3 : 2;
 			$this->assertSame( $expected_state, $admission['content_state'] );
@@ -81,9 +81,12 @@ final class CatalogBuildTest extends TestCase {
 						static fn( $record ) => 'PRODUCT_REMAINDER' === ( $record['authority_scope'] ?? null )
 					)
 				);
-				$expected_full = 'gravityforms' === $product['product']
-					? array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207 )
-					: array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098 );
+				$expected_by_product = array(
+					'gravityforms' => array( 'records' => 7, 'preexisting' => 1759, 'remainder' => 2448, 'total' => 4207 ),
+					'gravityflow'  => array( 'records' => 8, 'preexisting' => 732, 'remainder' => 366, 'total' => 1098 ),
+					'gravityview'  => array( 'records' => 7, 'preexisting' => 461, 'remainder' => 2666, 'total' => 3127 ),
+				);
+				$expected_full = $expected_by_product[ $product['product'] ];
 				$this->assertCount( $expected_full['records'], $admission['admissions'] );
 				$this->assertCount( 1, $remainders );
 				$this->assertSame( $expected_full['preexisting'], $remainders[0]['preexisting_accepted_message_count'] );
