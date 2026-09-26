@@ -131,7 +131,9 @@ $plural_count = 0;
 $tested_count = 0;
 
 foreach ( $messages as $runtime_key => $encoded_translation ) {
-	g006_gv_assert( is_string( $runtime_key ) && '' !== $runtime_key, 'Invalid GravityView runtime provider key.' );
+	g006_gv_assert( is_string( $runtime_key ) || is_int( $runtime_key ), 'Invalid GravityView runtime provider key type.' );
+	$runtime_key = (string) $runtime_key;
+	g006_gv_assert( '' !== $runtime_key, 'Invalid empty GravityView runtime provider key.' );
 	g006_gv_assert( is_string( $encoded_translation ) && '' !== $encoded_translation, 'Empty GravityView runtime provider translation.' );
 
 	$separator = strpos( $runtime_key, "\x04" );
