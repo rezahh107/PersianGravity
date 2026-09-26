@@ -30,11 +30,11 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 	const REASON_CONVERSION_UNAVAILABLE = 'PGR-GFLOW-CONVERSION-UNAVAILABLE';
 	const REASON_NOT_EVALUATED          = 'PGR-GFLOW-NOT-EVALUATED';
 
-	private const MAX_SUMMARY_BYTES       = 160;
-	private const MAX_HOST_VERSION_BYTES  = 32;
-	private const MAX_SNAPSHOT_BYTES      = 8192;
-	private const SNAPSHOT_TTL_SECONDS    = 604800;
-	private const FUTURE_CLOCK_SKEW       = 300;
+	private const MAX_SUMMARY_BYTES      = 160;
+	private const MAX_HOST_VERSION_BYTES = 32;
+	private const MAX_SNAPSHOT_BYTES     = 8192;
+	private const SNAPSHOT_TTL_SECONDS   = 604800;
+	private const FUTURE_CLOCK_SKEW      = 300;
 
 	/** @var array<string,array<string,mixed>> */
 	private static $request_observations = array();
@@ -43,28 +43,28 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 	private static $shutdown_registered = false;
 
 	/**
-	 * Canonical diagnostic capability catalog.
+	 * Canonical diagnostic capability allowlist.
 	 *
 	 * IDs reuse the established G-008 Gravity Flow surface identities. This is
-	 * a diagnostics allowlist, not a second source-semantics registry.
+	 * not a second source-semantics registry and carries no activation policy.
 	 *
 	 * @return array<string,string>
 	 */
 	public static function capabilities() {
 		return array(
-			'gravityflow.inbox.date-created'            => 'Inbox — Date created',
-			'gravityflow.inbox.last-updated'            => 'Inbox — Last updated',
-			'gravityflow.inbox.due-date'                => 'Inbox — Due date',
-			'gravityflow.status.date-created'           => 'Status — Date created',
-			'gravityflow.status.workflow-timestamp'     => 'Status — Workflow timestamp',
-			'gravityflow.status.due-date'               => 'Status — Due date',
-			'gravityflow.entry-detail.submitted'        => 'Entry Detail — Submitted',
-			'gravityflow.entry-detail.last-updated'     => 'Entry Detail — Last updated',
-			'gravityflow.entry-detail.due-date'         => 'Entry Detail — Due date',
-			'gravityflow.entry-detail.expiration'       => 'Entry Detail — Expiration',
-			'gravityflow.entry-detail.schedule'         => 'Entry Detail — Scheduled',
-			'gravityflow.timeline-history'              => 'Timeline / History',
-			'gravityflow.print'                         => 'Print — inherited Timeline presentation',
+			'gravityflow.inbox.date-created'        => 'Inbox — Date created',
+			'gravityflow.inbox.last-updated'        => 'Inbox — Last updated',
+			'gravityflow.inbox.due-date'            => 'Inbox — Due date',
+			'gravityflow.status.date-created'       => 'Status — Date created',
+			'gravityflow.status.workflow-timestamp' => 'Status — Workflow timestamp',
+			'gravityflow.status.due-date'           => 'Status — Due date',
+			'gravityflow.entry-detail.submitted'    => 'Entry Detail — Submitted',
+			'gravityflow.entry-detail.last-updated' => 'Entry Detail — Last updated',
+			'gravityflow.entry-detail.due-date'     => 'Entry Detail — Due date',
+			'gravityflow.entry-detail.expiration'   => 'Entry Detail — Expiration',
+			'gravityflow.entry-detail.schedule'     => 'Entry Detail — Scheduled',
+			'gravityflow.timeline-history'          => 'Timeline / History',
+			'gravityflow.print'                     => 'Print — inherited Timeline presentation',
 		);
 	}
 
@@ -78,7 +78,14 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		);
 	}
 
-	/** @return array<string,string> */
+	/**
+	 * Stable machine reasons mapped to source-owned human explanations.
+	 *
+	 * The explanation is deliberately derived from this catalog rather than
+	 * accepted as free-form caller data, preventing PII/request payload capture.
+	 *
+	 * @return array<string,string>
+	 */
 	public static function reasons() {
 		return array(
 			self::REASON_CONTRACT_SATISFIED     => 'Required compatibility contract was satisfied in the observed context.',
@@ -102,22 +109,20 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 	 * @param string $capability_id Established capability ID.
 	 * @param string $state         Bounded compatibility state.
 	 * @param string $reason_id     Stable reason ID.
-	 * @param string $summary       Optional short human-readable explanation.
 	 * @return void
 	 * @throws InvalidArgumentException Invalid diagnostic input.
 	 */
-	public static function record( $capability_id, $state, $reason_id, $summary = '' ) {
+	public static function record( $capability_id, $state, $reason_id ) {
 		self::assert_capability( $capability_id );
 		self::assert_state( $state );
 		self::assert_reason( $reason_id );
 		self::assert_state_reason_pair( $state, $reason_id );
-		$summary = self::normalize_summary( $summary, $reason_id );
 
 		$observation = array(
 			'capability_id' => $capability_id,
 			'state'         => $state,
 			'reason_id'     => $reason_id,
-			'summary'       => $summary,
+			'summary'       => self::summary_for_reason( $reason_id ),
 			'observed_at'   => time(),
 			'host_version'  => self::current_host_version(),
 		);
@@ -134,11 +139,7 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		self::register_shutdown_persistence();
 	}
 
-	/**
-	 * Read the current request-local observations without mutable references.
-	 *
-	 * @return array<string,array<string,mixed>>
-	 */
+	/** @return array<string,array<string,mixed>> */
 	public static function request_snapshot() {
 		return self::$request_observations;
 	}
@@ -167,14 +168,7 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 				continue;
 			}
 
-			$snapshot[ $capability_id ] = array(
-				'capability_id' => $capability_id,
-				'state'         => self::STATE_NOT_EVALUATED,
-				'reason_id'     => self::REASON_NOT_EVALUATED,
-				'summary'       => self::reasons()[ self::REASON_NOT_EVALUATED ],
-				'observed_at'   => null,
-				'host_version'  => null,
-			);
+			$snapshot[ $capability_id ] = self::not_evaluated_record( $capability_id );
 		}
 
 		return $snapshot;
@@ -187,7 +181,7 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 	 * explicitly non-autoloaded and never read by runtime adapters for
 	 * compatibility decisions.
 	 *
-	 * @return bool Whether the snapshot was written.
+	 * @return bool Whether storage changed successfully.
 	 */
 	public static function persist_request_snapshot() {
 		if ( array() === self::$request_observations ) {
@@ -207,6 +201,10 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		$encoded = wp_json_encode( $payload );
 		if ( ! is_string( $encoded ) || strlen( $encoded ) > self::MAX_SNAPSHOT_BYTES ) {
 			return false;
+		}
+
+		if ( false === get_option( self::OPTION, false ) ) {
+			return (bool) add_option( self::OPTION, $payload, '', false );
 		}
 
 		return (bool) update_option( self::OPTION, $payload, false );
@@ -264,9 +262,11 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		}
 		try {
 			self::assert_state_reason_pair( $record['state'], $record['reason_id'] );
-			self::normalize_summary( $record['summary'], $record['reason_id'] );
 		} catch ( InvalidArgumentException $exception ) {
 			unset( $exception );
+			return null;
+		}
+		if ( self::summary_for_reason( $record['reason_id'] ) !== $record['summary'] ) {
 			return null;
 		}
 		if ( ! is_int( $record['observed_at'] ) ) {
@@ -278,10 +278,7 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		) {
 			return null;
 		}
-		if ( ! self::valid_host_version( $record['host_version'] ) ) {
-			return null;
-		}
-		if ( $record['host_version'] !== $host_version ) {
+		if ( ! self::valid_host_version( $record['host_version'] ) || $record['host_version'] !== $host_version ) {
 			return null;
 		}
 
@@ -330,29 +327,25 @@ final class PGR_Gravity_Flow_Compatibility_Diagnostics {
 		}
 	}
 
-	/**
-	 * @param mixed  $summary   Candidate summary.
-	 * @param string $reason_id Valid reason ID.
-	 * @return string
-	 */
-	private static function normalize_summary( $summary, $reason_id ) {
-		if ( ! is_string( $summary ) ) {
-			throw new InvalidArgumentException( 'Diagnostic summary must be a string.' );
+	/** @param string $reason_id Known reason ID. */
+	private static function summary_for_reason( $reason_id ) {
+		$summary = self::reasons()[ $reason_id ] ?? '';
+		if ( '' === $summary || strlen( $summary ) > self::MAX_SUMMARY_BYTES ) {
+			throw new LogicException( 'Gravity Flow diagnostics reason summary is invalid.' );
 		}
-		$summary = trim( $summary );
-		if ( '' === $summary ) {
-			$summary = self::reasons()[ $reason_id ];
-		}
-		if (
-			strlen( $summary ) > self::MAX_SUMMARY_BYTES ||
-			preg_match( '/[\r\n\t\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $summary ) ||
-			strip_tags( $summary ) !== $summary ||
-			preg_match( '~(?:https?://|www\.)~i', $summary )
-		) {
-			throw new InvalidArgumentException( 'Diagnostic summary is outside the bounded safe format.' );
-		}
-
 		return $summary;
+	}
+
+	/** @param string $capability_id Known capability ID. */
+	private static function not_evaluated_record( $capability_id ) {
+		return array(
+			'capability_id' => $capability_id,
+			'state'         => self::STATE_NOT_EVALUATED,
+			'reason_id'     => self::REASON_NOT_EVALUATED,
+			'summary'       => self::summary_for_reason( self::REASON_NOT_EVALUATED ),
+			'observed_at'   => null,
+			'host_version'  => null,
+		);
 	}
 
 	/** @param mixed $version Candidate host version. */
