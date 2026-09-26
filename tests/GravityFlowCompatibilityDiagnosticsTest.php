@@ -234,10 +234,7 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
 	public function test_persisted_observation_for_another_host_version_is_not_trusted(): void {
-		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'GRAVITY_FLOW_VERSION', '3.1.0' );
-		require_once dirname( __DIR__ ) . '/tests/bootstrap.php';
-		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-compatibility-diagnostics.php';
 
 		$id = 'gravityflow.inbox.date-created';
 		$GLOBALS['pgr_test_options'][ PGR_Gravity_Flow_Compatibility_Diagnostics::OPTION ] = array(

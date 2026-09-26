@@ -121,6 +121,8 @@ Do not reintroduce deprecated form-settings paths or private/direct-SQL usage. G
 
 Gravity Flow qualification package authority lives at `tools/compatibility/gravityflow-package.json`. Active qualification consumers must resolve it through the repository helper rather than discovering, substituting, or hard-coding another Gravity Flow package reference.
 
+Gravity Flow compatibility diagnostics are informational maintenance evidence, not runtime authority. `PGR_Gravity_Flow_Compatibility_Diagnostics` reuses established G-008 capability IDs, accepts only the bounded `AVAILABLE` / `DEGRADED` / `UNAVAILABLE` / `NOT_EVALUATED` states and source-owned `PGR-GFLOW-*` reasons, and exposes only a latest bounded reporting snapshot. The optional cross-request option is non-autoloaded and must never be read by a production adapter to decide activation. Unknown/new Gravity Flow versions are not automatically incompatible; compatibility eligibility changes only through later evidence-backed adapter contract migrations while existing guards remain intact.
+
 Required validation categories:
 
 ```bash
