@@ -15,8 +15,10 @@ if (!artifactDir || !baseUrl || !adminUser || !adminPassword || !expectedHead ||
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 if (
-  manifest.canonical_message_count !== 3127 ||
-  manifest.canonical_keyset_sha256 !== '3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95' ||
+  manifest.source_authority_message_count !== 3127 ||
+  manifest.source_authority_keyset_sha256 !== '3b533294de818bd7e772533512424571c85e5aa7bccb78cfe06b8b6820645c95' ||
+  manifest.runtime_provider_message_count !== 3126 ||
+  manifest.runtime_provider_keyset_sha256 !== 'bebc8421688876f3d555246e0c1d8fb43abc7f3765065af3f830d7bc194e77d9' ||
   !manifest.page_url ||
   !manifest.admin_edit_url ||
   !manifest.fixture_token
@@ -46,8 +48,10 @@ const result = {
   evidence_class: 'G006_GRAVITYVIEW_REPRESENTATIVE_BROWSER',
   exact_persiangravity_head: expectedHead,
   exact_gravityview_version: manifest.versions?.gravityview,
-  canonical_message_count_proven_by_runtime: manifest.canonical_message_count,
-  canonical_keyset_sha256_proven_by_runtime: manifest.canonical_keyset_sha256,
+  source_authority_message_count: manifest.source_authority_message_count,
+  source_authority_keyset_sha256: manifest.source_authority_keyset_sha256,
+  runtime_provider_message_count: manifest.runtime_provider_message_count,
+  runtime_provider_keyset_sha256: manifest.runtime_provider_keyset_sha256,
   diagnostics,
 };
 
