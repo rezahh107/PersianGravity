@@ -1,0 +1,1000 @@
+msgstr "یک عملیات گروهی برای اعمال انتخاب کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/GravityViewField.php:511
+msgid "Link to the post created by the entry."
+msgstr "پیوند به نوشته‌ای که توسط ورودی ایجاد شده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Search/Fields/SearchFieldChoices.php:131
+msgid "[link]Learn about the Pre-Filter Choices setting[/link] before enabling it."
+msgstr "پیش از فعال‌کردن، [link]دربارهٔ تنظیم Pre-Filter Choices بیشتر بدانید[/link]."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DuplicateEntry/DuplicateEntry.php:853
+#, php-format, python-format
+msgid "There was an error duplicating the entry: %s"
+msgstr "هنگام تکثیر ورودی خطایی رخ داد: %s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/Lightbox/FancyBox.php:152
+msgid "Share"
+msgstr "اشتراک‌گذاری"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/PageLinks.php:101
+msgid "Show each page number"
+msgstr "نمایش شمارهٔ هر صفحه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/Integrity/PackageVerifier.php:385
+msgid "This download is missing its signature. Retrying will not help — please contact GravityKit support so we can investigate."
+msgstr "این دانلود فاقد امضا است. تلاش دوباره کمکی نمی‌کند؛ لطفاً با پشتیبانی GravityKit تماس بگیرید تا بررسی کنیم."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Utils/Compatibility.php:351
+#, php-format, python-format
+msgid "You're using Version %s. Please update your Gravity Forms or purchase a license."
+msgstr "شما از نسخهٔ %s استفاده می‌کنید. لطفاً Gravity Forms را به‌روزرسانی کنید یا مجوز تهیه کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/BackgroundJobs/Scheduler.php:134 src/BackgroundJobs/Scheduler.php:95
+msgid "Background processing is not available."
+msgstr "پردازش پس‌زمینه در دسترس نیست."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:380
+#, php-format, python-format
+msgid "Contact %s support"
+msgstr "تماس با پشتیبانی %s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Checkbox.php:189
+msgid "Display Format:"
+msgstr "قالب نمایش:"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Abilities/Manager.php:310
+msgid "Ability execute_callback and permission_callback must be callable."
+msgstr "execute_callback و permission_callback مربوط به قابلیت باید قابل فراخوانی باشند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/ImageChoice.php:55
+msgid "Input label"
+msgstr "برچسب ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DeleteEntry/DeleteEntry.php:606
+msgid "Moving the entry to the trash failed."
+msgstr "انتقال ورودی به زباله‌دان ناموفق بود."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:653
+msgid "Head of Development"
+msgstr "مدیر توسعه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:647
+msgid "Preferred when you added a search_bar: it adds the bar AND its fields in one call (no slot bookkeeping)."
+msgstr "روش ترجیحی وقتی search_bar افزوده‌اید: نوار و فیلدهایش را در یک فراخوانی اضافه می‌کند (بدون نیاز به مدیریت جایگاه‌ها)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:280
+msgid "Return home"
+msgstr "بازگشت به خانه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/EditEntry/EditEntryRender.php:1919
+#, php-format
+msgctxt "Replacement 1 is HTML. Replacement 2 is the title of the page where the user will be taken. Replacement 3 is HTML."
+msgid "Entry Updated. %1$sReturning to %2$s%3$s"
+msgstr "ورودی به‌روزرسانی شد. %1$sبازگشت به %2$s%3$s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/Connection/AccountLicenses.php:609
+msgid "This license is activated network-wide and can only be changed by the network administrator."
+msgstr "این مجوز در سراسر شبکه فعال است و فقط مدیر شبکه می‌تواند آن را تغییر دهد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/ResendNotificationsAction.php:56 src/Frontend/Frontend.php:1880
+msgid "Send notifications"
+msgstr "ارسال اعلان‌ها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:1374
+msgid "Medium-emphasis weight (500)."
+msgstr "وزن تأکید متوسط (500)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/CreatedBy.php:144
+msgid "User ID # (Example: 426)"
+msgstr "ID کاربر # (نمونه: 426)"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Search/Fields/SearchFieldAll.php:67
+msgid "Search Entries:"
+msgstr "جستجوی ورودی‌ها:"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Permissions/Permissions.php:191 src/Permissions/Permissions.php:269
+msgid "You don't have permission to publish this View."
+msgstr "مجوز انتشار این نما را ندارید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DuplicateEntry/DuplicateEntry.php:268
+msgid "Allow the following users to duplicate the entry:"
+msgstr "به کاربران زیر اجازه دهید ورودی را تکثیر کنند:"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/FileUpload.php:64
+msgid "Display the uploaded files as links, rather than embedded content."
+msgstr "فایل‌های بارگذاری‌شده را به‌جای محتوای جاسازی‌شده، به‌صورت پیوند نمایش دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Email.php:68
+msgid "Set the default email content."
+msgstr "محتوای پیش‌فرض ایمیل را تنظیم کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/SearchFields/MoveSearchField.php:45
+msgid "Source position bucket key in search_fields_section."
+msgstr "کلید گروه موقعیت مبدأ در search_fields_section."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/PluginsPage.php:567
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "[product] is installed from a Git repository. Are you sure you want to delete it?"
+msgstr "[product] از یک مخزن Git نصب شده است. آیا مطمئنید می‌خواهید آن را حذف کنید؟"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:611
+msgid "To update the slot based on inspector edits."
+msgstr "برای به‌روزرسانی جایگاه بر اساس ویرایش‌های inspector."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/SourceUrl.php:49
+msgid "Link to URL:"
+msgstr "پیوند به URL:"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Integration/GravityFormsQuiz.php:62
+msgid "Quiz Percentage Grade"
+msgstr "درصد نمرهٔ آزمون"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/GravityViewView.php:89
+msgid "Example: created_by or 1.3"
+msgstr "نمونه: created_by یا 1.3"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:685
+msgid "Mwale is a meticulous QA Engineer dedicated to ensuring seamless plugin performance and exceptional user satisfaction. With a strong foundation in WordPress development and extensive expertise in testing, Mwale excels at delivering robust, reliable solutions that enhance user experiences across diverse platforms and environments."
+msgstr "Mwale مهندس تضمین کیفیت دقیقی است که برای عملکرد روان افزونه‌ها و رضایت بالای کاربران تلاش می‌کند. با پایه‌ای قوی در توسعهٔ WordPress و تجربهٔ گسترده در آزمایش، او در ارائهٔ راهکارهای پایدار و قابل اعتماد که تجربهٔ کاربر را در پلتفرم‌ها و محیط‌های گوناگون بهتر می‌کنند تخصص دارد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/BulkEditAction.php:94
+msgid "All supported fields and entry properties"
+msgstr "همهٔ فیلدها و ویژگی‌های پشتیبانی‌شدهٔ ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Preset/WebsiteShowcase.php:22
+msgid "Website Showcase"
+msgstr "ویترین وب‌سایت"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/SearchFields/RemoveSearchField.php:27
+msgid "Remove a search field slot from a `search_bar` widget at the given keyed position. Empties out the position bucket when no slots remain (excluding `area_settings`). Locate the target search_bar widget (its widget_area + widget_slot) and the search_slot/position uids in the widgets tree from gv_view_config_get — there is no auto-resolution to a single bar, and uids are server-minted, so re-read them from gv_view_config_get."
+msgstr "یک جایگاه فیلد جستجو را از ابزارک `search_bar` در موقعیت کلیددار داده‌شده حذف می‌کند. اگر هیچ جایگاهی باقی نماند، گروه موقعیت را خالی می‌کند (به‌جز `area_settings`). ابزارک search_bar هدف (widget_area + widget_slot آن) و uidهای search_slot/position را در درخت widgets از gv_view_config_get پیدا کنید—تعیین خودکار به یک نوار منفرد وجود ندارد و uidها توسط سرور ساخته می‌شوند، پس دوباره آن‌ها را از gv_view_config_get بخوانید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/ApprovalMergeTags.php:527 src/Entry/ApprovalMergeTags.php:544
+msgid "The link has expired."
+msgstr "این پیوند منقضی شده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:364
+msgid "[strong]Display a complete GravityView View[/strong] on any page or post."
+msgstr "[strong]یک نمای کامل GravityView را نمایش دهید[/strong] و آن را در هر برگه یا نوشته قرار دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/EditEntry/EditEntryLocking.php:544
+#, php-format, python-format
+msgid "%s is currently editing this entry"
+msgstr "%s در حال ویرایش این ورودی است"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Scheduler/Handlers/ScheduleHandler.php:329
+msgid "Job started."
+msgstr "کار آغاز شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:449
+msgid "Full or partial widget tree."
+msgstr "درخت کامل یا جزئی ابزارک‌ها."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Data/ViewData.php:331
+msgid "There is no post or page with that ID."
+msgstr "هیچ نوشته یا برگه‌ای با این ID وجود ندارد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/ApprovalMergeTags.php:579
+#, python-brace-format
+msgid "Success: Entry #{entry_id} has been {approval_label}."
+msgstr "موفقیت: ورودی #{entry_id} {approval_label} شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Notes.php:580 vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:232
+msgid "Yes"
+msgstr "بله"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/SearchFields/AddSearchField.php:46
+msgid "Advanced, slot-level Search Bar editing. For the common task — add a search bar to a View and populate it with fields — use gv_search_bar_add instead (one call, no slot bookkeeping). Use this only for surgical control when you already have the target widget_area + widget_slot + position from gv_view_config_get. Creates a new search field slot inside a `search_bar` widget at the given keyed position (e.g. `search-general_top::100::ROW_UID`). The `field` object must carry at least an `id` (a Gravity Forms field id, or a virtual search id like `search_all`, `submit`, `search_mode`). The `input` slug is validated against the per-field allow-list so typos can't silently produce a broken Search Bar. Supports atomic batch mode: pass `batch[]` (up to 50 items, each with `widget_area` + `widget_slot` + `position` + `field` + optional `slot`) plus a top-level `version` token to create multiple search-field slots in one transactional call. Singleton fields and `batch[]` are mutually exclusive. Locate the target search_bar widget (its widget_area + widget_slot) and any existing search_slot/position uids in the widgets tree from gv_view_config_get — there is no auto-resolution to a single bar, search_slot uids are server-minted (read them back from gv_view_config_get), and a legacy search bar exposes modern slots only after its first write through this API."
+msgstr "ویرایش پیشرفتهٔ نوار جستجو در سطح جایگاه. برای کار رایج—افزودن نوار جستجو به نما و پرکردن آن با فیلدها—به‌جای این از gv_search_bar_add استفاده کنید (یک فراخوانی و بدون مدیریت جایگاه). این مورد فقط برای کنترل دقیق زمانی است که widget_area + widget_slot + position هدف را از gv_view_config_get در اختیار دارید. یک جایگاه فیلد جستجوی جدید درون ابزارک `search_bar` در موقعیت کلیددار داده‌شده (مثلاً `search-general_top::100::ROW_UID`) ایجاد می‌کند. شیء `field` باید دست‌کم `id` داشته باشد (id فیلد Gravity Forms یا id مجازی جستجو مانند `search_all`، `submit`، `search_mode`). slug مربوط به `input` با فهرست مجاز هر فیلد اعتبارسنجی می‌شود تا اشتباه تایپی بی‌صدا نوار جستجو را خراب نکند. حالت batch اتمیک پشتیبانی می‌شود: `batch[]` را (حداکثر ۵۰ مورد، هرکدام با `widget_area` + `widget_slot` + `position` + `field` + `slot` اختیاری) همراه با توکن سطح بالای `version` ارسال کنید تا چند جایگاه فیلد جستجو در یک فراخوانی تراکنشی ایجاد شوند. فیلدهای تکی و `batch[]` با هم قابل استفاده نیستند. ابزارک search_bar هدف (widget_area + widget_slot آن) و uidهای search_slot/position موجود را در درخت widgets از gv_view_config_get پیدا کنید—هیچ تعیین خودکار به یک نوار منفرد وجود ندارد، uidهای search_slot توسط سرور ساخته می‌شوند (آن‌ها را دوباره از gv_view_config_get بخوانید)، و یک نوار جستجوی legacy تنها پس از نخستین نوشتن از طریق این API جایگاه‌های مدرن را ارائه می‌کند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/ViewActionLock.php:99
+msgid "The bulk action could not be started. Refresh the page and try again."
+msgstr "عملیات گروهی آغاز نشد. صفحه را تازه‌سازی کنید و دوباره تلاش کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:652 src/Admin/Welcome.php:654
+msgid "Vlad K."
+msgstr "Vlad K."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Core/Permalinks.php:439
+msgid "The entry slug requires at least the [slug] merge tag, to ensure uniqueness."
+msgstr "نامک ورودی باید برای حفظ یکتایی دست‌کم برچسب ادغام مربوط به [slug] را داشته باشد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/ApprovalStatus.php:60 src/Entry/ApprovalStatus.php:61
+msgid "Entry approved for directory viewing. Click to disapprove this entry, or press Enter to choose a status."
+msgstr "ورودی برای نمایش در فهرست تأیید شده است. برای رد این ورودی کلیک کنید یا برای انتخاب وضعیت Enter را فشار دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/PageBuilder.php:877
+msgid "Last Entry Number"
+msgstr "شمارهٔ آخرین ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/CreateView.php:47
+msgid "Optional per-zone template overrides (`single`, `edit`)."
+msgstr "بازنویسی‌های اختیاری قالب برای هر ناحیه (`single`، `edit`)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/ListViews.php:22
+msgid "Enumerate existing GravityView Views with inexpensive filters. Use views-scan for config-inspection filters such as field type, widget type, health, or add-on settings."
+msgstr "نماهای موجود GravityView را با فیلترهای کم‌هزینه فهرست می‌کند. برای فیلترهای نیازمند بررسی پیکربندی مانند نوع فیلد، نوع ابزارک، سلامت یا تنظیمات افزودنی از views-scan استفاده کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/Poll.php:63
+msgid "Display Counts"
+msgstr "نمایش تعدادها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:1674
+msgid "The support team's site could not be found."
+msgstr "سایت تیم پشتیبانی پیدا نشد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Remote.php:596
+msgid "Support access could not be verified. Please contact the plugin's support team."
+msgstr "دسترسی پشتیبانی قابل تأیید نبود. لطفاً با تیم پشتیبانی افزونه تماس بگیرید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Scheduler/Overview/JobSerializer.php:564
+msgid "Friday"
+msgstr "جمعه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/ViewItem.php:275
+msgid "Field actions"
+msgstr "عملیات فیلد"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/View/Fields/FieldSlotRepository.php:470 src/View/Fields/FieldSlotRepository.php:79
+msgid "Field area is required."
+msgstr "area فیلد الزامی است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/Lightbox/FancyBox.php:146
+msgid "The requested content cannot be loaded. Please try again later."
+msgstr "محتوای درخواستی بارگذاری نشد. بعداً دوباره تلاش کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/PaymentMethod.php:38
+msgid "The way the entry was paid for (ie \"Credit Card\", \"PayPal\", etc.)"
+msgstr "روشی که هزینهٔ ورودی با آن پرداخت شده است (مانند «کارت اعتباری»، «PayPal» و غیره)"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/ResendNotificationsAction.php:1273
+msgid "Sent [notifications] notification for [entries]."
+msgid_plural "Sent [notifications] notifications for [entries]."
+msgstr[0] "برای [entries]، [notifications] اعلان ارسال شد."
+msgstr[1] "برای [entries]، [notifications] اعلان ارسال شدند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Integration/GravityFormsQuiz.php:64
+msgid "Displays the percentage of correct Quiz answers the user submitted."
+msgstr "درصد پاسخ‌های صحیح آزمون که کاربر ارسال کرده است را نمایش می‌دهد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Search/Fields/SearchField.php:351
+msgid "Date range layout"
+msgstr "چیدمان بازهٔ تاریخ"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/GetViewAreas.php:46
+msgid "Map of zone key → area inventory."
+msgstr "نگاشت کلید ناحیه → فهرست ناحیه‌ها."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:741
+msgid "Slot UID. The area is resolved automatically."
+msgstr "UID مربوط به slot. area به‌طور خودکار تعیین می‌شود."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:499
+msgid "Captions, sub-titles, search-widget labels, and supporting copy."
+msgstr "زیرنویس‌ها، زیرعنوان‌ها، برچسب‌های ابزارک جستجو و متن‌های کمکی."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Logger/Settings.php:355
+msgid "How often to start a new log file. Previous log files will be kept according to the retention setting below."
+msgstr "تعیین کنید هر چند وقت یک فایل گزارش جدید آغاز شود. فایل‌های گزارش قبلی طبق تنظیم نگهداری زیر حفظ خواهند شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:256
+msgid "Message sent!"
+msgstr "پیام ارسال شد!"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/PluginsPage.php:870
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "[products_with_updates] product has a newer version available. Please visit the [link]Manage Your Kit[/link] page to update it."
+msgid_plural "[products_with_updates] products have newer versions available. Please visit the [link]Manage Your Kit[/link] page to update them."
+msgstr[0] "نسخهٔ جدیدتری برای [products_with_updates] محصول در دسترس است. برای به‌روزرسانی آن به صفحهٔ [link]مدیریت بستهٔ شما[/link] بروید."
+msgstr[1] "نسخه‌های جدیدتری برای [products_with_updates] محصول در دسترس است. برای به‌روزرسانی آن‌ها به صفحهٔ [link]مدیریت بستهٔ شما[/link] بروید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Logger/Settings.php:395
+msgid "Keep all files"
+msgstr "نگهداری همهٔ فایل‌ها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/IsApproved.php:57
+msgid "Display the entry's current approval status."
+msgstr "وضعیت تأیید فعلی ورودی را نمایش دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:1281
+msgid "Body-text size. Other sizes (small, large) scale proportionally."
+msgstr "اندازهٔ متن بدنه. اندازه‌های دیگر (کوچک، بزرگ) به‌صورت نسبی مقیاس می‌شوند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:129
+msgid "Design Studio preview surface — covers transient stage staging for the preview iframe AND subtree re-render endpoints called by preview clients (e.g. live re-paints when a setting changes)."
+msgstr "سطح پیش‌نمایش Design Studio—هم ذخیره‌سازی موقت وضعیت پیش‌نمایش در transient برای iframe را پوشش می‌دهد و هم نقطه‌های پایانیِ رندر مجدد زیر‌درخت را که کلاینت‌های پیش‌نمایش فراخوانی می‌کنند (برای نمونه، بازترسیم زنده هنگام تغییر یک تنظیم)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:320
+msgid "Grid surface: \"fields\" (default — View main field tree per zone) or \"widgets\" (header/footer widget zones)."
+msgstr "سطح شبکه: \"fields\" (پیش‌فرض — درخت اصلی فیلدهای نما برای هر ناحیه) یا \"widgets\" (ناحیه‌های ابزارک header/footer)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Scheduler/Store/DbStore.php:561
+msgid "Unable to pause run [id]. It may have been changed by another process."
+msgstr "توقف اجرای [id] ممکن نشد. شاید فرایند دیگری آن را تغییر داده باشد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/View/View.php:249
+msgid "See Views"
+msgstr "مشاهدهٔ نماها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Integration/GravityPerksNestedForms.php:120 src/Integration/GravityPerksNestedForms.php:89
+msgid "Parent Entry ID"
+msgstr "شناسهٔ ورودی والد"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/View/View.php:238
+msgctxt "View Item"
+msgid "View"
+msgstr "نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:991
+msgid "Invalid View id."
+msgstr "شناسهٔ نما نامعتبر است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/UpdatesPage.php:104
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "You have version [current_version] installed. Before updating to [new_version], please [link]review the requirements[/link]."
+msgstr "نسخهٔ [current_version] روی سایت نصب است. پیش از به‌روزرسانی به [new_version]، لطفاً [link]نیازمندی‌ها را بررسی کنید[/link]."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:1434
+#, php-format, python-format
+msgid "Extend %s Access"
+msgstr "تمدید دسترسی %s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/DownloadAttachmentsAction.php:214
+msgid "Enter one case-insensitive glob pattern per line."
+msgstr "در هر خط یک الگوی glob بدون حساسیت به حروف وارد کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Discovery/ListGridRowTypes.php:28
+msgid "List Grid Row Types"
+msgstr "فهرست انواع ردیف شبکه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:477
+msgid "GravityView has full support for shortcodes to embed Views, entries, and fields. [link]See a full list of shortcodes[/link]."
+msgstr "GravityView به‌طور کامل از کدهای کوتاه برای جاسازی نماها، ورودی‌ها و فیلدها پشتیبانی می‌کند. [link]فهرست کامل کدهای کوتاه را ببینید[/link]."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:2527
+msgid "Border color of widget containers."
+msgstr "رنگ کادر محفظه‌های ابزارک."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Components/SecureDownload.php:352
+msgid "URLs require source_type='remote'. Pass ['source_type' => 'remote'] to confirm remote URL handling."
+msgstr "URLها به source_type='remote' نیاز دارند. برای تأیید مدیریت URL راه‌دور، ['source_type' => 'remote'] را ارسال کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/API/class-api.php:911
+msgid "Map It"
+msgstr "نمایش روی نقشه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/IsRead.php:64 src/Search/Fields/SearchFieldIsRead.php:40
+msgid "Is Read"
+msgstr "خوانده شده است"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Fields/PatchViewField.php:65
+msgid "Map of setting key → value. Each entry is sanitized through the schema-aware pipeline."
+msgstr "نگاشت کلید تنظیم → مقدار. هر مورد از طریق فرایند پاک‌سازیِ آگاه از شِما پاک‌سازی می‌شود."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:762
+#, python-brace-format
+msgid "`{ type: zone|row|slots, ... }` — see InspectorRoute::render_partial doc."
+msgstr "`{ type: zone|row|slots, ... }` — مستندات InspectorRoute::render_partial را ببینید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/SupportPort.php:298
+msgid "Show GravityView Support Port when on a GravityView-related page"
+msgstr "نمایش درگاه پشتیبانی GravityView در صفحه‌های مرتبط با GravityView"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/ApprovalStatus.php:67
+msgid "Entry not yet reviewed. Click to approve this entry, or press Enter to choose a status."
+msgstr "این ورودی هنوز بررسی نشده است. برای تأیید آن کلیک کنید یا برای انتخاب وضعیت Enter را فشار دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Sequence.php:119
+msgid "For each entry, the displayed number will increase by one. When displaying ten entries, the first entry will display \"1\", and the last entry will show \"10\"."
+msgstr "برای هر ورودی، شمارهٔ نمایش‌داده‌شده یک واحد افزایش می‌یابد. هنگام نمایش ده ورودی، ورودی اول «1» و ورودی آخر «10» را نشان می‌دهد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:2521
+msgid "No entry available to render against."
+msgstr "هیچ ورودی‌ای برای رندر در دسترس نیست."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/ScanViews.php:65
+msgid "Page size, 1-25. Default 20. Scan is server-side filtered for performance; use gk-gravityview/views-list for higher per_page when you only need top-level metadata."
+msgstr "اندازهٔ صفحه، ۱ تا ۲۵. پیش‌فرض ۲۰. اسکن برای کارایی در سمت سرور فیلتر می‌شود؛ اگر فقط فرادادهٔ سطح بالا لازم دارید، برای per_page بیشتر از gk-gravityview/views-list استفاده کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/ProductManager.php:451
+msgid "Unable to locate product download link."
+msgstr "پیوند دانلود محصول پیدا نشد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/BeaverBuilder/BasicModule.php:150 src/PageBuilder/Divi/BasicModule.php:109 src/PageBuilder/Elementor/BasicWidget.php:347 src/PageBuilder/PageBuilder.php:553
+msgid "Sorting"
+msgstr "مرتب‌سازی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/EditEntry/EditEntryLocking.php:204
+#, php-format, python-format
+msgid "Your request has been sent to %s."
+msgstr "درخواست شما برای %s ارسال شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:940
+msgid "Decorative-only warning hue. Never emitted as bare text; only as backgrounds or inside .gv-status mixin."
+msgstr "ته‌رنگ هشدار صرفاً تزئینی. هرگز به‌صورت متن تنها خروجی داده نمی‌شود؛ فقط برای پس‌زمینه‌ها یا داخل mixin با نام .gv-status استفاده می‌شود."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/View/MoveSlotTarget.php:121
+msgid "The destination area is missing."
+msgstr "area مقصد مشخص نشده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Sequence.php:55
+msgid "Number Sequence"
+msgstr "توالی عددی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:1948
+msgid "Width of the focus-visible ring."
+msgstr "پهنای حلقهٔ focus-visible."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Discovery/ListForms.php:27
+msgid "List Forms"
+msgstr "فهرست فرم‌ها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:713
+msgid "To reorder the row within its zone."
+msgstr "برای تغییر ترتیب ردیف در ناحیه آن."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Admin.php:288
+#, php-format
+msgid "View scheduled for: %1$s."
+msgstr "نما برای %1$s زمان‌بندی شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Widgets/RemoveViewWidget.php:25
+msgid "Remove View Widget"
+msgstr "حذف ابزارک نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/PageBuilder.php:785
+msgid "Choose an existing View."
+msgstr "یک نمای موجود انتخاب کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Scheduler/Overview/JobSerializer.php:491
+msgid "Every day"
+msgstr "هر روز"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/ResendNotificationsAction.php:159
+msgid "Select a form to choose allowed notifications for [action]."
+msgstr "برای انتخاب اعلان‌های مجاز برای [action]، یک فرم انتخاب کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Fields/CloneViewField.php:26
+msgid "Clone View Field"
+msgstr "تکثیر فیلد نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:6093
+msgid "position is required (in body or query)."
+msgstr "position الزامی است (در body یا query)."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BackgroundJobs/EntryBatchTask.php:424 src/Entry/BulkActions/BackgroundProcessor.php:133
+msgid "The background action checkpoint skipped unprocessed entries."
+msgstr "نقطهٔ کنترل عملیات پس‌زمینه از روی ورودی‌های پردازش‌نشده عبور کرد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Email.php:59
+msgid "Set the default email subject line."
+msgstr "موضوع پیش‌فرض ایمیل را تنظیم کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/PostTags.php:32
+msgid "Post Tags"
+msgstr "برچسب‌های نوشته"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/PageLinks.php:71
+msgid "Numbers with arrows (default)"
+msgstr "شماره‌ها همراه پیکان‌ها (پیش‌فرض)"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:234
+msgid "Keep searching"
+msgstr "ادامهٔ جستجو"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/PaymentMethod.php:37
+msgid "Payment Method"
+msgstr "روش پرداخت"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/ViewItem.php:261
+#, php-format, python-format
+msgid "The field connected to \"%s\" was deleted from the form. The associated entry data no longer exists."
+msgstr "فیلد متصل به «%s» از فرم حذف شده است. دادهٔ ورودی مرتبط دیگر وجود ندارد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:2016
+msgid "Hover variant of card border component."
+msgstr "گونهٔ جزء کادر کارت هنگام قرارگیری نشانگر."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/BulkActions.php:323
+msgid "Selected actions with additional settings appear below."
+msgstr "عملیات انتخاب‌شده‌ای که تنظیمات اضافی دارند در پایین ظاهر می‌شوند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:664
+msgid "Text color of primary buttons."
+msgstr "رنگ متن دکمه‌های اصلی."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Components/SecureDownload.php:562
+msgid "No download token provided."
+msgstr "هیچ توکن دانلودی ارائه نشده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Core.php:712
+msgid "Please provide a valid email address"
+msgstr "لطفاً یک نشانی ایمیل معتبر وارد کنید"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/WordPress/SearchWPWidget.php:221
+msgid "&mdash; Select a View &mdash;"
+msgstr "&mdash; یک نما انتخاب کنید &mdash;"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Address.php:46
+msgid "Address"
+msgstr "نشانی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Licenses/WP/PluginsPage.php:1076
+msgctxt "Placeholders inside [] are not to be translated."
+msgid "[unlicensed] product is unlicensed. Please [link]visit the licensing page[/link] to enter a valid license or to purchase a new one."
+msgid_plural "[unlicensed] products are unlicensed. Please [link]visit the licensing page[/link] to enter a valid license or to purchase a new one."
+msgstr[0] "[unlicensed] محصول بدون مجوز است. لطفاً برای واردکردن مجوز معتبر یا خرید مجوز جدید، [link]به صفحهٔ مجوزها بروید[/link]."
+msgstr[1] "[unlicensed] محصول بدون مجوز هستند. لطفاً برای واردکردن مجوز معتبر یا خرید مجوز جدید، [link]به صفحهٔ مجوزها بروید[/link]."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Admin.php:280
+#, php-format, python-format
+msgid "View restored to revision from %s"
+msgstr "نما به بازبینی مربوط به %s بازگردانده شد"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Discovery/ListWidgets.php:27
+msgid "List Widgets"
+msgstr "فهرست ابزارک‌ها"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/ExportLink.php:72
+msgid "Enter the label of the link."
+msgstr "برچسب پیوند را وارد کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/EntryApproval.php:64
+msgid "Approve and reject entries from the View."
+msgstr "ورودی‌ها را از داخل نما تأیید یا رد کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:1621
+#, php-format
+msgid "Generating & encrypting secure support access for %1$s"
+msgstr "در حال ایجاد و رمزنگاری دسترسی امن پشتیبانی برای %1$s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DuplicateEntry/DuplicateEntry.php:262 src/Extension/DuplicateEntry/DuplicateEntry.php:294 src/Extension/DuplicateEntry/DuplicateEntry.php:316 templates/fields/field-duplicate_link-html.php:38
+msgid "Duplicate Entry"
+msgstr "تکثیر ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/GravityViewView.php:79
+msgid "Search field"
+msgstr "فیلد جستجو"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Fields/MoveViewField.php:50
+msgid "\"start\" | \"end\" | integer index."
+msgstr "\"start\" | \"end\" | اندیس عددی."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/BulkEditAction.php:2278 src/Entry/BulkActions/Actions/BulkEditAction.php:2398 src/Entry/BulkActions/Actions/BulkEditAction.php:2405
+msgid "A field value did not pass validation."
+msgstr "مقدار یکی از فیلدها اعتبارسنجی را رد کرد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/Notes.php:1272
+msgid "You do not have permission to email entry notes."
+msgstr "مجوز ایمیل‌کردن یادداشت‌های ورودی را ندارید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Logger/Settings.php:383
+msgid "7 files"
+msgstr "7 فایل"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:725
+msgid "To confirm the row is gone."
+msgstr "برای تأیید اینکه ردیف حذف شده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:3773
+#, php-format, python-format
+msgid "fields[%s]: Edit Entry doesn't use the layout grid. Place edit-zone fields under the canonical area key \"edit_edit-fields\" instead."
+msgstr "fields[%s]: بخش «ویرایش ورودی» از شبکهٔ چیدمان استفاده نمی‌کند. فیلدهای ناحیهٔ ویرایش را به‌جای آن زیر کلید ناحیهٔ معیار \"edit_edit-fields\" قرار دهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Integration/GravityViewRatingsReviews.php:73
+msgid "Allow users to rate, review, and comment on entries in a View. Supports star ratings and up/down voting."
+msgstr "به کاربران اجازه دهید به ورودی‌های یک نما امتیاز بدهند، نقد بنویسند و دیدگاه ثبت کنند. از امتیازدهی ستاره‌ای و رأی مثبت/منفی پشتیبانی می‌کند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Admin.php:273 src/Admin/Admin.php:275 src/Admin/Admin.php:278
+#, php-format
+msgid "View updated. %1$sView on website.%2$s"
+msgstr "نما به‌روزرسانی شد. %1$sمشاهده در وب‌سایت.%2$s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:249 vendor_prefixed/gravitykit/foundation/src/Integrations/HelpScout.php:326
+msgid "You"
+msgstr "شما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:673
+msgid "Background of primary buttons on hover."
+msgstr "پس‌زمینهٔ دکمه‌های اصلی هنگام قرارگیری نشانگر."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/SetViewStatus.php:27
+msgid "Set View Status"
+msgstr "تنظیم وضعیت نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:2336
+#, php-format, python-format
+msgid "No Gravity Forms form was found with id %d."
+msgstr "هیچ فرم Gravity Forms با شناسهٔ %d پیدا نشد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/DownloadAttachmentsAction.php:2591
+msgid "with empty field values"
+msgstr "با مقدار فیلد خالی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:836
+msgid "Zone to switch (directory | single | edit). Defaults to directory. The single zone falls back to directory when its meta is empty; clearing single returns it to directory inheritance."
+msgstr "ناحیه‌ای که باید تغییر کند (directory | single | edit). مقدار پیش‌فرض directory است. اگر فرادادهٔ ناحیهٔ single خالی باشد، single از directory استفاده می‌کند؛ پاک‌کردن single آن را دوباره تابع directory می‌کند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/GravityBoardWidget.php:91
+msgid "&mdash; Select a Board &mdash;"
+msgstr "&mdash; یک تابلو انتخاب کنید &mdash;"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:5874
+msgid "position is required (e.g. \"search-general_top::100::ROW_UID\")."
+msgstr "position الزامی است (برای نمونه \"search-general_top::100::ROW_UID\")."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Renderer/Renderer.php:305
+msgid "Disable the \"Show only approved entries\" setting for this View"
+msgstr "غیرفعال‌کردن تنظیم «فقط ورودی‌های تأییدشده را نشان بده» برای این نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Components/SecureDownload.php:1228
+msgid "Remote file not available."
+msgstr "فایل راه‌دور در دسترس نیست."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/Types/Poll.php:46
+msgid "Displays the results of Poll Fields that exist in the form."
+msgstr "نتایج فیلدهای نظرسنجی موجود در فرم را نمایش می‌دهد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Fields/MoveViewField.php:27
+msgid "Atomically move a field slot between (or within) field areas. Placement precedence: `to.before_slot` > `to.after_slot` > `position` (`start` | `end` | integer). Out-of-range or negative numeric positions are clamped to \"append\"."
+msgstr "یک جایگاه فیلد را به‌صورت اتمیک بین ناحیه‌های فیلد (یا داخل همان ناحیه) جابه‌جا می‌کند. اولویت جای‌گذاری: `to.before_slot` > `to.after_slot` > `position` (`start` | `end` | عدد صحیح). موقعیت‌های عددی منفی یا خارج از بازه به \"append\" محدود می‌شوند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/PostCategory.php:29
+msgid "Post Category"
+msgstr "دستهٔ نوشته"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/EntryLink.php:42
+msgid "Link to Single Entry"
+msgstr "پیوند به ورودی تکی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/RequestHandler.php:394
+msgid "The bulk action setting is not available."
+msgstr "تنظیم عملیات گروهی در دسترس نیست."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:489
+msgid "To discover the areas of the layout just bound."
+msgstr "برای شناسایی ناحیه‌های چیدمانی که به‌تازگی متصل شده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Search/Fields/SearchFieldChoices.php:123
+msgid "For fields with choices: Instead of showing all choices for each field, show only field choices that exist in submitted form entries."
+msgstr "برای فیلدهای دارای گزینه: به‌جای نمایش همهٔ گزینه‌های هر فیلد، فقط گزینه‌هایی را نشان دهید که در ورودی‌های ارسال‌شدهٔ فرم وجود دارند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Media/oEmbed.php:204
+#, php-format, python-format
+msgid "Embed Entry %d"
+msgstr "جاسازی ورودی %d"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Frontend/Frontend.php:1846
+msgid "Choose fields to update for [count] selected entries."
+msgstr "فیلدهایی را که باید برای [count] ورودی انتخاب‌شده به‌روزرسانی شوند انتخاب کنید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Grid/RemoveGridRow.php:26
+msgid "Remove Grid Row"
+msgstr "حذف ردیف شبکه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/BeaverBuilder/BasicModule.php:174 src/PageBuilder/Divi/BasicModule.php:110 src/PageBuilder/Elementor/BasicWidget.php:390 src/PageBuilder/PageBuilder.php:557
+msgid "Search & Filtering"
+msgstr "جستجو و فیلترکردن"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Logger/Settings.php:334
+msgid "Monthly"
+msgstr "ماهانه"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Admin.php:303
+#, php-format, python-format
+msgid "%s View not updated, somebody is editing it."
+msgid_plural "%s Views not updated, somebody is editing them."
+msgstr[0] "%s نما به‌روزرسانی نشد؛ شخص دیگری در حال ویرایش آن است."
+msgstr[1] "%s نما به‌روزرسانی نشدند؛ شخص دیگری در حال ویرایش آن‌هاست."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Field/Types/OtherEntries.php:86
+msgid "Hide if no entries"
+msgstr "پنهان‌کردن در صورت نبود ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:5604
+#, php-format, python-brace-format, python-format
+msgid "Target one with the form-qualified id \"{form_id}::%s\"."
+msgstr "یکی را با شناسهٔ واجد فرم \"{form_id}::%s\" هدف بگیرید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/PageBuilder.php:333
+msgid "Field ID to search in"
+msgstr "شناسهٔ فیلد برای جستجو"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/ApprovalMergeTags.php:622 src/Entry/ApprovalMergeTags.php:628
+msgid "Invalid security token."
+msgstr "توکن امنیتی نامعتبر است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Bootstrap.php:503
+msgid "To inspect the freshly-duplicated draft."
+msgstr "برای بررسی پیش‌نویس تازه‌تکثیرشده."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Settings/TokenRegistry.php:1419
+msgid "Vertical rhythm of body text. Higher values are airier."
+msgstr "ریتم عمودی متن بدنه. مقادیر بیشتر، فاصلهٔ عمودی بازتری ایجاد می‌کنند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/REST/InspectorRoute.php:417 src/REST/InspectorRoute.php:516
+msgid "replace = each area in fields/widgets replaces existing area. merge = additive. Default: replace."
+msgstr "replace = هر area در fields/widgets جایگزین area موجود می‌شود. merge = افزایشی. پیش‌فرض: replace."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/PageBuilder.php:355
+msgid "Ends With"
+msgstr "پایان می‌یابد با"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/gravitykit/foundation/src/Components/SecureDownload.php:1116
+msgid "The file appears to be corrupted or was modified during download."
+msgstr "به نظر می‌رسد فایل خراب است یا هنگام دانلود تغییر کرده است."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/SearchFields/MoveSearchField.php:57
+msgid "Destination search_slot UID for ordering within to_position. Existing fields at that key shift to make room. When omitted, the field appends to the bucket."
+msgstr "UID مربوط به search_slot مقصد برای ترتیب‌دهی در to_position. فیلدهای موجود در آن کلید جابه‌جا می‌شوند تا جا باز شود. اگر حذف شود، فیلد به انتهای گروه افزوده می‌شود."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/WordPress/SearchWPWidget.php:283
+msgid "Search Fields"
+msgstr "فیلدهای جستجو"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Widget/WordPress/RecentEntriesWidget.php:31
+msgid "Display the most recent entries for a View"
+msgstr "جدیدترین ورودی‌ها را برای یک نما نمایش دهید"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:1092
+msgid "(Default)"
+msgstr "(پیش‌فرض)"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:446 src/PageBuilder/Gutenberg/blocks/entry-link/block.php:27 src/PageBuilder/PageBuilder.php:638
+msgid "GravityView Entry Link"
+msgstr "پیوند ورودی GravityView"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/ExportCsvAction.php:155
+msgid "Output"
+msgstr "خروجی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:805
+#, php-format, python-format
+msgid "Browser testing by %s"
+msgstr "آزمایش مرورگر توسط %s"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Abilities/Views/SwitchViewTemplate.php:29
+msgid "Switch View Template"
+msgstr "تغییر قالب نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Search/Fields/SearchField.php:355
+msgid "Combined Picker"
+msgstr "انتخابگر ترکیبی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: vendor_prefixed/trustedlogin/client/src/Form.php:680
+#, php-format
+msgid "Grant %1$s access to this site."
+msgstr "به %1$s دسترسی به این سایت بدهید."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DuplicateEntry/DuplicateEntry.php:350 src/Extension/EditEntry/EditEntryAdmin.php:100 src/Field/Types/DeleteLink.php:84
+msgctxt "User capability"
+msgid "Entry Creator"
+msgstr "ایجادکنندهٔ ورودی"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:259
+msgid "If you want to [strong]create a new form[/strong], click the \"Use a Form Preset\" button"
+msgstr "اگر می‌خواهید [strong]فرم جدیدی ایجاد کنید[/strong]، روی دکمهٔ «استفاده از پیش‌تنظیم فرم» کلیک کنید"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: templates/fields/field-notes-csv.php:57
+msgctxt "A single entry note in a CSV export."
+msgid "[author] ([date]): [note]"
+msgstr "[author] ([date]): [note]"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/PageBuilder/PageBuilder.php:784
+msgid "Select View"
+msgstr "انتخاب نما"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/View/MoveSlotTarget.php:142
+msgid "Choose only one of: before_slot, after_slot, or position — not multiple."
+msgstr "فقط یکی از before_slot، after_slot یا position را انتخاب کنید؛ نه چند مورد را هم‌زمان."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Extension/DuplicateEntry/DuplicateEntry.php:932
+msgid "Entry duplicated."
+msgstr "ورودی تکثیر شد."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Integration/LifterLMS/Integration.php:376
+msgid "Navigation label"
+msgstr "برچسب پیمایش"
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Entry/BulkActions/Actions/ResendNotificationsAction.php:87
+msgid "Sending notifications in the background."
+msgstr "اعلان‌ها در پس‌زمینه ارسال می‌شوند."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
+#: src/Admin/Welcome.php:727
+msgid "We welcome contributions from licensed developers. If you're interested in contributing, please [link]contact support[/link] so we can coordinate the best path forward."
+msgstr "از مشارکت توسعه‌دهندگان دارای مجوز استقبال می‌کنیم. اگر علاقه‌مندید مشارکت کنید، لطفاً [link]با پشتیبانی تماس بگیرید[/link] تا بهترین مسیر همکاری را هماهنگ کنیم."
+
+#. G-006 PRODUCT_REMAINDER: current GravityView 3.3.4 source-backed identity
