@@ -180,6 +180,7 @@ foreach ( $messages as $runtime_key => $encoded_translation ) {
 }
 
 sort( $ids, SORT_STRING );
+g006_gv_assert( array() === $runtime_mismatches, 'GravityView provider/runtime mismatch: ' . wp_json_encode( $runtime_mismatches ) );
 g006_gv_assert( 3126 === $tested_count, 'GravityView gettext runtime-entry count mismatch: ' . $tested_count );
 g006_gv_assert( 127 === $context_count, 'GravityView context-count mismatch: ' . $context_count );
 g006_gv_assert( 42 === $plural_count, 'GravityView plural-count mismatch: ' . $plural_count );
@@ -187,7 +188,6 @@ g006_gv_assert(
 	'bebc8421688876f3d555246e0c1d8fb43abc7f3765065af3f830d7bc194e77d9' === hash( 'sha256', implode( "\n", $ids ) . "\n" ),
 	'GravityView gettext runtime-provider keyset fingerprint mismatch.'
 );
-g006_gv_assert( array() === $runtime_mismatches, 'GravityView provider/runtime mismatch: ' . wp_json_encode( $runtime_mismatches ) );
 
 g006_gv_assert( '+[count] عملیات' === __( '+[count] action', 'gk-gravityview' ), 'Projected singular gettext lookup failed.' );
 g006_gv_assert( '+[count] عملیات' === _n( '+[count] action', '+[count] actions', 2, 'gk-gravityview' ), 'Projected plural gettext lookup failed.' );
