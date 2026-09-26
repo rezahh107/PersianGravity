@@ -1,0 +1,33 @@
+name: G010 WU02 Branch Patch
+
+on:
+  push:
+    branches:
+      - feat/g010-wu02-compatibility-diagnostics
+    paths:
+      - '.g010-wu02-patch-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/g010-wu02-compatibility-diagnostics
+          fetch-depth: 1
+      - name: Apply bounded admin diagnostics patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tools/compatibility/apply-g010-wu02-admin-patch.php
+          git diff --check
+          changed="$(git diff --name-only)"
+          test "$changed" = $'admin/class-pgr-product-admin.php\nassets/css/pgr-admin.css'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin/class-pgr-product-admin.php assets/css/pgr-admin.css
+          git commit -m 'feat: report Gravity Flow compatibility in System Status'
+          git push origin HEAD:feat/g010-wu02-compatibility-diagnostics
