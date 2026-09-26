@@ -97,6 +97,10 @@ jobs:
           php "$G006_GV_WP_CLI" core download --path="$G006_GV_WP_PATH" --version=6.8.3 --force --skip-content
           php "$G006_GV_WP_CLI" config create --path="$G006_GV_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=g006-gv-root --dbhost=127.0.0.1:3306 --skip-check
           php "$G006_GV_WP_CLI" core install --path="$G006_GV_WP_PATH" --url="$G006_GV_BASE_URL" --title='G006 GravityView Runtime' --admin_user="$G006_GV_ADMIN_USER" --admin_password="$G006_GV_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$G006_GV_WP_CLI" option update home "$G006_GV_BASE_URL" --path="$G006_GV_WP_PATH"
+          php "$G006_GV_WP_CLI" option update siteurl "$G006_GV_BASE_URL" --path="$G006_GV_WP_PATH"
+          test "$(php "$G006_GV_WP_CLI" option get home --path="$G006_GV_WP_PATH")" = "$G006_GV_BASE_URL"
+          test "$(php "$G006_GV_WP_CLI" option get siteurl --path="$G006_GV_WP_PATH")" = "$G006_GV_BASE_URL"
           php "$G006_GV_WP_CLI" language core install fa_IR --activate --path="$G006_GV_WP_PATH"
           test "$(php "$G006_GV_WP_CLI" option get WPLANG --path="$G006_GV_WP_PATH")" = "fa_IR"
 
