@@ -1,11 +1,7 @@
 name: G-006 GravityView full-text Google draft
 
 on:
-  push:
-    branches:
-      - feat/g006-gravityview-full-persian-coverage
-    paths:
-      - .github/workflows/g006-gravityview-google-full-text.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
