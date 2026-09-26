@@ -30,14 +30,14 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			),
 			'gravityview' => array(
 				'domain'       => 'gk-gravityview',
-				'records'      => 6,
-				'union'        => 461,
+				'records'      => 7,
+				'union'        => 3127,
 				'source'       => 3127,
-				'non_admitted' => 2666,
+				'non_admitted' => 0,
 			),
 		);
 
-		$this->assertCount( 21, $manifest['admissions'] );
+		$this->assertCount( 22, $manifest['admissions'] );
 		$this->assertSame(
 			array( 'gk-gravityview', 'gravityflow', 'gravityforms' ),
 			$this->sortedKeys( $products )
@@ -50,7 +50,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertSame( $expected[ $record['product'] ]['domain'], $record['domain'] );
 			$record_identities[] = pgr_content_record_identity( $record );
 		}
-		$this->assertCount( 21, array_unique( $record_identities, SORT_STRING ) );
+		$this->assertCount( 22, array_unique( $record_identities, SORT_STRING ) );
 
 		foreach ( $expected as $product => $contract ) {
 			$this->assertArrayHasKey( $product, $content );
@@ -70,10 +70,10 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 			$this->assertCount( $contract['union'], $aggregate['ids'] );
 			$total_records += count( $content[ $product ]['admissions'] );
 		}
-		$this->assertSame( 21, $total_records );
+		$this->assertSame( 22, $total_records );
 	}
 
-	public function test_full_gravityforms_and_flow_partial_gravityview_boundaries_and_js_authority_remain_bounded(): void {
+	public function test_full_product_boundaries_and_js_authority_remain_bounded(): void {
 		$root     = dirname( __DIR__ );
 		$products = require $root . '/includes/localization/products.php';
 		$source   = pgr_validate_admission( $root );
@@ -81,7 +81,7 @@ final class CrossProductContentAdmissionIntegrationTest extends TestCase {
 		$outside  = array(
 			'gravityforms' => array( 'gravityforms', 'PersianGravity Gravity Forms out-of-census fallback probe.' ),
 			'gravityflow'  => array( 'gravityflow', 'PersianGravity Gravity Flow out-of-census fallback probe.' ),
-			'gravityview'  => array( 'gk-gravityview', 'API Key' ),
+			'gravityview'  => array( 'gk-gravityview', 'PersianGravity GravityView out-of-census fallback probe.' ),
 		);
 
 		foreach ( $outside as $product => $case ) {
