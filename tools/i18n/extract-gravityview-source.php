@@ -92,8 +92,8 @@ foreach ( $domains as $domain ) {
 	$result['domains'][ $domain ] = array(
 		'domain' => $domain, 'canonical_message_count' => count( $identity_rows ), 'context_message_count' => $context_count, 'plural_message_count' => $plural_count,
 		'source_reference_count' => count( $reference_rows ),
-		'canonical_keyset_sha256' => hash( 'sha256', implode( "\n", $identity_rows ) ),
-		'source_reference_index_sha256' => hash( 'sha256', implode( "\n", $reference_rows ) ),
+		'canonical_keyset_sha256' => hash( 'sha256', implode( "\n", $identity_rows ) . ( empty( $identity_rows ) ? '' : "\n" ) ),
+		'source_reference_index_sha256' => hash( 'sha256', implode( "\n", $reference_rows ) . ( empty( $reference_rows ) ? '' : "\n" ) ),
 		'entries' => array_values( array_map( static function ( $identity, $entry ) { return array( 'identity' => $identity ) + $entry; }, array_keys( $set ), array_values( $set ) ) ),
 	);
 }
