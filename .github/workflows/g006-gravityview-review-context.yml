@@ -1,11 +1,7 @@
 name: G-006 GravityView review context
 
 on:
-  push:
-    branches:
-      - feat/g006-gravityview-full-persian-coverage
-    paths:
-      - .github/workflows/g006-gravityview-review-context.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
