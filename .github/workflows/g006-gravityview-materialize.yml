@@ -1,0 +1,25 @@
+name: G-006 GravityView authority materialization
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-materialize.yml
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact WU-002 final-QA baseline is retrievable
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet gdown==5.2.0
+          gdown 15LYPpKcB28OXPiRhihIsKUWWPX_UfwIi -O /tmp/gravityview-final-qa.po
+          echo '2f57d0e1878801f30f6f9c1c8d354c68a739e8364cea063cdb7a56a8f81a2fca  /tmp/gravityview-final-qa.po' | sha256sum -c -
+          test "$(wc -c < /tmp/gravityview-final-qa.po)" -eq 1082042
