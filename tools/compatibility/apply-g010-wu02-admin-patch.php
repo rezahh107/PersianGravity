@@ -4,123 +4,59 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
-$adminPath = $root . '/admin/class-pgr-product-admin.php';
-$cssPath = $root . '/assets/css/pgr-admin.css';
 
-$admin = file_get_contents($adminPath);
-if ($admin === false) {
-    fwrite(STDERR, "Cannot read product admin.\n");
-    exit(1);
+function replace_once(string $path, string $old, string $new): void {
+    $content = file_get_contents($path);
+    if ($content === false) {
+        fwrite(STDERR, "Cannot read {$path}.\n");
+        exit(1);
+    }
+    if (substr_count($content, $old) !== 1) {
+        fwrite(STDERR, "Patch anchor drifted in {$path}.\n");
+        exit(1);
+    }
+    file_put_contents($path, str_replace($old, $new, $content));
 }
 
-$old = <<<'PHP'
-				$this->status_card( __( 'Profile Registry', 'persian-gravityforms' ), $profile_count, 'AVAILABLE' );
-				?>
-			</div>
-		</div>
-		<?php
-	}
+$testPath = $root . '/tests/GravityFlowCompatibilityDiagnosticsTest.php';
+replace_once(
+    $testPath,
+    "\t\tdefine( 'ABSPATH', dirname( __DIR__ ) . '/' );\n\t\tdefine( 'GRAVITY_FLOW_VERSION', '3.1.0' );\n\t\trequire_once dirname( __DIR__ ) . '/tests/bootstrap.php';\n\t\trequire_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-compatibility-diagnostics.php';",
+    "\t\tdefine( 'GRAVITY_FLOW_VERSION', '3.1.0' );"
+);
 
-	/** Render local, version-controlled bilingual Help Center. */
-PHP;
+$agentsPath = $root . '/AGENTS.md';
+$agentsOld = <<<'MD'
+Gravity Flow qualification package authority lives at `tools/compatibility/gravityflow-package.json`. Active qualification consumers must resolve it through the repository helper rather than discovering, substituting, or hard-coding another Gravity Flow package reference.
 
-$new = <<<'PHP'
-				$this->status_card( __( 'Profile Registry', 'persian-gravityforms' ), $profile_count, 'AVAILABLE' );
-				?>
-			</div>
-			<?php $this->render_gravity_flow_compatibility_status(); ?>
-		</div>
-		<?php
-	}
+Required validation categories:
+MD;
+$agentsNew = <<<'MD'
+Gravity Flow qualification package authority lives at `tools/compatibility/gravityflow-package.json`. Active qualification consumers must resolve it through the repository helper rather than discovering, substituting, or hard-coding another Gravity Flow package reference.
 
-	/** Render reporting-only Gravity Flow compatibility diagnostics. */
-	public function render_gravity_flow_compatibility_status() {
-		if ( ! class_exists( 'PGR_Gravity_Flow_Compatibility_Diagnostics', false ) ) {
-			return;
-		}
+Gravity Flow compatibility diagnostics are informational maintenance evidence, not runtime authority. `PGR_Gravity_Flow_Compatibility_Diagnostics` reuses established G-008 capability IDs, accepts only the bounded `AVAILABLE` / `DEGRADED` / `UNAVAILABLE` / `NOT_EVALUATED` states and source-owned `PGR-GFLOW-*` reasons, and exposes only a latest bounded reporting snapshot. The optional cross-request option is non-autoloaded and must never be read by a production adapter to decide activation. Unknown/new Gravity Flow versions are not automatically incompatible; compatibility eligibility changes only through later evidence-backed adapter contract migrations while existing guards remain intact.
 
-		$capabilities = PGR_Gravity_Flow_Compatibility_Diagnostics::capabilities();
-		$snapshot     = PGR_Gravity_Flow_Compatibility_Diagnostics::status_snapshot();
-		?>
-		<section class="pgr-panel pgr-compatibility-status">
-			<h2><?php echo esc_html__( 'Gravity Flow compatibility diagnostics', 'persian-gravityforms' ); ?></h2>
-			<p class="pgr-status-value"><?php echo esc_html__( 'Informational maintenance evidence only. These observations do not enable or disable compatibility.', 'persian-gravityforms' ); ?></p>
-			<table class="widefat striped">
-				<thead>
-					<tr>
-						<th scope="col"><?php echo esc_html__( 'Capability', 'persian-gravityforms' ); ?></th>
-						<th scope="col"><?php echo esc_html__( 'State', 'persian-gravityforms' ); ?></th>
-						<th scope="col"><?php echo esc_html__( 'Reason', 'persian-gravityforms' ); ?></th>
-						<th scope="col"><?php echo esc_html__( 'Observed Gravity Flow', 'persian-gravityforms' ); ?></th>
-						<th scope="col"><?php echo esc_html__( 'Last observed', 'persian-gravityforms' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $capabilities as $capability_id => $label ) : ?>
-						<?php
-						$record      = $snapshot[ $capability_id ];
-						$state       = (string) $record['state'];
-						$reason_id   = (string) $record['reason_id'];
-						$summary     = (string) $record['summary'];
-						$host        = is_string( $record['host_version'] ) && '' !== $record['host_version'] ? $record['host_version'] : __( 'Not observed', 'persian-gravityforms' );
-						$observed_at = is_int( $record['observed_at'] ) ? gmdate( 'Y-m-d H:i:s \\U\\T\\C', $record['observed_at'] ) : __( 'Not observed', 'persian-gravityforms' );
-						?>
-						<tr>
-							<td><strong><?php echo esc_html( $label ); ?></strong><br><code class="pgr-ltr"><?php echo esc_html( $capability_id ); ?></code></td>
-							<td><span class="pgr-badge" data-state="<?php echo esc_attr( $state ); ?>"><?php echo esc_html( $state ); ?></span></td>
-							<td><?php echo esc_html( $summary ); ?><br><code class="pgr-ltr"><?php echo esc_html( $reason_id ); ?></code></td>
-							<td><code class="pgr-ltr"><?php echo esc_html( $host ); ?></code></td>
-							<td><code class="pgr-ltr"><?php echo esc_html( $observed_at ); ?></code></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</section>
-		<?php
-	}
+Required validation categories:
+MD;
+replace_once($agentsPath, $agentsOld, $agentsNew);
 
-	/** Render local, version-controlled bilingual Help Center. */
-PHP;
+$architecturePath = $root . '/docs/ARCHITECTURE.md';
+$architectureOld = <<<'MD'
+## Safe disable
+MD;
+$architectureNew = <<<'MD'
+## G-010 Gravity Flow compatibility diagnostics foundation
 
-if (substr_count($admin, $old) !== 1) {
-    fwrite(STDERR, "Product-admin patch anchor drifted.\n");
-    exit(1);
-}
-$admin = str_replace($old, $new, $admin);
-file_put_contents($adminPath, $admin);
+`PGR_Gravity_Flow_Compatibility_Diagnostics` is a small reporting/governance component loaded with the existing non-disableable admin infrastructure. WU-02 does not wire current adapters into it and does not alter any existing exact-version, source-fingerprint, caller-chain, locale, source-data, range or conversion gate. Runtime safety decisions remain adapter-local; diagnostics may only observe a decision after the adapter has made it.
 
-$css = file_get_contents($cssPath);
-if ($css === false) {
-    fwrite(STDERR, "Cannot read admin CSS.\n");
-    exit(1);
-}
-$oldCss = <<<'CSS'
-.pgr-badge[data-state="WARNING"] {
-	background: #fff8e5;
-}
+The capability allowlist reuses the established G-008 Gravity Flow surface IDs for Inbox, Status, Entry Detail, Timeline/history and inherited Print. It is intentionally not a second source-semantics registry. Observations use exactly four states: `AVAILABLE`, `DEGRADED`, `UNAVAILABLE`, and `NOT_EVALUATED`. Stable `PGR-GFLOW-*` reasons classify contract satisfaction, unqualified host identity/version, unavailable seam/source contract, missing request/caller context, invalid source data, non-applicable module/locale/context, conversion failure, and absence of trustworthy evaluation. Human explanations are source-owned by the reason catalog rather than accepted as free-form request data.
 
-.pgr-badge[data-state="UNAVAILABLE"],
-.pgr-badge[data-state="DISABLED"] {
-	background: #f6f7f7;
-	color: #646970;
-}
-CSS;
-$newCss = <<<'CSS'
-.pgr-badge[data-state="WARNING"],
-.pgr-badge[data-state="DEGRADED"] {
-	background: #fff8e5;
-}
+The request-local recorder accepts only a known capability ID, state and reason. It has no generic context/payload parameter and records no user, form, entry, URL, cookie, token, request body, source excerpt or stack trace. Within one request, precedence is deterministic and failure-preserving: `UNAVAILABLE > DEGRADED > AVAILABLE > NOT_EVALUATED`; equal-state later observations replace earlier observations.
 
-.pgr-badge[data-state="UNAVAILABLE"],
-.pgr-badge[data-state="NOT_EVALUATED"],
-.pgr-badge[data-state="DISABLED"] {
-	background: #f6f7f7;
-	color: #646970;
-}
-CSS;
-if (substr_count($css, $oldCss) !== 1) {
-    fwrite(STDERR, "Admin CSS patch anchor drifted.\n");
-    exit(1);
-}
-$css = str_replace($oldCss, $newCss, $css);
-file_put_contents($cssPath, $css);
+System Status is a separate request, so the reporter may keep one small cross-request latest snapshot in the non-autoloaded `pgr_gravityflow_compatibility_latest` option. Schema version 1 stores only `capability_id`, `state`, `reason_id`, the source-owned short summary, `observed_at`, and the observed Gravity Flow version. The complete serialized snapshot is capped at 8192 bytes, observations older than seven days or implausibly future-dated are discarded, and persisted evidence from another currently observed Gravity Flow version is not trusted. Missing, malformed, stale or version-mismatched data renders as `NOT_EVALUATED`, never as incompatible and never as activation authority.
+
+The existing `PGR_Product_Admin` System Status page renders the reporting snapshot read-only. It provides no force-enable or destructive action. WU-02 by itself makes no unknown/new Gravity Flow version compatible; later WU-03/WU-04 must first prove replacement contracts and only then may change adapter guards.
+
+## Safe disable
+MD;
+replace_once($architecturePath, $architectureOld, $architectureNew);
