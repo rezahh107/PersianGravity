@@ -1,0 +1,66 @@
+name: G006 Plural Artifact Materialization
+
+on:
+  push:
+    branches: [feat/g006-gravityview-full-persian-coverage]
+    paths:
+      - '.github/workflows/g006-plural-artifact-materialize.yml'
+      - 'tools/i18n/catalog.php'
+      - 'tests/CatalogBuildTest.php'
+      - 'tests/i18n/run-production.php'
+      - 'tests/real-integration/g006-gravityview-runtime.php'
+      - 'languages/providers/**'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:2.8.12
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Materialize deterministic provider artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tools/i18n/build.php --write
+          php tools/i18n/build.php --check
+          vendor/bin/phpunit --filter 'CatalogBuildTest|GravityViewContentAdmissionTest|CrossProductContentAdmissionIntegrationTest'
+          composer i18n:test
+
+          mapfile -t changed < <(git status --porcelain=v1 | sed -E 's/^.. //')
+          printf 'Generated changes:\n'
+          printf '  %s\n' "${changed[@]}"
+          test "${#changed[@]}" -gt 0
+
+          for file in "${changed[@]}"; do
+            case "$file" in
+              languages/providers/*/*.l10n.php|languages/providers/*/metadata.json)
+                ;;
+              *)
+                echo "Unexpected generated path: $file" >&2
+                exit 1
+                ;;
+            esac
+          done
+
+          git add languages/providers/*/*.l10n.php languages/providers/*/metadata.json
+          test -z "$(git status --porcelain=v1 | grep -v '^M  languages/providers/' || true)"
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(i18n): materialize plural-safe provider artifacts"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
