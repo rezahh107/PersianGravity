@@ -72,6 +72,33 @@ function g006_gv_runtime_values( $runtime_key, array $expected, array $plural_by
 	);
 }
 
+function g006_gv_controller_values( $runtime_key, array $expected, array $plural_by_key ) {
+	$separator = strpos( $runtime_key, "\x04" );
+	if ( false === $separator ) {
+		$context  = '';
+		$original = $runtime_key;
+	} else {
+		$context  = substr( $runtime_key, 0, $separator );
+		$original = substr( $runtime_key, $separator + 1 );
+	}
+	$controller = WP_Translation_Controller::get_instance();
+	$domain     = 'gk-gravityview';
+
+	if ( 1 === count( $expected ) ) {
+		$value = $controller->translate( $original, $context, $domain, 'fa_IR' );
+		return array( false === $value ? $original : $value );
+	}
+
+	$plural = $plural_by_key[ $runtime_key ] ?? null;
+	g006_gv_assert( is_string( $plural ) && '' !== $plural, 'Missing source plural for GravityView controller probe.' );
+	$one = $controller->translate_plural( array( $original, $plural ), 1, $context, $domain, 'fa_IR' );
+	$two = $controller->translate_plural( array( $original, $plural ), 2, $context, $domain, 'fa_IR' );
+	return array(
+		false === $one ? $original : $one,
+		false === $two ? $plural : $two,
+	);
+}
+
 g006_gv_assert( 'fa_IR' === get_locale(), 'WordPress site locale must be fa_IR.' );
 g006_gv_assert( 'fa_IR' === determine_locale(), 'Effective runtime locale must be fa_IR.' );
 g006_gv_assert( class_exists( 'GFAPI' ), 'Gravity Forms runtime API is unavailable.' );
@@ -167,10 +194,15 @@ foreach ( $messages as $runtime_key => $encoded_translation ) {
 	$actual = g006_gv_runtime_values( $runtime_key, $expected, $plural_by_key );
 	if ( $actual !== $expected ) {
 		$runtime_mismatches[] = array(
-			'identity' => $id,
-			'msgid'    => $original,
-			'expected' => $expected,
-			'actual'   => $actual,
+			'identity'   => $id,
+			'msgid'      => $original,
+			'expected'   => $expected,
+			'controller' => g006_gv_controller_values( $runtime_key, $expected, $plural_by_key ),
+			'actual'     => $actual,
+			'filters'    => array(
+				'ngettext'                 => has_filter( 'ngettext' ),
+				'ngettext_gk-gravityview'  => has_filter( 'ngettext_gk-gravityview' ),
+			),
 		);
 		if ( 10 <= count( $runtime_mismatches ) ) {
 			break;
