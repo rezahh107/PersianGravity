@@ -218,6 +218,34 @@ final class ContentAdmissionGeneralizationTest extends TestCase {
 		$this->assertSame( $first['alpha']['aggregate']['admitted_translation_content_sha256'], $second['alpha']['aggregate']['admitted_translation_content_sha256'] );
 	}
 
+	public function test_canonical_source_keyset_hash_method_is_explicit_and_fail_closed(): void {
+		$ids = array(
+			hash( 'sha256', 'second' ),
+			hash( 'sha256', 'first' ),
+		);
+		$sorted = $ids;
+		sort( $sorted, SORT_STRING );
+
+		$this->assertSame(
+			hash( 'sha256', implode( "\n", $sorted ) ),
+			pgr_content_source_keyset_hash_with_method(
+				$ids,
+				'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_NO_TRAILING_NEWLINE'
+			)
+		);
+		$this->assertSame(
+			hash( 'sha256', implode( "\n", $sorted ) . "\n" ),
+			pgr_content_source_keyset_hash_with_method(
+				$ids,
+				'SHA256_UTF8_NEWLINE_JOIN_SORTED_IDENTITY_SHA256_WITH_TRAILING_NEWLINE'
+			)
+		);
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessage( 'Unsupported canonical source keyset hash method' );
+		pgr_content_source_keyset_hash_with_method( $ids, 'UNSUPPORTED' );
+	}
+
 	public function test_remainder_provider_protected_literal_drift_fails_closed(): void {
 		$root = sys_get_temp_dir() . '/pgr-protected-literal-' . bin2hex( random_bytes( 8 ) );
 		$this->roots[] = $root;
