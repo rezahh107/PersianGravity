@@ -151,18 +151,37 @@ foreach ( $remainder_evidence['entries'] as $source_entry ) {
 }
 g006_gv_assert( 42 === count( $plural_by_key ), 'GravityView source plural census mismatch.' );
 
-$ids = array();
-$runtime_mismatches = array();
-$context_count = 0;
-$plural_count = 0;
-$tested_count = 0;
-
+$canonical_messages = array();
+$plural_alias_count = 0;
 foreach ( $messages as $runtime_key => $encoded_translation ) {
 	g006_gv_assert( is_string( $runtime_key ) || is_int( $runtime_key ), 'Invalid GravityView runtime provider key type.' );
 	$runtime_key = (string) $runtime_key;
 	g006_gv_assert( '' !== $runtime_key, 'Invalid empty GravityView runtime provider key.' );
 	g006_gv_assert( is_string( $encoded_translation ) && '' !== $encoded_translation, 'Empty GravityView runtime provider translation.' );
 
+	$plural_separator = strpos( $runtime_key, "\0" );
+	if ( false === $plural_separator ) {
+		$canonical_messages[ $runtime_key ] = $encoded_translation;
+		continue;
+	}
+
+	++$plural_alias_count;
+	$base_key = substr( $runtime_key, 0, $plural_separator );
+	$plural   = substr( $runtime_key, $plural_separator + 1 );
+	g006_gv_assert( isset( $messages[ $base_key ] ), 'GravityView plural lookup alias has no canonical provider entry.' );
+	g006_gv_assert( $messages[ $base_key ] === $encoded_translation, 'GravityView plural lookup alias translation drift.' );
+	g006_gv_assert( ( $plural_by_key[ $base_key ] ?? null ) === $plural, 'GravityView plural lookup alias is not source-evidenced.' );
+}
+g006_gv_assert( 42 === $plural_alias_count, 'GravityView PHP plural lookup-alias census mismatch: ' . $plural_alias_count );
+g006_gv_assert( 3126 === count( $canonical_messages ), 'GravityView canonical runtime-provider entry count mismatch.' );
+
+$ids = array();
+$runtime_mismatches = array();
+$context_count = 0;
+$plural_count = 0;
+$tested_count = 0;
+
+foreach ( $canonical_messages as $runtime_key => $encoded_translation ) {
 	$separator = strpos( $runtime_key, "\x04" );
 	if ( false === $separator ) {
 		$context  = null;
@@ -179,6 +198,11 @@ foreach ( $messages as $runtime_key => $encoded_translation ) {
 		g006_gv_assert( 2 === count( $expected ), 'Incomplete GravityView plural translation.' );
 		$plural = $plural_by_key[ $runtime_key ] ?? null;
 		g006_gv_assert( is_string( $plural ) && '' !== $plural, 'Plural GravityView provider key is not source-evidenced.' );
+		g006_gv_assert(
+			isset( $messages[ $runtime_key . "\0" . $plural ] ) &&
+			$messages[ $runtime_key . "\0" . $plural ] === $encoded_translation,
+			'Missing exact GravityView PHP plural lookup alias.'
+		);
 	}
 	foreach ( $expected as $value ) {
 		g006_gv_assert( '' !== trim( $value ), 'Empty GravityView translation reached runtime qualification.' );
@@ -200,8 +224,8 @@ foreach ( $messages as $runtime_key => $encoded_translation ) {
 			'controller' => g006_gv_controller_values( $runtime_key, $expected, $plural_by_key ),
 			'actual'     => $actual,
 			'filters'    => array(
-				'ngettext'                 => has_filter( 'ngettext' ),
-				'ngettext_gk-gravityview'  => has_filter( 'ngettext_gk-gravityview' ),
+				'ngettext'                => has_filter( 'ngettext' ),
+				'ngettext_gk-gravityview' => has_filter( 'ngettext_gk-gravityview' ),
 			),
 		);
 		if ( 10 <= count( $runtime_mismatches ) ) {
