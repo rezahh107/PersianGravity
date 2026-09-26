@@ -1,0 +1,196 @@
+name: G-006 GravityView fast translation draft
+
+on:
+  push:
+    branches:
+      - feat/g006-gravityview-full-persian-coverage
+    paths:
+      - .github/workflows/g006-gravityview-fast-draft.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download locked GravityView census
+        uses: actions/download-artifact@v4
+        with:
+          name: g006-gravityview-census
+          path: /tmp/g006/out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36224261125
+
+      - name: Install translation tooling
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet polib==1.2.0
+          python3 -m pip install --quiet --index-url https://download.pytorch.org/whl/cpu 'torch==2.8.0'
+          python3 -m pip install --quiet 'transformers==4.57.1' 'sentencepiece==0.2.1'
+
+      - name: Load exact-match historical Persian translation memory
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            'https://raw.githubusercontent.com/OscarCampohermoso/Proyectos-Web-PHP-MariaDB/f07be38488f3ec64f3ce1e80e00444e2aedb7b56/htdocs-xampp/wordpress/wp-content/plugins/gravityview/languages/gravityview-fa_IR.po' \
+            -o /tmp/g006/out/historical-gravityview-2.15-fa_IR.po
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          import polib
+
+          US = '\x1f'
+          po = polib.pofile('/tmp/g006/out/historical-gravityview-2.15-fa_IR.po')
+          memory = {}
+          for entry in po:
+              if not entry.msgid or 'fuzzy' in entry.flags:
+                  continue
+              values = list(entry.msgstr_plural.values()) if entry.msgid_plural else [entry.msgstr]
+              if not values or not all(isinstance(v, str) and v.strip() for v in values):
+                  continue
+              identity = hashlib.sha256(
+                  ((entry.msgctxt or '') + US + entry.msgid + US + (entry.msgid_plural or '')).encode()
+              ).hexdigest()
+              memory[identity] = values
+          Path('/tmp/g006/out/historical-tm.json').write_text(
+              json.dumps({'schema_version': 1, 'translations': memory}, ensure_ascii=False, indent=2) + '\n'
+          )
+          print('historical_tm_nonempty=' + str(len(memory)))
+          PY
+
+      - name: Generate quantized Persian draft
+        env:
+          HF_HUB_DISABLE_XET: '1'
+          TOKENIZERS_PARALLELISM: 'false'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          import torch
+          from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
+          torch.set_num_threads(2)
+          data = json.loads(Path('/tmp/g006/out/residual.json').read_text())
+          entries = data['entries']
+          historical = json.loads(Path('/tmp/g006/out/historical-tm.json').read_text())['translations']
+
+          protected = re.compile(
+              r'(https?://[^\s<>"\']+'
+              r'|%(?:\d+\$)?[-+0#\']*(?:\d+|\*)?(?:\.(?:\d+|\*))?[bcdeEfFgGosuxX]'
+              r'|\{[^{}\r\n]+\}'
+              r'|</?[A-Za-z][^>]*>'
+              r'|&#(?:\d+|x[0-9A-Fa-f]+);'
+              r'|\[[A-Za-z][^\]\r\n]*\]'
+              r'|\`[^\`\\r\\n]+\`'
+              r'|\\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\b'
+              r'|\\b[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+\\b'
+              r'|Gravity Forms|GravityView|GravityKit(?:\\.com)?|WordPress|JavaScript|JSON|HTML|CSS|PHP|REST API|REST|API|URLs?|AJAX|OAuth|SMTP|HTTPS?|UTC|UID|SVG|CSV)'
+          )
+          natural = re.compile(r'[A-Za-z]')
+          segments, segment_index, plans = [], {}, {}
+
+          def plan(value):
+              if value is None:
+                  return None
+              parts = protected.split(value)
+              out = []
+              for idx, part in enumerate(parts):
+                  if not part:
+                      continue
+                  if idx % 2 == 1 or not natural.search(part) or re.fullmatch(r'[\s\W_\d]+', part):
+                      out.append(('literal', part))
+                  else:
+                      if part not in segment_index:
+                          segment_index[part] = len(segments)
+                          segments.append(part)
+                      out.append(('segment', segment_index[part]))
+              return out
+
+          for e in entries:
+              plans[e['identity']] = (plan(e['msgid']), plan(e.get('msgid_plural')))
+
+          name = 'facebook/nllb-200-distilled-600M'
+          tok = AutoTokenizer.from_pretrained(name, src_lang='eng_Latn')
+          model = AutoModelForSeq2SeqLM.from_pretrained(name)
+          model.eval()
+          model = torch.ao.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+          target = tok.convert_tokens_to_ids('pes_Arab')
+          translated = [''] * len(segments)
+
+          with torch.inference_mode():
+              for start in range(0, len(segments), 64):
+                  batch_text = segments[start:start + 64]
+                  batch = tok(batch_text, return_tensors='pt', padding=True, truncation=True, max_length=512)
+                  generated = model.generate(
+                      **batch,
+                      forced_bos_token_id=target,
+                      max_new_tokens=384,
+                      num_beams=1,
+                  )
+                  translated[start:start + len(batch_text)] = tok.batch_decode(generated, skip_special_tokens=True)
+                  if start % 256 == 0:
+                      print(f'drafted {start}/{len(segments)}', flush=True)
+
+          def render(parts):
+              if parts is None:
+                  return None
+              return ''.join(value if kind == 'literal' else translated[value] for kind, value in parts).strip()
+
+          drafts, historical_hits = [], 0
+          for e in entries:
+              singular_plan, plural_plan = plans[e['identity']]
+              generated_values = [render(singular_plan)]
+              if plural_plan is not None:
+                  generated_values.append(render(plural_plan))
+              values = historical.get(e['identity'], generated_values)
+              source = 'HISTORICAL_EXACT_IDENTITY' if e['identity'] in historical else 'NLLB_QINT8_DRAFT'
+              if source == 'HISTORICAL_EXACT_IDENTITY':
+                  historical_hits += 1
+              expected_forms = 2 if e.get('msgid_plural') is not None else 1
+              if len(values) != expected_forms:
+                  values = generated_values
+                  source = 'NLLB_QINT8_DRAFT_PLURAL_FALLBACK'
+              assert all(isinstance(v, str) and v.strip() for v in values)
+              drafts.append({
+                  'identity': e['identity'],
+                  'msgctxt': e.get('msgctxt'),
+                  'msgid': e['msgid'],
+                  'msgid_plural': e.get('msgid_plural'),
+                  'references': e.get('references', []),
+                  'draft_msgstr': values,
+                  'generated_msgstr': generated_values,
+                  'draft_source': source,
+              })
+
+          assert len(drafts) == 2666
+          print('historical_exact_identity_hits=' + str(historical_hits))
+          Path('/tmp/g006/out/draft-fast.json').write_text(
+              json.dumps({
+                  'schema_version': 1,
+                  'model': name,
+                  'quantization': 'dynamic-qint8-linear',
+                  'status': 'DRAFT_ONLY_NOT_ACCEPTED',
+                  'count': len(drafts),
+                  'entries': drafts,
+              }, ensure_ascii=False, indent=2) + '\n'
+          )
+          PY
+
+      - name: Upload fast review input
+        uses: actions/upload-artifact@v4
+        with:
+          name: g006-gravityview-fast-review-input
+          path: |
+            /tmp/g006/out/residual.json
+            /tmp/g006/out/accepted.json
+            /tmp/g006/out/draft-fast.json
+            /tmp/g006/out/historical-tm.json
+          if-no-files-found: error
+          retention-days: 7
