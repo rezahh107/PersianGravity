@@ -16,6 +16,7 @@ on:
     paths:
       - '.github/workflows/upstream-compatibility-radar.yml'
       - 'tools/compatibility/upstream-radar.php'
+      - 'tools/compatibility/upstream-radar-source-diagnostics.php'
       - 'tools/compatibility/upstream-radar-profiles.json'
       - 'tools/compatibility/upstream-observations/**'
       - 'tools/compatibility/gravityflow-package.json'
@@ -59,12 +60,18 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf radar-evidence
+          mkdir -p radar-evidence/diagnostics
           status=0
           php tools/compatibility/upstream-radar.php scan --output=radar-evidence || status=$?
+          diagnostic_status=0
+          php tools/compatibility/upstream-radar-source-diagnostics.php > radar-evidence/diagnostics/release-headings.json || diagnostic_status=$?
           if [[ -f radar-evidence/summary.md ]]; then
             cat radar-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
-          exit "$status"
+          if (( status != 0 )); then
+            exit "$status"
+          fi
+          exit "$diagnostic_status"
 
       - name: Upload machine-readable radar evidence
         if: always()
