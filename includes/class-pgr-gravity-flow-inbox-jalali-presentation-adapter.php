@@ -21,11 +21,18 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	/** Gravity Flow's display-only companion for the raw Due Date compare value. */
 	private const DUE_DATE_DISPLAY_ID = 'due_date_human_readable';
 
-	/** Host-owned runtime version authority. */
+	/** Host-owned runtime version observation. Version equality is not eligibility. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
+
+	/** Canonical Gravity Flow plugin main-file identity. */
+	private const HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php';
+
+	private const CAP_DATE_CREATED = 'gravityflow.inbox.date-created';
+	private const CAP_LAST_UPDATED = 'gravityflow.inbox.last-updated';
+	private const CAP_DUE_DATE     = 'gravityflow.inbox.due-date';
 
 	/**
 	 * One-shot raw due-date authority for the immediately following display value.
@@ -33,6 +40,9 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @var array{key:string,value:int}|null
 	 */
 	private $pending_due_date_raw = null;
+
+	/** @var string|null */
+	private $pending_due_date_failure_reason = null;
 
 	/**
 	 * Register only the documented Gravity Flow Inbox presentation seam.
@@ -57,8 +67,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_inbox_value( $value, $form_id, $field_id, $entry ) {
-		if ( ! $this->is_exact_supported_host() || ! class_exists( 'PGR_Jalali_Presentation', false ) || ! is_array( $entry ) ) {
-			$this->pending_due_date_raw = null;
+		$capability_id = $this->capability_for_field( $field_id );
+
+		if ( null === $capability_id ) {
+			$this->clear_due_date_proof();
+			return $value;
+		}
+
+		if ( ! $this->has_qualified_host_identity() ) {
+			$this->clear_due_date_proof();
+			$this->record_diagnostic( $capability_id, 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED' );
 			return $value;
 		}
 
@@ -67,46 +85,92 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			return $value;
 		}
 
-		if ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
-			$raw_due_date = $this->consume_due_date_raw( $form_id, $entry );
+		if ( ! is_array( $entry ) ) {
+			$this->clear_due_date_proof();
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
+			return $value;
+		}
 
-			// Exact Gravity Flow 3.1.0 uses '-' when the current step has no due
-			// date. Consume any matching raw 0 proof, but preserve the native value.
-			if ( '-' === $value ) {
+		if ( self::DUE_DATE_DISPLAY_ID === $field_id ) {
+			$proof = $this->consume_due_date_raw( $form_id, $entry );
+			if ( null !== $proof['reason'] ) {
+				$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', $proof['reason'] );
 				return $value;
 			}
 
-			if ( null === $raw_due_date || 0 === $raw_due_date ) {
+			$raw_due_date = $proof['value'];
+			if ( '-' === $value ) {
+				if ( 0 === $raw_due_date ) {
+					$this->record_available( self::CAP_DUE_DATE );
+				} else {
+					$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
+				}
+				return $value;
+			}
+
+			if ( 0 === $raw_due_date ) {
+				$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
 				return $value;
 			}
 
 			$source = $this->absolute_timestamp_source( $raw_due_date );
+			if ( null === $source ) {
+				$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_SOURCE_INVALID' );
+				return $value;
+			}
 		} else {
-			// In exact 3.1.0 raw due_date is immediately followed by its display
-			// companion for the same row. Any intervening identity invalidates
-			// the one-shot authority and therefore fails closed.
-			$this->pending_due_date_raw = null;
+			$this->clear_due_date_proof();
 
 			if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
 				$source = $this->date_created_source( $entry );
-			} elseif ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
-				// Gravity Flow uses this sentinel when the workflow timestamp still
-				// represents the original submission instant. Preserve that contract.
+			} else {
 				if ( '-' === $value ) {
+					$this->record_available( self::CAP_LAST_UPDATED );
 					return $value;
 				}
 				$source = $this->last_updated_source( $entry );
-			} else {
+			}
+
+			if ( null === $source ) {
+				$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_SOURCE_INVALID' );
 				return $value;
 			}
 		}
 
-		if ( null === $source ) {
+		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
 			return $value;
 		}
 
-		$formatted = PGR_Jalali_Presentation::format_datetime( $source );
-		return null === $formatted ? $value : $formatted;
+		try {
+			$formatted = PGR_Jalali_Presentation::format_datetime( $source );
+		} catch ( Throwable $exception ) {
+			unset( $exception );
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
+			return $value;
+		}
+
+		if ( null === $formatted ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
+			return $value;
+		}
+
+		$this->record_available( $capability_id );
+		return $formatted;
+	}
+
+	/** @return string|null */
+	private function capability_for_field( $field_id ) {
+		if ( self::DATE_CREATED_DISPLAY_ID === $field_id ) {
+			return self::CAP_DATE_CREATED;
+		}
+		if ( self::LAST_UPDATED_DISPLAY_ID === $field_id ) {
+			return self::CAP_LAST_UPDATED;
+		}
+		if ( self::DUE_DATE_RAW_ID === $field_id || self::DUE_DATE_DISPLAY_ID === $field_id ) {
+			return self::CAP_DUE_DATE;
+		}
+		return null;
 	}
 
 	/**
@@ -150,23 +214,32 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Capture the exact raw Inbox due-date value already computed by Gravity Flow.
+	 * Capture the raw Inbox due-date value already computed by Gravity Flow.
 	 *
-	 * Exact Gravity Flow 3.1.0 emits the raw due_date column before its
-	 * due_date_human_readable companion and sends both through the same Inbox
-	 * presentation filter. Only the native integer epoch/0 representation is
-	 * admitted here; malformed or ambiguous values invalidate any stale proof.
-	 *
-	 * @param mixed        $value   Native raw due-date compare value.
-	 * @param mixed        $form_id Current form ID.
-	 * @param array<mixed> $entry   Current entry.
+	 * @param mixed $value   Native raw due-date compare value.
+	 * @param mixed $form_id Current form ID.
+	 * @param mixed $entry   Current entry.
 	 * @return void
 	 */
 	private function capture_due_date_raw( $value, $form_id, $entry ) {
-		$this->pending_due_date_raw = null;
+		$this->clear_due_date_proof();
+
+		if ( ! is_array( $entry ) ) {
+			$this->pending_due_date_failure_reason = 'REASON_CONTEXT_UNAVAILABLE';
+			$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
+			return;
+		}
 
 		$key = $this->due_date_capture_key( $form_id, $entry );
-		if ( null === $key || ! is_int( $value ) || $value < 0 ) {
+		if ( null === $key ) {
+			$this->pending_due_date_failure_reason = 'REASON_CONTEXT_UNAVAILABLE';
+			$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
+			return;
+		}
+
+		if ( ! is_int( $value ) || $value < 0 ) {
+			$this->pending_due_date_failure_reason = 'REASON_SOURCE_INVALID';
+			$this->record_diagnostic( self::CAP_DUE_DATE, 'STATE_DEGRADED', 'REASON_SOURCE_INVALID' );
 			return;
 		}
 
@@ -182,13 +255,18 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	 *
 	 * @param mixed        $form_id Current form ID.
 	 * @param array<mixed> $entry   Current entry.
-	 * @return int|null
+	 * @return array{value:int|null,reason:string|null}
 	 */
 	private function consume_due_date_raw( $form_id, $entry ) {
-		$pending                    = $this->pending_due_date_raw;
-		$this->pending_due_date_raw = null;
-		$key                        = $this->due_date_capture_key( $form_id, $entry );
+		$pending = $this->pending_due_date_raw;
+		$reason  = $this->pending_due_date_failure_reason;
+		$this->clear_due_date_proof();
 
+		if ( null !== $reason ) {
+			return array( 'value' => null, 'reason' => $reason );
+		}
+
+		$key = $this->due_date_capture_key( $form_id, $entry );
 		if (
 			! is_array( $pending ) ||
 			! isset( $pending['key'], $pending['value'] ) ||
@@ -196,10 +274,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			$pending['key'] !== $key ||
 			! is_int( $pending['value'] )
 		) {
-			return null;
+			return array( 'value' => null, 'reason' => 'REASON_CONTEXT_UNAVAILABLE' );
 		}
 
-		return $pending['value'];
+		return array( 'value' => $pending['value'], 'reason' => null );
+	}
+
+	/** @return void */
+	private function clear_due_date_proof() {
+		$this->pending_due_date_raw            = null;
+		$this->pending_due_date_failure_reason = null;
 	}
 
 	/**
@@ -271,44 +355,44 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Admit only the exact host product/version already owned by the existing
-	 * product registry. The host supplies both its version and plugin basename;
-	 * the basename resolves the matching manifest product without duplicating a
-	 * foreign product domain in production code. Missing or drifted authority is
-	 * always native fallback.
+	 * Validate Gravity Flow product identity without making version equality an
+	 * activation oracle. The callback/data/context contract supplies capability
+	 * compatibility; the version remains bounded diagnostic evidence only.
 	 *
 	 * @return bool
 	 */
-	private function is_exact_supported_host() {
-		if (
-			! defined( self::HOST_VERSION_CONSTANT ) ||
-			! defined( self::HOST_BASENAME_CONSTANT ) ||
-			! defined( 'PGR_PATH' )
-		) {
+	private function has_qualified_host_identity() {
+		if ( ! defined( self::HOST_VERSION_CONSTANT ) || ! defined( self::HOST_BASENAME_CONSTANT ) ) {
 			return false;
 		}
 
-		$registry_path = PGR_PATH . 'includes/localization/products.php';
-		if ( ! is_readable( $registry_path ) ) {
+		$version = trim( (string) constant( self::HOST_VERSION_CONSTANT ) );
+		if ( '' === $version || strlen( $version ) > 32 || 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9._+\-]*$/', $version ) ) {
 			return false;
 		}
 
 		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
-		$product_slug    = dirname( $plugin_basename );
-		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
-			return false;
+		return self::HOST_PLUGIN_BASENAME === $plugin_basename;
+	}
+
+	/** @return void */
+	private function record_available( $capability_id ) {
+		$this->record_diagnostic( $capability_id, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
+	}
+
+	/**
+	 * Record reporting evidence only after this adapter has made its own decision.
+	 *
+	 * @return void
+	 */
+	private function record_diagnostic( $capability_id, $state_constant, $reason_constant ) {
+		if ( ! class_exists( 'PGR_Gravity_Flow_Compatibility_Diagnostics', false ) ) {
+			return;
 		}
 
-		$products = require $registry_path;
-		$target   = '';
-		foreach ( $products as $product ) {
-			if ( ( $product['product'] ?? '' ) !== $product_slug ) {
-				continue;
-			}
-			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
-			break;
-		}
-
-		return '' !== $target && (string) constant( self::HOST_VERSION_CONSTANT ) === $target;
+		$diagnostics = 'PGR_Gravity_Flow_Compatibility_Diagnostics';
+		$state       = constant( $diagnostics . '::' . $state_constant );
+		$reason      = constant( $diagnostics . '::' . $reason_constant );
+		$diagnostics::record( $capability_id, $state, $reason );
 	}
 }
