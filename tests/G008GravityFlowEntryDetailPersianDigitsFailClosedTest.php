@@ -8,12 +8,52 @@ final class G008GravityFlowEntryDetailPersianDigitsFailClosedTest extends TestCa
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
-	public function test_gravity_flow_version_drift_never_enqueues_digit_shaper(): void {
+	public function test_synthetic_version_only_drift_keeps_intact_digit_contract_eligible(): void {
 		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
-		define( 'PGR_VERSION', '4.7.0' );
-		define( 'GRAVITY_FLOW_VERSION', '3.1.1' );
+		define( 'PGR_VERSION', '4.8.0' );
+		define( 'GRAVITY_FLOW_VERSION', '99.0.0-synthetic' );
+		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
+
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
+
+		$GLOBALS['pgr_test_locale']   = 'fa_IR';
+		$GLOBALS['pgr_test_enqueued'] = array();
+		$adapter                     = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
+		$adapter->enqueue_digit_shaper( array(), array(), null );
+
+		$this->assertSame( array( 'pgr-gravity-flow-entry-detail-persian-digits' ), $GLOBALS['pgr_test_enqueued'] );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_gravity_flow_plugin_identity_drift_never_enqueues_digit_shaper(): void {
+		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
+		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
+		define( 'PGR_VERSION', '4.8.0' );
+		define( 'GRAVITY_FLOW_VERSION', '3.1.0' );
+		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow-next/gravityflow.php' );
+
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
+
+		$GLOBALS['pgr_test_locale']   = 'fa_IR';
+		$GLOBALS['pgr_test_enqueued'] = array();
+		$adapter                     = new PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter();
+		$adapter->enqueue_digit_shaper( array(), array(), null );
+
+		$this->assertSame( array(), $GLOBALS['pgr_test_enqueued'] );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_malformed_host_version_observation_never_enqueues_digit_shaper(): void {
+		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
+		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
+		define( 'PGR_VERSION', '4.8.0' );
+		define( 'GRAVITY_FLOW_VERSION', 'not a version' );
 		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
@@ -28,13 +68,12 @@ final class G008GravityFlowEntryDetailPersianDigitsFailClosedTest extends TestCa
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
-	public function test_gravity_flow_plugin_identity_drift_never_enqueues_digit_shaper(): void {
+	public function test_missing_asset_url_keeps_native_presentation(): void {
 		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
-		define( 'PGR_URL', 'https://example.test/wp-content/plugins/persian-gravityforms/' );
-		define( 'PGR_VERSION', '4.7.0' );
+		define( 'PGR_VERSION', '4.8.0' );
 		define( 'GRAVITY_FLOW_VERSION', '3.1.0' );
-		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow-next/gravityflow.php' );
+		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php';
 
