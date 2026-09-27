@@ -239,11 +239,14 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 
 	public function test_reviewable_persistence_has_no_direct_main_write_or_auto_merge(): void {
 		$workflow = (string) file_get_contents( $this->root . '/.github/workflows/upstream-compatibility-radar.yml' );
+		$guard    = (string) file_get_contents( $this->root . '/.github/scripts/upstream-radar-observation-boundary.sh' );
 		$this->assertStringContainsString( 'automation/upstream-radar-observations', $workflow );
 		$this->assertStringContainsString( 'gh pr list --head "$RADAR_BRANCH"', $workflow );
 		$this->assertStringContainsString( 'gh pr create', $workflow );
 		$this->assertStringContainsString( '$RUNNER_TEMP/radar-evidence', $workflow );
-		$this->assertStringContainsString( '^tools/compatibility/upstream-observations/', $workflow );
+		$this->assertStringContainsString( '^tools/compatibility/upstream-observations/', $guard );
+		$this->assertStringContainsString( 'committed origin/main HEAD', $workflow );
+		$this->assertStringContainsString( 'working-tree', $workflow );
 		$this->assertStringNotContainsString( 'git push origin main', $workflow );
 		$this->assertStringNotContainsString( 'HEAD:main', $workflow );
 		$this->assertStringNotContainsString( 'gh pr merge', $workflow );
@@ -268,7 +271,6 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 				if ( $file->isFile() && $file->getExtension() === 'php' ) {
 					$paths[] = $file->getPathname();
 				}
-			}
 		}
 		foreach ( $paths as $path ) {
 			$content = (string) file_get_contents( $path );
