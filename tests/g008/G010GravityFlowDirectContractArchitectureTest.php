@@ -30,7 +30,7 @@ final class G010GravityFlowDirectContractArchitectureTest extends TestCase {
 		$this->assertIsArray( $manifest );
 		$this->assertSame( 'gravityflow', $manifest['product'] ?? null );
 		$this->assertSame( '3.1.0', $manifest['version'] ?? null );
-		$this->assertSame( 'gravityflow/gravityflow.php', $manifest['plugin_main'] ?? null );
+		$this->assertSame( 'gravityflow/gravityflow.php', $manifest['plugin_main_file'] ?? null );
 		$this->assertSame( 2603034, $manifest['expected_bytes'] ?? null );
 		$this->assertSame(
 			'ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404',
