@@ -11,12 +11,13 @@
   },
   "evidence_state": "DETECTED_ONLY",
   "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
-  "checked_at": "2026-09-27T17:55:00Z",
+  "checked_at": "2026-09-27T19:33:48Z",
   "official_sources": [
     {
       "url": "https://www.gravitykit.com/products/gravityview/changelog",
       "role": "stable-release-and-changelog",
-      "source_identity": "GravityView changelog; 3.5.0 latest entry and intervening 3.3.5/3.4.0 entries"
+      "source_identity": "GravityView changelog; 3.5.0 latest entry and intervening 3.3.5/3.4.0 entries",
+      "sha256": "f280d6268191ee18b873ce4c375ab867b4eb425befe78e02b4333ee48f3796d9"
     }
   ],
   "classifications": [
