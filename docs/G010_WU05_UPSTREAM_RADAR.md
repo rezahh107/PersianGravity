@@ -37,7 +37,7 @@ Supported versions are numeric `major.minor.patch` or `major.minor.patch.revisio
 
 A product/source failure is never converted to `NO_NEW_VERSION`.
 
-Release parsing remains source-specific. Gravity Flow tolerates bounded inline markup inside a release `<h3>` because the current first-party changelog can wrap version text; the parser still requires the version inside that heading. Gravity Perks tolerates bounded closing markup between the product name and `(vX.Y.Z)` while still requiring that exact named marker.
+Release parsing remains source-specific. Gravity Flow tolerates bounded inline markup inside a release `<h3>` while still requiring the version inside that heading. Gravity Perks tolerates bounded closing markup between the product name and `(vX.Y.Z)` while still requiring that exact named marker.
 
 HTTP redirects are followed manually. Every hop must remain HTTPS and inside the explicit first-party host allowlist before the next request is made; an unapproved redirect target, missing `Location`, non-2xx terminal response, or redirect loop fails visibly.
 
@@ -76,11 +76,11 @@ Repeat product/version candidates are deduplicated. Automation-generated unresol
 
 The official changelog reports `3.1.2` (2026-09-17) against baseline `3.1.1.1`. Its entry documents security hardening, `gform_addon_pages_using_components`, merge-tag/field behavior, and maintenance changes. No change is documented to PersianGravity's admitted localization contract or Entries List `date_created` presentation seam. Classification: `NO_RELEVANT_DOCUMENTED_CHANGE` + `PACKAGE_REQUIRED_FOR_PROOF`. Documentation silence is not runtime proof.
 
-### Gravity Flow 3.1.1.1
+### Gravity Flow 3.1.1
 
-The current public Gravity Flow changelog reports `3.1.1.1` as the latest stable release against exact Owner-package baseline `3.1.0`. The latest patch entry documents maintenance fixes. Within the version gap, intervening `3.1.1` explicitly changes GravityView integration to address deprecated filters used for Workflow Detail/Approval Links. Classification for the current version-gap observation: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
+The current public Gravity Flow changelog reports `3.1.1` (2026-08-25) as the latest stable release against exact Owner-package baseline `3.1.0`. It explicitly changes GravityView integration to address deprecated filters used for Workflow Detail and Workflow Approval Links, alongside other maintenance fixes. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
 
-The separate `3.1.1` record is retained as intervening documentation evidence, not as the current latest release. The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. If the Owner supplies `3.1.1.1`, qualification must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
+The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. If the Owner supplies `3.1.1`, qualification must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
 
 ### GravityView 3.5.0
 
