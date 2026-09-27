@@ -9,6 +9,7 @@ final class PGR_Upstream_Radar {
     private const RESULT_NO_NEW_VERSION = 'NO_NEW_VERSION';
     private const RESULT_NEW_VERSION = 'NEW_VERSION_DETECTED';
     private const RELEASE_MODES = [ 'rolling', 'terminal' ];
+    private const PARSER_MODES = [ 'heading_text', 'body' ];
     private const CLASSIFICATIONS = [
         'NO_RELEVANT_DOCUMENTED_CHANGE',
         'DOCUMENTED_CONTRACT_CHANGE',
@@ -89,7 +90,7 @@ final class PGR_Upstream_Radar {
         if (!is_array($profile['release_source']) || array_is_list($profile['release_source'])) {
             throw new RuntimeException("{$profile['key']}: release_source must be an object");
         }
-        foreach ([ 'url', 'version_regex' ] as $required) {
+        foreach ([ 'url', 'version_regex', 'parser' ] as $required) {
             if (!isset($profile['release_source'][$required]) || !is_string($profile['release_source'][$required]) || $profile['release_source'][$required] === '') {
                 throw new RuntimeException("{$profile['key']}: release_source missing {$required}");
             }
@@ -97,6 +98,9 @@ final class PGR_Upstream_Radar {
         $releaseMode = $profile['release_source']['mode'] ?? 'rolling';
         if (!is_string($releaseMode) || !in_array($releaseMode, self::RELEASE_MODES, true)) {
             throw new RuntimeException("{$profile['key']}: release source mode is invalid");
+        }
+        if (!in_array($profile['release_source']['parser'], self::PARSER_MODES, true)) {
+            throw new RuntimeException("{$profile['key']}: release source parser is invalid");
         }
         self::validateOfficialHttpsUrl($profile['release_source']['url'], "{$profile['key']}: release source");
         self::validateRegex($profile['release_source']['version_regex'], "{$profile['key']}: version regex");
@@ -207,28 +211,95 @@ final class PGR_Upstream_Radar {
         if (strlen($body) < 20) {
             throw new RuntimeException("{$profile['key']}: official source response is unexpectedly short");
         }
+
+        $parser = $profile['release_source']['parser'];
+        if ($parser === 'heading_text') {
+            return self::parseHeadingTextVersion($profile, $body);
+        }
+        if ($parser === 'body') {
+            return self::parseBodyVersion($profile, $body);
+        }
+
+        throw new RuntimeException("{$profile['key']}: unsupported release parser");
+    }
+
+    private static function parseHeadingTextVersion(array $profile, string $body): array {
+        $headingPattern = '~<h[1-6]\b[^>]*>.*?</h[1-6]>~is';
+        $count = preg_match_all($headingPattern, $body, $headingMatches, PREG_OFFSET_CAPTURE);
+        if ($count === false || $count === 0 || !isset($headingMatches[0])) {
+            throw new RuntimeException("{$profile['key']}: official source has no parseable release headings");
+        }
+
+        $versionPattern = $profile['release_source']['version_regex'];
+        $selectedIndex = null;
+        $version = null;
+        foreach ($headingMatches[0] as $index => $headingMatch) {
+            $headingText = self::normalizeHtmlText((string) $headingMatch[0]);
+            $matched = preg_match($versionPattern, $headingText, $versionMatches);
+            if ($matched === 1 && isset($versionMatches[1])) {
+                $version = (string) $versionMatches[1];
+                $selectedIndex = $index;
+                break;
+            }
+        }
+
+        if ($selectedIndex === null || $version === null) {
+            throw new RuntimeException("{$profile['key']}: official source headings did not match the governed version parser");
+        }
+        self::assertStableVersion($version, "{$profile['key']} detected upstream version");
+
+        $start = (int) $headingMatches[0][$selectedIndex][1];
+        $nextOffset = null;
+        for ($index = $selectedIndex + 1, $total = count($headingMatches[0]); $index < $total; ++$index) {
+            $headingText = self::normalizeHtmlText((string) $headingMatches[0][$index][0]);
+            if (preg_match($versionPattern, $headingText) === 1) {
+                $nextOffset = (int) $headingMatches[0][$index][1];
+                break;
+            }
+        }
+
+        return [
+            'version' => $version,
+            'release_block' => self::sliceReleaseBlock($profile['key'], $body, $start, $nextOffset),
+        ];
+    }
+
+    private static function parseBodyVersion(array $profile, string $body): array {
         $pattern = $profile['release_source']['version_regex'];
         $matched = preg_match($pattern, $body, $matches, PREG_OFFSET_CAPTURE);
         if ($matched !== 1 || !isset($matches[1][0], $matches[0][1])) {
             throw new RuntimeException("{$profile['key']}: official source structure did not match the governed version parser");
         }
-        $version = $matches[1][0];
+        $version = (string) $matches[1][0];
         self::assertStableVersion($version, "{$profile['key']} detected upstream version");
 
         $start = (int) $matches[0][1];
         $nextOffset = null;
-        $nextMatched = preg_match($pattern, $body, $nextMatches, PREG_OFFSET_CAPTURE, $start + strlen($matches[0][0]));
+        $nextMatched = preg_match($pattern, $body, $nextMatches, PREG_OFFSET_CAPTURE, $start + strlen((string) $matches[0][0]));
         if ($nextMatched === 1 && isset($nextMatches[0][1])) {
             $nextOffset = (int) $nextMatches[0][1];
         }
+
+        return [
+            'version' => $version,
+            'release_block' => self::sliceReleaseBlock($profile['key'], $body, $start, $nextOffset),
+        ];
+    }
+
+    private static function normalizeHtmlText(string $html): string {
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalized = preg_replace('/\s+/u', ' ', trim($text));
+        return is_string($normalized) ? $normalized : trim($text);
+    }
+
+    private static function sliceReleaseBlock(string $productKey, string $body, int $start, ?int $nextOffset): string {
         $maxLength = 20000;
         $length = $nextOffset === null ? $maxLength : min($maxLength, max(0, $nextOffset - $start));
         $releaseBlock = substr($body, $start, $length);
         if ($releaseBlock === false || $releaseBlock === '') {
-            throw new RuntimeException("{$profile['key']}: could not isolate release evidence block");
+            throw new RuntimeException("{$productKey}: could not isolate release evidence block");
         }
-
-        return [ 'version' => $version, 'release_block' => $releaseBlock ];
+        return $releaseBlock;
     }
 
     public static function extractDocumentedIdentifiers(string $text): array {
