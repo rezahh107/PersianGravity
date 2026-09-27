@@ -69,7 +69,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_wrong_marked_format_falls_native_without_marker_leak(): void {
+	public function test_wrong_owned_marked_format_falls_native_without_marker_leak(): void {
 		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 		$adapter->filter_entry_detail_date_format( '' );
 
@@ -84,12 +84,12 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_missing_native_default_format_fails_closed_before_marker_ownership(): void {
+	public function test_missing_native_default_format_fails_closed_without_fabricating_per_field_diagnostics(): void {
 		$GLOBALS['pgr_test_default_date_format'] = '';
 		$adapter                                = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 
 		$this->assertSame( '', $adapter->filter_entry_detail_date_format( '' ) );
-		$this->assert_entry_detail_observations( 'DEGRADED', 'PGR-GFLOW-SEAM-UNAVAILABLE' );
+		$this->assertSame( array(), PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot() );
 	}
 
 	public function test_marked_local_timestamp_with_offset_uses_local_civil_date_without_second_timezone_conversion(): void {
@@ -142,7 +142,27 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_ambiguous_partial_failure_reports_context_unavailable_instead_of_guessing_a_field(): void {
+	public function test_complete_uniform_source_failure_uses_shared_source_invalid_diagnostic(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$format  = $adapter->filter_entry_detail_date_format( '' );
+
+		for ( $index = 0; $index < 4; ++$index ) {
+			$this->assertSame(
+				'March 21, 2030',
+				$adapter->filter_marked_date(
+					'PGRJALALIENTRYDETAIL:March 21, 2030',
+					$format,
+					'not-an-integer',
+					true
+				)
+			);
+		}
+
+		$adapter->finalize_date_family_diagnostics( array(), array(), null );
+		$this->assert_entry_detail_observations( 'DEGRADED', 'PGR-GFLOW-SOURCE-INVALID' );
+	}
+
+	public function test_mixed_four_call_results_do_not_fabricate_per_field_attribution(): void {
 		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 		$format  = $adapter->filter_entry_detail_date_format( '' );
 
@@ -152,7 +172,18 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$adapter->filter_marked_date( 'PGRJALALIENTRYDETAIL:March 21, 2030', $format, gmmktime( 23, 59, 0, 3, 21, 2030 ), true );
 		$adapter->finalize_date_family_diagnostics( array(), array(), null );
 
-		$this->assert_entry_detail_observations( 'DEGRADED', 'PGR-GFLOW-CONTEXT-UNAVAILABLE' );
+		$this->assertSame( array(), PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot() );
+	}
+
+	public function test_partial_render_does_not_fabricate_missing_date_capabilities(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$format  = $adapter->filter_entry_detail_date_format( '' );
+
+		$adapter->filter_marked_date( 'PGRJALALIENTRYDETAIL:March 20, 2030', $format, gmmktime( 23, 59, 0, 3, 20, 2030 ), true );
+		$adapter->filter_marked_date( 'PGRJALALIENTRYDETAIL:March 21, 2030', $format, gmmktime( 0, 1, 0, 3, 21, 2030 ), true );
+		$adapter->finalize_date_family_diagnostics( array(), array(), null );
+
+		$this->assertSame( array(), PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot() );
 	}
 
 	public function test_unrelated_date_i18n_format_is_byte_for_byte_native(): void {
@@ -161,6 +192,16 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assertSame(
 			'2030-03-21 00:03',
 			$adapter->filter_marked_date( '2030-03-21 00:03', 'Y-m-d H:i', 1900262580, true )
+		);
+	}
+
+	public function test_unrelated_date_i18n_literal_collision_is_untouched_when_format_is_not_owned(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$native  = 'User text PGRJALALIENTRYDETAIL: must remain byte-for-byte native';
+
+		$this->assertSame(
+			$native,
+			$adapter->filter_marked_date( $native, 'Y-m-d H:i', 1900262580, true )
 		);
 	}
 
@@ -210,7 +251,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_marker_is_removed_even_when_native_output_shape_is_unexpected(): void {
+	public function test_marker_is_removed_even_when_owned_native_output_shape_is_unexpected(): void {
 		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 		$format  = $adapter->filter_entry_detail_date_format( '' );
 
