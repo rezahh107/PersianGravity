@@ -40,11 +40,13 @@ The replacement does **not** introduce a version range, whitelist, method hash, 
 
 `gravityflow.print` has no independent calendar engine. Print is attributed only when the current stack proves `Gravity_Flow_Print_Entries::render()` is outside the same live `Gravity_Flow_Entry_Detail::timeline()` invocation whose row contract is being admitted. The Print flag is stored in the one-shot row context and must match at the date/time consumption seams.
 
+The nearest Timeline invocation owns Print attribution. Owner discovery stops at another outer Timeline frame, so a nested/re-entrant Timeline cannot borrow Print ownership from a more distant outer render.
+
 Therefore:
 
 - ordinary Timeline remains independent of Print source identity;
 - a Print path that no longer traverses the admitted Timeline stack receives no inherited conversion or fabricated success;
-- Print cannot borrow a marker/context from a non-Print Timeline invocation;
+- Print cannot borrow a marker/context from a non-Print or outer Timeline invocation;
 - a Print-specific failure does not create a product-wide compatibility switch.
 
 ## Diagnostics
@@ -64,3 +66,5 @@ Synthetic version-only drift tests demonstrate architecture behavior only. They 
 ## Preserved boundaries
 
 WU-04 does not alter the Owner-approved WU-03 Entry Detail four-date exact-target-version safety exception or its future Owner-supplied package requalification protocol. Inbox/Status compatibility contracts, Entry Detail Persian-digit shaping, Status `due_date` and Entry Detail Scheduled dispositions, Gravity Forms/GravityView adapters, localization `target_version` policy, package manifest, plugin version, release/tag/deployment state and WU-05 remain outside this change.
+
+Validation claim classes and exact-final-Head completion gates are recorded in [`VALIDATION_G010_WU04.md`](VALIDATION_G010_WU04.md).
