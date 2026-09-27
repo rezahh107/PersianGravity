@@ -11,12 +11,13 @@
   },
   "evidence_state": "DETECTED_ONLY",
   "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
-  "checked_at": "2026-09-27T17:55:00Z",
+  "checked_at": "2026-09-27T19:33:48Z",
   "official_sources": [
     {
       "url": "https://docs.gravityforms.com/gravityforms-change-log/",
       "role": "stable-release-and-changelog",
-      "source_identity": "Gravity Forms changelog; 3.1.2 release entry dated 2026-09-17"
+      "source_identity": "Gravity Forms changelog; 3.1.2 release entry dated 2026-09-17",
+      "sha256": "5621352189078cb47feb30f162e0684049b2cb027d345b34ee4384f9b7a038f8"
     }
   ],
   "classifications": [
