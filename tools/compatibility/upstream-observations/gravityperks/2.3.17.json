@@ -15,13 +15,13 @@
   "official_sources": [
     {
       "url": "https://gravitywiz.com/gravity-wiz-weekly-269/",
-      "role": "stable-release-and-changelog",
-      "source_identity": "Gravity Wiz first-party product update naming Gravity Perks v2.3.17"
+      "role": "terminal-stable-release",
+      "source_identity": "Gravity Wiz first-party product update naming the terminal Gravity Perks parent-plugin release v2.3.17"
     },
     {
       "url": "https://gravitywiz.com/documentation/spellbook/",
       "role": "official-documentation",
-      "source_identity": "Spellbook documentation describing replacement of the Gravity Perks platform plugin"
+      "source_identity": "Spellbook documentation establishing replacement of the Gravity Perks platform plugin"
     }
   ],
   "classifications": [
@@ -33,16 +33,22 @@
     {
       "capability": "gravityperks.delivery-platform",
       "classification": "DOCUMENTED_CONTRACT_CHANGE",
-      "summary": "Gravity Perks v2.3.17 fixes Spellbook activation during migration, while current first-party Spellbook documentation states that Spellbook has replaced the Gravity Perks platform plugin and assumes installation/update responsibility. This materially changes parent delivery/platform identity without proving anything about the exact localization package PersianGravity currently admits."
+      "summary": "Gravity Perks v2.3.17 fixes Spellbook activation during migration. Current first-party Spellbook documentation states that Spellbook replaced the Gravity Perks platform plugin and assumes installation, licensing, and update responsibility. The radar therefore treats 2.3.17 as the terminal parent-plugin release identity, not as a rolling feed that could discover later parent-plugin versions."
     },
     {
       "capability": "localization.gravityperks",
       "classification": "REQUALIFICATION_RECOMMENDED",
-      "summary": "If a newer Owner package or Spellbook-era parent authority is supplied, PersianGravity should reconcile the exact package/domain/source identity before changing its existing Gravity Perks localization admission. Child perks remain separate explicit profiles and are not enrolled by this radar."
+      "summary": "If the Owner later supplies a Spellbook-era parent authority or another exact package intended to replace the admitted Gravity Perks parent package, PersianGravity must reconcile exact product/domain/source identity before changing localization admission. Child perks remain separate explicit profiles and are not enrolled by this radar."
     }
   ],
   "model_review_required": false,
   "package_required_for_proof": true,
   "review_state": "MODEL_REVIEWED",
-  "automation_generated": false
+  "automation_generated": false,
+  "upstream_release_mode": "terminal",
+  "upstream_lifecycle": {
+    "state": "DISCONTINUED_REPLACED",
+    "replacement_product": "Spellbook",
+    "official_evidence_url": "https://gravitywiz.com/documentation/spellbook/"
+  }
 }
