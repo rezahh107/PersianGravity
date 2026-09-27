@@ -20,6 +20,7 @@
     "compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 8.2- persian-gravityforms.php includes admin uninstall.php languages",
     "i18n:pot": "wp i18n make-pot . languages/persian-gravityforms.pot --exclude=vendor,tests",
     "i18n:source-check": "php tools/i18n/own-catalog-guard.php source-check",
+    "i18n:translation-check": "php tools/i18n/own-catalog-guard.php translation-check languages/persian-gravityforms-fa_IR.po",
     "i18n:build": "php tools/i18n/build.php --write",
     "i18n:check": "php tools/i18n/build.php --check",
     "i18n:test": "php tests/i18n/run-production.php"
