@@ -8,6 +8,7 @@ final class PGR_Upstream_Radar {
     private const OBSERVATION_SCHEMA_VERSION = 1;
     private const RESULT_NO_NEW_VERSION = 'NO_NEW_VERSION';
     private const RESULT_NEW_VERSION = 'NEW_VERSION_DETECTED';
+    private const RELEASE_MODES = [ 'rolling', 'terminal' ];
     private const CLASSIFICATIONS = [
         'NO_RELEVANT_DOCUMENTED_CHANGE',
         'DOCUMENTED_CONTRACT_CHANGE',
@@ -93,6 +94,10 @@ final class PGR_Upstream_Radar {
                 throw new RuntimeException("{$profile['key']}: release_source missing {$required}");
             }
         }
+        $releaseMode = $profile['release_source']['mode'] ?? 'rolling';
+        if (!is_string($releaseMode) || !in_array($releaseMode, self::RELEASE_MODES, true)) {
+            throw new RuntimeException("{$profile['key']}: release source mode is invalid");
+        }
         self::validateOfficialHttpsUrl($profile['release_source']['url'], "{$profile['key']}: release source");
         self::validateRegex($profile['release_source']['version_regex'], "{$profile['key']}: version regex");
 
@@ -105,6 +110,26 @@ final class PGR_Upstream_Radar {
                 throw new RuntimeException("{$profile['key']}: documentation source must be a string");
             }
             self::validateOfficialHttpsUrl($url, "{$profile['key']}: documentation source");
+        }
+
+        if ($releaseMode === 'terminal') {
+            $lifecycle = $profile['lifecycle'] ?? null;
+            if (!is_array($lifecycle) || array_is_list($lifecycle)) {
+                throw new RuntimeException("{$profile['key']}: terminal release source requires lifecycle evidence");
+            }
+            if (($lifecycle['state'] ?? null) !== 'DISCONTINUED_REPLACED') {
+                throw new RuntimeException("{$profile['key']}: terminal lifecycle state must be DISCONTINUED_REPLACED");
+            }
+            $evidenceUrl = $lifecycle['official_evidence_url'] ?? null;
+            if (!is_string($evidenceUrl) || $evidenceUrl === '') {
+                throw new RuntimeException("{$profile['key']}: terminal lifecycle official_evidence_url is required");
+            }
+            self::validateOfficialHttpsUrl($evidenceUrl, "{$profile['key']}: lifecycle evidence");
+            if (!in_array($evidenceUrl, $docs, true)) {
+                throw new RuntimeException("{$profile['key']}: lifecycle evidence must also be a fetched documentation source");
+            }
+        } elseif (isset($profile['lifecycle'])) {
+            throw new RuntimeException("{$profile['key']}: lifecycle metadata is only supported for terminal release sources");
         }
 
         if (!is_array($profile['capabilities']) || !array_is_list($profile['capabilities']) || $profile['capabilities'] === []) {
@@ -263,6 +288,19 @@ final class PGR_Upstream_Radar {
                 throw new RuntimeException('observation official source sha256 is invalid');
             }
         }
+        if (isset($observation['upstream_release_mode']) && (!is_string($observation['upstream_release_mode']) || !in_array($observation['upstream_release_mode'], self::RELEASE_MODES, true))) {
+            throw new RuntimeException('observation upstream_release_mode is invalid');
+        }
+        if (($observation['upstream_release_mode'] ?? 'rolling') === 'terminal') {
+            $lifecycle = $observation['upstream_lifecycle'] ?? null;
+            if (!is_array($lifecycle) || array_is_list($lifecycle) || ($lifecycle['state'] ?? null) !== 'DISCONTINUED_REPLACED') {
+                throw new RuntimeException('terminal observation must retain DISCONTINUED_REPLACED lifecycle evidence');
+            }
+            if (!isset($lifecycle['official_evidence_url']) || !is_string($lifecycle['official_evidence_url'])) {
+                throw new RuntimeException('terminal observation lifecycle evidence URL is invalid');
+            }
+            self::validateOfficialHttpsUrl($lifecycle['official_evidence_url'], 'terminal observation lifecycle evidence');
+        }
         if (!is_array($observation['classifications']) || !array_is_list($observation['classifications'])) {
             throw new RuntimeException('observation classifications must be a list');
         }
@@ -338,6 +376,7 @@ final class PGR_Upstream_Radar {
             throw new RuntimeException('checked-at must be canonical UTC');
         }
         $baseline = self::resolveBaseline($profile, $root);
+        $releaseMode = $profile['release_source']['mode'] ?? 'rolling';
         $cache = [];
         $get = static function (string $url) use ($fetcher, &$cache): string {
             if (!array_key_exists($url, $cache)) {
@@ -357,7 +396,7 @@ final class PGR_Upstream_Radar {
 
         $sourceRecords = [[
             'url' => $releaseUrl,
-            'role' => 'stable-release-and-changelog',
+            'role' => $releaseMode === 'terminal' ? 'terminal-stable-release' : 'stable-release-and-changelog',
             'sha256' => hash('sha256', $releaseBody),
         ]];
         $signalText = $parsed['release_block'];
@@ -398,7 +437,11 @@ final class PGR_Upstream_Radar {
                 'package_required_for_proof' => true,
                 'review_state' => 'MODEL_REVIEW_REQUIRED',
                 'automation_generated' => true,
+                'upstream_release_mode' => $releaseMode,
             ];
+            if ($releaseMode === 'terminal') {
+                $observation['upstream_lifecycle'] = $profile['lifecycle'];
+            }
             self::validateObservation($observation);
         }
 
@@ -408,6 +451,7 @@ final class PGR_Upstream_Radar {
             'baseline' => $baseline,
             'latest_upstream_version' => $parsed['version'],
             'result' => $result,
+            'release_mode' => $releaseMode,
             'official_sources' => $sourceRecords,
             'documented_identifiers' => $identifiers,
             'observation_candidate' => $observation,
@@ -454,6 +498,12 @@ final class PGR_Upstream_Radar {
         return 'AUTOMATED_UPDATED';
     }
 
+    public static function assertPersistenceOutcome(string $productKey, string $status): void {
+        if ($status === 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED') {
+            throw new RuntimeException("{$productKey}: reviewed observation source fingerprint changed; MODEL_REVIEW_REQUIRED");
+        }
+    }
+
     public static function validateObservationDirectory(?string $root = null): int {
         $root ??= self::repositoryRoot();
         $observationRoot = self::joinRepositoryPath($root, 'tools/compatibility/upstream-observations');
@@ -473,40 +523,102 @@ final class PGR_Upstream_Radar {
         return $count;
     }
 
-    public static function httpFetcher(string $url): string {
-        self::validateOfficialHttpsUrl($url, 'fetch URL');
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'timeout' => 25,
-                'follow_location' => 1,
-                'max_redirects' => 5,
-                'ignore_errors' => false,
-                'user_agent' => 'Mozilla/5.0 (compatible; PersianGravity-Upstream-Radar/1.0; +https://github.com/rezahh107/PersianGravity)',
-                'header' => "Accept: text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.1\r\nAccept-Encoding: identity\r\n",
-            ],
-        ]);
-        $body = @file_get_contents($url, false, $context);
-        if ($body === false) {
-            $error = error_get_last();
-            throw new RuntimeException('official source retrieval failed for ' . $url . ($error ? ': ' . $error['message'] : ''));
+    public static function resolveApprovedRedirect(string $currentUrl, string $location): string {
+        self::validateOfficialHttpsUrl($currentUrl, 'redirect source');
+        $location = trim($location);
+        if ($location === '') {
+            throw new RuntimeException('redirect target is empty');
         }
-        if (strlen($body) < 20) {
-            throw new RuntimeException("official source returned an unexpectedly short response: {$url}");
+
+        if (str_starts_with($location, '//')) {
+            $target = 'https:' . $location;
+        } elseif (parse_url($location, PHP_URL_SCHEME) !== null) {
+            $target = $location;
+        } elseif (str_starts_with($location, '/')) {
+            $parts = parse_url($currentUrl);
+            if (!is_array($parts) || empty($parts['host'])) {
+                throw new RuntimeException('redirect source URL is invalid');
+            }
+            $target = 'https://' . $parts['host'];
+            if (isset($parts['port'])) {
+                $target .= ':' . $parts['port'];
+            }
+            $target .= $location;
+        } else {
+            throw new RuntimeException('path-relative redirects are not supported by the governed source contract');
         }
-        return $body;
+
+        self::validateOfficialHttpsUrl($target, 'redirect target');
+        return $target;
     }
 
-    public static function renderSummary(array $results): string {
-        $lines = [ '# Upstream compatibility opportunity radar', '', '| Product | Baseline | Latest official stable | Result | Proof boundary |', '| --- | --- | --- | --- | --- |' ];
+    public static function httpFetcher(string $url): string {
+        self::validateOfficialHttpsUrl($url, 'fetch URL');
+        $currentUrl = $url;
+
+        for ($redirects = 0; $redirects <= 5; ++$redirects) {
+            self::validateOfficialHttpsUrl($currentUrl, 'fetch URL');
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'timeout' => 25,
+                    'follow_location' => 0,
+                    'max_redirects' => 0,
+                    'ignore_errors' => true,
+                    'user_agent' => 'Mozilla/5.0 (compatible; PersianGravity-Upstream-Radar/1.0; +https://github.com/rezahh107/PersianGravity)',
+                    'header' => "Accept: text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.1\r\nAccept-Encoding: identity\r\n",
+                ],
+            ]);
+            unset($http_response_header);
+            $body = @file_get_contents($currentUrl, false, $context);
+            $headers = $http_response_header ?? [];
+            if ($body === false) {
+                $error = error_get_last();
+                throw new RuntimeException('official source retrieval failed for ' . $currentUrl . ($error ? ': ' . $error['message'] : ''));
+            }
+
+            $status = self::httpStatus($headers);
+            if ($status >= 300 && $status < 400) {
+                $location = self::httpHeader($headers, 'location');
+                if ($location === null) {
+                    throw new RuntimeException("official source redirect omitted Location: {$currentUrl}");
+                }
+                if ($redirects >= 5) {
+                    throw new RuntimeException("official source exceeded redirect limit: {$url}");
+                }
+                $currentUrl = self::resolveApprovedRedirect($currentUrl, $location);
+                continue;
+            }
+            if ($status < 200 || $status >= 300) {
+                throw new RuntimeException("official source returned HTTP {$status}: {$currentUrl}");
+            }
+            if (strlen($body) < 20) {
+                throw new RuntimeException("official source returned an unexpectedly short response: {$currentUrl}");
+            }
+            return $body;
+        }
+
+        throw new RuntimeException("official source exceeded redirect limit: {$url}");
+    }
+
+    public static function renderSummary(array $results, array $failures = []): string {
+        $lines = [ '# Upstream compatibility opportunity radar', '', '| Product | Baseline | Latest official stable | Source mode | Result | Proof boundary |', '| --- | --- | --- | --- | --- | --- |' ];
         foreach ($results as $result) {
             $lines[] = sprintf(
-                '| %s | `%s` | `%s` | `%s` | `PACKAGE_REQUIRED_FOR_PROOF` |',
+                '| %s | `%s` | `%s` | `%s` | `%s` | `PACKAGE_REQUIRED_FOR_PROOF` |',
                 $result['product_name'],
                 $result['baseline']['version'],
                 $result['latest_upstream_version'],
+                $result['release_mode'] ?? 'rolling',
                 $result['result']
             );
+        }
+        if ($failures !== []) {
+            $lines[] = '';
+            $lines[] = '## Failures';
+            foreach ($failures as $key => $message) {
+                $lines[] = '- `' . $key . '`: ' . str_replace([ "\r", "\n" ], ' ', (string) $message);
+            }
         }
         $lines[] = '';
         $lines[] = 'Documentation/release detection is informational only. DETECTED / DOCUMENTED != OWNER_SUPPLIED != TESTED != QUALIFIED != ADMITTED.';
@@ -523,6 +635,30 @@ final class PGR_Upstream_Radar {
         if (!in_array($host, $allowed, true)) {
             throw new RuntimeException("{$label} host is not an approved first-party authority: {$host}");
         }
+    }
+
+    private static function httpStatus(array $headers): int {
+        $status = null;
+        foreach ($headers as $line) {
+            if (is_string($line) && preg_match('~^HTTP/\S+\s+(\d{3})\b~i', $line, $matches) === 1) {
+                $status = (int) $matches[1];
+            }
+        }
+        if ($status === null) {
+            throw new RuntimeException('official source response omitted HTTP status');
+        }
+        return $status;
+    }
+
+    private static function httpHeader(array $headers, string $name): ?string {
+        $prefix = strtolower($name) . ':';
+        foreach ($headers as $line) {
+            if (!is_string($line) || !str_starts_with(strtolower($line), $prefix)) {
+                continue;
+            }
+            return trim(substr($line, strlen($prefix)));
+        }
+        return null;
     }
 
     private static function validateRegex(string $pattern, string $label): void {
@@ -634,6 +770,7 @@ function pgrUpstreamRadarMain(array $argv): int {
                     file_put_contents($candidatePath, json_encode($result['observation_candidate'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n");
                     if ($persist) {
                         $result['persistence'] = PGR_Upstream_Radar::persistCandidate($result['observation_candidate']);
+                        PGR_Upstream_Radar::assertPersistenceOutcome($key, $result['persistence']);
                     }
                 }
                 $results[] = $result;
@@ -650,8 +787,9 @@ function pgrUpstreamRadarMain(array $argv): int {
             'evidence_ceiling' => 'DETECTED / DOCUMENTED != OWNER_SUPPLIED != TESTED != QUALIFIED != ADMITTED',
         ];
         file_put_contents(rtrim($output, '/') . '/summary.json', json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n");
-        file_put_contents(rtrim($output, '/') . '/summary.md', PGR_Upstream_Radar::renderSummary($results));
-        fwrite(STDOUT, PGR_Upstream_Radar::renderSummary($results));
+        $renderedSummary = PGR_Upstream_Radar::renderSummary($results, $failures);
+        file_put_contents(rtrim($output, '/') . '/summary.md', $renderedSummary);
+        fwrite(STDOUT, $renderedSummary);
 
         if ($failures !== []) {
             foreach ($failures as $key => $message) {
