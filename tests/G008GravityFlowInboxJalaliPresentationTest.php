@@ -33,8 +33,8 @@ require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-inbox-jalali
 final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 
 	protected function setUp(): void {
-		$GLOBALS['pgr_test_timezone']       = 'Asia/Tehran';
-		$GLOBALS['pgr_test_filters']        = array();
+		$GLOBALS['pgr_test_timezone']   = 'Asia/Tehran';
+		$GLOBALS['pgr_test_filters']    = array();
 		Gravity_Flow_API::$current_step = null;
 	}
 
@@ -231,23 +231,23 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		$this->assertArrayNotHasKey( 'gravityflow_inbox_filter', $GLOBALS['pgr_test_filters'] );
 	}
 
-	public function test_runtime_version_gate_reuses_existing_product_registry_and_host_identity_authorities(): void {
+	public function test_runtime_contract_keeps_host_identity_but_not_localization_version_authority(): void {
 		$products = require dirname( __DIR__ ) . '/includes/localization/products.php';
 		$this->assertSame( '3.1.0', $products['gravityflow']['target_version'] );
 		$this->assertSame( 'gravityflow', $products['gravityflow']['product'] );
-		$this->assertSame( $products['gravityflow']['target_version'], GRAVITY_FLOW_VERSION );
-		$this->assertSame( $products['gravityflow']['product'], dirname( GRAVITY_FLOW_PLUGIN_BASENAME ) );
 
 		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php' );
-		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source );
 		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source );
-		$this->assertStringContainsString( "constant( self::HOST_VERSION_CONSTANT )", $source );
+		$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $source );
 		$this->assertStringContainsString( "DUE_DATE_RAW_ID = 'due_date'", $source );
+		$this->assertStringNotContainsString( "includes/localization/products.php", $source );
+		$this->assertStringNotContainsString( 'target_version', $source );
+		$this->assertStringNotContainsString( 'status_snapshot', $source );
+		$this->assertStringNotContainsString( 'pgr_gravityflow_compatibility_latest', $source );
 		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
 		$this->assertStringNotContainsString( 'new Gravity_Flow_API', $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
-		$this->assertStringNotContainsString( "'gravityflow'", $source );
 	}
 
 	public function test_due_date_presentation_does_not_reenter_operational_getter_after_native_raw_and_display_resolution(): void {
@@ -278,5 +278,4 @@ final class G008GravityFlowInboxJalaliPresentationTest extends TestCase {
 		);
 		$this->assertSame( 2, $step->calls, 'Presentation must add zero operational due-date getter invocations.' );
 	}
-
 }
