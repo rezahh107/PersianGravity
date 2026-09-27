@@ -1,0 +1,51 @@
+name: Temporary PR68 own-catalog regeneration
+
+on:
+  push:
+    branches:
+      - feat/g010-wu02-compatibility-diagnostics
+    paths:
+      - .github/workflows/tmp-pr68-own-catalog-regenerate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/g010-wu02-compatibility-diagnostics
+
+      - name: Set up PHP and WP-CLI
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer, wp-cli
+          coverage: none
+
+      - name: Install GNU gettext
+        run: sudo apt-get update && sudo apt-get install --yes gettext
+
+      - name: Regenerate POT and merge PO
+        shell: bash
+        run: |
+          set -euo pipefail
+          composer i18n:pot
+          msgmerge --update --backup=off languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
+          git diff --check -- languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po
+
+      - name: Commit regenerated text catalogs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add languages/persian-gravityforms.pot languages/persian-gravityforms-fa_IR.po
+          if git diff --cached --quiet; then
+            echo 'No catalog changes produced.'
+            exit 0
+          fi
+          git commit -m 'chore(i18n): regenerate own-plugin catalogs'
+          git push origin HEAD:feat/g010-wu02-compatibility-diagnostics
