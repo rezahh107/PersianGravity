@@ -37,6 +37,7 @@ jobs:
           set -euo pipefail
           tmp_mo=/tmp/persian-gravityforms-fa_IR.mo
           trap 'rm -f "$tmp_mo"' EXIT
+          composer i18n:translation-check
           msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
           cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
