@@ -80,17 +80,19 @@ The date adapter remains bounded by the behavior of the composed seam:
 7. `gmdate()` reads the already-local Gregorian civil components; it does not apply a second timezone conversion.
 8. `PGR_Jalali_Presentation::format_date()` remains the only calendar-conversion authority.
 9. The host's surrounding native time text is preserved.
-10. The owned marker is removed on every fallback, including stale/unarmed/wrong-format paths.
-11. Unrelated `date_i18n` calls remain native when they do not contain the owned marker.
+10. The owned marker is removed on every fallback from a PersianGravity-owned marked format, including stale/unarmed/wrong-format paths.
+11. Unrelated non-owned `date_i18n` calls remain byte-for-byte native, including a literal-text collision with `PGRJALALIENTRYDETAIL:`.
 12. No operational due/schedule/expiration getter and no Timeline seam is hooked or re-entered.
 
-Focused falsification covers non-empty host format, missing native default format, wrong/stale marker format, unexpected GMT semantics, non-integer timestamp, out-of-range/conversion failure, unrelated `date_i18n`, wrong plugin basename and malformed version observation.
+Focused falsification covers non-empty host format, missing native default format, wrong/stale marker format, unexpected GMT semantics, non-integer timestamp, out-of-range/conversion failure, unrelated `date_i18n`, literal marker collision, wrong plugin basename and malformed version observation.
 
 ### Truthful Entry Detail date diagnostics attribution
 
-The shared date-format and `date_i18n` hooks do not expose a trustworthy semantic row identity. Exact Flow 3.1.0 source/runtime evidence does establish that a complete workflow-info render routes the admitted Submitted, Last Updated, Due and Expiration rows through the shared chain before `gravityflow_below_workflow_info_entry_detail`.
+The shared date-format and `date_i18n` hooks do not expose a trustworthy semantic row identity. Exact Flow 3.1.0 source/runtime evidence does establish that a complete four-row workflow-info render routes the admitted Submitted, Last Updated, Due and Expiration rows through the shared chain before `gravityflow_below_workflow_info_entry_detail`.
 
-Batch 2 therefore adds only a diagnostics-only post-render observer on that already-qualified hook. The four existing date capability IDs are recorded together as `AVAILABLE / PGR-GFLOW-CONTRACT-SATISFIED` only when exactly four successful marked calls were observed in the complete render. Fewer calls or mixed failures become `DEGRADED / PGR-GFLOW-CONTEXT-UNAVAILABLE` rather than a guessed field assignment. A uniform observed source/conversion failure may use its existing bounded reason for all four only when the same failure is actually observed for the complete family.
+Batch 2 therefore adds only a diagnostics-only post-render observer on that already-qualified hook. The four existing date capability IDs are recorded together as `AVAILABLE / PGR-GFLOW-CONTRACT-SATISFIED` only when exactly four successful marked calls were observed in the complete render. Fewer calls or a mixed four-call result emit no per-capability observation because the adapter cannot truthfully identify which semantic row was absent or failed. A uniform observed source/conversion failure may use its existing bounded reason for all four only when the same failure is actually observed for the complete family.
+
+Pre-arm failures such as wrong host identity, non-empty host format, missing default format or unavailable conversion facade preserve native behavior but do not invent four per-field observations from a shared hook without row identity. In those cases cross-request System Status remains `NOT_EVALUATED` unless another trustworthy observation already exists.
 
 The observer is not required for conversion and is never read by the conversion path. The date adapter does not call `status_snapshot()`, read `pgr_gravityflow_compatibility_latest`, or consume persisted diagnostics as activation authority.
 
@@ -120,16 +122,15 @@ Digit-shaping truth therefore remains in focused JS tests and authentic WU008 br
 
 ## Diagnostics mapping used across WU-03
 
-The implementation uses only existing WU-02 states/reasons:
+WU-03 reuses only the existing WU-02 state/reason taxonomy. Batch 1 direct adapters can attribute a current callback to one capability and therefore use the existing contract-satisfied, host, context, source and conversion mappings at that boundary.
 
-- full evaluated current contract satisfied → `AVAILABLE / PGR-GFLOW-CONTRACT-SATISFIED`;
-- host identity missing/invalid → `UNAVAILABLE / PGR-GFLOW-HOST-UNQUALIFIED`;
-- required shared marker/render context unavailable or attribution ambiguous → `DEGRADED / PGR-GFLOW-CONTEXT-UNAVAILABLE`;
-- required seam/default format unavailable → `DEGRADED / PGR-GFLOW-SEAM-UNAVAILABLE`;
-- admitted GMT/timestamp/source semantics malformed → `DEGRADED / PGR-GFLOW-SOURCE-INVALID` where attribution is truthful;
-- conversion facade/output unavailable → `DEGRADED / PGR-GFLOW-CONVERSION-UNAVAILABLE`.
+Batch 2's Entry Detail date family is intentionally more conservative because its shared hooks do not identify a semantic row. On a complete four-row observation it uses:
 
-No new state or reason taxonomy is introduced.
+- four successful marked calls → `AVAILABLE / PGR-GFLOW-CONTRACT-SATISFIED` for the four existing date IDs;
+- the same malformed timestamp/GMT/source result on all four calls → `DEGRADED / PGR-GFLOW-SOURCE-INVALID`;
+- the same conversion failure on all four calls → `DEGRADED / PGR-GFLOW-CONVERSION-UNAVAILABLE`.
+
+A partial render, mixed result, or pre-arm failure is not forced into four per-field records. Those capability rows remain `NOT_EVALUATED` unless another trustworthy observation exists. No new state or reason taxonomy is introduced.
 
 ## Synthetic version-only falsification
 
@@ -143,13 +144,13 @@ This proves only that architecture no longer rejects solely on version equality.
 
 ## Batch 2 true contract-drift and isolation evidence
 
-Focused PHP/JS tests require native/fail-closed behavior for wrong canonical basename, malformed version observation, host format override, missing default format, stale/wrong marker context, unexpected GMT semantics, malformed timestamp, out-of-range/conversion failure, non-Persian locale, missing assets, duplicate enqueue, missing exact DOM root, hidden/editable/excluded nodes and machine-state attributes/controls/URLs.
+Focused PHP/JS tests require native/fail-closed behavior for wrong canonical basename, malformed version observation, host format override, missing default format, stale/wrong marker context, unexpected GMT semantics, malformed timestamp, out-of-range/conversion failure, non-Persian locale, missing assets, duplicate enqueue, missing exact DOM root, hidden/editable/excluded nodes and machine-state attributes/controls/URLs. Focused diagnostics tests also require no invented per-field result for partial or mixed shared-hook evidence.
 
 Date and digit presentation remain separate adapters. A date marker/conversion failure does not change the post-render digit PHP/DOM contract; digit locale/asset/root failure does not change the composed date contract. No global compatibility service couples their activation.
 
 ## Scope-preservation checks
 
-The intended Batch 2 production diff is restricted to the two existing Entry Detail PHP adapters. The existing digit browser implementation remains unchanged; tests harden its exact DOM/text-node boundaries.
+The Batch 2 production behavior diff is restricted to the two existing Entry Detail PHP adapters. The existing digit browser implementation remains unchanged; tests harden its exact DOM/text-node boundaries. The existing G008 runtime workflow receives only path-filter coverage for these Entry Detail adapter/test files so the already-required regression lane executes on this class of PR; the lane behavior itself is not redesigned.
 
 Batch 2 does not migrate Timeline/history or Print, does not admit Entry Detail Scheduled calendar conversion, does not change Status due-date no-admission, Gravity Forms, GravityView, Jalali converter arithmetic/range, localization package authority, vendor files, plugin version, Stable tag, release or deployment state.
 
