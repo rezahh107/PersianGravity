@@ -53,16 +53,31 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assertSame( '\\P\\G\\R\\J\\A\\L\\A\\L\\I\\E\\N\\T\\R\\Y\\D\\E\\T\\A\\I\\L\\:F j, Y', $format );
 	}
 
-	public function test_nonempty_host_format_override_is_preserved_and_disarms_ownership(): void {
+	public function test_nonempty_host_format_override_is_preserved_and_disarms_ownership_without_marker_leak(): void {
 		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
 		$marked  = $adapter->filter_entry_detail_date_format( '' );
 
 		$this->assertSame( 'Y-m-d', $adapter->filter_entry_detail_date_format( 'Y-m-d' ) );
 		$this->assertSame(
-			'PGRJALALIENTRYDETAIL:March 21, 2030',
+			'March 21, 2030',
 			$adapter->filter_marked_date(
 				'PGRJALALIENTRYDETAIL:March 21, 2030',
 				$marked,
+				1900281780,
+				true
+			)
+		);
+	}
+
+	public function test_wrong_marked_format_falls_native_without_marker_leak(): void {
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$adapter->filter_entry_detail_date_format( '' );
+
+		$this->assertSame(
+			'March 21, 2030',
+			$adapter->filter_marked_date(
+				'PGRJALALIENTRYDETAIL:March 21, 2030',
+				'\\P\\G\\R\\J\\A\\L\\A\\L\\I\\E\\N\\T\\R\\Y\\D\\E\\T\\A\\I\\L\\:Y-m-d',
 				1900281780,
 				true
 			)
@@ -117,7 +132,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assert_entry_detail_observations( 'AVAILABLE', 'PGR-GFLOW-CONTRACT-SATISFIED' );
 
 		$this->assertSame(
-			'PGRJALALIENTRYDETAIL:March 21, 2030',
+			'March 21, 2030',
 			$adapter->filter_marked_date(
 				'PGRJALALIENTRYDETAIL:March 21, 2030',
 				$format,
