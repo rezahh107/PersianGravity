@@ -61,29 +61,16 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	public function filter_entry_detail_date_format( $format ) {
 		$this->reset_marker_context();
 
-		if ( '' !== $format ) {
-			$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
+		if ( '' !== $format || ! $this->has_qualified_host_identity() ) {
 			return $format;
 		}
 
-		if ( ! $this->has_qualified_host_identity() ) {
-			$this->record_all_diagnostics( 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED' );
-			return $format;
-		}
-
-		if ( ! class_exists( 'GFCommon', false ) ) {
-			$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_SEAM_UNAVAILABLE' );
-			return $format;
-		}
-
-		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
-			$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
+		if ( ! class_exists( 'GFCommon', false ) || ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
 			return $format;
 		}
 
 		$native_format = GFCommon::get_default_date_format();
 		if ( ! is_string( $native_format ) || '' === $native_format ) {
-			$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_SEAM_UNAVAILABLE' );
 			return $format;
 		}
 
@@ -113,7 +100,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 			! is_string( $format ) ||
 			$format !== $this->active_marker_format
 		) {
-			return $this->strip_marker( $date );
+			return $this->is_owned_marked_format( $format ) ? $this->strip_marker( $date ) : $date;
 		}
 
 		$fallback = $this->strip_marker( $date );
@@ -163,12 +150,11 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	/**
 	 * Finalize per-capability reporting only after the exact host post-render seam.
 	 *
-	 * Exact Flow 3.1.0 qualification proves a complete workflow-info render routes
-	 * Submitted, Last Updated, Due and Expiration through the shared format and
-	 * date_i18n chain before this action. A synthetic version-string change does
-	 * not change that runtime contract. If the aggregate observation cannot prove
-	 * all four capabilities equally, the per-field report is deliberately marked
-	 * context-unavailable rather than guessing which field drifted.
+	 * Exact Flow 3.1.0 qualification proves that a complete four-row workflow-info
+	 * render routes Submitted, Last Updated, Due and Expiration through the shared
+	 * format/date_i18n chain before this action. The shared hooks do not identify a
+	 * semantic row, so incomplete renders deliberately emit no per-capability
+	 * observation instead of guessing which capability was evaluated.
 	 *
 	 * @param mixed $form         Host form.
 	 * @param mixed $entry        Host entry.
@@ -185,13 +171,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 		$results = $this->marked_call_results;
 		$this->reset_marker_context();
 
-		if ( ! $this->has_qualified_host_identity() ) {
-			$this->record_all_diagnostics( 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED' );
-			return;
-		}
-
 		if ( 4 !== count( $results ) ) {
-			$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
 			return;
 		}
 
@@ -218,10 +198,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 			}
 
 			$this->record_all_diagnostics( 'STATE_DEGRADED', $reason );
-			return;
 		}
-
-		$this->record_all_diagnostics( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
 	}
 
 	/**
@@ -231,16 +208,36 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	 * @return string
 	 */
 	private function marked_format( $native_format ) {
+		return $this->escaped_marker() . $native_format;
+	}
+
+	/**
+	 * Return the escaped literal prefix used only by this adapter.
+	 *
+	 * @return string
+	 */
+	private function escaped_marker() {
 		$marker = '';
 		foreach ( str_split( self::MARKER_LITERAL ) as $character ) {
 			$marker .= '\\' . $character;
 		}
 
-		return $marker . $native_format;
+		return $marker;
 	}
 
 	/**
-	 * Remove this adapter's marker from native output before any fallback.
+	 * Determine whether the incoming format belongs to this adapter's marker
+	 * family even when its request-local active context is stale or disarmed.
+	 *
+	 * @param mixed $format Native date_i18n format.
+	 * @return bool
+	 */
+	private function is_owned_marked_format( $format ) {
+		return is_string( $format ) && 0 === strpos( $format, $this->escaped_marker() );
+	}
+
+	/**
+	 * Remove this adapter's marker from native output before any owned fallback.
 	 *
 	 * @param mixed $date Native date_i18n output.
 	 * @return mixed
@@ -281,7 +278,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Record the same observation for all four shared-contract date capabilities.
+	 * Record one aggregate observation for the four shared-contract date IDs.
 	 *
 	 * @param string $state_constant  Diagnostics state constant name.
 	 * @param string $reason_constant Diagnostics reason constant name.
