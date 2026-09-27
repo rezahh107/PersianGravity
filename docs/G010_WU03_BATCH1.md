@@ -79,3 +79,5 @@ The required final-Head verification remains the existing exact-package infrastr
 - any G006 exact-runtime lane triggered by the final diff.
 
 WU008 remains the authentic proof boundary for current Flow `3.1.0` Inbox/Status presentation, disabled/native fallback, raw compare and sort/filter behavior, due/overdue/schedule/workflow state, assignments, DB/GFAPI/REST semantics and Status CSV/export isolation. Green workflow results prove only the scenarios exercised by those workflows.
+
+Detailed validation boundaries and falsification coverage are recorded in `docs/VALIDATION_G010_WU03.md`.
