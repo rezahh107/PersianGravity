@@ -122,6 +122,18 @@ The exact Flow 3.1.0 Entry Detail adapter admits only workflow-info Submitted / 
 
 See `docs/G008_JALALI_PRESENTATION.md` for converter provenance and `docs/G008_SYSTEM_DATE_EXPANSION.md` for the current exact Flow surface/source/operational evidence boundary.
 
+## G-010 Gravity Flow compatibility diagnostics foundation
+
+`PGR_Gravity_Flow_Compatibility_Diagnostics` is a small reporting/governance component loaded with the existing non-disableable admin infrastructure. WU-02 does not wire current adapters into it and does not alter any existing exact-version, source-fingerprint, caller-chain, locale, source-data, range or conversion gate. Runtime safety decisions remain adapter-local; diagnostics may only observe a decision after the adapter has made it.
+
+The capability allowlist reuses the established G-008 Gravity Flow surface IDs for Inbox, Status, Entry Detail, Timeline/history and inherited Print. It is intentionally not a second source-semantics registry. Observations use exactly four states: `AVAILABLE`, `DEGRADED`, `UNAVAILABLE`, and `NOT_EVALUATED`. Stable `PGR-GFLOW-*` reasons classify contract satisfaction, unqualified host identity/version, unavailable seam/source contract, missing request/caller context, invalid source data, non-applicable module/locale/context, conversion failure, and absence of trustworthy evaluation. Human explanations are source-owned by the reason catalog rather than accepted as free-form request data.
+
+The request-local recorder accepts only a known capability ID, state and reason. It has no generic context/payload parameter and records no user, form, entry, URL, cookie, token, request body, source excerpt or stack trace. Within one request, precedence is deterministic and failure-preserving: `UNAVAILABLE > DEGRADED > AVAILABLE > NOT_EVALUATED`; equal-state later observations replace earlier observations.
+
+System Status is a separate request, so the reporter may keep one small cross-request latest snapshot in the non-autoloaded `pgr_gravityflow_compatibility_latest` option. Schema version 1 stores only `capability_id`, `state`, `reason_id`, the source-owned short summary, `observed_at`, and the observed Gravity Flow version. The complete serialized snapshot is capped at 8192 bytes, observations older than seven days or implausibly future-dated are discarded, and persisted evidence from another currently observed Gravity Flow version is not trusted. Missing, malformed, stale or version-mismatched data renders as `NOT_EVALUATED`, never as incompatible and never as activation authority.
+
+The existing `PGR_Product_Admin` System Status page renders the reporting snapshot read-only. It provides no force-enable or destructive action. WU-02 by itself makes no unknown/new Gravity Flow version compatible; later WU-03/WU-04 must first prove replacement contracts and only then may change adapter guards.
+
 ## Safe disable
 
 Usage inspection runs only on an explicit disable POST and reads Gravity Forms form configuration through `GFAPI::get_forms( null, false )`. It does not scan Entries or use direct SQL.

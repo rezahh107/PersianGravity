@@ -54,6 +54,7 @@ function pgr_initialize_admin() {
 	require_once PGR_PATH . 'includes/class-pgr-module-registry.php';
 	require_once PGR_PATH . 'includes/class-pgr-module-usage.php';
 	require_once PGR_PATH . 'includes/class-pgr-scanner-profile-registry.php';
+	require_once PGR_PATH . 'includes/class-pgr-gravity-flow-compatibility-diagnostics.php';
 	require_once PGR_PATH . 'admin/class-pgr-admin.php';
 	require_once PGR_PATH . 'admin/class-pgr-help-catalog.php';
 	require_once PGR_PATH . 'admin/class-pgr-product-admin.php';
