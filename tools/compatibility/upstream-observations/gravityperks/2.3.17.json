@@ -11,17 +11,19 @@
   },
   "evidence_state": "DETECTED_ONLY",
   "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
-  "checked_at": "2026-09-27T17:55:00Z",
+  "checked_at": "2026-09-27T19:33:48Z",
   "official_sources": [
     {
       "url": "https://gravitywiz.com/gravity-wiz-weekly-269/",
       "role": "terminal-stable-release",
-      "source_identity": "Gravity Wiz first-party product update naming the terminal Gravity Perks parent-plugin release v2.3.17"
+      "source_identity": "Gravity Wiz first-party product update naming the terminal Gravity Perks parent-plugin release v2.3.17",
+      "sha256": "ac2d937ceae6b7f0e7bd70fd05d42b7ac90f68b205f22f5b21c855b8b2a716b7"
     },
     {
       "url": "https://gravitywiz.com/documentation/spellbook/",
       "role": "official-documentation",
-      "source_identity": "Spellbook documentation establishing replacement of the Gravity Perks platform plugin"
+      "source_identity": "Spellbook documentation establishing replacement of the Gravity Perks platform plugin",
+      "sha256": "b1b908fd23f004820499ceb723378b37e5a080c9770d5a0cf893112ab6c0d61a"
     }
   ],
   "classifications": [
