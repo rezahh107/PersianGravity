@@ -16,6 +16,7 @@ on:
     paths:
       - '.github/workflows/upstream-compatibility-radar.yml'
       - 'tools/compatibility/upstream-radar.php'
+      - 'tools/compatibility/upstream-radar-consistency.php'
       - 'tools/compatibility/upstream-radar-source-diagnostics.php'
       - 'tools/compatibility/upstream-radar-profiles.json'
       - 'tools/compatibility/upstream-observations/**'
@@ -24,6 +25,7 @@ on:
       - 'tools/i18n/admission/baseline.json'
       - 'tools/i18n/admission/g007-gravity-perks.json'
       - 'tests/UpstreamCompatibilityRadarTest.php'
+      - 'tests/UpstreamCompatibilityRadarConsistencyTest.php'
       - 'tests/UpstreamCompatibilityRadarSourceShapeTest.php'
       - 'docs/G010_WU05_UPSTREAM_RADAR.md'
 
@@ -65,13 +67,20 @@ jobs:
           php tools/compatibility/upstream-radar.php scan --output=radar-evidence || status=$?
           diagnostic_status=0
           php tools/compatibility/upstream-radar-source-diagnostics.php > radar-evidence/diagnostics/release-headings.json || diagnostic_status=$?
+          consistency_status=0
+          if (( status == 0 )); then
+            php tools/compatibility/upstream-radar-consistency.php radar-evidence/summary.json || consistency_status=$?
+          fi
           if [[ -f radar-evidence/summary.md ]]; then
             cat radar-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
           if (( status != 0 )); then
             exit "$status"
           fi
-          exit "$diagnostic_status"
+          if (( diagnostic_status != 0 )); then
+            exit "$diagnostic_status"
+          fi
+          exit "$consistency_status"
 
       - name: Upload machine-readable radar evidence
         if: always()
@@ -130,10 +139,17 @@ jobs:
           rm -rf "$evidence_dir"
           status=0
           php tools/compatibility/upstream-radar.php scan --output="$evidence_dir" --persist-new || status=$?
+          consistency_status=0
+          if (( status == 0 )); then
+            php tools/compatibility/upstream-radar-consistency.php "$evidence_dir/summary.json" || consistency_status=$?
+          fi
           if [[ -f "$evidence_dir/summary.md" ]]; then
             cat "$evidence_dir/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
-          exit "$status"
+          if (( status != 0 )); then
+            exit "$status"
+          fi
+          exit "$consistency_status"
 
       - name: Enforce observation-only mutation boundary
         id: changes
