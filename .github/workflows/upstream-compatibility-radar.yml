@@ -114,9 +114,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf radar-evidence
-          php tools/compatibility/upstream-radar.php scan --output=radar-evidence --persist-new
-          cat radar-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
+          evidence_dir="$RUNNER_TEMP/radar-evidence"
+          rm -rf "$evidence_dir"
+          php tools/compatibility/upstream-radar.php scan --output="$evidence_dir" --persist-new
+          cat "$evidence_dir/summary.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce observation-only mutation boundary
         id: changes
