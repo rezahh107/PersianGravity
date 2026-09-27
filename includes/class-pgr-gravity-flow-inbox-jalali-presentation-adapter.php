@@ -263,7 +263,10 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 		$this->clear_due_date_proof();
 
 		if ( null !== $reason ) {
-			return array( 'value' => null, 'reason' => $reason );
+			return array(
+				'value'  => null,
+				'reason' => $reason,
+			);
 		}
 
 		$key = $this->due_date_capture_key( $form_id, $entry );
@@ -274,10 +277,16 @@ final class PGR_Gravity_Flow_Inbox_Jalali_Presentation_Adapter {
 			$pending['key'] !== $key ||
 			! is_int( $pending['value'] )
 		) {
-			return array( 'value' => null, 'reason' => 'REASON_CONTEXT_UNAVAILABLE' );
+			return array(
+				'value'  => null,
+				'reason' => 'REASON_CONTEXT_UNAVAILABLE',
+			);
 		}
 
-		return array( 'value' => $pending['value'], 'reason' => null );
+		return array(
+			'value'  => $pending['value'],
+			'reason' => null,
+		);
 	}
 
 	/** @return void */
