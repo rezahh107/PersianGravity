@@ -1,6 +1,6 @@
 <?php
 /**
- * Presentation-only Persian digit shaping for exact Gravity Flow Entry Detail workflow info.
+ * Presentation-only Persian digit shaping for Gravity Flow Entry Detail workflow info.
  *
  * @package PersianGravityForms
  */
@@ -9,11 +9,14 @@ defined( 'ABSPATH' ) || exit;
 
 final class PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter {
 
-	/** Host-owned runtime version authority. */
+	/** Host-owned runtime version observation. Version equality is not eligibility. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
+
+	/** Canonical Gravity Flow plugin main-file identity. */
+	private const HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php';
 
 	/** Browser adapter handle. */
 	private const SCRIPT_HANDLE = 'pgr-gravity-flow-entry-detail-persian-digits';
@@ -54,7 +57,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter {
 			$this->enqueued ||
 			! function_exists( 'determine_locale' ) ||
 			'fa_IR' !== determine_locale() ||
-			! $this->is_exact_supported_host() ||
+			! $this->has_qualified_host_identity() ||
 			! defined( 'PGR_URL' ) ||
 			! defined( 'PGR_VERSION' )
 		) {
@@ -73,42 +76,23 @@ final class PGR_Gravity_Flow_Entry_Detail_Persian_Digits_Presentation_Adapter {
 	}
 
 	/**
-	 * Admit only the exact Gravity Flow product/version already owned by the
-	 * product registry. Missing or drifted host identity keeps native output.
+	 * Validate Gravity Flow product identity without making version equality an
+	 * activation oracle. The actual post-render hook/locale/browser DOM contract
+	 * supplies compatibility; the version remains bounded provenance only.
 	 *
 	 * @return bool
 	 */
-	private function is_exact_supported_host() {
-		if (
-			! defined( self::HOST_VERSION_CONSTANT ) ||
-			! defined( self::HOST_BASENAME_CONSTANT ) ||
-			! defined( 'PGR_PATH' )
-		) {
+	private function has_qualified_host_identity() {
+		if ( ! defined( self::HOST_VERSION_CONSTANT ) || ! defined( self::HOST_BASENAME_CONSTANT ) ) {
 			return false;
 		}
 
-		$registry_path = PGR_PATH . 'includes/localization/products.php';
-		if ( ! is_readable( $registry_path ) ) {
+		$version = trim( (string) constant( self::HOST_VERSION_CONSTANT ) );
+		if ( '' === $version || strlen( $version ) > 32 || 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9._+\-]*$/', $version ) ) {
 			return false;
 		}
 
 		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
-		$product_slug    = dirname( $plugin_basename );
-		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
-			return false;
-		}
-
-		$products = require $registry_path;
-		$target   = '';
-		foreach ( $products as $product ) {
-			if ( ( $product['product'] ?? '' ) !== $product_slug ) {
-				continue;
-			}
-
-			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
-			break;
-		}
-
-		return '' !== $target && (string) constant( self::HOST_VERSION_CONSTANT ) === $target;
+		return self::HOST_PLUGIN_BASENAME === $plugin_basename;
 	}
 }

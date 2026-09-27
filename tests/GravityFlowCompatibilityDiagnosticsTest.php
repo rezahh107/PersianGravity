@@ -36,6 +36,7 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 
 		$this->assertSame( $expected, array_keys( $catalog ) );
 		$this->assertCount( count( array_unique( array_keys( $catalog ) ) ), $catalog );
+		$this->assertArrayNotHasKey( 'gravityflow.entry-detail.persian-digits', $catalog );
 
 		$registry = json_decode(
 			file_get_contents( dirname( __DIR__ ) . '/tools/jalali/g008-system-date-surfaces.json' ),
@@ -257,7 +258,7 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		);
 	}
 
-	public function test_wu03_keeps_diagnostics_reporting_only_and_preserves_unmigrated_guards(): void {
+	public function test_wu03_keeps_diagnostics_reporting_only_and_preserves_mixed_admission_and_timeline_guards(): void {
 		$root          = dirname( __DIR__ );
 		$adapter_files = glob( $root . '/includes/class-pgr-gravity-flow-*.php' );
 		$this->assertNotFalse( $adapter_files );
@@ -272,21 +273,35 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			$this->assertStringNotContainsString( '::persist_request_snapshot(', $source, $path );
 		}
 
-		$inbox = file_get_contents( $root . '/includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php' );
-		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $inbox );
-		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $inbox );
-		$this->assertStringNotContainsString( "['target_version']", $inbox );
-		$this->assertStringNotContainsString( 'includes/localization/products.php', $inbox );
+		foreach (
+			array(
+				'class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php',
+				'class-pgr-gravity-flow-status-jalali-presentation-adapter.php',
+				'class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php',
+			) as $filename
+		) {
+			$source = file_get_contents( $root . '/includes/' . $filename );
+			$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source, $filename );
+			$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source, $filename );
+			$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $source, $filename );
+			$this->assertStringNotContainsString( "['target_version']", $source, $filename );
+			$this->assertStringNotContainsString( 'includes/localization/products.php', $source, $filename );
+		}
 
-		$status = file_get_contents( $root . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php' );
-		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $status );
-		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $status );
-		$this->assertStringNotContainsString( "['target_version']", $status );
-		$this->assertStringNotContainsString( 'includes/localization/products.php', $status );
+		$date_adapter = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
+		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $date_adapter );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $date_adapter );
+		$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $date_adapter );
+		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $date_adapter );
+		$this->assertStringContainsString( "['target_version']", $date_adapter );
+		$this->assertStringNotContainsString( "'3.1.0'", $date_adapter );
 
-		$entry_detail = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
-		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $entry_detail );
-		$this->assertStringContainsString( "['target_version']", $entry_detail );
+		$digit_adapter = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php' );
+		$this->assertStringNotContainsString( 'PGR_Gravity_Flow_Compatibility_Diagnostics::record', $digit_adapter );
+		$this->assertArrayNotHasKey(
+			'gravityflow.entry-detail.persian-digits',
+			PGR_Gravity_Flow_Compatibility_Diagnostics::capabilities()
+		);
 
 		$timeline = file_get_contents( $root . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "private const FLOW_VERSION = '3.1.0';", $timeline );
