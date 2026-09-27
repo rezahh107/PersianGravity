@@ -11,12 +11,13 @@
   },
   "evidence_state": "DETECTED_ONLY",
   "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
-  "checked_at": "2026-09-27T18:58:43Z",
+  "checked_at": "2026-09-27T19:33:48Z",
   "official_sources": [
     {
       "url": "https://docs.gravityflow.io/changelog/",
       "role": "stable-release-and-changelog",
-      "source_identity": "Gravity Flow changelog; intervening 3.1.1 release dated 2026-08-25, superseded by current 3.1.1.1"
+      "source_identity": "Direct live Gravity Flow changelog retrieved by the exact-head radar; first version heading is 3.1.1 dated 2026-08-25",
+      "sha256": "f4c2cd85e7693cce07fab32f4b4de97e8b8221c788a05b5a3b77bd5d99aedfe6"
     }
   ],
   "classifications": [
@@ -28,7 +29,7 @@
     {
       "capability": "gravityflow.gravityview-integration",
       "classification": "DOCUMENTED_CONTRACT_CHANGE",
-      "summary": "Gravity Flow 3.1.1 explicitly changes the GravityView integration to address deprecated filters used for Workflow Detail and Approval Links. This remains useful intervening-version evidence, but 3.1.1 is not the current latest stable release."
+      "summary": "The current live 3.1.1 release explicitly changes GravityView integration to address deprecated filters used for Workflow Detail and Approval Links. This is ecosystem contract evidence, not proof of a PersianGravity regression or repair."
     },
     {
       "capability": "gravityflow.entry-detail.date-family",
