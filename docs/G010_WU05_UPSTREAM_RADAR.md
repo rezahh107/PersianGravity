@@ -10,34 +10,36 @@ An observation is a research map for later package-specific qualification. It is
 
 ## Shared architecture
 
-`tools/compatibility/upstream-radar.php` is the one shared engine. Product-specific data lives in `tools/compatibility/upstream-radar-profiles.json`: existing baseline authority resolver, first-party stable-release/changelog source, optional separate first-party docs source, bounded PersianGravity capability categories, deterministic version parser, and observation namespace.
+`tools/compatibility/upstream-radar.php` is the one shared engine. Product-specific data lives in `tools/compatibility/upstream-radar-profiles.json`: existing baseline authority resolver, first-party release/docs source, bounded PersianGravity capability categories, deterministic parser, release-source mode, and observation namespace.
 
-The engine owns profile validation, baseline loading, strict numeric stable-version comparison, first-party retrieval, bounded documented-identifier extraction, observation validation, result aggregation, and product/version persistence. Profiles contain no operational baseline version literals.
+The engine owns profile validation, baseline loading, strict numeric version comparison, first-party retrieval, bounded documented-identifier extraction, observation validation, result aggregation, and product/version persistence. Profiles contain no operational baseline version literals.
 
 The initial profile set is exactly Gravity Forms, Gravity Flow, GravityView, and Gravity Perks. Child packages such as GP File Upload Pro and GP Advanced Select are not scanned automatically, but the same profile contract can support them later if explicitly authorized. Arbitrary site plugins are never discovered or enrolled.
 
 ## Profiles and authorities
 
-| Product | Existing project baseline authority | Current resolved baseline | Public first-party release/docs authority |
-| --- | --- | ---: | --- |
-| Gravity Forms | `tools/i18n/admission/baseline.json` → `gravityforms` | `3.1.1.1` | Gravity Forms changelog |
-| Gravity Flow | `tools/compatibility/gravityflow-package.json` through existing `GravityFlowPackageAuthority` | `3.1.0` | Gravity Flow changelog |
-| GravityView | `tools/i18n/admission/baseline.json` → `gravityview` | `3.3.4` | GravityKit GravityView changelog |
-| Gravity Perks | `tools/i18n/admission/g007-gravity-perks.json` → parent `gravityperks` | `2.3.16` | Gravity Wiz first-party Gravity Perks 2.3.17 update plus current Spellbook docs |
+| Product | Existing project baseline authority | Current resolved baseline | First-party release/docs authority | Source mode |
+| --- | --- | ---: | --- | --- |
+| Gravity Forms | `tools/i18n/admission/baseline.json` → `gravityforms` | `3.1.1.1` | Gravity Forms changelog | `rolling` |
+| Gravity Flow | `tools/compatibility/gravityflow-package.json` through existing `GravityFlowPackageAuthority` | `3.1.0` | Gravity Flow changelog | `rolling` |
+| GravityView | `tools/i18n/admission/baseline.json` → `gravityview` | `3.3.4` | GravityKit GravityView changelog | `rolling` |
+| Gravity Perks | `tools/i18n/admission/g007-gravity-perks.json` → parent `gravityperks` | `2.3.16` | Gravity Wiz Gravity Perks 2.3.17 update + Spellbook lifecycle docs | `terminal` |
 
-Gravity Perks has a lifecycle wrinkle that must remain explicit: current first-party Spellbook documentation says Spellbook replaced Gravity Perks **the platform plugin**, not the Gravity Perks suite. The last parent-plugin update is therefore retained as the release identity for the currently admitted `gravityperks` package, while the Spellbook transition is captured as a documented parent-delivery contract change. This does not enroll Spellbook or child perks as new qualification authorities.
+Gravity Perks is deliberately not modeled as a rolling feed. The numbered Gravity Wiz article is a fixed first-party record for parent-plugin `2.3.17`, while current Spellbook documentation establishes that Spellbook replaced the Gravity Perks platform plugin. The profile therefore marks the parent source `terminal` with `DISCONTINUED_REPLACED` lifecycle evidence. This preserves the admitted parent package as a bounded historical authority without pretending the old article can discover future parent-plugin releases, and it does not enroll Spellbook or child perks as package/admission authorities.
 
-## Version/source failure semantics
+## Version and source failure semantics
 
-Supported stable versions are numeric `major.minor.patch` or `major.minor.patch.revision`.
+Supported versions are numeric `major.minor.patch` or `major.minor.patch.revision`.
 
-- equal -> `NO_NEW_VERSION`;
-- strictly newer official stable release -> `NEW_VERSION_DETECTED`;
-- older official result, malformed/ambiguous version, malformed baseline, retrieval failure, or governed parser/source structural drift -> visible failure.
+- equal → `NO_NEW_VERSION`;
+- strictly newer upstream version → `NEW_VERSION_DETECTED`;
+- older result, malformed/ambiguous version, malformed baseline, retrieval failure, parser drift, invalid lifecycle evidence, or source-boundary violation → visible failure.
 
 A product/source failure is never converted to `NO_NEW_VERSION`.
 
-Release parsing is intentionally bounded to each official source's published release shape. The Gravity Flow parser tolerates bounded inline markup inside a release `<h3>` because the current first-party changelog can wrap the latest version text; it still requires the version to occur inside that release heading. The Gravity Perks source includes the product name inside a linked element, so its parser explicitly tolerates bounded closing markup between `Gravity Perks` and `(vX.Y.Z)` while still requiring the named product/version marker.
+Release parsing remains source-specific. Gravity Flow tolerates bounded inline markup inside a release `<h3>` because the current first-party changelog can wrap version text; the parser still requires the version inside that heading. Gravity Perks tolerates bounded closing markup between the product name and `(vX.Y.Z)` while still requiring that exact named marker.
+
+HTTP redirects are followed manually. Every hop must remain HTTPS and inside the explicit first-party host allowlist before the next request is made; an unapproved redirect target, missing `Location`, non-2xx terminal response, or redirect loop fails visibly.
 
 ## Documentation-only classifications
 
@@ -52,7 +54,7 @@ The governed vocabulary is:
 
 `POTENTIAL_BETTER_SEAM_FOUND` is invalid without explicit supporting official evidence. Deterministic automation does not infer compatibility or semantics from keywords. A newly detected version generated by automation therefore starts as `MODEL_REVIEW_REQUIRED` plus `PACKAGE_REQUIRED_FOR_PROOF`.
 
-During WU-05 implementation, the currently detected newer versions were semantically reviewed against current official docs and committed as `MODEL_REVIEWED` documentation-only observations.
+During WU-05 implementation, current detections were semantically reviewed against official docs and committed as `MODEL_REVIEWED` documentation-only observations.
 
 ## Observation area and persistence
 
@@ -60,35 +62,33 @@ Records live at:
 
 `tools/compatibility/upstream-observations/<product>/<version>.json`
 
-Each record carries the resolved project baseline + authority path, `DETECTED_ONLY`, package state, timestamp, official provenance, classifications, capability observations, semantic-review state, and mandatory `PACKAGE_REQUIRED_FOR_PROOF` boundary. The validator rejects docs-only `QUALIFIED` or `ADMITTED` claims.
+Each record carries the resolved project baseline + authority path, `DETECTED_ONLY`, package state, timestamp, official provenance, classifications, capability observations, semantic-review state, and mandatory `PACKAGE_REQUIRED_FOR_PROOF` boundary. Terminal products additionally retain explicit lifecycle evidence. The validator rejects docs-only `QUALIFIED` or `ADMITTED` claims.
 
-`.github/workflows/upstream-compatibility-radar.yml` runs weekly and exposes `workflow_dispatch`. It also has a path-bounded pull-request trigger so the live public-source boundary can be exercised on the exact PR head before the new workflow exists on the default branch.
+`.github/workflows/upstream-compatibility-radar.yml` runs weekly and exposes `workflow_dispatch`. It also has a path-bounded pull-request trigger so the live public-source boundary can be exercised on the exact PR head before merge.
 
-Scheduled/manual persistence uses one deterministic branch, `automation/upstream-radar-observations`. It can modify only the four approved observation namespaces, never pushes directly to `main`, and never auto-merges. Evidence files for the persistence job are written under `$RUNNER_TEMP`, outside the Git worktree, so they cannot be mistaken for repository mutations by the observation-only guard.
+Scheduled/manual persistence uses one deterministic branch, `automation/upstream-radar-observations`. It can modify only the four approved observation namespaces, never pushes directly to `main`, and never auto-merges. Evidence files for persistence are written under `$RUNNER_TEMP`, outside the Git worktree.
 
-Repeat product/version candidates are deduplicated. Automation-generated unresolved observations may be refreshed if source evidence materially changes. A `MODEL_REVIEWED` observation is never overwritten by automation.
+Repeat product/version candidates are deduplicated. Automation-generated unresolved observations may be refreshed when official evidence materially changes. A `MODEL_REVIEWED` observation is never overwritten by automation. If stored source fingerprints for a reviewed observation differ from current first-party evidence, persistence returns `REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED`; the CLI converts that into a non-zero run and includes the failure in the job summary rather than silently losing the review signal.
 
 ## Current live-reviewed observations — 2026-09-27
 
 ### Gravity Forms 3.1.2
 
-The official changelog reports `3.1.2` (2026-09-17) against project baseline `3.1.1.1`. Its entry documents security hardening, `gform_addon_pages_using_components`, merge-tag/field behavior and other maintenance changes. No change is documented to PersianGravity's admitted localization contract or Entries List `date_created` presentation seam. Classification: `NO_RELEVANT_DOCUMENTED_CHANGE` + `PACKAGE_REQUIRED_FOR_PROOF`. Documentation silence is not runtime proof.
+The official changelog reports `3.1.2` (2026-09-17) against baseline `3.1.1.1`. Its entry documents security hardening, `gform_addon_pages_using_components`, merge-tag/field behavior, and maintenance changes. No change is documented to PersianGravity's admitted localization contract or Entries List `date_created` presentation seam. Classification: `NO_RELEVANT_DOCUMENTED_CHANGE` + `PACKAGE_REQUIRED_FOR_PROOF`. Documentation silence is not runtime proof.
 
 ### Gravity Flow 3.1.1.1
 
-The current public Gravity Flow changelog reports `3.1.1.1` as the latest stable release against the exact Owner-package baseline `3.1.0`. The latest patch entry documents maintenance fixes. Within the version gap, the intervening `3.1.1` release explicitly changes the GravityView integration to address deprecated filter warnings for Workflow Detail/Approval Links. Classification for the current version-gap observation: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
+The current public Gravity Flow changelog reports `3.1.1.1` as the latest stable release against exact Owner-package baseline `3.1.0`. The latest patch entry documents maintenance fixes. Within the version gap, intervening `3.1.1` explicitly changes GravityView integration to address deprecated filters used for Workflow Detail/Approval Links. Classification for the current version-gap observation: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
 
-The earlier `3.1.1` observation is retained as an intervening documentation record but is not treated as the current latest stable release.
-
-The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. If the Owner later supplies `3.1.1.1`, qualification must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
+The separate `3.1.1` record is retained as intervening documentation evidence, not as the current latest release. The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. If the Owner supplies `3.1.1.1`, qualification must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
 
 ### GravityView 3.5.0
 
-The first-party GravityView changelog reports `3.5.0` (2026-09-24) against baseline `3.3.4`. Since the baseline, 3.3.5 documents compatibility fixes for Gravity Forms 3.1.1+, 3.4.0 changes nearby date/time behavior for relative-date merge tags, and 3.5.0 adds new View output/query surfaces. These are relevant contract signals, not proof that PersianGravity's exact field-specific raw UTC Entry-property seam changed. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
+The first-party GravityView changelog reports `3.5.0` (2026-09-24) against baseline `3.3.4`. Since that baseline, 3.3.5 documents Gravity Forms 3.1.1+ compatibility fixes, 3.4.0 changes nearby relative-date timezone behavior, and 3.5.0 adds View output/query surfaces. These are relevant contract signals, not proof that PersianGravity's exact field-specific raw UTC Entry-property seam changed. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
 
-### Gravity Perks 2.3.17
+### Gravity Perks 2.3.17 — terminal parent plugin
 
-Gravity Wiz's first-party product update reports Gravity Perks `2.3.17` against baseline `2.3.16`, fixing Spellbook activation during migration. Current Spellbook documentation states that Spellbook replaced the Gravity Perks platform plugin and owns installation/licensing/update delivery. That materially changes parent delivery identity without proving anything about PersianGravity's exact admitted localization package. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
+Gravity Wiz's first-party product update reports parent-plugin `2.3.17` against baseline `2.3.16`, fixing Spellbook activation during migration. Current Spellbook documentation states that Spellbook replaced the Gravity Perks platform plugin and owns installation/licensing/update delivery. The radar therefore retains `2.3.17` as terminal parent-plugin evidence rather than treating the old weekly article as a live rolling source. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
 
 No current observation claims `POTENTIAL_BETTER_SEAM_FOUND`; the inspected docs did not establish a sufficiently explicit safer replacement seam for an existing PersianGravity contract.
 
