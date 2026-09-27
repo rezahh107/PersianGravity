@@ -56,7 +56,7 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 		$profiles = PGR_Upstream_Radar::loadProfiles();
 		$fixtures = array(
 			'gravityforms' => array( '<html><h3>3.1.2 | 2026-09-17</h3><p>release</p></html>', '3.1.2' ),
-			'gravityflow'  => array( '<html><h3><span>3.1.1</span> | 2026-08-25</h3><p>release</p></html>', '3.1.1' ),
+			'gravityflow'  => array( '<html><h4><a href="#3-1-1-1"><span>3.1.1.1</span></a> <a class="heading-anchor" href="#3-1-1-1">#</a></h4><p>release</p></html>', '3.1.1.1' ),
 			'gravityview'  => array( '<html><h2>3.5.0 on September 24, 2026</h2><p>release</p></html>', '3.5.0' ),
 			'gravityperks' => array( '<html><a href="/gravity-perks/">Gravity Perks</a> (v2.3.17)<p>release</p></html>', '2.3.17' ),
 		);
@@ -127,7 +127,7 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 	}
 
 	public function test_better_seam_requires_explicit_supporting_official_evidence(): void {
-		$observation                      = $this->readObservation( 'gravityflow/3.1.1.json' );
+		$observation                      = $this->readObservation( 'gravityflow/3.1.1.1.json' );
 		$observation['classifications'][] = 'POTENTIAL_BETTER_SEAM_FOUND';
 		$observation['capability_observations'][] = array(
 			'capability'     => 'gravityflow.example',
@@ -191,7 +191,7 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 			$authority = $tmp . '/tools/compatibility/gravityflow-package.json';
 			file_put_contents( $authority, "{\"sentinel\":true}\n" );
 			$before = hash_file( 'sha256', $authority );
-			PGR_Upstream_Radar::persistCandidate( $this->automationCandidate( 'gravityflow', '3.1.1' ), $tmp );
+			PGR_Upstream_Radar::persistCandidate( $this->automationCandidate( 'gravityflow', '3.1.1.1' ), $tmp );
 			$this->assertSame( $before, hash_file( 'sha256', $authority ) );
 		} finally {
 			$this->removeDirectory( $tmp );
@@ -268,7 +268,6 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 				if ( $file->isFile() && $file->getExtension() === 'php' ) {
 					$paths[] = $file->getPathname();
 				}
-			}
 		}
 		foreach ( $paths as $path ) {
 			$content = (string) file_get_contents( $path );
@@ -278,9 +277,9 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 	}
 
 	public function test_all_current_reviewed_observations_validate(): void {
-		$this->assertSame( 4, PGR_Upstream_Radar::validateObservationDirectory() );
+		$this->assertSame( 5, PGR_Upstream_Radar::validateObservationDirectory() );
 		$this->assertSame( '3.1.1', $this->readObservation( 'gravityflow/3.1.1.json' )['detected_upstream_version'] );
-		$this->assertFileDoesNotExist( $this->root . '/tools/compatibility/upstream-observations/gravityflow/3.1.1.1.json' );
+		$this->assertSame( '3.1.1.1', $this->readObservation( 'gravityflow/3.1.1.1.json' )['detected_upstream_version'] );
 	}
 
 	private function readObservation( string $relative ): array {
