@@ -29,11 +29,11 @@ final class PGR_Upstream_Radar_Source_Diagnostics {
 			$text = html_entity_decode( strip_tags( (string) $heading ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 			$text = preg_replace( '/\\s+/u', ' ', trim( $text ) );
 			$text = is_string( $text ) ? $text : '';
-			if ( preg_match_all( '/\\b[0-9]+(?:\\.[0-9]+){2,3}\\b/', $text, $versions ) !== 1 ) {
+			if ( preg_match_all( '/\\b[0-9]+(?:\\.[0-9]+){2,3}\\b/', $text, $versions ) < 1 ) {
 				continue;
 			}
 			$result['candidates'][] = array(
-				'text'     => mb_substr( $text, 0, 180 ),
+				'text'     => substr( $text, 0, 180 ),
 				'versions' => array_values( array_unique( $versions[0] ) ),
 			);
 			if ( count( $result['candidates'] ) >= 12 ) {
