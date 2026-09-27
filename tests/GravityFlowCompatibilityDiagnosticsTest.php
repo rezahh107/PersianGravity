@@ -258,7 +258,7 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		);
 	}
 
-	public function test_wu03_keeps_diagnostics_reporting_only_and_preserves_timeline_guards(): void {
+	public function test_wu03_keeps_diagnostics_reporting_only_and_preserves_mixed_admission_and_timeline_guards(): void {
 		$root          = dirname( __DIR__ );
 		$adapter_files = glob( $root . '/includes/class-pgr-gravity-flow-*.php' );
 		$this->assertNotFalse( $adapter_files );
@@ -277,7 +277,6 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			array(
 				'class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php',
 				'class-pgr-gravity-flow-status-jalali-presentation-adapter.php',
-				'class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php',
 				'class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php',
 			) as $filename
 		) {
@@ -288,6 +287,14 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			$this->assertStringNotContainsString( "['target_version']", $source, $filename );
 			$this->assertStringNotContainsString( 'includes/localization/products.php', $source, $filename );
 		}
+
+		$date_adapter = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
+		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $date_adapter );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $date_adapter );
+		$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $date_adapter );
+		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $date_adapter );
+		$this->assertStringContainsString( "['target_version']", $date_adapter );
+		$this->assertStringNotContainsString( "'3.1.0'", $date_adapter );
 
 		$digit_adapter = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php' );
 		$this->assertStringNotContainsString( 'PGR_Gravity_Flow_Compatibility_Diagnostics::record', $digit_adapter );
