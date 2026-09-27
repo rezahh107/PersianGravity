@@ -51,6 +51,27 @@ final class OwnCatalogDriftGuardTest extends TestCase {
 		$this->addToAssertionCount(1);
 	}
 
+	public function test_incomplete_or_fuzzy_active_persian_translation_is_rejected(): void {
+		$po = $this->temporary_pot(
+			"msgid \"\"\nmsgstr \"\"\n\"Language: fa_IR\\n\"\n\"Content-Type: text/plain; charset=UTF-8\\n\"\n\nmsgid \"Missing translation\"\nmsgstr \"\"\n\n#, fuzzy\nmsgid \"Fuzzy translation\"\nmsgstr \"ترجمه آزمایشی\"\n"
+		);
+
+		try {
+			$this->expectException(RuntimeException::class);
+			$this->expectExceptionMessage('incomplete active translations');
+			PGR_Own_Catalog_Guard::assert_translations_complete($po);
+		} finally {
+			@unlink($po);
+		}
+	}
+
+	public function test_committed_persian_catalog_has_no_incomplete_active_translation(): void {
+		PGR_Own_Catalog_Guard::assert_translations_complete(
+			dirname(__DIR__) . '/languages/persian-gravityforms-fa_IR.po'
+		);
+		$this->addToAssertionCount(1);
+	}
+
 	private function temporary_pot(string $content): string {
 		$path = tempnam(sys_get_temp_dir(), 'pgr-pot-test-');
 		if (false === $path) {
