@@ -62,15 +62,16 @@ final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-compatibility-diagnostics.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php';
 
-		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$adapter         = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+		$would_be_marker = '\\P\\G\\R\\J\\A\\L\\A\\L\\I\\E\\N\\T\\R\\Y\\D\\E\\T\\A\\I\\L\\:F j, Y';
 
 		for ( $index = 0; $index < 5; ++$index ) {
 			$this->assertSame( '', $adapter->filter_entry_detail_date_format( '' ), 'attempt ' . $index );
 			$this->assertSame(
 				'March 21, 2030',
 				$adapter->filter_marked_date(
-					'March 21, 2030',
-					'F j, Y',
+					'PGRJALALIENTRYDETAIL:March 21, 2030',
+					$would_be_marker,
 					gmmktime( 0, 3 + $index, 0, 3, 21, 2030 ),
 					true
 				),
