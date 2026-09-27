@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Persian Gravity Forms 4.8.0\n"
@@ -11,19 +12,18 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: persian-gravityforms.php
-#, fuzzy
 msgid "Persian Gravity Forms"
-msgstr "پرشین گرویتی"
+msgstr "فرم‌های پرشین گرویتی"
 
 #. Description of the plugin
 #: persian-gravityforms.php admin/class-pgr-admin.php:210
 msgid "Generic Persian and Iranian enhancements for Gravity Forms."
-msgstr ""
+msgstr "قابلیت‌های عمومی فارسی و ایرانی برای Gravity Forms."
 
 #. Author of the plugin
 #: persian-gravityforms.php
 msgid "PGR Team"
-msgstr ""
+msgstr "تیم PGR"
 
 #: admin/class-pgr-admin.php:44 admin/class-pgr-admin.php:45
 #: admin/class-pgr-admin.php:209 admin/class-pgr-product-admin.php:42
@@ -88,12 +88,11 @@ msgstr ""
 
 #: admin/class-pgr-admin.php:157
 msgid "National ID defaults"
-msgstr ""
+msgstr "پیش‌فرض‌های کد ملی"
 
 #: admin/class-pgr-admin.php:163
-#, fuzzy
 msgid "Normalize digits while typing"
-msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
+msgstr "نرمال‌سازی ارقام هنگام تایپ"
 
 #: admin/class-pgr-admin.php:191
 msgid ""
@@ -104,14 +103,13 @@ msgstr ""
 "تبدیل کنید. نرمال‌سازی سمت سرور همیشه مرجع نهایی باقی می‌ماند."
 
 #: admin/class-pgr-admin.php:215
-#, fuzzy
 msgid "National ID"
-msgstr "کد ملی ایران"
+msgstr "کد ملی"
 
 #: admin/class-pgr-admin.php:215
 msgid ""
 "Server-authoritative Iranian National ID validation and digit normalization."
-msgstr ""
+msgstr "اعتبارسنجی مرجع سمت سرور برای کد ملی ایران و نرمال‌سازی ارقام."
 
 #: admin/class-pgr-admin.php:216
 #: includes/fields/class-gf-field-jalali-date.php:33
@@ -120,16 +118,15 @@ msgstr "تاریخ جلالی"
 
 #: admin/class-pgr-admin.php:216
 msgid "Dedicated Jalali date field with canonical Jalali storage semantics."
-msgstr ""
+msgstr "فیلد اختصاصی تاریخ جلالی با معنای ذخیره‌سازی مرجع جلالی."
 
 #: admin/class-pgr-admin.php:217
-#, fuzzy
 msgid "Iranian Address"
-msgstr "استان‌های ایران"
+msgstr "آدرس ایران"
 
 #: admin/class-pgr-admin.php:217
 msgid "Iranian address type and province choices for Gravity Forms."
-msgstr ""
+msgstr "نوع آدرس ایران و گزینه‌های استان برای Gravity Forms."
 
 #: admin/class-pgr-admin.php:218 includes/class-pgr-core.php:92
 msgid "Persian digit normalization"
@@ -140,14 +137,15 @@ msgid ""
 "Persian and Arabic digit normalization at supported input and save "
 "boundaries."
 msgstr ""
+"نرمال‌سازی ارقام فارسی و عربی در مرزهای ورودی و ذخیره‌سازی پشتیبانی‌شده."
 
 #: admin/class-pgr-admin.php:219
 msgid "IRR / IRT currency"
-msgstr ""
+msgstr "ارز IRR / IRT"
 
 #: admin/class-pgr-admin.php:219
 msgid "Iranian Rial and Toman currency definitions."
-msgstr ""
+msgstr "تعریف ارز ریال و تومان ایران."
 
 #: admin/class-pgr-admin.php:221 admin/class-pgr-admin.php:319
 #: includes/fields/class-gf-field-structured-scanner.php:61
@@ -159,6 +157,8 @@ msgid ""
 "A non-persistent controller that parses structured scanner input and "
 "populates ordinary Gravity Forms fields."
 msgstr ""
+"کنترل‌گری غیرماندگار که ورودی ساختاریافته اسکنر را تجزیه می‌کند و فیلدهای "
+"عادی Gravity Forms را پر می‌کند."
 
 #. translators: %d: number of active Scanner profiles.
 #: admin/class-pgr-admin.php:227
@@ -186,24 +186,24 @@ msgid ""
 "Relevant runtime facts for this installation. No secrets or destructive "
 "actions are exposed here."
 msgstr ""
+"اطلاعات مرتبط با اجرای این نصب. هیچ راز یا اقدام مخربی در اینجا نمایش داده "
+"نمی‌شود."
 
 #: admin/class-pgr-admin.php:315
-#, fuzzy
 msgid "PersianGravity"
 msgstr "پرشین گرویتی"
 
 #: admin/class-pgr-admin.php:316
 msgid "WordPress"
-msgstr ""
+msgstr "وردپرس"
 
 #: admin/class-pgr-admin.php:317
 msgid "PHP"
-msgstr ""
+msgstr "PHP"
 
 #: admin/class-pgr-admin.php:318
-#, fuzzy
 msgid "Gravity Forms"
-msgstr "در انتظار Gravity Forms"
+msgstr "Gravity Forms"
 
 #: admin/class-pgr-admin.php:319 admin/class-pgr-admin.php:764
 msgid "Available"
@@ -214,7 +214,6 @@ msgid "Waiting for Gravity Forms"
 msgstr "در انتظار Gravity Forms"
 
 #: admin/class-pgr-admin.php:322
-#, fuzzy
 msgid "Profile registry"
 msgstr "رجیستری پروفایل"
 
@@ -233,11 +232,11 @@ msgstr "کپی %s"
 
 #: admin/class-pgr-admin.php:412
 msgid ""
-"Define deterministic structures for scanner input. Gravity Forms destination "
-"fields are mapped later inside each form."
+"Define deterministic structures for scanner input. Gravity Forms destination"
+" fields are mapped later inside each form."
 msgstr ""
-"برای ورودی اسکنر ساختارهای قطعی تعریف کنید. فیلدهای مقصد Gravity Forms بعداً "
-"در هر فرم نگاشت می‌شوند."
+"برای ورودی اسکنر ساختارهای قطعی تعریف کنید. فیلدهای مقصد Gravity Forms بعداً"
+" در هر فرم نگاشت می‌شوند."
 
 #: admin/class-pgr-admin.php:414 admin/class-pgr-admin.php:545
 msgid "Create Profile"
@@ -291,8 +290,8 @@ msgid ""
 "Deleting a custom profile does not rewrite existing form mappings. Existing "
 "Scanner fields may then report the profile as unavailable."
 msgstr ""
-"حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن "
-"است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
+"حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن"
+" است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
 
 #: admin/class-pgr-admin.php:497
 msgid "Edit Scanner Profile"
@@ -307,6 +306,8 @@ msgid ""
 "Scanner Profiles v1 uses only the bounded newline-based segments_v1 parser. "
 "No executable rules or regular-expression language is stored."
 msgstr ""
+"پروفایل‌های اسکنر نسخه ۱ فقط از تجزیه‌گر محدود segments_v1 مبتنی بر خط جدید "
+"استفاده می‌کند. هیچ قانون اجرایی یا زبان عبارت منظم ذخیره نمی‌شود."
 
 #: admin/class-pgr-admin.php:505
 msgid "Profile details"
@@ -322,105 +323,99 @@ msgstr "شناسه پروفایل"
 
 #: admin/class-pgr-admin.php:514
 msgid "ASCII identifier. It cannot be changed after creation."
-msgstr ""
+msgstr "شناسه ASCII. پس از ایجاد قابل تغییر نیست."
 
 #: admin/class-pgr-admin.php:517
 msgid "Active and selectable for new Scanner fields"
-msgstr ""
+msgstr "فعال و قابل انتخاب برای فیلدهای جدید اسکنر"
 
 #: admin/class-pgr-admin.php:520 admin/class-pgr-admin.php:571
 msgid "Parser"
-msgstr ""
+msgstr "تجزیه‌گر"
 
 #: admin/class-pgr-admin.php:523
 msgid "Newline-separated ordered segments."
-msgstr ""
+msgstr "بخش‌های مرتب‌شده و جداشده با خط جدید."
 
 #: admin/class-pgr-admin.php:525
 msgid "Trim surrounding whitespace"
-msgstr ""
+msgstr "حذف فاصله‌های خالی ابتدا و انتها"
 
 #: admin/class-pgr-admin.php:526
-#, fuzzy
 msgid "Normalize Persian/Arabic digits to ASCII"
-msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
+msgstr "تبدیل ارقام فارسی/عربی به ASCII"
 
 #: admin/class-pgr-admin.php:532 admin/class-pgr-admin.php:574
-#, fuzzy
 msgid "Outputs"
-msgstr "%d خروجی"
+msgstr "خروجی‌ها"
 
 #: admin/class-pgr-admin.php:533
 msgid "Order is part of the parser contract."
-msgstr ""
+msgstr "ترتیب بخشی از قرارداد تجزیه‌گر است."
 
 #: admin/class-pgr-admin.php:535
-#, fuzzy
 msgid "Add output"
-msgstr "%d خروجی"
+msgstr "افزودن خروجی"
 
 #: admin/class-pgr-admin.php:545
-#, fuzzy
 msgid "Save Profile"
-msgstr "پروفایل اسکنر"
+msgstr "ذخیره پروفایل"
 
 #: admin/class-pgr-admin.php:561
 msgid "This profile is built into PersianGravity and is read-only."
-msgstr ""
+msgstr "این پروفایل داخلی PersianGravity است و فقط‌خواندنی است."
 
 #: admin/class-pgr-admin.php:584
 msgid "Duplicate as custom profile"
-msgstr ""
+msgstr "تکثیر به‌عنوان پروفایل سفارشی"
 
 #: admin/class-pgr-admin.php:615
 msgid "Up"
-msgstr ""
+msgstr "بالا"
 
 #: admin/class-pgr-admin.php:616
 msgid "Down"
-msgstr ""
+msgstr "پایین"
 
 #: admin/class-pgr-admin.php:671
-#, fuzzy
 msgid "You are not allowed to manage Scanner Profiles."
-msgstr "شما اجازه تغییر ماژول‌های PersianGravity را ندارید."
+msgstr "شما اجازه مدیریت پروفایل‌های اسکنر را ندارید."
 
 #: admin/class-pgr-admin.php:719
-#, fuzzy
 msgid "Scanner profile saved."
-msgstr "پروفایل‌های اسکنر"
+msgstr "پروفایل اسکنر ذخیره شد."
 
 #: admin/class-pgr-admin.php:720
-#, fuzzy
 msgid "Scanner profile deleted."
-msgstr "پروفایل اسکنر"
+msgstr "پروفایل اسکنر حذف شد."
 
 #: admin/class-pgr-admin.php:721
 msgid "Profile duplicated. Review the new custom profile before use."
-msgstr ""
+msgstr "پروفایل تکثیر شد. پیش از استفاده، پروفایل سفارشی جدید را بررسی کنید."
 
 #: admin/class-pgr-admin.php:722
 msgid ""
-"The Scanner profile could not be saved. Check the profile ID, labels, parser "
-"settings, and output definitions."
+"The Scanner profile could not be saved. Check the profile ID, labels, parser"
+" settings, and output definitions."
 msgstr ""
+"پروفایل اسکنر ذخیره نشد. شناسه پروفایل، برچسب‌ها، تنظیمات تجزیه‌گر و تعریف "
+"خروجی‌ها را بررسی کنید."
 
 #: admin/class-pgr-admin.php:723
 msgid "The Scanner profile could not be deleted."
-msgstr ""
+msgstr "پروفایل اسکنر حذف نشد."
 
 #: admin/class-pgr-admin.php:724
 msgid "The Scanner profile could not be duplicated."
-msgstr ""
+msgstr "پروفایل اسکنر تکثیر نشد."
 
 #: admin/class-pgr-admin.php:765
-#, fuzzy
 msgid "Unavailable"
-msgstr "در دسترس"
+msgstr "در دسترس نیست"
 
 #: admin/class-pgr-admin.php:766
 msgid "Warning"
-msgstr ""
+msgstr "هشدار"
 
 #: admin/class-pgr-product-admin.php:116
 msgid ""
@@ -435,16 +430,16 @@ msgid ""
 "Structured Scanner runtime is disabled. Profiles remain available and will "
 "be used again after the module is enabled."
 msgstr ""
-"اجرای اسکنر ساختاریافته غیرفعال است. پروفایل‌ها همچنان در دسترس هستند و پس از "
-"فعال‌شدن دوباره ماژول استفاده خواهند شد."
+"اجرای اسکنر ساختاریافته غیرفعال است. پروفایل‌ها همچنان در دسترس هستند و پس "
+"از فعال‌شدن دوباره ماژول استفاده خواهند شد."
 
 #: admin/class-pgr-product-admin.php:143
 msgid ""
-"National ID is disabled. Its saved default remains preserved but is inactive "
-"until the module is enabled again."
+"National ID is disabled. Its saved default remains preserved but is inactive"
+" until the module is enabled again."
 msgstr ""
-"کد ملی غیرفعال است. مقدار پیش‌فرض ذخیره‌شده حفظ می‌شود، اما تا فعال‌شدن دوباره "
-"ماژول غیرفعال می‌ماند."
+"کد ملی غیرفعال است. مقدار پیش‌فرض ذخیره‌شده حفظ می‌شود، اما تا فعال‌شدن "
+"دوباره ماژول غیرفعال می‌ماند."
 
 #: admin/class-pgr-product-admin.php:168 admin/class-pgr-product-admin.php:355
 #: includes/class-pgr-core.php:96
@@ -457,37 +452,39 @@ msgstr "رجیستری پروفایل"
 
 #: admin/class-pgr-product-admin.php:196
 msgid "Gravity Flow compatibility diagnostics"
-msgstr ""
+msgstr "عیب‌یابی سازگاری Gravity Flow"
 
 #: admin/class-pgr-product-admin.php:197
 msgid ""
-"Informational maintenance evidence only. These observations do not enable or "
-"disable compatibility."
+"Informational maintenance evidence only. These observations do not enable or"
+" disable compatibility."
 msgstr ""
+"فقط شواهد اطلاعاتی برای نگهداری. این مشاهدات سازگاری را فعال یا غیرفعال "
+"نمی‌کنند."
 
 #: admin/class-pgr-product-admin.php:201
 msgid "Capability"
-msgstr ""
+msgstr "قابلیت"
 
 #: admin/class-pgr-product-admin.php:202
 msgid "State"
-msgstr ""
+msgstr "وضعیت"
 
 #: admin/class-pgr-product-admin.php:203
 msgid "Reason"
-msgstr ""
+msgstr "دلیل"
 
 #: admin/class-pgr-product-admin.php:204
 msgid "Observed Gravity Flow"
-msgstr ""
+msgstr "نسخه مشاهده‌شده Gravity Flow"
 
 #: admin/class-pgr-product-admin.php:205
 msgid "Last observed"
-msgstr ""
+msgstr "آخرین مشاهده"
 
 #: admin/class-pgr-product-admin.php:215 admin/class-pgr-product-admin.php:216
 msgid "Not observed"
-msgstr ""
+msgstr "مشاهده نشده"
 
 #: admin/class-pgr-product-admin.php:242
 msgid "Help & Documentation"
@@ -557,7 +554,8 @@ msgstr "%s غیرفعال شد."
 #: admin/class-pgr-product-admin.php:405
 #, php-format
 msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
-msgstr "%1$s در %2$d فرم استفاده می‌شود و نمی‌توان آن را با اطمینان غیرفعال کرد."
+msgstr ""
+"%1$s در %2$d فرم استفاده می‌شود و نمی‌توان آن را با اطمینان غیرفعال کرد."
 
 #: admin/class-pgr-product-admin.php:408
 msgid ""
@@ -655,17 +653,14 @@ msgid "Enter a valid 10-digit Iranian National ID."
 msgstr "یک کد ملی معتبر ۱۰ رقمی ایران وارد کنید."
 
 #: includes/fields/class-gf-field-structured-scanner.php:116
-#, fuzzy
 msgid "Scanner profile"
 msgstr "پروفایل اسکنر"
 
 #: includes/fields/class-gf-field-structured-scanner.php:118
-#, fuzzy
 msgid "Select a profile"
-msgstr "%d پروفایل مؤثر"
+msgstr "یک پروفایل انتخاب کنید"
 
 #: includes/fields/class-gf-field-structured-scanner.php:124
-#, fuzzy
 msgid "Output mapping"
 msgstr "نگاشت خروجی"
 
@@ -674,111 +669,113 @@ msgid ""
 "Map profile outputs to ordinary Single Line Text or Hidden fields. Outputs "
 "may remain unmapped."
 msgstr ""
+"خروجی‌های پروفایل را به فیلدهای معمولی متن تک‌خطی یا مخفی نگاشت کنید. "
+"خروجی‌ها می‌توانند بدون نگاشت باقی بمانند."
 
 #: includes/fields/class-gf-field-structured-scanner.php:162
 msgid "Not mapped"
-msgstr ""
+msgstr "نگاشت نشده"
 
 #. translators: 1: field ID, 2: field label.
 #: includes/fields/class-gf-field-structured-scanner.php:164
 #, php-format
 msgid "Field %1$s — %2$s"
-msgstr ""
+msgstr "فیلد %1$s — %2$s"
 
 #. translators: %s: field ID.
 #: includes/fields/class-gf-field-structured-scanner.php:166
 #, php-format
 msgid "Field %s — missing or unsupported"
-msgstr ""
+msgstr "فیلد %s — موجود نیست یا پشتیبانی نمی‌شود"
 
 #. translators: %s: Scanner profile ID.
 #: includes/fields/class-gf-field-structured-scanner.php:168
 #, php-format
 msgid "The selected Scanner profile is no longer available: %s"
-msgstr ""
+msgstr "پروفایل اسکنر انتخاب‌شده دیگر در دسترس نیست: %s"
 
 #: includes/fields/class-gf-field-structured-scanner.php:169
 msgid "Scanner mapping metadata is invalid."
-msgstr ""
+msgstr "فراداده نگاشت اسکنر نامعتبر است."
 
 #: includes/fields/class-gf-field-structured-scanner.php:170
 msgid "A configured Scanner target field no longer exists."
-msgstr ""
+msgstr "فیلد مقصد پیکربندی‌شده اسکنر دیگر وجود ندارد."
 
 #: includes/fields/class-gf-field-structured-scanner.php:171
 msgid ""
 "A configured Scanner target is not a supported Single Line Text or Hidden "
 "field."
-msgstr ""
+msgstr "مقصد پیکربندی‌شده اسکنر یک فیلد متن تک‌خطی یا مخفی پشتیبانی‌شده نیست."
 
 #: includes/fields/class-gf-field-structured-scanner.php:172
 msgid "Two Scanner outputs cannot map to the same destination field."
-msgstr ""
+msgstr "دو خروجی اسکنر نمی‌توانند به یک فیلد مقصد یکسان نگاشت شوند."
 
 #: includes/fields/class-gf-field-structured-scanner.php:173
-#, fuzzy
 msgid "Structured Scanner cannot target itself."
-msgstr "اسکنر ساختاریافته"
+msgstr "اسکنر ساختاریافته نمی‌تواند خودش را به‌عنوان مقصد انتخاب کند."
 
 #: includes/fields/class-gf-field-structured-scanner.php:174
 msgid "Destination"
-msgstr ""
+msgstr "مقصد"
 
 #: includes/fields/class-gf-field-structured-scanner.php:175
-#, fuzzy
 msgid "unavailable"
-msgstr "در دسترس"
+msgstr "در دسترس نیست"
 
 #: includes/fields/class-gf-field-structured-scanner.php:233
 #: includes/fields/class-gf-field-structured-scanner.php:244
 msgid "آماده دریافت اطلاعات"
-msgstr ""
+msgstr "آماده دریافت اطلاعات"
 
 #: includes/fields/class-gf-field-structured-scanner.php:233
 #: includes/fields/class-gf-field-structured-scanner.php:248
 msgid "اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید."
 msgstr ""
+"اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید."
 
 #: includes/fields/class-gf-field-structured-scanner.php:245
 msgid "در حال خواندن اطلاعات…"
-msgstr ""
+msgstr "در حال خواندن اطلاعات…"
 
 #: includes/fields/class-gf-field-structured-scanner.php:246
 msgid "اطلاعات چک با موفقیت خوانده شد."
-msgstr ""
+msgstr "اطلاعات چک با موفقیت خوانده شد."
 
 #: includes/fields/class-gf-field-structured-scanner.php:247
 msgid "اطلاعات اسکن‌شده قابل خواندن نبود. دوباره تلاش کنید."
-msgstr ""
+msgstr "اطلاعات اسکن‌شده قابل خواندن نبود. دوباره تلاش کنید."
 
 #: includes/fields/class-gf-field-structured-scanner.php:249
 msgid "اسکن اطلاعات چک"
-msgstr ""
+msgstr "اسکن اطلاعات چک"
 
 #: includes/fields/class-gf-field-structured-scanner.php:250
 msgid "وضعیت"
-msgstr ""
+msgstr "وضعیت"
 
 #: includes/fields/class-gf-field-structured-scanner.php:251
 msgid "اسکنر را روی کد چک بگیرید."
-msgstr ""
+msgstr "اسکنر را روی کد چک بگیرید."
 
 #: includes/fields/class-gf-field-structured-scanner.php:252
 msgid ""
 "اطلاعات خوانده‌شده در فیلدهای چک قرار می‌گیرد؛ خود کد اسکن نگهداری نمی‌شود."
 msgstr ""
+"اطلاعات خوانده‌شده در فیلدهای چک قرار می‌گیرد؛ خود کد اسکن نگهداری نمی‌شود."
 
 #: includes/fields/class-gf-field-structured-scanner.php:253
 msgid "ورودی اسکنر"
-msgstr ""
+msgstr "ورودی اسکنر"
 
 #: includes/fields/class-gf-field-structured-scanner.php:254
 msgid "برای اسکن آماده است"
-msgstr ""
+msgstr "برای اسکن آماده است"
 
 #: includes/fields/class-gf-field-structured-scanner.php:256
 msgid "آماده‌سازی برای اسکن"
-msgstr ""
+msgstr "آماده‌سازی برای اسکن"
 
 #: persian-gravityforms.php:151
 msgid ""
