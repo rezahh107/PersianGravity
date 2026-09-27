@@ -257,8 +257,8 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		);
 	}
 
-	public function test_wu02_does_not_create_runtime_authority_or_weaken_existing_guards(): void {
-		$root = dirname( __DIR__ );
+	public function test_wu03_keeps_diagnostics_reporting_only_and_preserves_unmigrated_guards(): void {
+		$root          = dirname( __DIR__ );
 		$adapter_files = glob( $root . '/includes/class-pgr-gravity-flow-*.php' );
 		$this->assertNotFalse( $adapter_files );
 
@@ -274,11 +274,15 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 
 		$inbox = file_get_contents( $root . '/includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $inbox );
-		$this->assertStringContainsString( "['target_version']", $inbox );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $inbox );
+		$this->assertStringNotContainsString( "['target_version']", $inbox );
+		$this->assertStringNotContainsString( 'includes/localization/products.php', $inbox );
 
 		$status = file_get_contents( $root . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $status );
-		$this->assertStringContainsString( "['target_version']", $status );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $status );
+		$this->assertStringNotContainsString( "['target_version']", $status );
+		$this->assertStringNotContainsString( 'includes/localization/products.php', $status );
 
 		$entry_detail = file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $entry_detail );
