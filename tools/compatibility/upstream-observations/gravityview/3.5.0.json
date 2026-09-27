@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "product_key": "gravityview",
+  "product_name": "GravityView",
+  "detected_upstream_version": "3.5.0",
+  "project_baseline": {
+    "version": "3.3.4",
+    "authority_kind": "OWNER_SUPPLIED_EXACT_PACKAGE",
+    "authority_path": "tools/i18n/admission/baseline.json",
+    "authority_product": "gravityview"
+  },
+  "evidence_state": "DETECTED_ONLY",
+  "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+  "checked_at": "2026-09-27T17:55:00Z",
+  "official_sources": [
+    {
+      "url": "https://www.gravitykit.com/products/gravityview/changelog",
+      "role": "stable-release-and-changelog",
+      "source_identity": "GravityView changelog; 3.5.0 latest entry and intervening 3.3.5/3.4.0 entries"
+    }
+  ],
+  "classifications": [
+    "DOCUMENTED_CONTRACT_CHANGE",
+    "REQUALIFICATION_RECOMMENDED",
+    "PACKAGE_REQUIRED_FOR_PROOF"
+  ],
+  "capability_observations": [
+    {
+      "capability": "gravityview.date-semantics",
+      "classification": "DOCUMENTED_CONTRACT_CHANGE",
+      "summary": "The intervening 3.4.0 release explicitly changes timezone behavior for {now}, {yesterday}, and {tomorrow} merge tags. This is nearby date/time contract evidence but does not establish any change to PersianGravity's field-specific raw UTC Entry-property presentation seam."
+    },
+    {
+      "capability": "gravityview.integration-version-drift",
+      "classification": "REQUALIFICATION_RECOMMENDED",
+      "summary": "The intervening 3.3.5 release documents fixes for Gravity Forms 3.1.1+ and 3.5.0 adds new View output/query surfaces. PersianGravity's current GravityView adapter remains exact-package qualified at 3.3.4, so an Owner-supplied 3.5.0 package requires source/runtime qualification before admission.",
+      "documented_identifiers": [
+        "gk/gravityview/view/output",
+        "gk/gravityview/view/refresh/live",
+        "gk/gravityview/view/entries/query/sorting-parameters"
+      ]
+    }
+  ],
+  "model_review_required": false,
+  "package_required_for_proof": true,
+  "review_state": "MODEL_REVIEWED",
+  "automation_generated": false
+}

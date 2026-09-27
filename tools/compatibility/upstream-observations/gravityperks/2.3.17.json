@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "product_key": "gravityperks",
+  "product_name": "Gravity Perks",
+  "detected_upstream_version": "2.3.17",
+  "project_baseline": {
+    "version": "2.3.16",
+    "authority_kind": "OWNER_SUPPLIED_EXACT_PACKAGE",
+    "authority_path": "tools/i18n/admission/g007-gravity-perks.json",
+    "authority_product": "gravityperks"
+  },
+  "evidence_state": "DETECTED_ONLY",
+  "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+  "checked_at": "2026-09-27T17:55:00Z",
+  "official_sources": [
+    {
+      "url": "https://gravitywiz.com/gravity-wiz-weekly-269/",
+      "role": "stable-release-and-changelog",
+      "source_identity": "Gravity Wiz first-party product update naming Gravity Perks v2.3.17"
+    },
+    {
+      "url": "https://gravitywiz.com/documentation/spellbook/",
+      "role": "official-documentation",
+      "source_identity": "Spellbook documentation describing replacement of the Gravity Perks platform plugin"
+    }
+  ],
+  "classifications": [
+    "DOCUMENTED_CONTRACT_CHANGE",
+    "REQUALIFICATION_RECOMMENDED",
+    "PACKAGE_REQUIRED_FOR_PROOF"
+  ],
+  "capability_observations": [
+    {
+      "capability": "gravityperks.delivery-platform",
+      "classification": "DOCUMENTED_CONTRACT_CHANGE",
+      "summary": "Gravity Perks v2.3.17 fixes Spellbook activation during migration, while current first-party Spellbook documentation states that Spellbook has replaced the Gravity Perks platform plugin and assumes installation/update responsibility. This materially changes parent delivery/platform identity without proving anything about the exact localization package PersianGravity currently admits."
+    },
+    {
+      "capability": "localization.gravityperks",
+      "classification": "REQUALIFICATION_RECOMMENDED",
+      "summary": "If a newer Owner package or Spellbook-era parent authority is supplied, PersianGravity should reconcile the exact package/domain/source identity before changing its existing Gravity Perks localization admission. Child perks remain separate explicit profiles and are not enrolled by this radar."
+    }
+  ],
+  "model_review_required": false,
+  "package_required_for_proof": true,
+  "review_state": "MODEL_REVIEWED",
+  "automation_generated": false
+}

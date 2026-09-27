@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "product_key": "gravityforms",
+  "product_name": "Gravity Forms",
+  "detected_upstream_version": "3.1.2",
+  "project_baseline": {
+    "version": "3.1.1.1",
+    "authority_kind": "OWNER_SUPPLIED_EXACT_PACKAGE",
+    "authority_path": "tools/i18n/admission/baseline.json",
+    "authority_product": "gravityforms"
+  },
+  "evidence_state": "DETECTED_ONLY",
+  "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+  "checked_at": "2026-09-27T17:55:00Z",
+  "official_sources": [
+    {
+      "url": "https://docs.gravityforms.com/gravityforms-change-log/",
+      "role": "stable-release-and-changelog",
+      "source_identity": "Gravity Forms changelog; 3.1.2 release entry dated 2026-09-17"
+    }
+  ],
+  "classifications": [
+    "NO_RELEVANT_DOCUMENTED_CHANGE",
+    "PACKAGE_REQUIRED_FOR_PROOF"
+  ],
+  "capability_observations": [
+    {
+      "capability": "gravityforms.maintained-contracts",
+      "classification": "NO_RELEVANT_DOCUMENTED_CHANGE",
+      "summary": "The inspected 3.1.2 release entry documents security, add-on component-page, merge-tag, license-settings, phone-field, and autoloader changes; it does not document a change to PersianGravity's admitted localization contract or Entries List date-created presentation seam. Documentation silence is not runtime proof.",
+      "documented_identifiers": [
+        "gform_addon_pages_using_components"
+      ]
+    }
+  ],
+  "model_review_required": false,
+  "package_required_for_proof": true,
+  "review_state": "MODEL_REVIEWED",
+  "automation_generated": false
+}

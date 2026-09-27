@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "product_key": "gravityflow",
+  "product_name": "Gravity Flow",
+  "detected_upstream_version": "3.1.1.1",
+  "project_baseline": {
+    "version": "3.1.0",
+    "authority_kind": "OWNER_SUPPLIED_GOOGLE_DRIVE",
+    "authority_path": "tools/compatibility/gravityflow-package.json",
+    "authority_product": "gravityflow"
+  },
+  "evidence_state": "DETECTED_ONLY",
+  "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+  "checked_at": "2026-09-27T17:55:00Z",
+  "official_sources": [
+    {
+      "url": "https://docs.gravityflow.io/changelog/",
+      "role": "stable-release-and-changelog",
+      "source_identity": "Gravity Flow changelog; 3.1.1.1 latest stable entry plus intervening 3.1.1 entry"
+    }
+  ],
+  "classifications": [
+    "DOCUMENTED_CONTRACT_CHANGE",
+    "REQUALIFICATION_RECOMMENDED",
+    "PACKAGE_REQUIRED_FOR_PROOF"
+  ],
+  "capability_observations": [
+    {
+      "capability": "gravityflow.gravityview-integration",
+      "classification": "DOCUMENTED_CONTRACT_CHANGE",
+      "summary": "The intervening 3.1.1 release explicitly changes GravityView integration to address deprecated filters used for Workflow Detail and Approval Links. This is an ecosystem integration change, not proof of a PersianGravity regression or repair."
+    },
+    {
+      "capability": "gravityflow.entry-detail.date-family",
+      "classification": "REQUALIFICATION_RECOMMENDED",
+      "summary": "PersianGravity's four Entry Detail workflow-info dates intentionally retain an exact Owner-supplied Gravity Flow package gate because the shared date-format seam lacks semantic row identity. If the Owner supplies 3.1.1.1, that exact package should follow the existing CURRENT_METHOD_STILL_VALID / SAFE_REPLACEMENT_FOUND / NO_SAFE_PATH_PROVEN requalification protocol."
+    }
+  ],
+  "model_review_required": false,
+  "package_required_for_proof": true,
+  "review_state": "MODEL_REVIEWED",
+  "automation_generated": false
+}
