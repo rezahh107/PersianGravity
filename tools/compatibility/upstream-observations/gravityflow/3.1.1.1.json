@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "product_key": "gravityflow",
+  "product_name": "Gravity Flow",
+  "detected_upstream_version": "3.1.1.1",
+  "project_baseline": {
+    "version": "3.1.0",
+    "authority_kind": "OWNER_SUPPLIED_GOOGLE_DRIVE",
+    "authority_path": "tools/compatibility/gravityflow-package.json",
+    "authority_product": "gravityflow"
+  },
+  "evidence_state": "DETECTED_ONLY",
+  "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+  "checked_at": "2026-09-27T18:58:43Z",
+  "official_sources": [
+    {
+      "url": "https://docs.gravityflow.io/changelog/",
+      "role": "historical-detection-reference",
+      "source_identity": "Project-history detection only. The 2026-09-27 exact-head direct live source did not expose 3.1.1.1; do not treat this record as the current upstream stable release."
+    }
+  ],
+  "classifications": [
+    "MODEL_REVIEW_REQUIRED",
+    "PACKAGE_REQUIRED_FOR_PROOF"
+  ],
+  "capability_observations": [
+    {
+      "capability": "gravityflow.historical-release-signal",
+      "classification": "MODEL_REVIEW_REQUIRED",
+      "summary": "Project history previously detected 3.1.1.1, but the current direct first-party source retrieved by the exact-head radar reports 3.1.1 as its first version heading. Preserve 3.1.1.1 only as a historical research signal until live first-party evidence or an Owner-supplied exact package establishes it again."
+    }
+  ],
+  "model_review_required": true,
+  "package_required_for_proof": true,
+  "review_state": "MODEL_REVIEW_REQUIRED",
+  "automation_generated": false,
+  "current_live_status": "NOT_CONFIRMED_BY_2026-09-27_DIRECT_SOURCE"
+}

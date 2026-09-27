@@ -1,0 +1,201 @@
+name: Upstream Compatibility Opportunity Radar
+
+on:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      persist_observations:
+        description: 'Create/update a reviewable observation PR when a new version is detected'
+        required: false
+        default: true
+        type: boolean
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/upstream-compatibility-radar.yml'
+      - '.github/scripts/upstream-radar-observation-boundary.sh'
+      - 'tools/compatibility/upstream-radar.php'
+      - 'tools/compatibility/upstream-radar-consistency.php'
+      - 'tools/compatibility/upstream-radar-source-diagnostics.php'
+      - 'tools/compatibility/upstream-radar-profiles.json'
+      - 'tools/compatibility/upstream-observations/**'
+      - 'tools/compatibility/gravityflow-package.json'
+      - 'tools/compatibility/gravityflow-package.php'
+      - 'tools/i18n/admission/baseline.json'
+      - 'tools/i18n/admission/g007-gravity-perks.json'
+      - 'tests/UpstreamCompatibilityRadarTest.php'
+      - 'tests/UpstreamCompatibilityRadarConsistencyTest.php'
+      - 'tests/UpstreamCompatibilityRadarSourceShapeTest.php'
+      - 'tests/UpstreamCompatibilityRadarPersistenceBoundaryTest.php'
+      - 'docs/G010_WU05_UPSTREAM_RADAR.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: persiangravity-upstream-radar-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  live-radar:
+    name: Live first-party radar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate governed profiles and observations
+        run: php tools/compatibility/upstream-radar.php validate
+
+      - name: Query all four first-party upstream authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf radar-evidence
+          mkdir -p radar-evidence/diagnostics
+          status=0
+          php tools/compatibility/upstream-radar.php scan --output=radar-evidence || status=$?
+          diagnostic_status=0
+          php tools/compatibility/upstream-radar-source-diagnostics.php > radar-evidence/diagnostics/release-headings.json || diagnostic_status=$?
+          consistency_status=0
+          if (( status == 0 )); then
+            php tools/compatibility/upstream-radar-consistency.php radar-evidence/summary.json || consistency_status=$?
+          fi
+          if [[ -f radar-evidence/summary.md ]]; then
+            cat radar-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if (( status != 0 )); then
+            exit "$status"
+          fi
+          if (( diagnostic_status != 0 )); then
+            exit "$diagnostic_status"
+          fi
+          exit "$consistency_status"
+
+      - name: Upload machine-readable radar evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-radar-${{ github.run_id }}-${{ github.run_attempt }}
+          path: radar-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  persist-observations:
+    name: Persist observation-only PR
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.persist_observations)
+    needs: live-radar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      RADAR_BRANCH: automation/upstream-radar-observations
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out canonical main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Pin canonical observation boundary guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -m 0755 .github/scripts/upstream-radar-observation-boundary.sh "$RUNNER_TEMP/upstream-radar-observation-boundary.sh"
+          echo "RADAR_BOUNDARY_GUARD=$RUNNER_TEMP/upstream-radar-observation-boundary.sh" >> "$GITHUB_ENV"
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Prepare bounded observation branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if git ls-remote --exit-code --heads origin "$RADAR_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$RADAR_BRANCH"
+            git switch --create "$RADAR_BRANCH" --track "origin/$RADAR_BRANCH"
+            git merge --no-edit origin/main
+          else
+            git switch --create "$RADAR_BRANCH" origin/main
+          fi
+
+      - name: Enforce committed observation-only branch boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash "$RADAR_BOUNDARY_GUARD" committed origin/main HEAD
+
+      - name: Re-run radar and persist only informational observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="$RUNNER_TEMP/radar-evidence"
+          rm -rf "$evidence_dir"
+          status=0
+          php tools/compatibility/upstream-radar.php scan --output="$evidence_dir" --persist-new || status=$?
+          consistency_status=0
+          if (( status == 0 )); then
+            php tools/compatibility/upstream-radar-consistency.php "$evidence_dir/summary.json" || consistency_status=$?
+          fi
+          if [[ -f "$evidence_dir/summary.md" ]]; then
+            cat "$evidence_dir/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if (( status != 0 )); then
+            exit "$status"
+          fi
+          exit "$consistency_status"
+
+      - name: Enforce observation-only mutation boundary
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          has_changes="$(bash "$RADAR_BOUNDARY_GUARD" working-tree)"
+          echo "has_changes=$has_changes" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push bounded observation changes
+        if: steps.changes.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/compatibility/upstream-observations
+          git commit -m 'chore: record detected upstream observations'
+          git push origin "HEAD:$RADAR_BRANCH"
+
+      - name: Open observation-only pull request when needed
+        if: steps.changes.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh pr list --head "$RADAR_BRANCH" --base main --state open --json number --jq '.[0].number // empty' | grep -q .; then
+            echo 'An observation-only PR is already open; branch was updated.'
+            exit 0
+          fi
+          gh pr create \
+            --base main \
+            --head "$RADAR_BRANCH" \
+            --title 'chore: record detected upstream observations' \
+            --body $'Automated **DETECTED_ONLY** upstream observations.\n\nThese records are informational research maps only. No package was acquired, tested, qualified, admitted, or enabled. Review is required before any semantic or compatibility conclusion.'
