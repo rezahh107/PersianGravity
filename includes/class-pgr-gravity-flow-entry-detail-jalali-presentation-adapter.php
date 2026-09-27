@@ -1,6 +1,6 @@
 <?php
 /**
- * Bounded Jalali presentation for Gravity Flow Entry Detail workflow-info dates.
+ * Bounded Jalali presentation for qualified Gravity Flow Entry Detail workflow-info dates.
  *
  * @package PersianGravityForms
  */
@@ -12,7 +12,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	/** Unique literal emitted only by the exact Entry Detail date-format seam. */
 	private const MARKER_LITERAL = 'PGRJALALIENTRYDETAIL:';
 
-	/** Host-owned runtime version observation. Version equality is not eligibility. */
+	/** Host-owned runtime version observed against repository qualification authority. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
@@ -55,13 +55,18 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	 * Prefix Gravity Flow's shared workflow-info date format with a unique,
 	 * escaped literal marker. Non-empty host/plugin overrides are preserved.
 	 *
+	 * Marker ownership is admitted only for the exact repository-qualified Flow
+	 * version because this shared seam has no semantic row identity. This keeps a
+	 * future host from adding another workflow-info date surface that would be
+	 * converted before the post-render four-call reconciliation could detect it.
+	 *
 	 * @param mixed $format Native date format.
 	 * @return mixed
 	 */
 	public function filter_entry_detail_date_format( $format ) {
 		$this->reset_marker_context();
 
-		if ( '' !== $format || ! $this->has_qualified_host_identity() ) {
+		if ( '' !== $format || ! $this->is_exact_qualified_date_family_host() ) {
 			return $format;
 		}
 
@@ -105,7 +110,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 
 		$fallback = $this->strip_marker( $date );
 
-		if ( ! $this->has_qualified_host_identity() ) {
+		if ( ! $this->is_exact_qualified_date_family_host() ) {
 			$this->marked_call_results[] = 'REASON_HOST_UNQUALIFIED';
 			return $fallback;
 		}
@@ -257,9 +262,8 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Validate Gravity Flow product identity without making version equality an
-	 * activation oracle. The composed callback/context/data contract supplies
-	 * capability compatibility; the version remains bounded provenance only.
+	 * Validate the canonical Gravity Flow product identity before consulting the
+	 * repository-owned exact qualification target.
 	 *
 	 * @return bool
 	 */
@@ -275,6 +279,47 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 
 		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
 		return self::HOST_PLUGIN_BASENAME === $plugin_basename;
+	}
+
+	/**
+	 * Admit marker ownership only for the exact Gravity Flow version already
+	 * qualified by the repository localization/product authority. The version is
+	 * never duplicated here; version drift fails closed before marker ownership.
+	 *
+	 * @return bool
+	 */
+	private function is_exact_qualified_date_family_host() {
+		if ( ! $this->has_qualified_host_identity() || ! defined( 'PGR_PATH' ) ) {
+			return false;
+		}
+
+		$registry_path = PGR_PATH . 'includes/localization/products.php';
+		if ( ! is_readable( $registry_path ) ) {
+			return false;
+		}
+
+		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
+		$product_slug    = dirname( $plugin_basename );
+		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
+			return false;
+		}
+
+		$products = require $registry_path;
+		if ( ! is_array( $products ) ) {
+			return false;
+		}
+
+		$target = '';
+		foreach ( $products as $product ) {
+			if ( ! is_array( $product ) || ( $product['product'] ?? '' ) !== $product_slug ) {
+				continue;
+			}
+
+			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
+			break;
+		}
+
+		return '' !== $target && (string) constant( self::HOST_VERSION_CONSTANT ) === $target;
 	}
 
 	/**
