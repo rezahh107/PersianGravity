@@ -35,6 +35,24 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		$catalog = PGR_Gravity_Flow_Compatibility_Diagnostics::capabilities();
 		$this->assertSame( $expected, array_keys( $catalog ) );
 		$this->assertCount( count( array_unique( array_keys( $catalog ) ) ), $catalog );
+		$this->assertArrayNotHasKey( 'gravityflow.entry-detail.persian-digits', $catalog );
+
+		$registry = json_decode(
+			(string) file_get_contents( dirname( __DIR__ ) . '/tools/jalali/g008-system-date-surfaces.json' ),
+			true,
+			512,
+			JSON_THROW_ON_ERROR
+		);
+		$known = array();
+		foreach ( $registry['products'] as $product ) {
+			if ( 'Gravity Flow' === $product['product'] ) {
+				$known = array_column( $product['surfaces'], 'id' );
+				break;
+			}
+		}
+		foreach ( $expected as $capability_id ) {
+			$this->assertContains( $capability_id, $known, $capability_id );
+		}
 	}
 
 	public function test_state_and_reason_catalogs_remain_bounded_and_deterministic(): void {
@@ -55,6 +73,10 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			),
 			array_keys( PGR_Gravity_Flow_Compatibility_Diagnostics::reasons() )
 		);
+		foreach ( PGR_Gravity_Flow_Compatibility_Diagnostics::reasons() as $reason_id => $summary ) {
+			$this->assertLessThanOrEqual( 160, strlen( $summary ), $reason_id );
+			$this->assertSame( $summary, strip_tags( $summary ), $reason_id );
+		}
 	}
 
 	public function test_recorder_rejects_unknown_or_inconsistent_observations(): void {
@@ -64,6 +86,8 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			array( 'gravityflow.timeline-history', 'UNAVAILABLE', 'PGR-GFLOW-UNKNOWN' ),
 			array( 'gravityflow.timeline-history', 'AVAILABLE', 'PGR-GFLOW-HOST-UNQUALIFIED' ),
 			array( 'gravityflow.print', 'NOT_EVALUATED', 'PGR-GFLOW-SOURCE-INVALID' ),
+			array( 'gravityflow.timeline-history', 'UNAVAILABLE', 'PGR-GFLOW-CONTRACT-SATISFIED' ),
+			array( 'gravityflow.timeline-history', 'DEGRADED', 'PGR-GFLOW-NOT-EVALUATED' ),
 		);
 		foreach ( $cases as $case ) {
 			try {
@@ -98,6 +122,23 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		$this->assertSame( 'PGR-GFLOW-CONTEXT-UNAVAILABLE', $record['reason_id'] );
 	}
 
+	public function test_recorder_has_no_arbitrary_context_or_free_form_message_channel(): void {
+		$method = new ReflectionMethod( PGR_Gravity_Flow_Compatibility_Diagnostics::class, 'record' );
+		$this->assertSame( 3, $method->getNumberOfParameters() );
+		$this->assertSame( 3, $method->getNumberOfRequiredParameters() );
+
+		PGR_Gravity_Flow_Compatibility_Diagnostics::record(
+			'gravityflow.status.date-created',
+			PGR_Gravity_Flow_Compatibility_Diagnostics::STATE_UNAVAILABLE,
+			PGR_Gravity_Flow_Compatibility_Diagnostics::REASON_SOURCE_INVALID
+		);
+		$record = PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot()['gravityflow.status.date-created'];
+		$this->assertSame(
+			array( 'capability_id', 'state', 'reason_id', 'summary', 'observed_at', 'host_version' ),
+			array_keys( $record )
+		);
+	}
+
 	public function test_latest_snapshot_is_reporting_only_bounded_and_non_autoloaded(): void {
 		PGR_Gravity_Flow_Compatibility_Diagnostics::record(
 			'gravityflow.timeline-history',
@@ -110,6 +151,37 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 		$payload = $GLOBALS['pgr_test_options'][ PGR_Gravity_Flow_Compatibility_Diagnostics::OPTION ];
 		$this->assertSame( array( 'schema_version', 'records' ), array_keys( $payload ) );
 		$this->assertLessThanOrEqual( 8192, strlen( wp_json_encode( $payload ) ) );
+	}
+
+	public function test_missing_malformed_and_stale_persisted_data_reports_not_evaluated(): void {
+		$id = 'gravityflow.inbox.due-date';
+		$this->assertSame( 'NOT_EVALUATED', PGR_Gravity_Flow_Compatibility_Diagnostics::status_snapshot()[ $id ]['state'] );
+
+		$GLOBALS['pgr_test_options'][ PGR_Gravity_Flow_Compatibility_Diagnostics::OPTION ] = array(
+			'schema_version' => 1,
+			'records' => array(
+				$id => array(
+					'capability_id' => $id,
+					'state' => 'UNAVAILABLE',
+					'reason_id' => 'PGR-GFLOW-SOURCE-INVALID',
+					'summary' => 'Injected free-form payload',
+					'observed_at' => time(),
+					'host_version' => null,
+					'context' => array( 'entry_id' => 123 ),
+				),
+			),
+		);
+		$this->assertSame( 'NOT_EVALUATED', PGR_Gravity_Flow_Compatibility_Diagnostics::status_snapshot()[ $id ]['state'] );
+
+		$GLOBALS['pgr_test_options'][ PGR_Gravity_Flow_Compatibility_Diagnostics::OPTION ]['records'][ $id ] = array(
+			'capability_id' => $id,
+			'state' => 'UNAVAILABLE',
+			'reason_id' => 'PGR-GFLOW-SOURCE-INVALID',
+			'summary' => PGR_Gravity_Flow_Compatibility_Diagnostics::reasons()['PGR-GFLOW-SOURCE-INVALID'],
+			'observed_at' => time() - 604801,
+			'host_version' => null,
+		);
+		$this->assertSame( 'NOT_EVALUATED', PGR_Gravity_Flow_Compatibility_Diagnostics::status_snapshot()[ $id ]['state'] );
 	}
 
 	#[RunInSeparateProcess]
@@ -148,10 +220,33 @@ final class GravityFlowCompatibilityDiagnosticsTest extends TestCase {
 			$this->assertStringNotContainsString( '::persist_request_snapshot(', $source, $path );
 		}
 
+		foreach (
+			array(
+				'class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php',
+				'class-pgr-gravity-flow-status-jalali-presentation-adapter.php',
+				'class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php',
+			) as $filename
+		) {
+			$source = (string) file_get_contents( $root . '/includes/' . $filename );
+			$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source, $filename );
+			$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source, $filename );
+			$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $source, $filename );
+			$this->assertStringNotContainsString( "['target_version']", $source, $filename );
+			$this->assertStringNotContainsString( 'includes/localization/products.php', $source, $filename );
+		}
+
 		$date_adapter = (string) file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
+		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $date_adapter );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $date_adapter );
+		$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $date_adapter );
 		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $date_adapter );
 		$this->assertStringContainsString( "['target_version']", $date_adapter );
 		$this->assertStringContainsString( 'is_exact_qualified_date_family_host()', $date_adapter );
+		$this->assertStringNotContainsString( "'3.1.0'", $date_adapter );
+
+		$digit_adapter = (string) file_get_contents( $root . '/includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php' );
+		$this->assertStringNotContainsString( 'PGR_Gravity_Flow_Compatibility_Diagnostics::record', $digit_adapter );
+		$this->assertArrayNotHasKey( 'gravityflow.entry-detail.persian-digits', PGR_Gravity_Flow_Compatibility_Diagnostics::capabilities() );
 
 		$timeline = (string) file_get_contents( $root . '/includes/class-pgr-gravity-flow-timeline-jalali-presentation-adapter.php' );
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $timeline );
