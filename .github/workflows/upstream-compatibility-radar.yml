@@ -15,6 +15,7 @@ on:
       - main
     paths:
       - '.github/workflows/upstream-compatibility-radar.yml'
+      - '.github/scripts/upstream-radar-observation-boundary.sh'
       - 'tools/compatibility/upstream-radar.php'
       - 'tools/compatibility/upstream-radar-consistency.php'
       - 'tools/compatibility/upstream-radar-source-diagnostics.php'
@@ -27,6 +28,7 @@ on:
       - 'tests/UpstreamCompatibilityRadarTest.php'
       - 'tests/UpstreamCompatibilityRadarConsistencyTest.php'
       - 'tests/UpstreamCompatibilityRadarSourceShapeTest.php'
+      - 'tests/UpstreamCompatibilityRadarPersistenceBoundaryTest.php'
       - 'docs/G010_WU05_UPSTREAM_RADAR.md'
 
 permissions:
@@ -112,6 +114,13 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Pin canonical observation boundary guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -m 0755 .github/scripts/upstream-radar-observation-boundary.sh "$RUNNER_TEMP/upstream-radar-observation-boundary.sh"
+          echo "RADAR_BOUNDARY_GUARD=$RUNNER_TEMP/upstream-radar-observation-boundary.sh" >> "$GITHUB_ENV"
+
       - name: Set up PHP 8.3
         uses: shivammathur/setup-php@v2
         with:
@@ -130,6 +139,12 @@ jobs:
           else
             git switch --create "$RADAR_BRANCH" origin/main
           fi
+
+      - name: Enforce committed observation-only branch boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash "$RADAR_BOUNDARY_GUARD" committed origin/main HEAD
 
       - name: Re-run radar and persist only informational observations
         shell: bash
@@ -156,18 +171,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t changed < <(git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //')
-          if (( ${#changed[@]} == 0 )); then
-            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          for path in "${changed[@]}"; do
-            [[ "$path" =~ ^tools/compatibility/upstream-observations/(gravityforms|gravityflow|gravityview|gravityperks)/[0-9]+(\.[0-9]+){2,3}\.json$ ]] || {
-              echo "Refusing non-observation automated mutation: $path" >&2
-              exit 1
-            }
-          done
-          echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+          has_changes="$(bash "$RADAR_BOUNDARY_GUARD" working-tree)"
+          echo "has_changes=$has_changes" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push bounded observation changes
         if: steps.changes.outputs.has_changes == 'true'
