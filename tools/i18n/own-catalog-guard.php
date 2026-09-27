@@ -1,6 +1,6 @@
 <?php
 /**
- * Deterministic own-plugin gettext source/POT identity guard.
+ * Deterministic own-plugin gettext source/POT/PO guard.
  *
  * @package PersianGravityForms
  */
@@ -9,19 +9,23 @@ declare(strict_types=1);
 
 use Gettext\Loader\StrictPoLoader;
 use Gettext\Translation;
+use Gettext\Translations;
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 final class PGR_Own_Catalog_Guard {
 
-	/** @return array<string,array{context:?string,original:string,plural:?string}> */
-	public static function identities_from_file(string $path): array {
+	private static function load_catalog(string $path): Translations {
 		$loader                   = new StrictPoLoader();
 		$loader->displayErrorLine = true;
-		$translations             = $loader->loadFile($path);
-		$identities               = array();
+		return $loader->loadFile($path);
+	}
 
-		foreach ($translations as $translation) {
+	/** @return array<string,array{context:?string,original:string,plural:?string}> */
+	public static function identities_from_file(string $path): array {
+		$identities = array();
+
+		foreach (self::load_catalog($path) as $translation) {
 			if (!$translation instanceof Translation || $translation->isDisabled()) {
 				continue;
 			}
@@ -71,6 +75,38 @@ final class PGR_Own_Catalog_Guard {
 		$message .= self::format_diff('Missing from committed POT', $diff['missing_from_committed']);
 		$message .= self::format_diff('Extra in committed POT', $diff['extra_in_committed']);
 		throw new RuntimeException(rtrim($message));
+	}
+
+	public static function assert_translations_complete(string $po_path): void {
+		$issues = array();
+
+		foreach (self::load_catalog($po_path) as $translation) {
+			if (!$translation instanceof Translation || $translation->isDisabled()) {
+				continue;
+			}
+
+			$problem = null;
+			if ($translation->getFlags()->has('fuzzy')) {
+				$problem = 'fuzzy';
+			} elseif (null !== $translation->getPlural()) {
+				$plural_translations = $translation->getPluralTranslations();
+				if (array() === $plural_translations || in_array('', $plural_translations, true)) {
+					$problem = 'untranslated plural';
+				}
+			} elseif (!$translation->isTranslated()) {
+				$problem = 'untranslated';
+			}
+
+			if (null !== $problem) {
+				$issues[] = sprintf('%s: %s', $problem, $translation->getOriginal());
+			}
+		}
+
+		if (array() !== $issues) {
+			throw new RuntimeException(
+				"Own-plugin Persian PO contains incomplete active translations:\n- " . implode("\n- ", $issues)
+			);
+		}
 	}
 
 	public static function assert_controlled_omission_is_detected(string $source_pot, string $committed_pot): void {
@@ -153,6 +189,11 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && realpath((string) $_SERVER['SCRIPT_FIL
 			echo "Controlled omission falsification: PASS (guard rejected omitted identity)\n";
 			exit(0);
 		}
+		if ('translation-check' === $mode && isset($argv[2])) {
+			PGR_Own_Catalog_Guard::assert_translations_complete($argv[2]);
+			echo "Own-plugin Persian PO completeness: PASS\n";
+			exit(0);
+		}
 		if ('compare' === $mode && isset($argv[2], $argv[3])) {
 			PGR_Own_Catalog_Guard::assert_files_match($argv[2], $argv[3]);
 			echo "Own-plugin gettext source/POT coverage: PASS\n";
@@ -160,6 +201,7 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && realpath((string) $_SERVER['SCRIPT_FIL
 		}
 
 		fwrite(STDERR, "Usage: php tools/i18n/own-catalog-guard.php source-check\n");
+		fwrite(STDERR, "   or: php tools/i18n/own-catalog-guard.php translation-check <fa_IR.po>\n");
 		fwrite(STDERR, "   or: php tools/i18n/own-catalog-guard.php compare <source.pot> <committed.pot>\n");
 		exit(2);
 	} catch (Throwable $error) {
