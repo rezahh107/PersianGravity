@@ -153,7 +153,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			return $format;
 		}
 
-		$this->contexts[ $marked['format'] ] = array(
+		$this->contexts[ $marked['format'] ]        = array(
 			'note'            => $note,
 			'note_snapshot'   => get_object_vars( $note ),
 			'notes'           => $notes,
@@ -207,7 +207,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$owned = $this->active_calendar_context_for_time_path( $path );
-		if ( null === $owned || $print !== (bool) ( $owned['context']['print_inherited'] ?? false ) ) {
+		if ( null === $owned || (bool) ( $owned['context']['print_inherited'] ?? false ) !== $print ) {
 			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print );
 			return $format;
 		}
@@ -356,7 +356,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		unset( $this->time_contexts[ $key ] );
 
 		$print = array() === $trace ? (bool) ( $context['print_inherited'] ?? false ) : $this->is_print_inheritance_trace( $trace );
-		if ( $print !== (bool) ( $context['print_inherited'] ?? false ) ) {
+		if ( (bool) ( $context['print_inherited'] ?? false ) !== $print ) {
 			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print || (bool) ( $context['print_inherited'] ?? false ) );
 			return $date;
 		}
@@ -392,8 +392,16 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return strtr(
 			$value,
 			array(
-				'0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴',
-				'5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹',
+				'0' => '۰',
+				'1' => '۱',
+				'2' => '۲',
+				'3' => '۳',
+				'4' => '۴',
+				'5' => '۵',
+				'6' => '۶',
+				'7' => '۷',
+				'8' => '۸',
+				'9' => '۹',
 			)
 		);
 	}
@@ -511,7 +519,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			) {
 				continue;
 			}
-			$matches[] = array( 'format' => $format, 'context' => $context );
+			$matches[] = array(
+				'format'  => $format,
+				'context' => $context,
+			);
 		}
 		return 1 === count( $matches ) ? $matches[0] : null;
 	}
@@ -532,7 +543,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$raw = $context['raw'];
 		return in_array(
 			$path[1]['args'],
-			array( array( $raw, false, '', true ), array( $raw, false, $format, true ) ),
+			array(
+				array( $raw, false, '', true ),
+				array( $raw, false, $format, true ),
+			),
 			true
 		) && array( $raw, '', false, true ) === $path[2]['args'];
 	}
@@ -569,8 +583,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$timestamp = gmmktime(
-			(int) $civil->format( 'H' ), (int) $civil->format( 'i' ), (int) $civil->format( 's' ),
-			(int) $civil->format( 'n' ), (int) $civil->format( 'j' ), (int) $civil->format( 'Y' )
+			(int) $civil->format( 'H' ),
+			(int) $civil->format( 'i' ),
+			(int) $civil->format( 's' ),
+			(int) $civil->format( 'n' ),
+			(int) $civil->format( 'j' ),
+			(int) $civil->format( 'Y' )
 		);
 		return is_int( $timestamp ) ? $timestamp : null;
 	}
@@ -586,7 +604,10 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		foreach ( str_split( $literal ) as $character ) {
 			$escaped .= '\\' . $character;
 		}
-		return array( 'format' => $escaped . $native_format, 'literal' => $literal );
+		return array(
+			'format'  => $escaped . $native_format,
+			'literal' => $literal,
+		);
 	}
 
 	private function strip_owned_markers( $date ) {
@@ -683,16 +704,16 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 	}
 
-	private function record_available( $print ) {
+	private function record_available( $print_inherited ) {
 		$this->record_diagnostic( self::CAP_TIMELINE, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
-		if ( $print ) {
+		if ( $print_inherited ) {
 			$this->record_diagnostic( self::CAP_PRINT, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
 		}
 	}
 
-	private function record_failure( $state, $reason, $print ) {
+	private function record_failure( $state, $reason, $print_inherited ) {
 		$this->record_diagnostic( self::CAP_TIMELINE, $state, $reason );
-		if ( $print ) {
+		if ( $print_inherited ) {
 			$this->record_diagnostic( self::CAP_PRINT, $state, $reason );
 		}
 	}
