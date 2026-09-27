@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_class": "G010_ENTRY_DETAIL_DATE_SEMANTIC_CONTRACT_REQUALIFICATION",
+  "planning_main": "6739461b889246463b0158938eb9590a3db98b9d",
+  "result": "NO_SAFE_REPLACEMENT_PROVEN",
+  "gravityflow_authority": {
+    "version": "3.1.0",
+    "sha256": "ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404",
+    "plugin_main": "gravityflow/gravityflow.php"
+  },
+  "capabilities": [
+    "gravityflow.entry-detail.submitted",
+    "gravityflow.entry-detail.last-updated",
+    "gravityflow.entry-detail.due-date",
+    "gravityflow.entry-detail.expiration"
+  ],
+  "candidate_seams": [
+    {
+      "id": "gravityflow_date_format_entry_detail",
+      "supported": true,
+      "pre_conversion_semantic_identity": false,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_SHARED_FORMAT_ONLY"
+    },
+    {
+      "id": "owned_marker_plus_date_i18n",
+      "supported": true,
+      "pre_conversion_semantic_identity": false,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_FAMILY_BOUNDARY_NOT_ROW_IDENTITY"
+    },
+    {
+      "id": "gravityflow_below_workflow_info_entry_detail",
+      "supported": true,
+      "pre_conversion_semantic_identity": true,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_POST_RENDER_ONLY"
+    },
+    {
+      "id": "named_caller_provenance",
+      "supported": false,
+      "pre_conversion_semantic_identity": false,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_IDENTICAL_CHAIN_FOR_ALL_FOUR"
+    },
+    {
+      "id": "gravityflow_step_due_date_timestamp",
+      "supported": true,
+      "pre_conversion_semantic_identity": true,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_OPERATIONAL_AND_PARTIAL_FAMILY"
+    },
+    {
+      "id": "gravityflow_step_expiration_timestamp",
+      "supported": true,
+      "pre_conversion_semantic_identity": true,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_OPERATIONAL_AND_PARTIAL_FAMILY"
+    },
+    {
+      "id": "raw_timestamp_value_correlation",
+      "supported": false,
+      "pre_conversion_semantic_identity": false,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_DATA_CORRELATION_NOT_PROVENANCE"
+    },
+    {
+      "id": "sequence_or_call_count",
+      "supported": false,
+      "pre_conversion_semantic_identity": false,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_CONVERT_FIRST_DETECT_LATER"
+    },
+    {
+      "id": "rendered_row_class_or_label",
+      "supported": false,
+      "pre_conversion_semantic_identity": true,
+      "fail_before_unqualified_conversion": false,
+      "disposition": "REJECTED_IDENTITY_AVAILABLE_AFTER_FORMATTING"
+    },
+    {
+      "id": "source_stack_line_or_hash",
+      "supported": false,
+      "pre_conversion_semantic_identity": true,
+      "fail_before_unqualified_conversion": true,
+      "disposition": "REJECTED_PROHIBITED_BRITTLE_SOURCE_PROXY"
+    }
+  ],
+  "production_eligibility_change": false,
+  "exact_target_version_gate_remains": true,
+  "diagnostics_activation_authority": false,
+  "required_final_head_lanes": [
+    "CI",
+    "Artifact Install Smoke",
+    "G008 Jalali Presentation Runtime",
+    "WU008 Licensed Real Integration"
+  ]
+}
