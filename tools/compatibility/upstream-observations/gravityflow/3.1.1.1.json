@@ -15,29 +15,24 @@
   "official_sources": [
     {
       "url": "https://docs.gravityflow.io/changelog/",
-      "role": "stable-release-and-changelog",
-      "source_identity": "Gravity Flow changelog; current latest stable entry 3.1.1.1 plus intervening 3.1.1 dated 2026-08-25"
+      "role": "historical-detection-reference",
+      "source_identity": "Project-history detection only. The 2026-09-27 exact-head direct live source did not expose 3.1.1.1; do not treat this record as the current upstream stable release."
     }
   ],
   "classifications": [
-    "DOCUMENTED_CONTRACT_CHANGE",
-    "REQUALIFICATION_RECOMMENDED",
+    "MODEL_REVIEW_REQUIRED",
     "PACKAGE_REQUIRED_FOR_PROOF"
   ],
   "capability_observations": [
     {
-      "capability": "gravityflow.gravityview-integration",
-      "classification": "DOCUMENTED_CONTRACT_CHANGE",
-      "summary": "Within the version gap from the qualified 3.1.0 baseline to current 3.1.1.1, the intervening 3.1.1 release explicitly changes GravityView integration to address deprecated filters used for Workflow Detail and Approval Links. The 3.1.1.1 entry itself documents maintenance fixes, not proof of a PersianGravity regression or repair."
-    },
-    {
-      "capability": "gravityflow.entry-detail.date-family",
-      "classification": "REQUALIFICATION_RECOMMENDED",
-      "summary": "PersianGravity's four Entry Detail workflow-info dates intentionally retain an exact Owner-supplied Gravity Flow package gate because the shared date-format seam lacks semantic row identity. If the Owner supplies 3.1.1.1, that exact package must follow the existing CURRENT_METHOD_STILL_VALID / SAFE_REPLACEMENT_FOUND / NO_SAFE_PATH_PROVEN requalification protocol."
+      "capability": "gravityflow.historical-release-signal",
+      "classification": "MODEL_REVIEW_REQUIRED",
+      "summary": "Project history previously detected 3.1.1.1, but the current direct first-party source retrieved by the exact-head radar reports 3.1.1 as its first version heading. Preserve 3.1.1.1 only as a historical research signal until live first-party evidence or an Owner-supplied exact package establishes it again."
     }
   ],
-  "model_review_required": false,
+  "model_review_required": true,
   "package_required_for_proof": true,
-  "review_state": "MODEL_REVIEWED",
-  "automation_generated": false
+  "review_state": "MODEL_REVIEW_REQUIRED",
+  "automation_generated": false,
+  "current_live_status": "NOT_CONFIRMED_BY_2026-09-27_DIRECT_SOURCE"
 }
