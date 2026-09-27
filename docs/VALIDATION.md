@@ -1,5 +1,55 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-010 / WU-03 — PR #71 Entry Detail semantic-contract evidence reconciliation — 2026-09-27
+
+Canonical conclusion: `NO_SAFE_REPLACEMENT_PROVEN`.
+
+This section is the canonical `docs/VALIDATION.md` classification for the G-010 / WU-03 Entry Detail date semantic-contract requalification introduced by PR #71. The supporting requalification document, machine-readable record, source inspection and PHPUnit test remain subordinate evidence; none of them replaces this validation authority. The exact technical execution Head whose PR #71 evidence is classified below is `10939d5274975452b6be6bfa6db4bdeaad79bfb8`. A later documentation-only repair Head does not retroactively make these runs exact-Head evidence for that later commit; any lane not executed on the later Head remains `NOT_PROVEN` for that later Head and must not be inferred from the runs listed here.
+
+### AUTHENTIC EXECUTED EVIDENCE
+
+The authentic Gravity Flow authority is the existing repository-owned Owner-supplied package record: Gravity Flow `3.1.0`, canonical plugin main `gravityflow/gravityflow.php`, package SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`. PR #71 does not create or replace package authority and does not claim vendor authenticity beyond the repository's existing package-identity contract.
+
+On exact PersianGravity Head `10939d5274975452b6be6bfa6db4bdeaad79bfb8`, the following executions completed successfully:
+
+| Executed evidence | Run ID | Classification / claim ceiling |
+| --- | ---: | --- |
+| CI | `36318957864` | `AUTHENTIC_EXECUTED_EVIDENCE` for repository tests, quality/static checks and PHPUnit on that exact Head; not licensed-host runtime proof by itself. |
+| Artifact Install Smoke | `36318957818` | `AUTHENTIC_EXECUTED_EVIDENCE` for building/installing the exact Head package under that workflow; not Gravity Flow Entry Detail semantic proof by itself. |
+| G008 Jalali Presentation Runtime | `36318957847` | `AUTHENTIC_EXECUTED_EVIDENCE` for the G008 exact-host scenarios that workflow actually exercises; it is an applicable regression lane, not a substitute for the licensed Flow Entry Detail WU008 evidence. |
+| WU008 Licensed Real Integration | `36318957834` | `AUTHENTIC_EXECUTED_EVIDENCE` for real WordPress + exact Owner-supplied Gravity ecosystem execution, including the exact Flow `3.1.0` Entry Detail scenarios exercised by WU008. |
+
+The WU008 execution is the authentic runtime evidence for the existing four Entry Detail workflow-info date surfaces: Submitted, Last Updated, Due and Expiration. On the exact qualified Flow `3.1.0` host it exercised enabled and disabled presentation plus the English/non-Persian control, observed the production four-date workflow-info path, and reconciled the existing Entry Detail adapter without changing raw DB/GFAPI/REST values, workflow/deadline/expiration state, CSV/export isolation or operational due/expiration getter behavior. The executed lane also preserved zero presentation-induced nested operational-getter re-entry and marker-leak-free rendering for the scenarios it actually exercised. Those observations establish the real four-surface qualified baseline only; they do not establish behavior for an added fifth workflow-info date row or for a newer Gravity Flow package.
+
+### SOURCE / STATIC EVIDENCE
+
+Exact-package source inspection and the PR #71 candidate-seam inventory are `SOURCE_STATIC_EVIDENCE`, not runtime execution. The inspected Flow `3.1.0` call graph establishes the shared family shape: `gravityflow_date_format_entry_detail` supplies one shared format context; Submitted, Last Updated, Due and Expiration then flow through the common formatting chain to `date_i18n`; and `gravityflow_below_workflow_info_entry_detail` runs only after the workflow-info values have been formatted.
+
+The supported-hook/provenance review did not identify a supported pre-conversion semantic row identity shared by all four surfaces. The shared date-format filter exposes format context but not semantic row identity; the PersianGravity marker plus `date_i18n` bounds the owned formatting family but does not identify which Flow row is being converted; the post-workflow-info action arrives too late for activation; due/expiration timestamp filters are operational value seams rather than a four-surface presentation identity; raw-value matching and ordinal call count are correlation rather than provenance; rendered row classes/labels exist only after formatting; and source-line/stack-line or hash fingerprints are rejected as brittle runtime eligibility contracts. These are source/static findings and must not be promoted to evidence that a licensed host actually rendered a fifth row.
+
+### SYNTHETIC FALSIFICATION EVIDENCE
+
+`G010GravityFlowEntryDetailDateSemanticContractRequalificationTest` is explicitly `SYNTHETIC_FALSIFICATION_EVIDENCE`. Its five-call model is synthetic: it deliberately drives five otherwise valid calls through the already-armed shared Entry Detail marker/date chain to demonstrate the defect class that a fifth call can be converted before post-render count reconciliation observes that the family is no longer exactly four calls.
+
+That test proves why call count or post-render reconciliation cannot serve as the sole pre-conversion safety contract. It does **not** prove that licensed Gravity Flow `3.1.0` contains or rendered a real fifth Entry Detail workflow-info date row, does **not** qualify a newer Gravity Flow package, and does **not** replace the authentic WU008 four-surface runtime evidence.
+
+### NOT PROVEN / NOT CLAIMED
+
+The following remain explicitly `NOT_PROVEN` / not claimed by PR #71:
+
+- no real newer Gravity Flow package has been Owner-supplied, admitted, inspected and runtime-qualified for this Entry Detail date family;
+- no authentic licensed-host execution with an actual fifth Entry Detail workflow-info date row has been observed;
+- no supported replacement semantic seam that binds each shared conversion to a semantic row before conversion has been established;
+- no compatibility claim is made for Gravity Flow `3.1.1.1` or any other newer Flow version merely because adjacent CI/runtime lanes are green;
+- source inspection and the synthetic five-call regression are not licensed-runtime evidence;
+- any workflow not executed on a later documentation-only PR Head is `NOT_PROVEN` for that later Head and must be reported as such rather than inferred from the exact `10939d5...` execution set.
+
+### Production eligibility remains unchanged
+
+The production Entry Detail Jalali date adapter is unchanged by this evidence reconciliation. For the four Entry Detail workflow-info date capabilities, canonical Gravity Flow host identity plus bounded runtime-version observation and exact equality with the existing repository-owned Gravity Flow `target_version` remain required **before marker ownership is armed**. The shared `gravityflow_date_format_entry_detail -> owned marker -> date_i18n` path remains admitted only under that exact repository-target guard because no supported pre-conversion semantic row identity has been proven. Post-render four-call reconciliation remains diagnostics-only and is not activation authority.
+
+Entry Detail Persian-digit eligibility remains independently version-equality-independent under its own post-workflow-info/browser contract. PR #69 Inbox/Status contracts, Entry Detail Schedule final no-admission, Timeline/Print behavior, package authority, localization `target_version`, plugin version/Stable tag, vendor files and release/deployment state remain unchanged. This repair changes validation classification only and introduces no production PHP/JavaScript/API/contract migration.
+
 ## G-008 GravityView 3.3.4 production admission — 2026-09-25
 
 PR #63 established the earlier qualification-only seam proof. PR #64 is the production follow-up from `main@96be93f83cecde6c45cb869d75afb150b471357b`; it does not change plugin version metadata, release branches, tags or deployment state. Exact authority remains GravityView `3.3.4` SHA-256 `af5959fb6bf0cfcb4d07d14b1933cf9ea0a9d0f994b9991f27aed47edbcb9829` plus Gravity Forms `3.1.1.1` SHA-256 `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b`.
