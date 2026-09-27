@@ -1,6 +1,10 @@
 <?php
 /**
- * Bounded Jalali presentation for exact Gravity Flow Timeline dates.
+ * Bounded Jalali presentation for Gravity Flow Timeline dates.
+ *
+ * Runtime admission is behavioral: canonical host identity plus the authentic
+ * request-local Timeline caller/data contract. Exact package/source identity is
+ * qualification evidence in CI, not a production activation oracle.
  *
  * @package PersianGravityForms
  */
@@ -9,28 +13,20 @@ defined( 'ABSPATH' ) || exit;
 
 final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 
-	/** Host-owned runtime version authority. */
-	private const FLOW_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
+	/** Host-owned runtime version observation. Version equality is not eligibility. */
+	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
-	private const FLOW_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
+	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
 
-	/** Exact qualified host versions. */
-	private const FLOW_VERSION = '3.1.0';
-	private const GF_VERSION   = '3.1.1.1';
+	/** Canonical Gravity Flow plugin main-file identity. */
+	private const HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php';
 
-	/** Exact qualified source fingerprints for the production Timeline contract. */
-	private const SOURCE_FINGERPRINTS = array(
-		'flow_entry_detail' => 'a7634c5604184502457bcb22cdf1ade892e84c888cc60996aea8a810ced7680a',
-		'flow_common'       => 'a8844f4b6ac37eed1a2cc1e904418f6ed8c6b4480e982c5a809e895a6f9e0cc8',
-		'flow_print'        => 'df969bf8a37ed4f5619e0e8b2a753dd1133fa0c7551b158d740248c67fcb95c6',
-		'gf_common'         => 'ac4ed495ee02a119a4fd08c77279f0db0905e6f20f59c472d5e6bffc801ca355',
-	);
+	private const CAP_TIMELINE = 'gravityflow.timeline-history';
+	private const CAP_PRINT    = 'gravityflow.print';
 
-	/** Exact qualified date-format profiles. */
 	private const SUPPORTED_FORMATS = array( 'F j, Y', 'Y-m-d' );
 
-	/** Exact first-seam caller chain, nearest frame first. */
 	private const FIRST_CHAIN = array(
 		'get_option',
 		'GFCommon::get_default_date_format',
@@ -42,7 +38,6 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		'Gravity_Flow_Entry_Detail::timeline',
 	);
 
-	/** Exact Timeline time-format lookup chain, nearest frame first. */
 	private const TIME_FORMAT_CHAIN = array(
 		'get_option',
 		'GFCommon::get_default_time_format',
@@ -54,7 +49,6 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		'Gravity_Flow_Entry_Detail::timeline',
 	);
 
-	/** Exact second-seam caller chain, nearest frame first. */
 	private const SECOND_CHAIN = array(
 		'date_i18n',
 		'GFCommon::format_date',
@@ -65,39 +59,33 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		'Gravity_Flow_Entry_Detail::timeline',
 	);
 
-	/** @var array<string,array<string,mixed>> One-shot contexts keyed by marked format. */
+	/** @var array<string,array<string,mixed>> */
 	private $contexts = array();
 
-	/** @var array<int,array<string,mixed>> One-shot time contexts keyed by note object ID. */
+	/** @var array<int,array<string,mixed>> */
 	private $time_contexts = array();
 
-	/** @var array<string,string> Marked format => literal marker for leak-safe fallback. */
+	/** @var array<string,string> */
 	private $marker_literals = array();
 
-	/** @var int Request-local marker serial. */
+	/** @var int */
 	private $marker_serial = 0;
 
-	/** @var bool Whether the second hook has been installed for this request. */
+	/** @var bool */
 	private $date_hook_registered = false;
 
-	/** @var bool|null Cached exact host/source contract result. */
+	/** @var bool|null Cached canonical host-identity observation. */
 	private $host_contract_valid = null;
 
-	/** @var string|null Product slug resolved from host basename + approved manifest. */
+	/** @var string|null Product slug derived only from the canonical host basename. */
 	private $flow_product_slug = null;
 
-	/**
-	 * Register the generic first seam only after the exact host/source contract
-	 * and Jalali facade dependency are already available.
-	 *
-	 * @return void
-	 */
+	/** @return void */
 	public function hooks() {
 		if (
 			! function_exists( 'determine_locale' ) ||
 			'fa_IR' !== determine_locale() ||
-			! class_exists( 'PGR_Jalali_Presentation', false ) ||
-			! $this->is_exact_supported_host()
+			! class_exists( 'PGR_Jalali_Presentation', false )
 		) {
 			return;
 		}
@@ -106,30 +94,32 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		add_filter( 'option_time_format', array( $this, 'filter_time_format' ), PHP_INT_MAX, 2 );
 	}
 
-	/**
-	 * Arm a unique one-shot format marker only for the exact Timeline call path.
-	 *
-	 * @param mixed $format Native WordPress date-format option value.
-	 * @param mixed $option Option name.
-	 * @return mixed
-	 */
+	/** @return mixed */
 	public function filter_date_format( $format, $option = null ) {
 		if (
 			'date_format' !== $option ||
 			! is_string( $format ) ||
-			! in_array( $format, self::SUPPORTED_FORMATS, true ) ||
 			! function_exists( 'determine_locale' ) ||
 			'fa_IR' !== determine_locale() ||
-			! class_exists( 'PGR_Jalali_Presentation', false ) ||
-			! $this->is_exact_supported_host()
+			! class_exists( 'PGR_Jalali_Presentation', false )
 		) {
 			return $format;
 		}
 
 		$trace = $this->capture_trace();
 		$this->prune_stale_contexts( $trace );
-		$path = $this->nearest_contiguous_chain( $trace, self::FIRST_CHAIN );
-		if ( null === $path ) {
+		if ( ! $this->is_timeline_candidate_trace( $trace ) ) {
+			return $format;
+		}
+
+		$print = $this->is_print_inheritance_trace( $trace );
+		$path  = $this->nearest_contiguous_chain( $trace, self::FIRST_CHAIN );
+		if ( null === $path || ! in_array( $format, self::SUPPORTED_FORMATS, true ) ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SEAM_UNAVAILABLE', $print );
+			return $format;
+		}
+		if ( ! $this->has_qualified_host_identity() ) {
+			$this->record_failure( 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED', $print );
 			return $format;
 		}
 
@@ -138,11 +128,13 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$entry = $path[7]['args'][0] ?? null;
 		$form  = $path[7]['args'][1] ?? null;
 		if ( ! is_object( $note ) || ! is_array( $notes ) || ! is_array( $entry ) || ! in_array( $note, $notes, true ) ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print );
 			return $format;
 		}
 
 		$raw = isset( $note->date_created ) && is_string( $note->date_created ) ? $note->date_created : null;
 		if ( null === $raw || ! $this->first_path_arguments_match( $path, $raw ) ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SOURCE_INVALID', $print );
 			return $format;
 		}
 
@@ -151,26 +143,29 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$entry_key  = $this->entry_key( $entry );
 		$note_order = $this->note_identity_order( $notes );
 		if ( null === $event_kind || null === $timestamp || null === $entry_key || null === $note_order ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SOURCE_INVALID', $print );
 			return $format;
 		}
 
 		$marked = $this->create_marked_format( $format );
 		if ( null === $marked ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print );
 			return $format;
 		}
 
-		$this->contexts[ $marked['format'] ]        = array(
-			'note'          => $note,
-			'note_snapshot' => get_object_vars( $note ),
-			'notes'         => $notes,
-			'notes_order'   => $note_order,
-			'entry'         => $entry,
-			'entry_key'     => $entry_key,
-			'form'          => $form,
-			'raw'           => $raw,
-			'timestamp'     => $timestamp,
-			'native_format' => $format,
-			'event_kind'    => $event_kind,
+		$this->contexts[ $marked['format'] ] = array(
+			'note'            => $note,
+			'note_snapshot'   => get_object_vars( $note ),
+			'notes'           => $notes,
+			'notes_order'     => $note_order,
+			'entry'           => $entry,
+			'entry_key'       => $entry_key,
+			'form'            => $form,
+			'raw'             => $raw,
+			'timestamp'       => $timestamp,
+			'native_format'   => $format,
+			'event_kind'      => $event_kind,
+			'print_inherited' => $print,
 		);
 		$this->marker_literals[ $marked['format'] ] = $marked['literal'];
 
@@ -182,44 +177,43 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return $marked['format'];
 	}
 
-
-	/**
-	 * Capture the host-owned time format only for the exact admitted Timeline row.
-	 *
-	 * The format value is returned byte-for-byte unchanged. The captured context
-	 * is consumed later only by the matching time date_i18n() call.
-	 *
-	 * @param mixed $format Native WordPress time-format option value.
-	 * @param mixed $option Option name.
-	 * @return mixed
-	 */
+	/** @return mixed */
 	public function filter_time_format( $format, $option = null ) {
 		if (
 			'time_format' !== $option ||
 			! is_string( $format ) ||
 			'' === $format ||
 			! function_exists( 'determine_locale' ) ||
-			'fa_IR' !== determine_locale() ||
-			! $this->is_exact_supported_host()
+			'fa_IR' !== determine_locale()
 		) {
 			return $format;
 		}
 
 		$trace = $this->capture_trace();
 		$this->prune_stale_contexts( $trace );
-		$path = $this->nearest_contiguous_chain( $trace, self::TIME_FORMAT_CHAIN );
+		if ( ! $this->is_timeline_candidate_trace( $trace ) ) {
+			return $format;
+		}
+
+		$print = $this->is_print_inheritance_trace( $trace );
+		$path  = $this->nearest_contiguous_chain( $trace, self::TIME_FORMAT_CHAIN );
 		if ( null === $path ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SEAM_UNAVAILABLE', $print );
+			return $format;
+		}
+		if ( ! $this->has_qualified_host_identity() ) {
+			$this->record_failure( 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED', $print );
 			return $format;
 		}
 
 		$owned = $this->active_calendar_context_for_time_path( $path );
-		if ( null === $owned ) {
+		if ( null === $owned || $print !== (bool) ( $owned['context']['print_inherited'] ?? false ) ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print );
 			return $format;
 		}
 
 		$note    = $owned['context']['note'];
 		$context = $owned['context'];
-
 		$this->time_contexts[ spl_object_id( $note ) ] = array(
 			'note'              => $note,
 			'note_snapshot'     => $context['note_snapshot'],
@@ -233,31 +227,17 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			'time_format'       => $format,
 			'date_format'       => $owned['format'],
 			'event_kind'        => $context['event_kind'],
+			'print_inherited'   => (bool) ( $context['print_inherited'] ?? false ),
 			'calendar_admitted' => false,
 		);
 
 		return $format;
 	}
 
-	/**
-	 * Convert only the date carried by an authentic active Timeline marker.
-	 *
-	 * A matching owned token is consumed before later validation so replay and
-	 * cross-row reuse fail closed even when a later invariant is rejected.
-	 *
-	 * @param mixed $date      Native date_i18n output.
-	 * @param mixed $format    Native date_i18n format.
-	 * @param mixed $timestamp Localized timestamp-plus-offset value.
-	 * @param mixed $gmt       Native date_i18n GMT flag.
-	 * @return mixed
-	 */
+	/** @return mixed */
 	public function filter_date_i18n( $date, $format, $timestamp, $gmt ) {
 		$fallback = $this->strip_owned_markers( $date );
-		if (
-			! is_string( $format ) ||
-			! function_exists( 'determine_locale' ) ||
-			'fa_IR' !== determine_locale()
-		) {
+		if ( ! is_string( $format ) || ! function_exists( 'determine_locale' ) || 'fa_IR' !== determine_locale() ) {
 			return $fallback;
 		}
 
@@ -265,26 +245,45 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$this->prune_stale_contexts( $trace );
 		$path = $this->nearest_contiguous_chain( $trace, self::SECOND_CHAIN );
 		if ( null === $path ) {
+			if ( isset( $this->contexts[ $format ] ) ) {
+				$context = $this->contexts[ $format ];
+				unset( $this->contexts[ $format ] );
+				$this->clear_time_context_for_context( $context );
+				$this->record_failure( 'STATE_DEGRADED', 'REASON_SEAM_UNAVAILABLE', (bool) ( $context['print_inherited'] ?? false ) );
+			}
 			return $fallback;
 		}
+
 		if ( ! isset( $this->contexts[ $format ] ) ) {
-			return $this->shape_timeline_time_digits( $fallback, $format, $timestamp, $gmt, $path );
+			return $this->shape_timeline_time_digits( $fallback, $format, $timestamp, $gmt, $path, $trace );
 		}
 
-		$context  = $this->contexts[ $format ];
-		$time_key = is_object( $context['note'] ?? null ) ? spl_object_id( $context['note'] ) : null;
+		$context = $this->contexts[ $format ];
 		unset( $this->contexts[ $format ] );
+		$print    = $this->is_print_inheritance_trace( $trace );
+		$expected = (bool) ( $context['print_inherited'] ?? false );
+		$time_key = is_object( $context['note'] ?? null ) ? spl_object_id( $context['note'] ) : null;
+		$note     = $path[4]['args'][0] ?? null;
+		$notes    = $path[5]['args'][0] ?? null;
+		$entry    = $path[6]['args'][0] ?? null;
+		$form     = $path[6]['args'][1] ?? null;
 
-		$note  = $path[4]['args'][0] ?? null;
-		$notes = $path[5]['args'][0] ?? null;
-		$entry = $path[6]['args'][0] ?? null;
-		$form  = $path[6]['args'][1] ?? null;
+		if ( ! $this->has_qualified_host_identity() ) {
+			$this->clear_time_context_for_context( $context );
+			$this->record_failure( 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED', $expected || $print );
+			return $fallback;
+		}
+		if ( $print !== $expected ) {
+			$this->clear_time_context_for_context( $context );
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $expected || $print );
+			return $fallback;
+		}
+
 		if (
 			true !== $gmt ||
 			! is_int( $timestamp ) ||
 			$timestamp !== $context['timestamp'] ||
 			! class_exists( 'PGR_Jalali_Presentation', false ) ||
-			! $this->is_exact_supported_host() ||
 			! is_object( $note ) ||
 			$note !== $context['note'] ||
 			get_object_vars( $note ) !== $context['note_snapshot'] ||
@@ -302,6 +301,7 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			if ( null !== $time_key ) {
 				unset( $this->time_contexts[ $time_key ] );
 			}
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SOURCE_INVALID', $expected );
 			return $fallback;
 		}
 
@@ -313,43 +313,27 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			);
 		} catch ( Throwable $exception ) {
 			unset( $exception );
-			if ( null !== $time_key ) {
-				unset( $this->time_contexts[ $time_key ] );
-			}
-			return $fallback;
+			$formatted = null;
 		}
 
 		if ( null === $formatted ) {
 			if ( null !== $time_key ) {
 				unset( $this->time_contexts[ $time_key ] );
 			}
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE', $expected );
 			return $fallback;
 		}
 
 		if ( null !== $time_key && isset( $this->time_contexts[ $time_key ] ) ) {
 			$this->time_contexts[ $time_key ]['calendar_admitted'] = true;
 		}
-
+		$this->record_available( $expected );
 		return $formatted;
 	}
 
-
-	/**
-	 * Shape only the already-computed host time string for the exact Timeline row.
-	 *
-	 * @param mixed                           $date      Native time presentation.
-	 * @param string                          $format    Native time format.
-	 * @param mixed                           $timestamp Localized timestamp-plus-offset value.
-	 * @param mixed                           $gmt       Native date_i18n GMT flag.
-	 * @param array<int,array<string,mixed>> $path      Qualified date_i18n caller chain.
-	 * @return mixed
-	 */
-	private function shape_timeline_time_digits( $date, $format, $timestamp, $gmt, $path ) {
-		if (
-			! is_string( $date ) ||
-			! function_exists( 'determine_locale' ) ||
-			'fa_IR' !== determine_locale()
-		) {
+	/** @return mixed */
+	private function shape_timeline_time_digits( $date, $format, $timestamp, $gmt, $path, $trace = array() ) {
+		if ( ! is_string( $date ) || ! function_exists( 'determine_locale' ) || 'fa_IR' !== determine_locale() ) {
 			return $date;
 		}
 
@@ -359,25 +343,32 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$key = spl_object_id( $note );
-		if (
-			! isset( $this->time_contexts[ $key ] ) ||
-			$format !== $this->time_contexts[ $key ]['time_format'] ||
-			true !== $this->time_contexts[ $key ]['calendar_admitted']
-		) {
+		if ( ! isset( $this->time_contexts[ $key ] ) ) {
 			return $date;
 		}
 
 		$context = $this->time_contexts[ $key ];
+		if ( $format !== $context['time_format'] || true !== $context['calendar_admitted'] ) {
+			unset( $this->time_contexts[ $key ] );
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', (bool) ( $context['print_inherited'] ?? false ) );
+			return $date;
+		}
 		unset( $this->time_contexts[ $key ] );
+
+		$print = array() === $trace ? (bool) ( $context['print_inherited'] ?? false ) : $this->is_print_inheritance_trace( $trace );
+		if ( $print !== (bool) ( $context['print_inherited'] ?? false ) ) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE', $print || (bool) ( $context['print_inherited'] ?? false ) );
+			return $date;
+		}
 
 		$notes = $path[5]['args'][0] ?? null;
 		$entry = $path[6]['args'][0] ?? null;
 		$form  = $path[6]['args'][1] ?? null;
 		if (
+			! $this->has_qualified_host_identity() ||
 			true !== $gmt ||
 			! is_int( $timestamp ) ||
 			$timestamp !== $context['timestamp'] ||
-			! $this->is_exact_supported_host() ||
 			$note !== $context['note'] ||
 			get_object_vars( $note ) !== $context['note_snapshot'] ||
 			! is_array( $notes ) ||
@@ -390,78 +381,43 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			! $this->time_path_arguments_match( $path, $context ) ||
 			$this->event_kind( $note, $entry, $context['raw'] ) !== $context['event_kind']
 		) {
+			$this->record_failure( 'STATE_DEGRADED', 'REASON_SOURCE_INVALID', $print );
 			return $date;
 		}
 
 		return $this->shape_ascii_digits( $date );
 	}
 
-	/**
-	 * Shape ASCII glyphs only; existing Persian digits and non-digits remain unchanged.
-	 *
-	 * @param string $value Human-visible host time string.
-	 * @return string
-	 */
 	private function shape_ascii_digits( $value ) {
 		return strtr(
 			$value,
 			array(
-				'0' => '۰',
-				'1' => '۱',
-				'2' => '۲',
-				'3' => '۳',
-				'4' => '۴',
-				'5' => '۵',
-				'6' => '۶',
-				'7' => '۷',
-				'8' => '۸',
-				'9' => '۹',
+				'0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴',
+				'5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹',
 			)
 		);
 	}
 
-	/**
-	 * Capture the bounded request stack used to prove the exact host path.
-	 *
-	 * @return array<int,array<string,mixed>>
-	 */
 	private function capture_trace() {
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Qualified caller-chain proof.
 		return debug_backtrace( 0, 60 );
 	}
 
-	/**
-	 * Require the nearest matching head to own the complete contiguous chain.
-	 * A nested/re-entrant head may never borrow callers from an outer invocation.
-	 *
-	 * @param array<int,array<string,mixed>> $trace    Debug backtrace.
-	 * @param array<int,string>              $expected Expected signatures.
-	 * @return array<int,array<string,mixed>>|null
-	 */
 	private function nearest_contiguous_chain( $trace, $expected ) {
 		foreach ( $trace as $index => $frame ) {
 			if ( $this->frame_signature( $frame ) !== $expected[0] ) {
 				continue;
 			}
-
 			foreach ( $expected as $offset => $signature ) {
 				if ( ! isset( $trace[ $index + $offset ] ) || $this->frame_signature( $trace[ $index + $offset ] ) !== $signature ) {
 					return null;
 				}
 			}
-
 			return array_slice( $trace, $index, count( $expected ) );
 		}
-
 		return null;
 	}
 
-	/**
-	 * Build one comparable backtrace signature.
-	 *
-	 * @param array<string,mixed> $frame Backtrace frame.
-	 * @return string
-	 */
 	private function frame_signature( $frame ) {
 		$class    = isset( $frame['class'] ) ? (string) $frame['class'] : '';
 		$type     = isset( $frame['type'] ) ? (string) $frame['type'] : '';
@@ -469,76 +425,70 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return $class . $type . $function;
 	}
 
-	/**
-	 * Remove contexts whose exact owning Timeline row is no longer on-stack.
-	 * Marker literals stay request-local so a stale formatted value can still be
-	 * cleaned if it appears after its context was discarded.
-	 *
-	 * @param array<int,array<string,mixed>> $trace Debug backtrace.
-	 * @return void
-	 */
+	private function is_timeline_candidate_trace( $trace ) {
+		foreach ( $trace as $frame ) {
+			if ( 'Gravity_Flow_Entry_Detail::timeline' === $this->frame_signature( $frame ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function is_print_inheritance_trace( $trace ) {
+		$timeline_index = null;
+		foreach ( $trace as $index => $frame ) {
+			if ( 'Gravity_Flow_Entry_Detail::timeline' === $this->frame_signature( $frame ) ) {
+				$timeline_index = $index;
+				break;
+			}
+		}
+		if ( null === $timeline_index ) {
+			return false;
+		}
+		$count = count( $trace );
+		for ( $index = $timeline_index + 1; $index < $count; ++$index ) {
+			if ( 'Gravity_Flow_Print_Entries::render' === $this->frame_signature( $trace[ $index ] ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private function prune_stale_contexts( $trace ) {
 		foreach ( $this->contexts as $format => $context ) {
-			$live = false;
-			foreach ( $trace as $frame ) {
-				if (
-					'Gravity_Flow_Entry_Detail::get_note_body' === $this->frame_signature( $frame ) &&
-					isset( $frame['args'][0] ) &&
-					$frame['args'][0] === $context['note']
-				) {
-					$live = true;
-					break;
-				}
-			}
-
-			if ( ! $live ) {
+			if ( ! $this->note_is_live_on_stack( $trace, $context['note'] ?? null ) ) {
 				unset( $this->contexts[ $format ] );
 			}
 		}
-
 		foreach ( $this->time_contexts as $key => $context ) {
-			$live = false;
-			foreach ( $trace as $frame ) {
-				if (
-					'Gravity_Flow_Entry_Detail::get_note_body' === $this->frame_signature( $frame ) &&
-					isset( $frame['args'][0] ) &&
-					$frame['args'][0] === $context['note']
-				) {
-					$live = true;
-					break;
-				}
-			}
-
-			if ( ! $live ) {
+			if ( ! $this->note_is_live_on_stack( $trace, $context['note'] ?? null ) ) {
 				unset( $this->time_contexts[ $key ] );
 			}
 		}
 	}
 
-	/**
-	 * Validate exact first-seam host arguments discovered in qualification.
-	 *
-	 * @param array<int,array<string,mixed>> $path Qualified first chain.
-	 * @param string                         $raw  Raw date_created.
-	 * @return bool
-	 */
+	private function note_is_live_on_stack( $trace, $note ) {
+		if ( ! is_object( $note ) ) {
+			return false;
+		}
+		foreach ( $trace as $frame ) {
+			if (
+				'Gravity_Flow_Entry_Detail::get_note_body' === $this->frame_signature( $frame ) &&
+				isset( $frame['args'][0] ) &&
+				$frame['args'][0] === $note
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private function first_path_arguments_match( $path, $raw ) {
 		return isset( $path[2]['args'], $path[3]['args'] ) &&
 			array( $raw, false, '', true ) === $path[2]['args'] &&
 			array( $raw, '', false, true ) === $path[3]['args'];
 	}
 
-	/**
-	 * Bind the time-format lookup to the row already admitted by the date seam.
-	 *
-	 * Exact runtime evidence shows the host requests its time format after the
-	 * date-format filter has armed the same Timeline row. Reuse that owned
-	 * context instead of trying to infer mutated local GFCommon parameters from
-	 * debug_backtrace(), whose argument vector reflects call-time values.
-	 *
-	 * @param array<int,array<string,mixed>> $path Qualified time-format chain.
-	 * @return array{format:string,context:array<string,mixed>}|null
-	 */
 	private function active_calendar_context_for_time_path( $path ) {
 		$note  = $path[5]['args'][0] ?? null;
 		$notes = $path[6]['args'][0] ?? null;
@@ -561,89 +511,46 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			) {
 				continue;
 			}
-
-			$matches[] = array(
-				'format'  => $format,
-				'context' => $context,
-			);
+			$matches[] = array( 'format' => $format, 'context' => $context );
 		}
-
 		return 1 === count( $matches ) ? $matches[0] : null;
 	}
 
-	/**
-	 * Validate the time date_i18n call against the date format still owned by
-	 * the same GFCommon::format_date() invocation.
-	 *
-	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
-	 * @param array<string,mixed>            $context Owned time context.
-	 * @return bool
-	 */
 	private function time_path_arguments_match( $path, $context ) {
 		if ( ! isset( $path[1]['args'], $path[2]['args'], $context['date_format'] ) ) {
 			return false;
 		}
-
 		$raw = $context['raw'];
 		return array( $raw, false, $context['date_format'], true ) === $path[1]['args'] &&
 			array( $raw, '', false, true ) === $path[2]['args'];
 	}
 
-	/**
-	 * Validate exact second-seam host arguments discovered in qualification.
-	 *
-	 * @param array<int,array<string,mixed>> $path    Qualified second chain.
-	 * @param array<string,mixed>            $context Owned row context.
-	 * @param string                         $format  Exact marked format.
-	 * @return bool
-	 */
 	private function second_path_arguments_match( $path, $context, $format ) {
 		if ( ! isset( $path[1]['args'], $path[2]['args'] ) ) {
 			return false;
 		}
-
 		$raw = $context['raw'];
 		return in_array(
 			$path[1]['args'],
-			array(
-				array( $raw, false, '', true ),
-				array( $raw, false, $format, true ),
-			),
+			array( array( $raw, false, '', true ), array( $raw, false, $format, true ) ),
 			true
 		) && array( $raw, '', false, true ) === $path[2]['args'];
 	}
 
-	/**
-	 * Validate and classify exact authoritative Timeline event type.
-	 *
-	 * @param object       $note  Timeline event object.
-	 * @param array<mixed> $entry Entry snapshot.
-	 * @param string       $raw   Raw date_created.
-	 * @return string|null
-	 */
 	private function event_kind( $note, $entry, $raw ) {
 		$id = $this->nonnegative_decimal_id( $note->id ?? null );
 		if ( null === $id ) {
 			return null;
 		}
-
 		if ( '0' === $id ) {
 			return isset( $entry['date_created'] ) && is_string( $entry['date_created'] ) && $raw === $entry['date_created'] ? 'initial' : null;
 		}
-
 		if ( null === $this->flow_product_slug || ! isset( $note->note_type ) ) {
 			return null;
 		}
-
 		return $this->flow_product_slug === (string) $note->note_type ? 'stored' : null;
 	}
 
-	/**
-	 * Derive exact localized timestamp-plus-offset value proved by research.
-	 *
-	 * @param string $raw UTC Y-m-d H:i:s.
-	 * @return int|null
-	 */
 	private function expected_localized_timestamp( $raw ) {
 		try {
 			$source = DateTimeImmutable::createFromFormat( '!Y-m-d H:i:s', $raw, new DateTimeZone( 'UTC' ) );
@@ -655,7 +562,6 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			) {
 				return null;
 			}
-
 			$civil = $source->setTimezone( wp_timezone() );
 		} catch ( Throwable $exception ) {
 			unset( $exception );
@@ -663,23 +569,12 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 
 		$timestamp = gmmktime(
-			(int) $civil->format( 'H' ),
-			(int) $civil->format( 'i' ),
-			(int) $civil->format( 's' ),
-			(int) $civil->format( 'n' ),
-			(int) $civil->format( 'j' ),
-			(int) $civil->format( 'Y' )
+			(int) $civil->format( 'H' ), (int) $civil->format( 'i' ), (int) $civil->format( 's' ),
+			(int) $civil->format( 'n' ), (int) $civil->format( 'j' ), (int) $civil->format( 'Y' )
 		);
-
 		return is_int( $timestamp ) ? $timestamp : null;
 	}
 
-	/**
-	 * Create one unpredictable escaped literal marker for a Timeline row.
-	 *
-	 * @param string $native_format Qualified native date format.
-	 * @return array{format:string,literal:string}|null
-	 */
 	private function create_marked_format( $native_format ) {
 		try {
 			$literal = 'PGRTIMELINE' . bin2hex( random_bytes( 16 ) ) . (string) ++$this->marker_serial . 'X';
@@ -687,142 +582,56 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 			unset( $exception );
 			return null;
 		}
-
 		$escaped = '';
 		foreach ( str_split( $literal ) as $character ) {
 			$escaped .= '\\' . $character;
 		}
-
-		return array(
-			'format'  => $escaped . $native_format,
-			'literal' => $literal,
-		);
+		return array( 'format' => $escaped . $native_format, 'literal' => $literal );
 	}
 
-	/**
-	 * Remove every marker literal this request-local adapter owns.
-	 *
-	 * @param mixed $date Native formatted value.
-	 * @return mixed
-	 */
 	private function strip_owned_markers( $date ) {
 		if ( ! is_string( $date ) || empty( $this->marker_literals ) ) {
 			return $date;
 		}
-
 		return str_replace( array_values( $this->marker_literals ), '', $date );
 	}
 
-	/**
-	 * Snapshot exact note object identities and order independently of timestamps.
-	 *
-	 * @param array<mixed> $notes Timeline notes array.
-	 * @return array<int,int>|null
-	 */
 	private function note_identity_order( $notes ) {
 		$result = array();
 		foreach ( $notes as $note ) {
 			if ( ! is_object( $note ) ) {
 				return null;
 			}
-
 			$result[] = spl_object_id( $note );
 		}
-
 		return $result;
 	}
 
-	/**
-	 * Bind Entry identity without loose numeric coercion.
-	 *
-	 * @param array<mixed> $entry Entry snapshot.
-	 * @return string|null
-	 */
 	private function entry_key( $entry ) {
 		if ( ! isset( $entry['id'], $entry['form_id'] ) ) {
 			return null;
 		}
-
 		$id      = $this->positive_decimal_id( $entry['id'] );
 		$form_id = $this->positive_decimal_id( $entry['form_id'] );
 		return null === $id || null === $form_id ? null : $form_id . ':' . $id;
 	}
 
-	/**
-	 * Normalize only canonical positive decimal IDs.
-	 *
-	 * @param mixed $value Candidate ID.
-	 * @return string|null
-	 */
 	private function positive_decimal_id( $value ) {
 		$normalized = $this->nonnegative_decimal_id( $value );
 		return null !== $normalized && '0' !== $normalized ? $normalized : null;
 	}
 
-	/**
-	 * Normalize only canonical non-negative decimal IDs.
-	 *
-	 * @param mixed $value Candidate ID.
-	 * @return string|null
-	 */
 	private function nonnegative_decimal_id( $value ) {
 		if ( is_int( $value ) ) {
 			return $value >= 0 ? (string) $value : null;
 		}
-
 		if ( ! is_string( $value ) || 1 !== preg_match( '/^(?:0|[1-9][0-9]*)$/', $value ) ) {
 			return null;
 		}
-
 		return $value;
 	}
 
-	/**
-	 * Resolve exact host identity through its basename plus approved manifest.
-	 *
-	 * @param string       $flow_version  Runtime Flow version.
-	 * @param string       $gf_version    Runtime Gravity Forms version.
-	 * @param string       $flow_basename Host-owned plugin basename.
-	 * @param array<mixed> $products      Approved product manifest.
-	 * @return string|null Resolved product slug on exact match.
-	 */
-	private function resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products ) {
-		$flow_basename = str_replace( '\\', '/', $flow_basename );
-		if (
-			self::FLOW_VERSION !== $flow_version ||
-			self::GF_VERSION !== $gf_version ||
-			'' === $flow_basename ||
-			'/' === substr( $flow_basename, 0, 1 ) ||
-			false !== strpos( $flow_basename, '..' )
-		) {
-			return null;
-		}
-
-		$product_slug = dirname( $flow_basename );
-		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
-			return null;
-		}
-
-		foreach ( $products as $product ) {
-			if ( ! is_array( $product ) || (string) ( $product['product'] ?? '' ) !== $product_slug ) {
-				continue;
-			}
-
-			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
-			return self::FLOW_VERSION === $target && $flow_version === $target ? $product_slug : null;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Admit only the exact qualified Flow/GF source contract. The result is
-	 * cached on this request-local adapter so source files are never re-hashed
-	 * for each Timeline date.
-	 *
-	 * @return bool
-	 */
-	private function is_exact_supported_host() {
+	private function has_qualified_host_identity() {
 		if ( null !== $this->host_contract_valid ) {
 			return $this->host_contract_valid;
 		}
@@ -830,65 +639,18 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		$this->host_contract_valid = false;
 		$this->flow_product_slug   = null;
 		if (
-			! defined( self::FLOW_VERSION_CONSTANT ) ||
-			! defined( self::FLOW_BASENAME_CONSTANT ) ||
-			! defined( 'PGR_PATH' ) ||
-			! defined( 'WP_PLUGIN_DIR' ) ||
+			! defined( self::HOST_VERSION_CONSTANT ) ||
+			! defined( self::HOST_BASENAME_CONSTANT ) ||
 			! class_exists( 'GFForms', false )
 		) {
 			return false;
 		}
 
-		$registry_path = PGR_PATH . 'includes/localization/products.php';
-		if ( ! is_readable( $registry_path ) ) {
-			return false;
-		}
-
-		$products = require $registry_path;
-		if ( ! is_array( $products ) ) {
-			return false;
-		}
-
-		$flow_version  = (string) constant( self::FLOW_VERSION_CONSTANT );
-		$gf_version    = (string) GFForms::$version;
-		$flow_basename = str_replace( '\\', '/', (string) constant( self::FLOW_BASENAME_CONSTANT ) );
-		$product_slug  = $this->resolve_product_slug( $flow_version, $gf_version, $flow_basename, $products );
+		$flow_version = trim( (string) constant( self::HOST_VERSION_CONSTANT ) );
+		$gf_version   = trim( (string) GFForms::$version );
+		$basename     = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
+		$product_slug = $this->resolve_product_slug( $flow_version, $gf_version, $basename );
 		if ( null === $product_slug ) {
-			return false;
-		}
-
-		$flow_root = dirname( WP_PLUGIN_DIR . '/' . $flow_basename );
-		try {
-			$gf_main = ( new ReflectionClass( 'GFForms' ) )->getFileName();
-		} catch ( ReflectionException $exception ) {
-			unset( $exception );
-			return false;
-		}
-		if ( ! is_string( $gf_main ) || '' === $gf_main ) {
-			return false;
-		}
-
-		$paths  = array(
-			'flow_entry_detail' => $flow_root . '/includes/pages/class-entry-detail.php',
-			'flow_common'       => $flow_root . '/includes/class-common.php',
-			'flow_print'        => $flow_root . '/includes/pages/class-print-entries.php',
-			'gf_common'         => dirname( $gf_main ) . '/common.php',
-		);
-		$actual = array();
-		foreach ( $paths as $key => $path ) {
-			if ( ! is_readable( $path ) ) {
-				return false;
-			}
-
-			$hash = hash_file( 'sha256', $path );
-			if ( ! is_string( $hash ) ) {
-				return false;
-			}
-
-			$actual[ $key ] = $hash;
-		}
-
-		if ( ! $this->fingerprints_match( $actual ) ) {
 			return false;
 		}
 
@@ -897,13 +659,58 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		return true;
 	}
 
-	/**
-	 * Compare calculated source hashes with exact qualified set.
-	 *
-	 * @param array<string,string> $actual Calculated source hashes.
-	 * @return bool
-	 */
-	private function fingerprints_match( $actual ) {
-		return self::SOURCE_FINGERPRINTS === $actual;
+	private function resolve_product_slug( $flow_version, $gf_version, $basename ) {
+		$basename = str_replace( '\\', '/', $basename );
+		if (
+			! $this->valid_version_observation( $flow_version ) ||
+			! $this->valid_version_observation( $gf_version ) ||
+			self::HOST_PLUGIN_BASENAME !== $basename
+		) {
+			return null;
+		}
+		return dirname( self::HOST_PLUGIN_BASENAME );
+	}
+
+	private function valid_version_observation( $version ) {
+		return is_string( $version ) && '' !== $version && strlen( $version ) <= 32 &&
+			1 === preg_match( '/^[A-Za-z0-9][A-Za-z0-9._+\-]*$/', $version );
+	}
+
+	private function clear_time_context_for_context( $context ) {
+		$note = $context['note'] ?? null;
+		if ( is_object( $note ) ) {
+			unset( $this->time_contexts[ spl_object_id( $note ) ] );
+		}
+	}
+
+	private function record_available( $print ) {
+		$this->record_diagnostic( self::CAP_TIMELINE, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
+		if ( $print ) {
+			$this->record_diagnostic( self::CAP_PRINT, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
+		}
+	}
+
+	private function record_failure( $state, $reason, $print ) {
+		$this->record_diagnostic( self::CAP_TIMELINE, $state, $reason );
+		if ( $print ) {
+			$this->record_diagnostic( self::CAP_PRINT, $state, $reason );
+		}
+	}
+
+	private function record_diagnostic( $capability, $state, $reason ) {
+		if ( ! class_exists( 'PGR_Gravity_Flow_Compatibility_Diagnostics', false ) ) {
+			return;
+		}
+		$diagnostics = 'PGR_Gravity_Flow_Compatibility_Diagnostics';
+		$state_name  = $diagnostics . '::' . $state;
+		$reason_name = $diagnostics . '::' . $reason;
+		if ( ! defined( $state_name ) || ! defined( $reason_name ) ) {
+			return;
+		}
+		PGR_Gravity_Flow_Compatibility_Diagnostics::record(
+			$capability,
+			constant( $state_name ),
+			constant( $reason_name )
+		);
 	}
 }
