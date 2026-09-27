@@ -111,7 +111,7 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_status_value( $value, $form_id, $column_name, $entry ) {
-		$capability_id  = $this->capability_for_column( $column_name );
+		$capability_id   = $this->capability_for_column( $column_name );
 		$is_status_table = $this->consume_status_table_entry_token( $form_id, $entry );
 
 		if ( null === $capability_id ) {
