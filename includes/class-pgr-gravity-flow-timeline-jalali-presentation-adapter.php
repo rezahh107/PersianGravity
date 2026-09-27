@@ -455,7 +455,11 @@ final class PGR_Gravity_Flow_Timeline_Jalali_Presentation_Adapter {
 		}
 		$count = count( $trace );
 		for ( $index = $timeline_index + 1; $index < $count; ++$index ) {
-			if ( 'Gravity_Flow_Print_Entries::render' === $this->frame_signature( $trace[ $index ] ) ) {
+			$signature = $this->frame_signature( $trace[ $index ] );
+			if ( 'Gravity_Flow_Entry_Detail::timeline' === $signature ) {
+				break;
+			}
+			if ( 'Gravity_Flow_Print_Entries::render' === $signature ) {
 				return true;
 			}
 		}
