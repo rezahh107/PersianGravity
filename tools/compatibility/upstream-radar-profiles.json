@@ -11,8 +11,9 @@
       },
       "release_source": {
         "mode": "rolling",
+        "parser": "heading_text",
         "url": "https://docs.gravityforms.com/gravityforms-change-log/",
-        "version_regex": "~<h3[^>]*>\\s*([0-9]+(?:\\.[0-9]+){2,3})\\s*\\|~i"
+        "version_regex": "~^\\s*([0-9]+(?:\\.[0-9]+){2,3})\\s*\\|~i"
       },
       "documentation_sources": [],
       "capabilities": [
@@ -30,8 +31,9 @@
       },
       "release_source": {
         "mode": "rolling",
+        "parser": "heading_text",
         "url": "https://docs.gravityflow.io/changelog/",
-        "version_regex": "~<h3[^>]*>(?:\\s|<[^>]+>)*([0-9]+(?:\\.[0-9]+){2,3})(?:\\s|<[^>]+>)*(?:\\||</h3>)~is"
+        "version_regex": "~^\\s*([0-9]+(?:\\.[0-9]+){2,3})(?:\\s*\\||\\s*$)~i"
       },
       "documentation_sources": [],
       "capabilities": [
@@ -54,8 +56,9 @@
       },
       "release_source": {
         "mode": "rolling",
+        "parser": "heading_text",
         "url": "https://www.gravitykit.com/products/gravityview/changelog",
-        "version_regex": "~<h2[^>]*>\\s*([0-9]+(?:\\.[0-9]+){2,3})\\s+on\\s+~i"
+        "version_regex": "~^\\s*([0-9]+(?:\\.[0-9]+){2,3})\\s+on\\s+~i"
       },
       "documentation_sources": [],
       "capabilities": [
@@ -75,6 +78,7 @@
       },
       "release_source": {
         "mode": "terminal",
+        "parser": "body",
         "url": "https://gravitywiz.com/gravity-wiz-weekly-269/",
         "version_regex": "~Gravity\\s+Perks\\s*(?:</[^>]+>\\s*)*\\(v([0-9]+(?:\\.[0-9]+){2,3})\\)~i"
       },
