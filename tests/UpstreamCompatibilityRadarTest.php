@@ -268,6 +268,7 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 				if ( $file->isFile() && $file->getExtension() === 'php' ) {
 					$paths[] = $file->getPathname();
 				}
+			}
 		}
 		foreach ( $paths as $path ) {
 			$content = (string) file_get_contents( $path );
