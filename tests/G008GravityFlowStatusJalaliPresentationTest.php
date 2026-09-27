@@ -150,19 +150,24 @@ final class G008GravityFlowStatusJalaliPresentationTest extends TestCase {
 		$this->assertArrayNotHasKey( 'gform_get_entries_args_entry_list', $GLOBALS['pgr_test_filters'] );
 	}
 
-	public function test_runtime_version_gate_reuses_product_registry_and_post_branch_table_boundary(): void {
+	public function test_runtime_contract_keeps_host_identity_and_post_branch_table_boundary_without_version_veto(): void {
 		$products = require dirname( __DIR__ ) . '/includes/localization/products.php';
 		$this->assertSame( '3.1.0', $products['gravityflow']['target_version'] );
 		$this->assertSame( 'gravityflow', $products['gravityflow']['product'] );
 
 		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php' );
-		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
+		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source );
+		$this->assertStringContainsString( "HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME'", $source );
+		$this->assertStringContainsString( "HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php'", $source );
 		$this->assertStringContainsString( "'gravityflow_status_args'", $source );
 		$this->assertStringContainsString( "'gravityflow_entry_url_status_table'", $source );
 		$this->assertStringContainsString( "'gravityflow_field_value_status_table'", $source );
+		$this->assertStringNotContainsString( "includes/localization/products.php", $source );
+		$this->assertStringNotContainsString( 'target_version', $source );
+		$this->assertStringNotContainsString( 'status_snapshot', $source );
+		$this->assertStringNotContainsString( 'pgr_gravityflow_compatibility_latest', $source );
 		$this->assertStringNotContainsString( 'STATUS_TABLE_FORMAT', $source );
 		$this->assertStringNotContainsString( 'debug_backtrace', $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
-		$this->assertStringNotContainsString( "'gravityflow'", $source );
 	}
 }
