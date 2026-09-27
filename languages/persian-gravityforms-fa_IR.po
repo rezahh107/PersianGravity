@@ -1,283 +1,795 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Persian Gravity Forms 4.8.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/PersianGravity\n"
+"POT-Creation-Date: 2026-09-27T05:44:15+00:00\n"
 "Language: fa_IR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#, php-format
-msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
-msgstr "%1$s در %2$d فرم استفاده می‌شود و نمی‌توان آن را با اطمینان غیرفعال کرد."
+#. Plugin Name of the plugin
+#: persian-gravityforms.php
+#, fuzzy
+msgid "Persian Gravity Forms"
+msgstr "پرشین گرویتی"
 
+#. Description of the plugin
+#: persian-gravityforms.php admin/class-pgr-admin.php:210
+msgid "Generic Persian and Iranian enhancements for Gravity Forms."
+msgstr ""
+
+#. Author of the plugin
+#: persian-gravityforms.php
+msgid "PGR Team"
+msgstr ""
+
+#: admin/class-pgr-admin.php:44 admin/class-pgr-admin.php:45
+#: admin/class-pgr-admin.php:209 admin/class-pgr-product-admin.php:42
+#: admin/class-pgr-product-admin.php:43 admin/class-pgr-product-admin.php:115
+msgid "Persian Gravity"
+msgstr "پرشین گرویتی"
+
+#: admin/class-pgr-admin.php:57 admin/class-pgr-admin.php:58
+msgid "Overview"
+msgstr "نمای کلی"
+
+#: admin/class-pgr-admin.php:67 admin/class-pgr-admin.php:68
+#: admin/class-pgr-admin.php:411
+msgid "Scanner Profiles"
+msgstr "پروفایل‌های اسکنر"
+
+#: admin/class-pgr-admin.php:77 admin/class-pgr-admin.php:78
+#: admin/class-pgr-admin.php:285
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: admin/class-pgr-admin.php:87 admin/class-pgr-admin.php:88
+#: admin/class-pgr-admin.php:312 admin/class-pgr-product-admin.php:157
+msgid "System Status"
+msgstr "وضعیت سیستم"
+
+#: admin/class-pgr-admin.php:129 admin/class-pgr-admin.php:603
+#: admin/class-pgr-product-admin.php:92
+msgid "Output key"
+msgstr "کلید خروجی"
+
+#: admin/class-pgr-admin.php:130 admin/class-pgr-admin.php:607
+#: admin/class-pgr-product-admin.php:93
+msgid "Output label"
+msgstr "برچسب خروجی"
+
+#: admin/class-pgr-admin.php:131 admin/class-pgr-admin.php:612
+#: admin/class-pgr-product-admin.php:94
+msgid "Required"
+msgstr "الزامی"
+
+#: admin/class-pgr-admin.php:132 admin/class-pgr-product-admin.php:95
+msgid "Move up"
+msgstr "انتقال به بالا"
+
+#: admin/class-pgr-admin.php:133 admin/class-pgr-product-admin.php:96
+msgid "Move down"
+msgstr "انتقال به پایین"
+
+#: admin/class-pgr-admin.php:134 admin/class-pgr-admin.php:617
+#: admin/class-pgr-product-admin.php:97
+msgid "Remove"
+msgstr "حذف"
+
+#: admin/class-pgr-admin.php:135 admin/class-pgr-product-admin.php:98
+msgid ""
+"Deleting this profile may leave existing Structured Scanner fields with an "
+"unavailable profile. Continue?"
+msgstr ""
+"حذف این پروفایل ممکن است باعث شود فیلدهای موجود اسکنر ساختاریافته به "
+"پروفایلی دسترسی نداشته باشند. ادامه می‌دهید؟"
+
+#: admin/class-pgr-admin.php:157
+msgid "National ID defaults"
+msgstr ""
+
+#: admin/class-pgr-admin.php:163
+#, fuzzy
+msgid "Normalize digits while typing"
+msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
+
+#: admin/class-pgr-admin.php:191
+msgid ""
+"Convert Persian/Arabic digits to ASCII in new National ID fields while the "
+"user types. Server-side normalization always remains authoritative."
+msgstr ""
+"در فیلدهای جدید کد ملی، هنگام تایپ کاربر ارقام فارسی و عربی را به ASCII "
+"تبدیل کنید. نرمال‌سازی سمت سرور همیشه مرجع نهایی باقی می‌ماند."
+
+#: admin/class-pgr-admin.php:215
+#, fuzzy
+msgid "National ID"
+msgstr "کد ملی ایران"
+
+#: admin/class-pgr-admin.php:215
+msgid ""
+"Server-authoritative Iranian National ID validation and digit normalization."
+msgstr ""
+
+#: admin/class-pgr-admin.php:216
+#: includes/fields/class-gf-field-jalali-date.php:33
+msgid "Jalali Date"
+msgstr "تاریخ جلالی"
+
+#: admin/class-pgr-admin.php:216
+msgid "Dedicated Jalali date field with canonical Jalali storage semantics."
+msgstr ""
+
+#: admin/class-pgr-admin.php:217
+#, fuzzy
+msgid "Iranian Address"
+msgstr "استان‌های ایران"
+
+#: admin/class-pgr-admin.php:217
+msgid "Iranian address type and province choices for Gravity Forms."
+msgstr ""
+
+#: admin/class-pgr-admin.php:218 includes/class-pgr-core.php:92
+msgid "Persian digit normalization"
+msgstr "نرمال‌سازی ارقام فارسی"
+
+#: admin/class-pgr-admin.php:218
+msgid ""
+"Persian and Arabic digit normalization at supported input and save "
+"boundaries."
+msgstr ""
+
+#: admin/class-pgr-admin.php:219
+msgid "IRR / IRT currency"
+msgstr ""
+
+#: admin/class-pgr-admin.php:219
+msgid "Iranian Rial and Toman currency definitions."
+msgstr ""
+
+#: admin/class-pgr-admin.php:221 admin/class-pgr-admin.php:319
+#: includes/fields/class-gf-field-structured-scanner.php:61
+msgid "Structured Scanner"
+msgstr "اسکنر ساختاریافته"
+
+#: admin/class-pgr-admin.php:222
+msgid ""
+"A non-persistent controller that parses structured scanner input and "
+"populates ordinary Gravity Forms fields."
+msgstr ""
+
+#. translators: %d: number of active Scanner profiles.
+#: admin/class-pgr-admin.php:227
 #, php-format
 msgid "%d active profiles"
 msgstr "%d پروفایل فعال"
 
+#: admin/class-pgr-admin.php:232
+msgid "Manage Scanner Profiles"
+msgstr "مدیریت پروفایل‌های اسکنر"
+
+#: admin/class-pgr-admin.php:286
+msgid ""
+"General PersianGravity defaults. Existing saved settings remain unchanged."
+msgstr ""
+"پیش‌فرض‌های عمومی PersianGravity. تنظیمات ذخیره‌شده موجود بدون تغییر باقی "
+"می‌مانند."
+
+#: admin/class-pgr-admin.php:309 admin/class-pgr-product-admin.php:162
+msgid "Not available"
+msgstr "در دسترس نیست"
+
+#: admin/class-pgr-admin.php:313
+msgid ""
+"Relevant runtime facts for this installation. No secrets or destructive "
+"actions are exposed here."
+msgstr ""
+
+#: admin/class-pgr-admin.php:315
+#, fuzzy
+msgid "PersianGravity"
+msgstr "پرشین گرویتی"
+
+#: admin/class-pgr-admin.php:316
+msgid "WordPress"
+msgstr ""
+
+#: admin/class-pgr-admin.php:317
+msgid "PHP"
+msgstr ""
+
+#: admin/class-pgr-admin.php:318
+#, fuzzy
+msgid "Gravity Forms"
+msgstr "در انتظار Gravity Forms"
+
+#: admin/class-pgr-admin.php:319 admin/class-pgr-admin.php:764
+msgid "Available"
+msgstr "در دسترس"
+
+#: admin/class-pgr-admin.php:319
+msgid "Waiting for Gravity Forms"
+msgstr "در انتظار Gravity Forms"
+
+#: admin/class-pgr-admin.php:322
+#, fuzzy
+msgid "Profile registry"
+msgstr "رجیستری پروفایل"
+
+#. translators: %d: number of effective Scanner profiles.
+#. translators: %d: number of effective scanner profiles.
+#: admin/class-pgr-admin.php:325 admin/class-pgr-product-admin.php:175
 #, php-format
 msgid "%d effective profiles"
 msgstr "%d پروفایل مؤثر"
 
-#, php-format
-msgid "%d outputs"
-msgstr "%d خروجی"
-
-#, php-format
-msgid "%s has been disabled."
-msgstr "%s غیرفعال شد."
-
-#, php-format
-msgid "%s has been enabled."
-msgstr "%s فعال شد."
-
-msgid "Active"
-msgstr "فعال"
-
-msgid "Available"
-msgstr "در دسترس"
-
-msgid "Bank branch"
-msgstr "شعبه بانک"
-
-msgid "Built-in"
-msgstr "داخلی"
-
-msgid "Cheque serial"
-msgstr "سریال چک"
-
-msgid "Contents"
-msgstr "فهرست مطالب"
-
-msgid "Convert Persian and Arabic digits to ASCII digits before entry values are saved."
-msgstr "پیش از ذخیره مقادیر ورودی، ارقام فارسی و عربی را به ارقام ASCII تبدیل کنید."
-
-msgid "Convert Persian/Arabic digits to ASCII in new National ID fields while the user types. Server-side normalization always remains authoritative."
-msgstr "در فیلدهای جدید کد ملی، هنگام تایپ کاربر ارقام فارسی و عربی را به ASCII تبدیل کنید. نرمال‌سازی سمت سرور همیشه مرجع نهایی باقی می‌ماند."
-
+#. translators: %s: source Scanner profile label.
+#: admin/class-pgr-admin.php:381
 #, php-format
 msgid "Copy of %s"
 msgstr "کپی %s"
 
+#: admin/class-pgr-admin.php:412
+msgid ""
+"Define deterministic structures for scanner input. Gravity Forms destination "
+"fields are mapped later inside each form."
+msgstr ""
+"برای ورودی اسکنر ساختارهای قطعی تعریف کنید. فیلدهای مقصد Gravity Forms بعداً "
+"در هر فرم نگاشت می‌شوند."
+
+#: admin/class-pgr-admin.php:414 admin/class-pgr-admin.php:545
 msgid "Create Profile"
 msgstr "ایجاد پروفایل"
 
-msgid "Create Scanner Profile"
-msgstr "ایجاد پروفایل اسکنر"
+#: admin/class-pgr-admin.php:426 admin/class-pgr-admin.php:564
+msgid "Built-in"
+msgstr "داخلی"
 
-msgid "Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk."
-msgstr "استفاده فعلی با اطمینان قابل تشخیص نیست. غیرفعال‌کردن ممکن است روی فرم‌های موجود اثر بگذارد. فقط در صورت پذیرش این ریسک تأیید کنید."
-
-msgid "Current use could not be determined confidently. Review the module card and confirm again to disable it."
-msgstr "استفاده فعلی با اطمینان قابل تشخیص نبود. کارت ماژول را بررسی کنید و برای غیرفعال‌کردن دوباره تأیید کنید."
-
+#: admin/class-pgr-admin.php:426
 msgid "Custom"
 msgstr "سفارشی"
 
-msgid "Define deterministic structures for scanner input. Gravity Forms destination fields are mapped later inside each form."
-msgstr "برای ورودی اسکنر ساختارهای قطعی تعریف کنید. فیلدهای مقصد Gravity Forms بعداً در هر فرم نگاشت می‌شوند."
+#: admin/class-pgr-admin.php:427 admin/class-pgr-admin.php:565
+msgid "Active"
+msgstr "فعال"
 
-msgid "Delete"
-msgstr "حذف"
-
-msgid "Deleting a custom profile does not rewrite existing form mappings. Existing Scanner fields may then report the profile as unavailable."
-msgstr "حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
-
-msgid "Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?"
-msgstr "حذف این پروفایل ممکن است باعث شود فیلدهای موجود اسکنر ساختاریافته به پروفایلی دسترسی نداشته باشند. ادامه می‌دهید؟"
-
-msgid "Disable"
-msgstr "غیرفعال کردن"
-
+#: admin/class-pgr-admin.php:427 admin/class-pgr-product-admin.php:168
+#: admin/class-pgr-product-admin.php:355 includes/class-pgr-core.php:100
 msgid "Disabled"
 msgstr "غیرفعال"
 
-msgid "Display name"
-msgstr "نام نمایشی"
+#: admin/class-pgr-admin.php:429 admin/class-pgr-admin.php:566
+msgid "Read-only"
+msgstr "فقط‌خواندنی"
 
-msgid "Documentation language"
-msgstr "زبان مستندات"
+#. translators: %d: number of outputs in the Scanner profile.
+#: admin/class-pgr-admin.php:437
+#, php-format
+msgid "%d outputs"
+msgstr "%d خروجی"
 
-msgid "Duplicate"
-msgstr "تکثیر"
-
-msgid "Edit"
-msgstr "ویرایش"
-
-msgid "Edit Scanner Profile"
-msgstr "ویرایش پروفایل اسکنر"
-
-msgid "Enable"
-msgstr "فعال کردن"
-
-msgid "Enabled"
-msgstr "فعال"
-
-msgid "Enter a valid 10-digit Iranian National ID."
-msgstr "یک کد ملی معتبر ۱۰ رقمی ایران وارد کنید."
-
-msgid "Enter a valid Jalali (Persian) date."
-msgstr "یک تاریخ جلالی معتبر وارد کنید."
-
-msgid "General PersianGravity defaults. Existing saved settings remain unchanged."
-msgstr "پیش‌فرض‌های عمومی PersianGravity. تنظیمات ذخیره‌شده موجود بدون تغییر باقی می‌مانند."
-
-msgid "Help"
-msgstr "راهنما"
-
-msgid "Help & Documentation"
-msgstr "راهنما و مستندات"
-
-msgid "IBAN"
-msgstr "شماره شبا"
-
+#: admin/class-pgr-admin.php:443
 msgid "Inspect"
 msgstr "بررسی"
 
-msgid "Invalid request method."
-msgstr "روش درخواست نامعتبر است."
+#: admin/class-pgr-admin.php:443
+msgid "Edit"
+msgstr "ویرایش"
 
-msgid "Iran"
-msgstr "ایران"
+#: admin/class-pgr-admin.php:448
+msgid "Duplicate"
+msgstr "تکثیر"
 
-msgid "Iranian National ID"
-msgstr "کد ملی ایران"
+#: admin/class-pgr-admin.php:455
+msgid "Delete"
+msgstr "حذف"
 
-msgid "Iranian Provinces"
-msgstr "استان‌های ایران"
+#: admin/class-pgr-admin.php:462
+msgid ""
+"Deleting a custom profile does not rewrite existing form mappings. Existing "
+"Scanner fields may then report the profile as unavailable."
+msgstr ""
+"حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن "
+"است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
 
-msgid "Iranian Rial"
-msgstr "ریال ایران"
+#: admin/class-pgr-admin.php:497
+msgid "Edit Scanner Profile"
+msgstr "ویرایش پروفایل اسکنر"
 
-msgid "Iranian Toman"
-msgstr "تومان ایران"
+#: admin/class-pgr-admin.php:497
+msgid "Create Scanner Profile"
+msgstr "ایجاد پروفایل اسکنر"
 
-msgid "Jalali Date"
-msgstr "تاریخ جلالی"
+#: admin/class-pgr-admin.php:498
+msgid ""
+"Scanner Profiles v1 uses only the bounded newline-based segments_v1 parser. "
+"No executable rules or regular-expression language is stored."
+msgstr ""
 
-msgid "Jalali date format"
-msgstr "قالب تاریخ جلالی"
+#: admin/class-pgr-admin.php:505
+msgid "Profile details"
+msgstr "جزئیات پروفایل"
 
-msgid "Manage Scanner Profiles"
-msgstr "مدیریت پروفایل‌های اسکنر"
+#: admin/class-pgr-admin.php:508
+msgid "Display name"
+msgstr "نام نمایشی"
 
-msgid "Manage the bounded Persian/Iranian capabilities that participate in Gravity Forms runtime."
-msgstr "قابلیت‌های محدود فارسی و ایرانی را که در اجرای Gravity Forms مشارکت دارند مدیریت کنید."
+#: admin/class-pgr-admin.php:512 admin/class-pgr-admin.php:569
+msgid "Profile ID"
+msgstr "شناسه پروفایل"
 
-msgid "Module"
-msgstr "ماژول"
+#: admin/class-pgr-admin.php:514
+msgid "ASCII identifier. It cannot be changed after creation."
+msgstr ""
 
-msgid "Move down"
-msgstr "انتقال به پایین"
+#: admin/class-pgr-admin.php:517
+msgid "Active and selectable for new Scanner fields"
+msgstr ""
 
-msgid "Move up"
-msgstr "انتقال به بالا"
+#: admin/class-pgr-admin.php:520 admin/class-pgr-admin.php:571
+msgid "Parser"
+msgstr ""
 
-msgid "National ID is disabled. Its saved default remains preserved but is inactive until the module is enabled again."
-msgstr "کد ملی غیرفعال است. مقدار پیش‌فرض ذخیره‌شده حفظ می‌شود، اما تا فعال‌شدن دوباره ماژول غیرفعال می‌ماند."
+#: admin/class-pgr-admin.php:523
+msgid "Newline-separated ordered segments."
+msgstr ""
 
-msgid "Normalize Persian/Arabic digits while typing"
+#: admin/class-pgr-admin.php:525
+msgid "Trim surrounding whitespace"
+msgstr ""
+
+#: admin/class-pgr-admin.php:526
+#, fuzzy
+msgid "Normalize Persian/Arabic digits to ASCII"
 msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
 
-msgid "Not available"
-msgstr "در دسترس نیست"
+#: admin/class-pgr-admin.php:532 admin/class-pgr-admin.php:574
+#, fuzzy
+msgid "Outputs"
+msgstr "%d خروجی"
 
+#: admin/class-pgr-admin.php:533
+msgid "Order is part of the parser contract."
+msgstr ""
+
+#: admin/class-pgr-admin.php:535
+#, fuzzy
+msgid "Add output"
+msgstr "%d خروجی"
+
+#: admin/class-pgr-admin.php:545
+#, fuzzy
+msgid "Save Profile"
+msgstr "پروفایل اسکنر"
+
+#: admin/class-pgr-admin.php:561
+msgid "This profile is built into PersianGravity and is read-only."
+msgstr ""
+
+#: admin/class-pgr-admin.php:584
+msgid "Duplicate as custom profile"
+msgstr ""
+
+#: admin/class-pgr-admin.php:615
+msgid "Up"
+msgstr ""
+
+#: admin/class-pgr-admin.php:616
+msgid "Down"
+msgstr ""
+
+#: admin/class-pgr-admin.php:671
+#, fuzzy
+msgid "You are not allowed to manage Scanner Profiles."
+msgstr "شما اجازه تغییر ماژول‌های PersianGravity را ندارید."
+
+#: admin/class-pgr-admin.php:719
+#, fuzzy
+msgid "Scanner profile saved."
+msgstr "پروفایل‌های اسکنر"
+
+#: admin/class-pgr-admin.php:720
+#, fuzzy
+msgid "Scanner profile deleted."
+msgstr "پروفایل اسکنر"
+
+#: admin/class-pgr-admin.php:721
+msgid "Profile duplicated. Review the new custom profile before use."
+msgstr ""
+
+#: admin/class-pgr-admin.php:722
+msgid ""
+"The Scanner profile could not be saved. Check the profile ID, labels, parser "
+"settings, and output definitions."
+msgstr ""
+
+#: admin/class-pgr-admin.php:723
+msgid "The Scanner profile could not be deleted."
+msgstr ""
+
+#: admin/class-pgr-admin.php:724
+msgid "The Scanner profile could not be duplicated."
+msgstr ""
+
+#: admin/class-pgr-admin.php:765
+#, fuzzy
+msgid "Unavailable"
+msgstr "در دسترس"
+
+#: admin/class-pgr-admin.php:766
+msgid "Warning"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:116
+msgid ""
+"Manage the bounded Persian/Iranian capabilities that participate in Gravity "
+"Forms runtime."
+msgstr ""
+"قابلیت‌های محدود فارسی و ایرانی را که در اجرای Gravity Forms مشارکت دارند "
+"مدیریت کنید."
+
+#: admin/class-pgr-product-admin.php:135
+msgid ""
+"Structured Scanner runtime is disabled. Profiles remain available and will "
+"be used again after the module is enabled."
+msgstr ""
+"اجرای اسکنر ساختاریافته غیرفعال است. پروفایل‌ها همچنان در دسترس هستند و پس از "
+"فعال‌شدن دوباره ماژول استفاده خواهند شد."
+
+#: admin/class-pgr-product-admin.php:143
+msgid ""
+"National ID is disabled. Its saved default remains preserved but is inactive "
+"until the module is enabled again."
+msgstr ""
+"کد ملی غیرفعال است. مقدار پیش‌فرض ذخیره‌شده حفظ می‌شود، اما تا فعال‌شدن دوباره "
+"ماژول غیرفعال می‌ماند."
+
+#: admin/class-pgr-product-admin.php:168 admin/class-pgr-product-admin.php:355
+#: includes/class-pgr-core.php:96
+msgid "Enabled"
+msgstr "فعال"
+
+#: admin/class-pgr-product-admin.php:178
+msgid "Profile Registry"
+msgstr "رجیستری پروفایل"
+
+#: admin/class-pgr-product-admin.php:196
+msgid "Gravity Flow compatibility diagnostics"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:197
+msgid ""
+"Informational maintenance evidence only. These observations do not enable or "
+"disable compatibility."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:201
+msgid "Capability"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:202
+msgid "State"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:203
+msgid "Reason"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:204
+msgid "Observed Gravity Flow"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:205
+msgid "Last observed"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:215 admin/class-pgr-product-admin.php:216
+msgid "Not observed"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php:242
+msgid "Help & Documentation"
+msgstr "راهنما و مستندات"
+
+#: admin/class-pgr-product-admin.php:243
+msgid "Documentation language"
+msgstr "زبان مستندات"
+
+#: admin/class-pgr-product-admin.php:249
+msgid "Contents"
+msgstr "فهرست مطالب"
+
+#: admin/class-pgr-product-admin.php:287
+msgid "PersianGravity Help"
+msgstr "راهنمای PersianGravity"
+
+#: admin/class-pgr-product-admin.php:288
 msgid "Open full documentation"
 msgstr "باز کردن مستندات کامل"
 
-msgid "Output key"
-msgstr "کلید خروجی"
+#: admin/class-pgr-product-admin.php:296
+msgid "Invalid request method."
+msgstr "روش درخواست نامعتبر است."
 
-msgid "Output label"
-msgstr "برچسب خروجی"
+#: admin/class-pgr-product-admin.php:299
+msgid "You are not allowed to change PersianGravity modules."
+msgstr "شما اجازه تغییر ماژول‌های PersianGravity را ندارید."
 
-msgid "Output Mapping"
-msgstr "نگاشت خروجی"
+#: admin/class-pgr-product-admin.php:361
+msgid ""
+"Current use cannot be determined confidently. Disabling may affect existing "
+"forms. Confirm only if you accept that risk."
+msgstr ""
+"استفاده فعلی با اطمینان قابل تشخیص نیست. غیرفعال‌کردن ممکن است روی فرم‌های "
+"موجود اثر بگذارد. فقط در صورت پذیرش این ریسک تأیید کنید."
 
-msgid "Overview"
-msgstr "نمای کلی"
+#: admin/class-pgr-product-admin.php:372
+msgid "Disable"
+msgstr "غیرفعال کردن"
 
-msgid "Owner identifier"
-msgstr "شناسه مالک"
+#: admin/class-pgr-product-admin.php:372
+msgid "Enable"
+msgstr "فعال کردن"
 
+#: admin/class-pgr-product-admin.php:374
+msgid "Help"
+msgstr "راهنما"
+
+#: admin/class-pgr-product-admin.php:384
+msgid "Module"
+msgstr "ماژول"
+
+#. translators: %s: module label.
+#: admin/class-pgr-product-admin.php:396
+#, php-format
+msgid "%s has been enabled."
+msgstr "%s فعال شد."
+
+#. translators: %s: module label.
+#: admin/class-pgr-product-admin.php:400
+#, php-format
+msgid "%s has been disabled."
+msgstr "%s غیرفعال شد."
+
+#. translators: 1: module label, 2: number of forms using the module.
+#: admin/class-pgr-product-admin.php:405
+#, php-format
+msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
+msgstr "%1$s در %2$d فرم استفاده می‌شود و نمی‌توان آن را با اطمینان غیرفعال کرد."
+
+#: admin/class-pgr-product-admin.php:408
+msgid ""
+"Current use could not be determined confidently. Review the module card and "
+"confirm again to disable it."
+msgstr ""
+"استفاده فعلی با اطمینان قابل تشخیص نبود. کارت ماژول را بررسی کنید و برای "
+"غیرفعال‌کردن دوباره تأیید کنید."
+
+#: admin/class-pgr-product-admin.php:411
+msgid "The requested module state change was invalid."
+msgstr "درخواست تغییر وضعیت ماژول نامعتبر بود."
+
+#: includes/class-pgr-address.php:33
+msgid "Iran"
+msgstr "ایران"
+
+#: includes/class-pgr-address.php:35
+msgid "Postal Code"
+msgstr "کد پستی"
+
+#: includes/class-pgr-address.php:36
+msgid "Province"
+msgstr "استان"
+
+#: includes/class-pgr-address.php:50
+msgid "Iranian Provinces"
+msgstr "استان‌های ایران"
+
+#: includes/class-pgr-core.php:93
+msgid ""
+"Convert Persian and Arabic digits to ASCII digits before entry values are "
+"saved."
+msgstr ""
+"پیش از ذخیره مقادیر ورودی، ارقام فارسی و عربی را به ارقام ASCII تبدیل کنید."
+
+#: includes/class-pgr-currency.php:29
+msgid "Iranian Rial"
+msgstr "ریال ایران"
+
+#: includes/class-pgr-currency.php:40
+msgid "Iranian Toman"
+msgstr "تومان ایران"
+
+#: includes/class-pgr-scanner-profile-registry.php:26
+msgid "Sayad v0.1"
+msgstr "صیاد v0.1"
+
+#: includes/class-pgr-scanner-profile-registry.php:39
+msgid "QR version"
+msgstr "نسخه QR"
+
+#: includes/class-pgr-scanner-profile-registry.php:44
 msgid "Owner type"
 msgstr "نوع مالک"
 
-msgid "Persian digit normalization"
-msgstr "نرمال‌سازی ارقام فارسی"
+#: includes/class-pgr-scanner-profile-registry.php:49
+msgid "Owner identifier"
+msgstr "شناسه مالک"
 
-msgid "Persian Gravity"
-msgstr "پرشین گرویتی"
+#: includes/class-pgr-scanner-profile-registry.php:54
+msgid "IBAN"
+msgstr "شماره شبا"
 
+#: includes/class-pgr-scanner-profile-registry.php:59
+msgid "Bank branch"
+msgstr "شعبه بانک"
+
+#: includes/class-pgr-scanner-profile-registry.php:64
+msgid "Cheque serial"
+msgstr "سریال چک"
+
+#: includes/class-pgr-scanner-profile-registry.php:69
+msgid "Sayad ID"
+msgstr "شناسه صیاد"
+
+#: includes/fields/class-gf-field-jalali-date.php:95
+msgid "Jalali date format"
+msgstr "قالب تاریخ جلالی"
+
+#: includes/fields/class-gf-field-jalali-date.php:187
+msgid "Enter a valid Jalali (Persian) date."
+msgstr "یک تاریخ جلالی معتبر وارد کنید."
+
+#: includes/fields/class-gf-field-national-id.php:34
+msgid "Iranian National ID"
+msgstr "کد ملی ایران"
+
+#: includes/fields/class-gf-field-national-id.php:98
+msgid "Normalize Persian/Arabic digits while typing"
+msgstr "نرمال‌سازی ارقام فارسی و عربی هنگام تایپ"
+
+#: includes/fields/class-gf-field-national-id.php:181
+msgid "Enter a valid 10-digit Iranian National ID."
+msgstr "یک کد ملی معتبر ۱۰ رقمی ایران وارد کنید."
+
+#: includes/fields/class-gf-field-structured-scanner.php:116
+#, fuzzy
+msgid "Scanner profile"
+msgstr "پروفایل اسکنر"
+
+#: includes/fields/class-gf-field-structured-scanner.php:118
+#, fuzzy
+msgid "Select a profile"
+msgstr "%d پروفایل مؤثر"
+
+#: includes/fields/class-gf-field-structured-scanner.php:124
+#, fuzzy
+msgid "Output mapping"
+msgstr "نگاشت خروجی"
+
+#: includes/fields/class-gf-field-structured-scanner.php:128
+msgid ""
+"Map profile outputs to ordinary Single Line Text or Hidden fields. Outputs "
+"may remain unmapped."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:162
+msgid "Not mapped"
+msgstr ""
+
+#. translators: 1: field ID, 2: field label.
+#: includes/fields/class-gf-field-structured-scanner.php:164
+#, php-format
+msgid "Field %1$s — %2$s"
+msgstr ""
+
+#. translators: %s: field ID.
+#: includes/fields/class-gf-field-structured-scanner.php:166
+#, php-format
+msgid "Field %s — missing or unsupported"
+msgstr ""
+
+#. translators: %s: Scanner profile ID.
+#: includes/fields/class-gf-field-structured-scanner.php:168
+#, php-format
+msgid "The selected Scanner profile is no longer available: %s"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:169
+msgid "Scanner mapping metadata is invalid."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:170
+msgid "A configured Scanner target field no longer exists."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:171
+msgid ""
+"A configured Scanner target is not a supported Single Line Text or Hidden "
+"field."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:172
+msgid "Two Scanner outputs cannot map to the same destination field."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:173
+#, fuzzy
+msgid "Structured Scanner cannot target itself."
+msgstr "اسکنر ساختاریافته"
+
+#: includes/fields/class-gf-field-structured-scanner.php:174
+msgid "Destination"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:175
+#, fuzzy
+msgid "unavailable"
+msgstr "در دسترس"
+
+#: includes/fields/class-gf-field-structured-scanner.php:233
+#: includes/fields/class-gf-field-structured-scanner.php:244
+msgid "آماده دریافت اطلاعات"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:233
+#: includes/fields/class-gf-field-structured-scanner.php:248
+msgid "اسکنر برای این فرم به‌درستی تنظیم نشده است. با مدیر سیستم تماس بگیرید."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:245
+msgid "در حال خواندن اطلاعات…"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:246
+msgid "اطلاعات چک با موفقیت خوانده شد."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:247
+msgid "اطلاعات اسکن‌شده قابل خواندن نبود. دوباره تلاش کنید."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:249
+msgid "اسکن اطلاعات چک"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:250
+msgid "وضعیت"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:251
+msgid "اسکنر را روی کد چک بگیرید."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:252
+msgid ""
+"اطلاعات خوانده‌شده در فیلدهای چک قرار می‌گیرد؛ خود کد اسکن نگهداری نمی‌شود."
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:253
+msgid "ورودی اسکنر"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:254
+msgid "برای اسکن آماده است"
+msgstr ""
+
+#: includes/fields/class-gf-field-structured-scanner.php:256
+msgid "آماده‌سازی برای اسکن"
+msgstr ""
+
+#: persian-gravityforms.php:151
+msgid ""
+"Persian Gravity Forms requires Gravity Forms to be installed and active."
+msgstr "Persian Gravity Forms نیاز دارد Gravity Forms نصب و فعال باشد."
+
+#. translators: %s: minimum Gravity Forms version.
+#: persian-gravityforms.php:161
 #, php-format
 msgid "Persian Gravity Forms requires Gravity Forms %s or newer."
 msgstr "Persian Gravity Forms به Gravity Forms نسخه %s یا جدیدتر نیاز دارد."
 
-msgid "Persian Gravity Forms requires Gravity Forms to be installed and active."
-msgstr "Persian Gravity Forms نیاز دارد Gravity Forms نصب و فعال باشد."
-
-msgid "PersianGravity Help"
-msgstr "راهنمای PersianGravity"
-
-msgid "Postal Code"
-msgstr "کد پستی"
-
-msgid "Profile details"
-msgstr "جزئیات پروفایل"
-
-msgid "Profile ID"
-msgstr "شناسه پروفایل"
-
-msgid "Profile Registry"
-msgstr "رجیستری پروفایل"
-
-msgid "Province"
-msgstr "استان"
-
-msgid "QR version"
-msgstr "نسخه QR"
-
-msgid "Read-only"
-msgstr "فقط‌خواندنی"
-
-msgid "Remove"
-msgstr "حذف"
-
-msgid "Required"
-msgstr "الزامی"
-
-msgid "Save"
-msgstr "ذخیره"
-
-msgid "Sayad ID"
-msgstr "شناسه صیاد"
-
-msgid "Sayad v0.1"
-msgstr "صیاد v0.1"
-
-msgid "Scanner Profile"
-msgstr "پروفایل اسکنر"
-
-msgid "Scanner Profiles"
-msgstr "پروفایل‌های اسکنر"
-
-msgid "Settings"
-msgstr "تنظیمات"
-
-msgid "Structured Scanner"
-msgstr "اسکنر ساختاریافته"
-
-msgid "Structured Scanner runtime is disabled. Profiles remain available and will be used again after the module is enabled."
-msgstr "اجرای اسکنر ساختاریافته غیرفعال است. پروفایل‌ها همچنان در دسترس هستند و پس از فعال‌شدن دوباره ماژول استفاده خواهند شد."
-
-msgid "System Status"
-msgstr "وضعیت سیستم"
-
-msgid "The requested module state change was invalid."
-msgstr "درخواست تغییر وضعیت ماژول نامعتبر بود."
-
-msgid "Waiting for Gravity Forms"
-msgstr "در انتظار Gravity Forms"
-
-msgid "You are not allowed to change PersianGravity modules."
-msgstr "شما اجازه تغییر ماژول‌های PersianGravity را ندارید."
+#~ msgid "Save"
+#~ msgstr "ذخیره"
