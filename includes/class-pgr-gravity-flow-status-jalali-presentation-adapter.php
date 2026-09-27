@@ -15,11 +15,17 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/** Exact Status-table workflow timestamp column identity. */
 	private const WORKFLOW_TIMESTAMP_COLUMN = 'workflow_timestamp';
 
-	/** Host-owned runtime version authority. */
+	/** Host-owned runtime version observation. Version equality is not eligibility. */
 	private const HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION';
 
 	/** Host-owned plugin identity authority. */
 	private const HOST_BASENAME_CONSTANT = 'GRAVITY_FLOW_PLUGIN_BASENAME';
+
+	/** Canonical Gravity Flow plugin main-file identity. */
+	private const HOST_PLUGIN_BASENAME = 'gravityflow/gravityflow.php';
+
+	private const CAP_DATE_CREATED       = 'gravityflow.status.date-created';
+	private const CAP_WORKFLOW_TIMESTAMP = 'gravityflow.status.workflow-timestamp';
 
 	/**
 	 * One-shot proof that the next matching value filter originated from the
@@ -43,10 +49,6 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/**
 	 * Clear any stale table proof whenever a new Status render begins.
 	 *
-	 * The final table-vs-export decision is intentionally not inferred here:
-	 * later gravityflow_status_args callbacks can still change format after
-	 * this callback returns.
-	 *
 	 * @param mixed $args Native Status render arguments.
 	 * @return mixed
 	 */
@@ -58,9 +60,9 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/**
 	 * Mark the exact table entry immediately before table column value filtering.
 	 *
-	 * Gravity Flow 3.1.0 calls get_entry_url() in both admitted table column
-	 * methods before their gravityflow_field_value_status_table call. Its CSV
-	 * exporter uses the value filter directly and never calls this seam.
+	 * The admitted host calls this seam in both migrated table columns before
+	 * gravityflow_field_value_status_table. CSV/export uses the value filter
+	 * directly, so it receives no table token and remains native.
 	 *
 	 * @param mixed        $entry_url Native Status entry URL.
 	 * @param mixed        $form_id   Current form ID.
@@ -71,20 +73,29 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	public function mark_status_table_entry( $entry_url, $form_id, $entry_id, $entry ) {
 		$this->status_table_entry_token = null;
 
+		if ( ! is_array( $entry ) || ! isset( $entry['form_id'], $entry['id'] ) ) {
+			return $entry_url;
+		}
+
+		$form_id       = $this->positive_decimal_id( $form_id );
+		$entry_id      = $this->positive_decimal_id( $entry_id );
+		$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
+		$entry_row_id  = $this->positive_decimal_id( $entry['id'] );
+
 		if (
-			! is_array( $entry ) ||
-			! isset( $entry['form_id'], $entry['id'] ) ||
-			(int) $form_id <= 0 ||
-			(int) $entry_id <= 0 ||
-			(string) $form_id !== (string) $entry['form_id'] ||
-			(string) $entry_id !== (string) $entry['id']
+			null === $form_id ||
+			null === $entry_id ||
+			null === $entry_form_id ||
+			null === $entry_row_id ||
+			$form_id !== $entry_form_id ||
+			$entry_id !== $entry_row_id
 		) {
 			return $entry_url;
 		}
 
 		$this->status_table_entry_token = array(
-			'form_id'  => (string) $form_id,
-			'entry_id' => (string) $entry_id,
+			'form_id'  => $form_id,
+			'entry_id' => $entry_id,
 		);
 
 		return $entry_url;
@@ -93,10 +104,6 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	/**
 	 * Convert only the two admitted Status-table system-date presentation values.
 	 *
-	 * Table authority is a one-shot token emitted by the exact table column path
-	 * after Gravity Flow has already taken its final render branch. Export and
-	 * unknown/direct value-filter calls therefore remain native.
-	 *
 	 * @param mixed        $value       Native display value.
 	 * @param int          $form_id     Current Gravity Forms form ID.
 	 * @param string       $column_name Status table column identity.
@@ -104,26 +111,36 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	 * @return mixed
 	 */
 	public function filter_status_value( $value, $form_id, $column_name, $entry ) {
+		$capability_id   = $this->capability_for_column( $column_name );
 		$is_status_table = $this->consume_status_table_entry_token( $form_id, $entry );
 
-		if (
-			! $is_status_table ||
-			! $this->is_exact_supported_host() ||
-			! class_exists( 'PGR_Jalali_Presentation', false ) ||
-			! is_array( $entry )
-		) {
+		if ( null === $capability_id ) {
+			return $value;
+		}
+
+		if ( ! $this->has_qualified_host_identity() ) {
+			$this->record_diagnostic( $capability_id, 'STATE_UNAVAILABLE', 'REASON_HOST_UNQUALIFIED' );
+			return $value;
+		}
+
+		if ( ! $is_status_table || ! is_array( $entry ) ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONTEXT_UNAVAILABLE' );
 			return $value;
 		}
 
 		if ( self::DATE_CREATED_COLUMN === $column_name ) {
 			$source = $this->date_created_source( $entry );
-		} elseif ( self::WORKFLOW_TIMESTAMP_COLUMN === $column_name ) {
-			$source = $this->workflow_timestamp_source( $entry );
 		} else {
-			return $value;
+			$source = $this->workflow_timestamp_source( $entry );
 		}
 
 		if ( null === $source ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_SOURCE_INVALID' );
+			return $value;
+		}
+
+		if ( ! class_exists( 'PGR_Jalali_Presentation', false ) ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
 			return $value;
 		}
 
@@ -131,10 +148,28 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 			$formatted = PGR_Jalali_Presentation::format_datetime( $source );
 		} catch ( Throwable $exception ) {
 			unset( $exception );
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
 			return $value;
 		}
 
-		return null === $formatted ? $value : $formatted;
+		if ( null === $formatted ) {
+			$this->record_diagnostic( $capability_id, 'STATE_DEGRADED', 'REASON_CONVERSION_UNAVAILABLE' );
+			return $value;
+		}
+
+		$this->record_diagnostic( $capability_id, 'STATE_AVAILABLE', 'REASON_CONTRACT_SATISFIED' );
+		return $formatted;
+	}
+
+	/** @return string|null */
+	private function capability_for_column( $column_name ) {
+		if ( self::DATE_CREATED_COLUMN === $column_name ) {
+			return self::CAP_DATE_CREATED;
+		}
+		if ( self::WORKFLOW_TIMESTAMP_COLUMN === $column_name ) {
+			return self::CAP_WORKFLOW_TIMESTAMP;
+		}
+		return null;
 	}
 
 	/**
@@ -148,18 +183,21 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 		$token                          = $this->status_table_entry_token;
 		$this->status_table_entry_token = null;
 
-		if (
-			! is_array( $token ) ||
-			! is_array( $entry ) ||
-			! isset( $entry['form_id'], $entry['id'] )
-		) {
+		if ( ! is_array( $token ) || ! is_array( $entry ) || ! isset( $entry['form_id'], $entry['id'] ) ) {
 			return false;
 		}
 
+		$form_id       = $this->positive_decimal_id( $form_id );
+		$entry_form_id = $this->positive_decimal_id( $entry['form_id'] );
+		$entry_id      = $this->positive_decimal_id( $entry['id'] );
+
 		return (
-			$token['form_id'] === (string) $form_id &&
-			$token['form_id'] === (string) $entry['form_id'] &&
-			$token['entry_id'] === (string) $entry['id']
+			null !== $form_id &&
+			null !== $entry_form_id &&
+			null !== $entry_id &&
+			$token['form_id'] === $form_id &&
+			$token['form_id'] === $entry_form_id &&
+			$token['entry_id'] === $entry_id
 		);
 	}
 
@@ -222,41 +260,55 @@ final class PGR_Gravity_Flow_Status_Jalali_Presentation_Adapter {
 	}
 
 	/**
-	 * Admit only the exact host product/version already owned by the existing
-	 * product registry. Missing or drifted authority always keeps native output.
+	 * Normalize only canonical positive integer IDs used by the qualified host.
+	 *
+	 * @param mixed $value Candidate ID.
+	 * @return string|null
+	 */
+	private function positive_decimal_id( $value ) {
+		if ( is_int( $value ) ) {
+			return $value > 0 ? (string) $value : null;
+		}
+		if ( ! is_string( $value ) || 1 !== preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return null;
+		}
+		return $value;
+	}
+
+	/**
+	 * Validate Gravity Flow product identity without making version equality an
+	 * activation oracle. The callback/data/context contract supplies capability
+	 * compatibility; the version remains bounded diagnostic evidence only.
 	 *
 	 * @return bool
 	 */
-	private function is_exact_supported_host() {
-		if (
-			! defined( self::HOST_VERSION_CONSTANT ) ||
-			! defined( self::HOST_BASENAME_CONSTANT ) ||
-			! defined( 'PGR_PATH' )
-		) {
+	private function has_qualified_host_identity() {
+		if ( ! defined( self::HOST_VERSION_CONSTANT ) || ! defined( self::HOST_BASENAME_CONSTANT ) ) {
 			return false;
 		}
 
-		$registry_path = PGR_PATH . 'includes/localization/products.php';
-		if ( ! is_readable( $registry_path ) ) {
+		$version = trim( (string) constant( self::HOST_VERSION_CONSTANT ) );
+		if ( '' === $version || strlen( $version ) > 32 || 1 !== preg_match( '/^[A-Za-z0-9][A-Za-z0-9._+\-]*$/', $version ) ) {
 			return false;
 		}
 
 		$plugin_basename = str_replace( '\\', '/', (string) constant( self::HOST_BASENAME_CONSTANT ) );
-		$product_slug    = dirname( $plugin_basename );
-		if ( '' === $product_slug || '.' === $product_slug || '/' === $product_slug ) {
-			return false;
+		return self::HOST_PLUGIN_BASENAME === $plugin_basename;
+	}
+
+	/**
+	 * Record reporting evidence only after this adapter has made its own decision.
+	 *
+	 * @return void
+	 */
+	private function record_diagnostic( $capability_id, $state_constant, $reason_constant ) {
+		if ( ! class_exists( 'PGR_Gravity_Flow_Compatibility_Diagnostics', false ) ) {
+			return;
 		}
 
-		$products = require $registry_path;
-		$target   = '';
-		foreach ( $products as $product ) {
-			if ( ( $product['product'] ?? '' ) !== $product_slug ) {
-				continue;
-			}
-			$target = isset( $product['target_version'] ) ? (string) $product['target_version'] : '';
-			break;
-		}
-
-		return '' !== $target && (string) constant( self::HOST_VERSION_CONSTANT ) === $target;
+		$diagnostics = 'PGR_Gravity_Flow_Compatibility_Diagnostics';
+		$state       = constant( $diagnostics . '::' . $state_constant );
+		$reason      = constant( $diagnostics . '::' . $reason_constant );
+		$diagnostics::record( $capability_id, $state, $reason );
 	}
 }
