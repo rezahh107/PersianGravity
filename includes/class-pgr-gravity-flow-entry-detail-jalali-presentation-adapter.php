@@ -113,7 +113,7 @@ final class PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter {
 			! is_string( $format ) ||
 			$format !== $this->active_marker_format
 		) {
-			return $date;
+			return $this->strip_marker( $date );
 		}
 
 		$fallback = $this->strip_marker( $date );
