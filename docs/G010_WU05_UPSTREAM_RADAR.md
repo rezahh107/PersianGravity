@@ -37,9 +37,11 @@ Supported versions are numeric `major.minor.patch` or `major.minor.patch.revisio
 
 A product/source failure is never converted to `NO_NEW_VERSION`.
 
-Release parsing remains source-specific. Gravity Flow tolerates bounded inline markup inside a release `<h3>` while still requiring the version inside that heading. Gravity Perks tolerates bounded closing markup between the product name and `(vX.Y.Z)` while still requiring that exact named marker.
+Release parsing remains source-specific. Gravity Flow accepts bounded inline markup inside a release heading while still requiring the version in heading text. Gravity Perks tolerates bounded closing markup between the product name and `(vX.Y.Z)` while still requiring that exact named marker.
 
 HTTP redirects are followed manually. Every hop must remain HTTPS and inside the explicit first-party host allowlist before the next request is made; an unapproved redirect target, missing `Location`, non-2xx terminal response, or redirect loop fails visibly.
+
+The live workflow also records source-heading diagnostics. Rolling sources are checked against the highest `MODEL_REVIEWED` observation from the same first-party release URL. A lower live result fails as stale/ambiguous instead of silently becoming an all-clear. Historical or unresolved observations do not become runtime or upstream authority merely by existing in the repository.
 
 ## Documentation-only classifications
 
@@ -76,11 +78,13 @@ Repeat product/version candidates are deduplicated. Automation-generated unresol
 
 The official changelog reports `3.1.2` (2026-09-17) against baseline `3.1.1.1`. Its entry documents security hardening, `gform_addon_pages_using_components`, merge-tag/field behavior, and maintenance changes. No change is documented to PersianGravity's admitted localization contract or Entries List `date_created` presentation seam. Classification: `NO_RELEVANT_DOCUMENTED_CHANGE` + `PACKAGE_REQUIRED_FOR_PROOF`. Documentation silence is not runtime proof.
 
-### Gravity Flow 3.1.1
+### Gravity Flow — direct live `3.1.1`, higher historical/indexed signal `3.1.1.1`
 
-The current public Gravity Flow changelog reports `3.1.1` (2026-08-25) as the latest stable release against exact Owner-package baseline `3.1.0`. It explicitly changes GravityView integration to address deprecated filters used for Workflow Detail and Workflow Approval Links, alongside other maintenance fixes. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
+The exact-head GitHub Actions runner directly retrieved the first-party Gravity Flow changelog and recorded source SHA-256 `f4c2cd85e7693cce07fab32f4b4de97e8b8221c788a05b5a3b77bd5d99aedfe6`. Its source-heading diagnostic exposed `3.1.1 | 2026-08-25` as the first version heading, followed by `3.1.0`, so the current direct live observation is `3.1.1` against exact Owner-package baseline `3.1.0`. The 3.1.1 entry changes GravityView integration to address deprecated filters used for Workflow Detail and Workflow Approval Links. Classification: `DOCUMENTED_CONTRACT_CHANGE`, `REQUALIFICATION_RECOMMENDED`, `PACKAGE_REQUIRED_FOR_PROOF`.
 
-The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. If the Owner supplies `3.1.1`, qualification must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
+A separate representation/index of the same first-party changelog has exposed a higher `3.1.1.1` entry. Because the exact-head direct fetch did not reproduce that entry, `3.1.1.1` is retained only as a historical `MODEL_REVIEW_REQUIRED` research signal (`historical-detection-reference`), not as the current direct upstream result and not as qualification evidence. WU-05 does not resolve this source-representation discrepancy by substituting repository history for live upstream data.
+
+The four Entry Detail workflow-info date surfaces remain under the existing exact-package WU-03 protocol. Any Owner-supplied post-3.1.0 package must still report `CURRENT_METHOD_STILL_VALID`, `SAFE_REPLACEMENT_FOUND`, or `NO_SAFE_PATH_PROVEN`; WU-05 does not qualify that package.
 
 ### GravityView 3.5.0
 
