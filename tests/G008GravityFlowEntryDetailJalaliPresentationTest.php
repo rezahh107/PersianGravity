@@ -266,7 +266,7 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		);
 	}
 
-	public function test_runtime_gate_uses_capability_local_host_identity_and_never_touches_operational_getters(): void {
+	public function test_runtime_gate_reuses_repository_version_authority_and_never_touches_operational_getters(): void {
 		$source = (string) file_get_contents( dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php' );
 
 		$this->assertStringContainsString( "HOST_VERSION_CONSTANT = 'GRAVITY_FLOW_VERSION'", $source );
@@ -276,11 +276,12 @@ final class G008GravityFlowEntryDetailJalaliPresentationTest extends TestCase {
 		$this->assertStringContainsString( "'date_i18n'", $source );
 		$this->assertStringContainsString( "'gravityflow_below_workflow_info_entry_detail'", $source );
 		$this->assertStringContainsString( 'true !== $gmt', $source );
+		$this->assertStringContainsString( "PGR_PATH . 'includes/localization/products.php'", $source );
+		$this->assertStringContainsString( "['target_version']", $source );
+		$this->assertStringContainsString( 'is_exact_qualified_date_family_host()', $source );
 		$this->assertStringNotContainsString( 'get_due_date_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_schedule_timestamp()', $source );
 		$this->assertStringNotContainsString( 'get_expiration_timestamp()', $source );
-		$this->assertStringNotContainsString( "['target_version']", $source );
-		$this->assertStringNotContainsString( 'includes/localization/products.php', $source );
 		$this->assertStringNotContainsString( "'3.1.0'", $source );
 		$this->assertStringNotContainsString( "add_filter( 'gravityflow_timeline_notes'", $source );
 		$this->assertStringNotContainsString( '::status_snapshot(', $source );
