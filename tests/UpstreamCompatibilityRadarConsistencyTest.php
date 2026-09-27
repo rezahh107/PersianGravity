@@ -43,6 +43,26 @@ final class UpstreamCompatibilityRadarConsistencyTest extends TestCase {
 		);
 	}
 
+	public function test_live_match_to_unresolved_historical_observation_requires_review(): void {
+		$summary = $this->summaryWithVersions(
+			array(
+				'gravityforms' => '3.1.2',
+				'gravityflow'  => '3.1.1.1',
+				'gravityview'  => '3.5.0',
+				'gravityperks' => '2.3.17',
+			)
+		);
+
+		try {
+			PGR_Upstream_Radar_Consistency::validateSummary( $summary, PGR_Upstream_Radar::loadProfiles(), $this->root );
+			$this->fail( 'A live match to an unresolved historical observation unexpectedly passed consistency validation.' );
+		} catch ( RuntimeException $exception ) {
+			$this->assertStringContainsString( 'gravityflow', $exception->getMessage() );
+			$this->assertStringContainsString( '3.1.1.1', $exception->getMessage() );
+			$this->assertStringContainsString( 'MODEL_REVIEW_REQUIRED', $exception->getMessage() );
+		}
+	}
+
 	public function test_live_rolling_source_cannot_regress_below_reviewed_first_party_observation(): void {
 		$summary = $this->summaryWithVersions(
 			array(
