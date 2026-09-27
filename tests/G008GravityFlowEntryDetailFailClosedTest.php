@@ -10,7 +10,9 @@ if ( ! function_exists( 'add_filter' ) ) {
 if ( ! class_exists( 'GFCommon', false ) ) {
 	final class GFCommon {
 		public static function get_default_date_format() {
-			return 'F j, Y';
+			return array_key_exists( 'pgr_test_default_date_format', $GLOBALS )
+				? $GLOBALS['pgr_test_default_date_format']
+				: 'F j, Y';
 		}
 	}
 }
