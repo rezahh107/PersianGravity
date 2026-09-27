@@ -21,7 +21,7 @@ final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
-	public function test_synthetic_version_only_drift_keeps_intact_composed_contract_eligible(): void {
+	public function test_synthetic_version_only_drift_fails_closed_before_marker_ownership(): void {
 		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
 		define( 'GRAVITY_FLOW_VERSION', '99.0.0-synthetic' );
@@ -29,21 +29,57 @@ final class G008GravityFlowEntryDetailFailClosedTest extends TestCase {
 
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-compatibility-diagnostics.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php';
 
 		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
-		$format  = $adapter->filter_entry_detail_date_format( '' );
 
-		$this->assertSame( '\\P\\G\\R\\J\\A\\L\\A\\L\\I\\E\\N\\T\\R\\Y\\D\\E\\T\\A\\I\\L\\:F j, Y', $format );
+		$this->assertSame( '', $adapter->filter_entry_detail_date_format( '' ) );
 		$this->assertSame(
-			'۱۴۰۹/۰۱/۰۱',
+			'March 21, 2030',
 			$adapter->filter_marked_date(
-				'PGRJALALIENTRYDETAIL:March 21, 2030',
-				$format,
+				'March 21, 2030',
+				'F j, Y',
 				gmmktime( 0, 3, 0, 3, 21, 2030 ),
 				true
 			)
 		);
+
+		$adapter->finalize_date_family_diagnostics( array(), array(), null );
+		$this->assertSame( array(), PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot() );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_unqualified_version_cannot_convert_any_of_five_shared_seam_attempts(): void {
+		define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+		define( 'PGR_PATH', dirname( __DIR__ ) . '/' );
+		define( 'GRAVITY_FLOW_VERSION', '99.0.0-synthetic' );
+		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'gravityflow/gravityflow.php' );
+
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-compatibility-diagnostics.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php';
+
+		$adapter = new PGR_Gravity_Flow_Entry_Detail_Jalali_Presentation_Adapter();
+
+		for ( $index = 0; $index < 5; ++$index ) {
+			$this->assertSame( '', $adapter->filter_entry_detail_date_format( '' ), 'attempt ' . $index );
+			$this->assertSame(
+				'March 21, 2030',
+				$adapter->filter_marked_date(
+					'March 21, 2030',
+					'F j, Y',
+					gmmktime( 0, 3 + $index, 0, 3, 21, 2030 ),
+					true
+				),
+				'attempt ' . $index
+			);
+		}
+
+		$adapter->finalize_date_family_diagnostics( array(), array(), null );
+		$this->assertSame( array(), PGR_Gravity_Flow_Compatibility_Diagnostics::request_snapshot() );
 	}
 
 	#[RunInSeparateProcess]
