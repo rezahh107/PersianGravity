@@ -21,6 +21,35 @@ final class UpstreamCompatibilityRadarSourceShapeTest extends TestCase {
 		$this->assertStringNotContainsString( 'older release', $parsed['release_block'] );
 	}
 
+	public function test_gravity_forms_undated_patch_headings_are_not_hidden_by_older_dated_releases(): void {
+		$profile = PGR_Upstream_Radar::loadProfiles()['gravityforms'];
+		$cases = array(
+			array( '3.1.3.4', '3.1.3 | 2026-10-01' ),
+			array( '3.2.0.1', '3.2.0 | 2026-10-20' ),
+		);
+
+		foreach ( $cases as $case ) {
+			$html = '<html><h3>' . $case[0] . '</h3><p>latest patch notes</p>'
+				. '<h3>' . $case[1] . '</h3><p>older release notes</p></html>';
+			$parsed = PGR_Upstream_Radar::parseLatestVersion( $profile, $html );
+
+			$this->assertSame( $case[0], $parsed['version'] );
+			$this->assertStringContainsString( 'latest patch notes', $parsed['release_block'] );
+			$this->assertStringNotContainsString( 'older release notes', $parsed['release_block'] );
+		}
+	}
+
+	public function test_gravity_forms_parser_rejects_prose_suffixes_as_release_headings(): void {
+		$profile = PGR_Upstream_Radar::loadProfiles()['gravityforms'];
+		$html = '<html><h3>3.2.0.1 preview</h3><p>unqualified</p>'
+			. '<h3>3.2.0 | 2026-10-20</h3><p>documented release</p></html>';
+		$parsed = PGR_Upstream_Radar::parseLatestVersion( $profile, $html );
+
+		$this->assertSame( '3.2.0', $parsed['version'] );
+		$this->assertStringContainsString( 'documented release', $parsed['release_block'] );
+		$this->assertStringNotContainsString( 'unqualified', $parsed['release_block'] );
+	}
+
 	public function test_heading_diagnostics_are_bounded_and_preserve_version_candidates(): void {
 		$profile = PGR_Upstream_Radar::loadProfiles()['gravityflow'];
 		$html    = '<html><h4><span>3.1.1.1</span> #</h4><h3>3.1.1 | 2026-08-25</h3><h2>Documentation</h2></html>';
