@@ -69,6 +69,31 @@ final class UpstreamPerksSourceReviewTest extends TestCase {
         PGR_Upstream_Perks_Source_Review::digest('https://example.org/fake-release', $good);
     }
 
+    public function test_weekly_ignores_following_product_links_but_rejects_invalid_reviewed_entry_href(): void {
+        $entry = '<p><a href="https://gravitywiz.com/documentation/gravity-perks/">Gravity Perks</a> (v2.3.17)</p>'
+            . '<ul><li>Fixed Spellbook multisite migration activation.</li></ul>'
+            . '<p><a href="https://gravitywiz.com/docs/ecommerce/">GP eCommerce Fields</a> (v1.2.34)</p>';
+        $html = '<html><nav><a href="/menu">Menu</a></nav>' . $entry . '<footer>Other updates</footer></html>';
+        $digest = PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $html);
+        $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('/docs/ecommerce/', '/new-ecommerce-docs/', $html)
+        ));
+        foreach ([
+            str_replace('href="https://gravitywiz.com/documentation/gravity-perks/"', '', $html),
+            str_replace('href="https://gravitywiz.com/documentation/gravity-perks/"',
+                'href="https://gravitywiz.com/documentation/gravity-perks/" href="https://example.org/other"', $html),
+            str_replace('href="https://gravitywiz.com/documentation/gravity-perks/"',
+                'href="javascript:alert(1)"', $html),
+        ] as $invalid) {
+            try {
+                PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $invalid);
+                $this->fail('Malformed or untrusted Weekly release hyperlink was accepted.');
+            } catch (RuntimeException $exception) {
+                $this->assertStringContainsString('reviewed link', $exception->getMessage());
+            }
+        }
+    }
+
     public function test_spellbook_scope_preserves_licensing_migration_and_update_changes(): void {
         $chapter = '<h2>What is Spellbook?</h2><p>Spellbook is a platform plugin centralizing installation, licensing, updates, and product discovery.</p>'
             . '<h2>Installation Instructions</h2><p>After installation, Gravity Perks will be deactivated during migration.</p>'
