@@ -109,13 +109,15 @@ jobs:
           echo "::add-mask::$admin_password"
           printf 'WU008_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
 
-      - name: Set up exact PHP runtime
+      - name: Set up supported PHP 8.2 runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
-          php-version: '8.2.34'
+          php-version: '8.2'
           coverage: none
           extensions: mysqli
           tools: composer:2.8.12
+        env:
+          update: true
 
       - name: Load canonical Gravity Flow package authority
         shell: bash
@@ -127,7 +129,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(php -r 'echo PHP_VERSION;')" = "8.2.34"
+          # Keep the previously qualified 8.2.34 floor, but allow security patch updates.
+          # Do not accept a different PHP minor or silently infer patch equivalence.
+          php -r '
+            if (PHP_VERSION_ID < 80234 || PHP_VERSION_ID >= 80300) {
+                fwrite(STDERR, "WU008 requires stable PHP 8.2.34+ (<8.3); observed " . PHP_VERSION . PHP_EOL);
+                exit(1);
+            }
+            echo "WU008 PHP runtime: " . PHP_VERSION . PHP_EOL;
+          '
+          printf 'PHP runtime: %s (contract: 8.2.34 <= version < 8.3)\n' "$(php -r 'echo PHP_VERSION;')" >> "$GITHUB_STEP_SUMMARY"
           composer validate --strict
           bash -n tests/real-integration/verify-package.sh
           php -l tools/compatibility/gravityflow-package.php
