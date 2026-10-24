@@ -52,7 +52,7 @@ final class PGR_Upstream_Perks_Source_Review {
             if ($start === null || $final === null || $end === null || !($start < $final && $final < $end)) {
                 throw new RuntimeException('Spellbook documentation section identity is ambiguous');
             }
-            $section = self::cleanText(substr($html, $start, $end - $start));
+            $section = self::cleanTextWithLinks(substr($html, $start, $end - $start));
             foreach (array('licens', 'install', 'updat', 'deactivat', 'settings') as $required) {
                 if (stripos($section, $required) === false) {
                     throw new RuntimeException('Spellbook reviewed migration/lifecycle evidence is missing: ' . $required);
@@ -64,6 +64,53 @@ final class PGR_Upstream_Perks_Source_Review {
             return hash('sha256', $section);
         }
         throw new RuntimeException('unapproved Gravity Perks review source identity: ' . $url);
+    }
+
+    /**
+     * Keep the destination, not just the label, of each reviewed content link.
+     * Bound this transformation to the selected Spellbook chapter. Never include
+     * navigation outside the chapter in its semantic fingerprint.
+     */
+    private static function cleanTextWithLinks(string $html): string {
+        $linkPattern = '~<a\b([^>]*)>(.*?)</a\s*>~is';
+        $openCount = preg_match_all('~<a\b~i', $html);
+        $closeCount = preg_match_all('~</a\s*>~i', $html);
+        $matchedCount = preg_match_all($linkPattern, $html);
+
+        if ($openCount === false || $closeCount === false || $matchedCount === false
+            || $openCount !== $closeCount || $openCount !== $matchedCount) {
+            throw new RuntimeException('Spellbook reviewed links are malformed or ambiguous');
+        }
+
+        $annotated = preg_replace_callback($linkPattern, static function (array $link): string {
+            $matches = array();
+            $count = preg_match_all(
+                '~(?:^|\s)href\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))~i',
+                $link[1],
+                $matches,
+                PREG_SET_ORDER
+            );
+            if ($count !== 1) {
+                throw new RuntimeException('Spellbook reviewed link has missing or duplicate href');
+            }
+
+            $parts = $matches[0];
+            $value = ($parts[1] ?? '') !== '' ? $parts[1]
+                : ((($parts[2] ?? '') !== '') ? $parts[2] : ($parts[3] ?? ''));
+            $target = trim(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            if ($target === '' || preg_match('/[\x00-\x1f\x7f<>]/', $target) === 1
+                || preg_match('~^(?:https?://|//|/|#|mailto:|tel:)~i', $target) !== 1) {
+                throw new RuntimeException('Spellbook reviewed link destination is missing or unsupported');
+            }
+
+            // URL-encode to prevent angle brackets/markup from being lost in strip_tags.
+            return $link[2] . ' [href=' . rawurlencode($target) . ']';
+        }, $html);
+        if (!is_string($annotated)) {
+            throw new RuntimeException('Spellbook reviewed link canonicalization failed');
+        }
+
+        return self::cleanText($annotated);
     }
 
     private static function cleanText(string $html): string {
