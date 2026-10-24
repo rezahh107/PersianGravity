@@ -15,5 +15,16 @@
   "current_scoped_fingerprints": {
     "https://gravitywiz.com/documentation/spellbook/": "01d34e57e0356ac9da9629ebdf82f3ef8cb0129e9079b850f9034972eda55b31",
     "https://gravitywiz.com/gravity-wiz-weekly-269/": "d9b732e35dc4d6ca025fbe8aef1ae3986ab4d2ecf9e161314890b074eeadd432"
+  },
+  "current_link_aware_scoped_fingerprints": {
+    "https://gravitywiz.com/documentation/spellbook/": "078dac8fbd9855069abffc2e259cae51a55f09cc30022d45e8423dffbd055c7d",
+    "https://gravitywiz.com/gravity-wiz-weekly-269/": "d9b732e35dc4d6ca025fbe8aef1ae3986ab4d2ecf9e161314890b074eeadd432"
+  },
+  "link_aware_review": {
+    "reviewed_at_utc": "2026-10-24T12:19:00Z",
+    "upstream_source": "https://gravitywiz.com/documentation/spellbook/",
+    "evidence_run_id": 40093382765,
+    "evidence_commit": "057647f6d13f12eced683f10461e9918758b1eb5",
+    "review": "Independent check of first-party Spellbook article's reviewed chapter and meaningful installation/licensing/update/migration link destinations; includes Spellbook ZIP, account downloads and License FAQ references. The whole-page source SHA-256 was unchanged from existing current-source review. New link-aware digest is evidenced by exact-Head live Radar artifact. Old text-only scoped digests and historic full-page fingerprints remain preserved; this statement makes no retrospective equivalence claim."
   }
 }

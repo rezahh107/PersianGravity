@@ -39,7 +39,7 @@ final class UpstreamRadarCurrentSourceReviewTest extends TestCase {
         );
         foreach ( $candidate['official_sources'] as &$source ) {
             $source['sha256'] = $review['current_source_fingerprints'][ $source['url'] ];
-            $source['review_scope_sha256'] = $review['current_scoped_fingerprints'][ $source['url'] ];
+            $source['review_scope_sha256'] = $review['current_link_aware_scoped_fingerprints'][ $source['url'] ];
         }
         unset( $source );
         $candidate['checked_at'] = '2026-10-24T10:42:18Z';
@@ -85,6 +85,23 @@ final class UpstreamRadarCurrentSourceReviewTest extends TestCase {
         $candidate['official_sources'][0]['sha256'] = 'dfb40bf4c46811d9fa8484a8bd0e08021eb68eb39cd5d3ea59a1cc08238cb097';
         $candidate['official_sources'][0]['review_scope_sha256'] = str_repeat( 'e', 64 );
         $this->assertSame( 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED', PGR_Upstream_Radar::persistCandidate( $candidate, $this->root ) );
+    }
+
+    public function test_spellbook_destination_edit_after_review_requires_new_attestation(): void {
+        $candidate = $this->currentPerksCandidate();
+        // Simulate a live site changing only a reviewed Spellbook link target,
+        // with the surrounding prose and original historical record unchanged.
+        foreach ($candidate['official_sources'] as &$source) {
+            if ($source['url'] === 'https://gravitywiz.com/documentation/spellbook/') {
+                $source['sha256'] = str_repeat('c', 64);
+                $source['review_scope_sha256'] = str_repeat('d', 64);
+            }
+        }
+        unset($source);
+        $this->assertSame(
+            'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED',
+            PGR_Upstream_Radar::persistCandidate($candidate, $this->root)
+        );
     }
 
     public function test_future_changes_in_either_authoritative_source_still_fail_closed(): void {

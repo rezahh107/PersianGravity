@@ -67,6 +67,48 @@ final class UpstreamPerksSourceReviewTest extends TestCase {
         ), 'Changed licensing destination must change reviewed evidence even if link label is unchanged.' );
     }
 
+    public function test_link_targets_are_entity_normalized_and_link_attributes_are_ignored(): void {
+        $chapter = '<h2>What is Spellbook?</h2><p>Spellbook handles installation, licensing and updates.</p>'
+            . '<h2>Installation Instructions</h2><a class="doc" href="https://gravitywiz.com/download/spellbook">Download</a>'
+            . '<h2>Managing Licensing</h2><a href="https://gravitywiz.com/documentation/license-faq/?foo=1&amp;bar=2">License FAQ</a>'
+            . '<h2>Migration</h2><p>Perks deactivation preserves settings.</p>'
+            . '<h2>Final Note</h2><p>Continue updates.</p>';
+        $html = '<html>' . $chapter . '<h3>All Connections</h3></html>';
+        $digest = PGR_Upstream_Perks_Source_Review::digest(self::SPELLBOOK, $html);
+        $changedAttributes = str_replace(
+            'class="doc" href="https://gravitywiz.com/download/spellbook"',
+            'href="https://gravitywiz.com/download/spellbook" class="new-style"',
+            $html
+        );
+        $changedAttributes = str_replace('foo=1&amp;bar=2', 'foo=1&bar=2', $changedAttributes);
+        $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(self::SPELLBOOK, $changedAttributes));
+        $this->assertNotSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::SPELLBOOK, str_replace('foo=1&amp;bar=2', 'foo=1&amp;bar=3', $html)
+        ));
+    }
+
+    public function test_missing_or_duplicate_href_in_reviewed_chapter_fails_closed(): void {
+        $chapter = '<h2>What is Spellbook?</h2><p>Spellbook handles installation, licensing and updates.</p>'
+            . '<h2>Installation Instructions</h2><a href="https://gravitywiz.com/download/spellbook">Download</a>'
+            . '<h2>Managing Licensing</h2><p>Licensing requirements for existing customers.</p>'
+            . '<h2>Migration</h2><p>Perks deactivation preserves settings.</p>'
+            . '<h2>Final Note</h2><p>Continue updates.</p>';
+        $html = '<html>' . $chapter . '<h3>All Connections</h3></html>';
+        foreach ([
+            str_replace('href="https://gravitywiz.com/download/spellbook"', '', $html),
+            str_replace('href="https://gravitywiz.com/download/spellbook"',
+                'href="https://gravitywiz.com/download/spellbook" href="https://example.org/other"', $html),
+            str_replace('href="https://gravitywiz.com/download/spellbook"', 'href="javascript:alert(1)"', $html),
+        ] as $malformed) {
+            try {
+                PGR_Upstream_Perks_Source_Review::digest(self::SPELLBOOK, $malformed);
+                $this->fail('Malformed or untrusted reviewed hyperlink was accepted.');
+            } catch (RuntimeException $exception) {
+                $this->assertStringContainsString('Spellbook reviewed link', $exception->getMessage());
+            }
+        }
+    }
+
     public function test_unknown_or_malformed_document_evidence_fails_closed(): void {
         $this->expectException( RuntimeException::class );
         PGR_Upstream_Perks_Source_Review::digest( self::SPELLBOOK,

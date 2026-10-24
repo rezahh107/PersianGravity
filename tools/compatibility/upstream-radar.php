@@ -629,7 +629,7 @@ final class PGR_Upstream_Radar {
         }
         // A later page may change outside the reviewed release/docs scope.
         // Accept only an independently reviewed, exact scoped digest for BOTH sources.
-        $reviewedScoped = $review['current_scoped_fingerprints'] ?? null;
+        $reviewedScoped = $review['current_link_aware_scoped_fingerprints'] ?? null;
         if (!is_array($reviewedScoped) || array_is_list($reviewedScoped)) {
             return false;
         }
