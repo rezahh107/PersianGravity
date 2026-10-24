@@ -129,16 +129,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Keep the previously qualified 8.2.34 floor, but allow security patch updates.
-          # Do not accept a different PHP minor or silently infer patch equivalence.
-          php -r '
-            if (PHP_VERSION_ID < 80234 || PHP_VERSION_ID >= 80300) {
-                fwrite(STDERR, "WU008 requires stable PHP 8.2.34+ (<8.3); observed " . PHP_VERSION . PHP_EOL);
-                exit(1);
-            }
-            echo "WU008 PHP runtime: " . PHP_VERSION . PHP_EOL;
-          '
-          printf 'PHP runtime: %s (contract: 8.2.34 <= version < 8.3)\n' "$(php -r 'echo PHP_VERSION;')" >> "$GITHUB_STEP_SUMMARY"
+          php tools/ci/check-php82-runtime.php
+          printf 'WU008 PHP runtime: %s (contract: stable 8.2.x)\n' "$(php -r 'echo PHP_VERSION;')" >> "$GITHUB_STEP_SUMMARY"
           composer validate --strict
           bash -n tests/real-integration/verify-package.sh
           php -l tools/compatibility/gravityflow-package.php

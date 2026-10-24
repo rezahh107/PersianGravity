@@ -100,19 +100,22 @@ jobs:
           echo "::add-mask::$admin_password"
           printf 'G008_ADMIN_PASSWORD=%s\n' "$admin_password" >> "$GITHUB_ENV"
 
-      - name: Set up PHP 8.2.34
+      - name: Set up supported PHP 8.2 runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
-          php-version: '8.2.34'
+          php-version: '8.2'
           coverage: none
           extensions: mysqli
           tools: composer:2.8.12
+        env:
+          update: true
 
       - name: Validate G-008 development oracles and harness
         shell: bash
         run: |
           set -euo pipefail
-          test "$(php -r 'echo PHP_VERSION;')" = "8.2.34"
+          php tools/ci/check-php82-runtime.php
+          printf 'G008 PHP runtime: %s (contract: stable 8.2.x)\n' "$(php -r 'echo PHP_VERSION;')" >> "$GITHUB_STEP_SUMMARY"
           composer install --no-interaction --no-progress --prefer-dist
           composer test -- --filter 'JalaliPresentation|ModuleRegistry|ModuleRuntimeGating|ModuleUsage|RuntimeBootstrap'
           node --test tests/js/g008-jalali-oracles.test.js
