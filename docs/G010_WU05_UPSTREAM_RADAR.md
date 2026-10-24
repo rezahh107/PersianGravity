@@ -105,3 +105,52 @@ Gravity Flow keeps the existing WU-03 four-date package-specific vocabulary and 
 ## Preservation boundary
 
 WU-05 does not change production PHP/JS/CSS, plugin version/Stable tag, localization/source-admission manifests, the Gravity Flow package authority, G-006/G-007/G-008/G-009 adapters, WU-03/WU-04 runtime behavior, vendor code, tags, releases, or deployment state.
+
+## Source fingerprint root-cause disposition — 2026-10-24
+
+**Scope: Gravity Flow and Gravity Perks first-party sources only; documentation/evidence review, not a product or radar-code repair.**
+
+### Why scheduled persistence stopped
+
+`PGR_Upstream_Radar::persistCandidate()` compares the SHA-256 of each *entire fetched page* to the source fingerprints in an existing `MODEL_REVIEWED` observation. A mismatch yields `REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED` and `assertPersistenceOutcome()` fails visibly. This is a deliberate provenance safety gate. It does **not** establish whether the reviewed version's own release text changed. New rolling-release headings, navigation or page decoration, and edits to reviewed notes can all change the hash. Merely allowing a newer reported version must never bypass review of material historical changes.
+
+These historical scheduled failures occurred at **two different gates**, confirmed by their GitHub Actions job logs:
+
+- **2026-09-28 — [run 36434047408](https://github.com/rezahh107/PersianGravity/actions/runs/36434047408):** the **live-source consistency check**, not observation persistence, failed. Direct first-party Gravity Flow detection returned `3.1.1.1`, matching an unresolved historical `3.1.1.1` observation; `upstream-radar-consistency.php` required `MODEL_REVIEW_REQUIRED` before treating that result as deduplicated. The **Persist observation-only PR** job was **skipped**.
+- **2026-10-05 — [run 37328979780](https://github.com/rezahh107/PersianGravity/actions/runs/37328979780)** and **2026-10-12 — [run 38272416019](https://github.com/rezahh107/PersianGravity/actions/runs/38272416019):** the four-product **live-source job succeeded**, but `persist-observations` failed with `reviewed observation source fingerprint changed; MODEL_REVIEW_REQUIRED` for **both Gravity Flow and Gravity Perks**. The observation-only mutation/push/PR steps did not run.
+- **2026-10-19 — [run 39262079419](https://github.com/rezahh107/PersianGravity/actions/runs/39262079419) and [run 39262121811](https://github.com/rezahh107/PersianGravity/actions/runs/39262121811):** both **live-source jobs succeeded**; both persistence jobs failed with that reviewed-source fingerprint error for **Gravity Perks only**. These were **persistence** failures, not repeats of the September 28 consistency failure.
+
+The failed runs and their failure stages are identifiable, but the **complete historical upstream HTML snapshots and byte-for-byte source-content diffs were not recovered**. Neither a whole-page SHA-256 mismatch nor later detection of a higher version establishes whether old reviewed release text changed, whether only newer release sections were added, or whether surrounding HTML changed. The content-level cause of each historical fingerprint difference remains **NOT_PROVEN**, as does any claim of historical source-content equivalence. These CI failures are not evidence of a licensed-package or production-runtime failure.
+
+**New directly executed evidence:** the PR-triggered four-product scan [40085682249](https://github.com/rezahh107/PersianGravity/actions/runs/40085682249) and manual read-only `workflow_dispatch` [40086954962](https://github.com/rezahh107/PersianGravity/actions/runs/40086954962) independently produced identical *current* full-page hashes:
+- Gravity Flow changelog: `fac0e6b6ca19525c5896a5a45eb3cb6965482085764c199086467518bc37bdd4`.
+- Gravity Wiz Weekly #269: `e0b47f93f3f536dc2849d5810e17114d670cb42b9c2015bfc8507358a2b8769a`.
+- Spellbook documentation: `b48861b873af46bcb29c4e4151d4931a1786811c38b5ba10bd78fa60fe097914`.
+
+These artifacts retain per-source hashes, version candidates and bounded heading diagnostics, **not raw source snapshots**. The manual scan proves live discovery, not persistence: its persistence job was skipped. The current hashes differ from reviewed historical records, but equality between the two October 24 runs does not prove equality with September's content.
+
+### Gravity Flow
+
+`gravityflow/3.1.1.json` remains a `MODEL_REVIEWED`, `DETECTED_ONLY` observation from the project's original official-source review, with historical whole-page SHA-256 `f4c2cd85e7693cce07fab32f4b4de97e8b8221c788a05b5a3b77bd5d99aedfe6`. The official 3.1.1 release documents a GravityView integration change for deprecated Workflow Detail/Approval Link filters, relevant to future evidence gathering but **not** runtime qualification.
+
+The October 24 current-source diagnostic detects ordered headings `3.1.2.1`, `3.1.2 | 2026-10-07`, `3.1.1 | 2026-08-25`, `3.1.0 | 2026-07-01`. Thus **new rolling release headings were observed**. The 3.1.2 documentation describes repeater restrictions for Assignee, Multi-User, Discussion and editable fields, plus other workflow fixes. The `3.1.2.1` heading is detected, but its specific release-body changes are **not independently established by the saved diagnostic artifact**. Neither the ongoing presence of a 3.1.1 heading nor the higher latest version proves its older notes are byte-for-byte or semantically unchanged.
+
+Keep `gravityflow/3.1.1.1.json` untouched. It has `historical-detection-reference`, `MODEL_REVIEW_REQUIRED`, `NOT_CONFIRMED_BY_2026-09-27_DIRECT_SOURCE` and `PACKAGE_REQUIRED_FOR_PROOF`. A higher live heading neither proves nor disproves the older historical signal. The repository's consistency checks for unresolved historical evidence remain necessary.
+
+The Owner-supplied Gravity Flow `3.1.0` package and all production qualification/admission boundaries remain unchanged; `3.1.2.1` is **DETECTED_ONLY**.
+
+### Gravity Perks and Spellbook
+
+The reviewed `gravityperks/2.3.17.json` records whole-page SHA-256 `ac2d937ceae6b7f0e7bd70fd05d42b7ac90f68b205f22f5b21c855b8b2a716b7` for [Weekly #269](https://gravitywiz.com/gravity-wiz-weekly-269/) and `b1b908fd23f004820499ceb723378b37e5a080c9770d5a0cf893112ab6c0d61a` for [Spellbook documentation](https://gravitywiz.com/documentation/spellbook/).
+
+The **current** official weekly article still lists the Gravity Perks *parent platform* `2.3.17` fix for Spellbook network-wide reactivation during multisite migration. The **current** Spellbook documentation confirms that Spellbook replaces the Gravity Perks *platform plugin*, **not** the Gravity Perks product suite, centralizing product installation, license management and updates. It documents migration/deactivation of the old platform, and continued suite licensing. These specific reviewed substantive facts remain independently supported. However the old HTML is not available: whether other relevant content changed or only surrounding markup/navigation did is **NOT_PROVEN**. Do not infer identical past and present semantics from unchanged short summaries.
+
+Retain the source's `terminal` mode, `DISCONTINUED_REPLACED` lifecycle, existing reviewed record and exact parent package authority. Spellbook is **not** enrolled as a new package authority; child perks are not silently enrolled or upgraded.
+
+### Design assessment, preservation and next review gate
+
+The whole-page hash is overly broad as a *diagnostic discriminator*, but it remains a safe **fail-closed legacy provenance gate** in the absence of reliable prior version-specific source snapshots. Replacing it immediately with a new hash of today's selected text would create an unsupported claim about the *past*. Ignoring it merely because a page grew would also conceal possible edits to already reviewed release notes. Consequently this checkpoint **does not relax or change persistence, parsing, source-fingerprint or consistency code** and does not mark the historical mismatches resolved.
+
+A future scoped digest is justified only if actual first-party HTML variants and a **trusted reviewed version-specific baseline** can establish complete release-content boundaries and relevant Spellbook install/license/migration sections. Its regression evidence must distinguish: unrelated page decoration, new release headings, genuine edits within reviewed notes, absent/duplicate/malformed headings, modified lifecycle instructions, missing previous snapshots, and source-version ambiguity. Unknowns must continue to fail with `MODEL_REVIEW_REQUIRED`; all newer versions retain `PACKAGE_REQUIRED_FOR_PROOF`. This is a qualification requirement, **not authorization to auto-bootstrap a review baseline from today's content**.
+
+**Disposition:** existing historical source-review blockers remain **OPEN / NOT_PROVEN** pending trustworthy historical source material or an explicit new source-content review with dated, version-scoped provenance. The four-product *read-only* monitoring path is **VERIFIED**; historical persistence safety cannot be cleared from the available evidence. Do not start WU-06 until these outstanding reviews and any eventual focused code qualification are completed. No G-011 work, release, package swap or production change is implied.
