@@ -25,6 +25,50 @@ final class UpstreamPerksSourceReviewTest extends TestCase {
         ) );
     }
 
+    public function test_weekly_reviewed_release_link_destination_is_part_of_semantic_identity(): void {
+        $entry = '<h3>Gravity Perks</h3><p><a href="https://gravitywiz.com/documentation/gravity-perks/">Gravity Perks</a> (v2.3.17)</p>'
+            . '<ul><li>Fixed Spellbook network-wide activation during multisite migration.</li></ul>'
+            . '<p><a href="https://gravitywiz.com/documentation/gp-ecommerce-fields/">GP eCommerce Fields</a> (v1.2.34)</p>';
+        $html = '<html><nav><a href="/old-menu">Menu</a></nav>' . $entry
+            . '<footer><a href="/old-footer">Footer</a></footer></html>';
+        $digest = PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $html);
+        $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $html));
+        $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('/old-menu', '/new-menu', $html)
+        ));
+        $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('/old-footer', '/new-footer', $html)
+        ));
+        $this->assertNotSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY,
+            str_replace('/documentation/gravity-perks/', '/documentation/another-product/', $html)
+        ), 'The reviewed release-link destination changed without changing the visible Gravity Perks label.');
+        $this->assertNotSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('network-wide activation', 'single-site activation', $html)
+        ));
+    }
+
+    public function test_weekly_release_boundaries_reject_missing_duplicates_and_malformed_source(): void {
+        $good = '<html><p>Gravity Perks (v2.3.17)</p>'
+            . '<ul><li>Spellbook network-wide reactivation during migration.</li></ul>'
+            . '<p>GP eCommerce Fields (v1.2.34)</p><p>Next product.</p></html>';
+        $cases = [
+            str_replace('Gravity Perks (v2.3.17)', 'Gravity Perks (v2.3.17 preview)', $good),
+            str_replace('GP eCommerce Fields (v1.2.34)', 'Different release marker', $good),
+            str_replace('</html>', '<p>Gravity Perks (v2.3.17)</p></html>', $good),
+        ];
+        foreach ($cases as $malformed) {
+            try {
+                PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $malformed);
+                $this->fail('Malformed or ambiguous release identity was accepted.');
+            } catch (RuntimeException $exception) {
+                $this->assertNotSame('', $exception->getMessage());
+            }
+        }
+        $this->expectException(RuntimeException::class);
+        PGR_Upstream_Perks_Source_Review::digest('https://example.org/fake-release', $good);
+    }
+
     public function test_spellbook_scope_preserves_licensing_migration_and_update_changes(): void {
         $chapter = '<h2>What is Spellbook?</h2><p>Spellbook is a platform plugin centralizing installation, licensing, updates, and product discovery.</p>'
             . '<h2>Installation Instructions</h2><p>After installation, Gravity Perks will be deactivated during migration.</p>'
