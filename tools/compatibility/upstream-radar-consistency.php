@@ -96,6 +96,11 @@ final class PGR_Upstream_Radar_Consistency {
 			if ( ( $observation['review_state'] ?? null ) !== 'MODEL_REVIEW_REQUIRED' || empty( $observation['model_review_required'] ) ) {
 				continue;
 			}
+			// An automated informational record is eligible for repeat-run
+			// deduplication/update; independent unresolved history still blocks.
+			if ( !empty( $observation['automation_generated'] ) ) {
+				continue;
+			}
 			if ( ( $observation['upstream_release_mode'] ?? 'rolling' ) !== 'rolling' ) {
 				continue;
 			}
