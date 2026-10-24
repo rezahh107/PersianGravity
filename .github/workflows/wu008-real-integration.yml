@@ -133,7 +133,7 @@ jobs:
           # Do not accept a different PHP minor or silently infer patch equivalence.
           php -r '
             if (PHP_VERSION_ID < 80234 || PHP_VERSION_ID >= 80300) {
-                fwrite(STDERR, "WU008 requires stable PHP 8.2.34+ (<8.3); observed " . PHP_VERSION . "\\n");
+                fwrite(STDERR, "WU008 requires stable PHP 8.2.34+ (<8.3); observed " . PHP_VERSION . PHP_EOL);
                 exit(1);
             }
             echo "WU008 PHP runtime: " . PHP_VERSION . PHP_EOL;
