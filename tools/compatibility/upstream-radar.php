@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/upstream-perks-source-review.php';
+
 final class PGR_Upstream_Radar {
     private const PROFILE_SCHEMA_VERSION = 1;
     private const OBSERVATION_SCHEMA_VERSION = 1;
@@ -470,6 +472,9 @@ final class PGR_Upstream_Radar {
             'role' => $releaseMode === 'terminal' ? 'terminal-stable-release' : 'stable-release-and-changelog',
             'sha256' => hash('sha256', $releaseBody),
         ]];
+        if ($profile['key'] === 'gravityperks' && $parsed['version'] === '2.3.17') {
+            $sourceRecords[0]['review_scope_sha256'] = PGR_Upstream_Perks_Source_Review::digest($releaseUrl, $releaseBody);
+        }
         $signalText = $parsed['release_block'];
         foreach ($profile['documentation_sources'] ?? [] as $docsUrl) {
             if ($docsUrl === $releaseUrl) {
@@ -481,6 +486,9 @@ final class PGR_Upstream_Radar {
                 'role' => 'official-documentation',
                 'sha256' => hash('sha256', $docsBody),
             ];
+            if ($profile['key'] === 'gravityperks' && $parsed['version'] === '2.3.17') {
+                $sourceRecords[count($sourceRecords) - 1]['review_scope_sha256'] = PGR_Upstream_Perks_Source_Review::digest($docsUrl, $docsBody);
+            }
             $signalText .= "\n" . substr($docsBody, 0, 30000);
         }
 
@@ -612,7 +620,30 @@ final class PGR_Upstream_Radar {
 
         ksort($reviewedHistorical, SORT_STRING);
         ksort($reviewedCurrent, SORT_STRING);
-        return $reviewedHistorical === $historical && $reviewedCurrent === $current;
+        if ($reviewedHistorical !== $historical) {
+            return false;
+        }
+        // Exact full-page review is valid for the originally inspected bytes.
+        if ($reviewedCurrent === $current) {
+            return true;
+        }
+        // A later page may change outside the reviewed release/docs scope.
+        // Accept only an independently reviewed, exact scoped digest for BOTH sources.
+        $reviewedScoped = $review['current_scoped_fingerprints'] ?? null;
+        if (!is_array($reviewedScoped) || array_is_list($reviewedScoped)) {
+            return false;
+        }
+        $candidateScoped = [];
+        foreach ($candidate['official_sources'] as $source) {
+            $digest = $source['review_scope_sha256'] ?? null;
+            if (!is_string($digest) || preg_match('/^[a-f0-9]{64}$/', $digest) !== 1) {
+                return false;
+            }
+            $candidateScoped[$source['url']] = $digest;
+        }
+        ksort($reviewedScoped, SORT_STRING);
+        ksort($candidateScoped, SORT_STRING);
+        return count($candidateScoped) === 2 && $reviewedScoped === $candidateScoped;
     }
 
     public static function assertPersistenceOutcome(string $productKey, string $status): void {
