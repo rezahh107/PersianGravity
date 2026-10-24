@@ -13,16 +13,17 @@ final class PGR_Upstream_Perks_Source_Review {
             throw new RuntimeException('Gravity Perks source was missing or malformed');
         }
         if ($url === 'https://gravitywiz.com/gravity-wiz-weekly-269/') {
-            // Preserve both the reviewed release wording AND any href belonging
-            // to its versioned entry. The following product is an exclusive
-            // boundary: its own href and everything after it are out of scope.
-            $text = self::cleanTextWithLinks($html);
-            $start = self::uniqueReleaseOffset($text, 'Gravity Perks', '2.3.17');
-            $end = self::uniqueReleaseOffset($text, 'GP eCommerce Fields', '1.2.34');
+            // Find the versioned entry in raw first-party HTML before validating
+            // any links. Site navigation, footer and the NEXT product are outside
+            // the reviewed section, even if they contain invalid anchors.
+            $start = self::uniqueReleaseHtmlOffset($html, 'Gravity Perks', '2.3.17');
+            $end = self::uniqueReleaseHtmlOffset($html, 'GP eCommerce Fields', '1.2.34');
             if ($end <= $start) {
                 throw new RuntimeException('Gravity Perks release block boundaries are invalid');
             }
-            $section = trim(substr($text, $start, $end - $start));
+            $text = self::cleanTextWithLinks(substr($html, $start, $end - $start));
+            $entryStart = self::uniqueReleaseOffset($text, 'Gravity Perks', '2.3.17');
+            $section = trim(substr($text, $entryStart));
             if (!str_contains($section, 'Spellbook') || strlen($section) > 4000) {
                 throw new RuntimeException('Gravity Perks terminal release evidence is ambiguous');
             }
@@ -123,6 +124,41 @@ final class PGR_Upstream_Perks_Source_Review {
             throw new RuntimeException('unparseable official source text');
         }
         return $normalized;
+    }
+
+    /**
+     * Resolve the exact, unique source-owned version marker to its HTML position.
+     * If the label is linked, include its opening anchor in the reviewed scope.
+     * Do not treat an unrelated, malformed navigation anchor as a release link.
+     */
+    private static function uniqueReleaseHtmlOffset(string $html, string $product, string $version): int {
+        $pattern = '~' . preg_quote($product, '~')
+            . '\s*(?:</[^>]+>\s*)*\(v' . preg_quote($version, '~') . '\)~i';
+        $count = preg_match_all($pattern, $html, $matches, PREG_OFFSET_CAPTURE);
+        if ($count !== 1) {
+            throw new RuntimeException('Gravity Perks named version boundary missing or ambiguous: ' . $product);
+        }
+        $offset = $matches[0][0][1];
+
+        // The opening <a> precedes its visible label and is essential to the
+        // link-aware digest, whereas a preceding unrelated site anchor is not.
+        $preceding = substr($html, 0, $offset);
+        preg_match_all('~<a\b[^>]*>|</a\s*>~i', $preceding, $anchors, PREG_OFFSET_CAPTURE);
+        if ($anchors[0] === []) {
+            return $offset;
+        }
+        $last = end($anchors[0]);
+        if (!preg_match('~^<a\b~i', $last[0])) {
+            return $offset;
+        }
+        $between = substr($html, $last[1], $offset - $last[1]);
+        if (preg_match('~^<a\b[^>]*>\s*(?:<(?:strong|span|b|em|i|small|u)\b[^>]*>\s*)*$~i', $between)) {
+            return $last[1];
+        }
+        if (preg_match('~</?(?:nav|li|p|div|ul|section|header|footer|article)\b~i', $between)) {
+            return $offset;
+        }
+        throw new RuntimeException('Gravity Perks release anchor boundary is ambiguous: ' . $product);
     }
 
     private static function uniqueReleaseOffset(string $text, string $product, string $version): int {
