@@ -171,17 +171,12 @@ jobs:
           rm -rf "$evidence_dir"
           status=0
           php tools/compatibility/upstream-radar.php scan --output="$evidence_dir" --persist-new || status=$?
-          consistency_status=0
-          if (( status == 0 )); then
-            php tools/compatibility/upstream-radar-consistency.php "$evidence_dir/summary.json" || consistency_status=$?
-          fi
+          # scan --persist-new checks pre-persistence consistency and all
+          # candidate outcomes before mutating the observation worktree.
           if [[ -f "$evidence_dir/summary.md" ]]; then
             cat "$evidence_dir/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
-          if (( status != 0 )); then
-            exit "$status"
-          fi
-          exit "$consistency_status"
+          exit "$status"
 
       - name: Enforce observation-only mutation boundary
         id: changes
