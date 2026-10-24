@@ -3,7 +3,7 @@
   "product_key": "gravityperks",
   "version": "2.3.17",
   "reviewed_at_utc": "2026-10-24T10:42:18Z",
-  "scope": "First-party current content review: Weekly #269 Gravity Perks 2.3.17 multisite Spellbook reactivation fix; Spellbook replacement of parent platform, installation/activation/deactivation, licensing and registration, automatic perk updates and settings migration. Historical text identity NOT_PROVEN; this attests only the reviewed 2026-10-24 current source bytes.",
+  "scope": "First-party current content review: Weekly #269 Gravity Perks 2.3.17 multisite Spellbook reactivation fix; Spellbook replacement of parent platform, installation/activation/deactivation, licensing and registration, automatic perk updates and settings migration. Historical text identity NOT_PROVEN; this attests only the reviewed 2026-10-24 current source bytes. Version-scoped weekly release and Spellbook documentation chapter fingerprints were independently captured in live CI after the first trial proved full-page decoration drift; both are checked together to protect migration and licensing meaning.",
   "historical_source_fingerprints": {
     "https://gravitywiz.com/documentation/spellbook/": "b1b908fd23f004820499ceb723378b37e5a080c9770d5a0cf893112ab6c0d61a",
     "https://gravitywiz.com/gravity-wiz-weekly-269/": "ac2d937ceae6b7f0e7bd70fd05d42b7ac90f68b205f22f5b21c855b8b2a716b7"
@@ -11,5 +11,9 @@
   "current_source_fingerprints": {
     "https://gravitywiz.com/documentation/spellbook/": "b48861b873af46bcb29c4e4151d4931a1786811c38b5ba10bd78fa60fe097914",
     "https://gravitywiz.com/gravity-wiz-weekly-269/": "e0b47f93f3f536dc2849d5810e17114d670cb42b9c2015bfc8507358a2b8769a"
+  },
+  "current_scoped_fingerprints": {
+    "https://gravitywiz.com/documentation/spellbook/": "01d34e57e0356ac9da9629ebdf82f3ef8cb0129e9079b850f9034972eda55b31",
+    "https://gravitywiz.com/gravity-wiz-weekly-269/": "d9b732e35dc4d6ca025fbe8aef1ae3986ab4d2ecf9e161314890b074eeadd432"
   }
 }

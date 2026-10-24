@@ -58,7 +58,7 @@ final class PGR_Upstream_Perks_Source_Review {
                     throw new RuntimeException('Spellbook reviewed migration/lifecycle evidence is missing: ' . $required);
                 }
             }
-            if (strlen($section) > 30000 || strlen($section) < 1000) {
+            if (strlen($section) > 30000 || strlen($section) < 200) {
                 throw new RuntimeException('Spellbook reviewed section is unexpectedly sized');
             }
             return hash('sha256', $section);

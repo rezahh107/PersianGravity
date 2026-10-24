@@ -39,6 +39,7 @@ final class UpstreamRadarCurrentSourceReviewTest extends TestCase {
         );
         foreach ( $candidate['official_sources'] as &$source ) {
             $source['sha256'] = $review['current_source_fingerprints'][ $source['url'] ];
+            $source['review_scope_sha256'] = $review['current_scoped_fingerprints'][ $source['url'] ];
         }
         unset( $source );
         $candidate['checked_at'] = '2026-10-24T10:42:18Z';
@@ -63,6 +64,27 @@ final class UpstreamRadarCurrentSourceReviewTest extends TestCase {
         PGR_Upstream_Radar::assertPersistenceOutcome( 'gravityperks', $outcome );
         $this->assertSame( $original, file_get_contents( $path ) );
         $this->assertSame( 'MODEL_REVIEWED', json_decode( $original, true )['review_state'] );
+    }
+
+    public function test_irrelevant_page_change_is_admitted_only_with_both_exact_reviewed_content_digests(): void {
+        $record = $this->root . '/tools/compatibility/upstream-observations/gravityperks/2.3.17.json';
+        $original = (string) file_get_contents( $record );
+        $candidate = $this->currentPerksCandidate();
+        // The real next fetch changed the Weekly full-page bytes but not its scoped release text.
+        $candidate['official_sources'][0]['sha256'] = 'dfb40bf4c46811d9fa8484a8bd0e08021eb68eb39cd5d3ea59a1cc08238cb097';
+        $this->assertSame( 'REVIEWED_CURRENT_SOURCE_ATTESTED', PGR_Upstream_Radar::persistCandidate( $candidate, $this->root ) );
+        $this->assertSame( $original, file_get_contents( $record ) );
+
+        $candidate['official_sources'][1]['sha256'] = str_repeat( 'c', 64 );
+        $candidate['official_sources'][1]['review_scope_sha256'] = str_repeat( 'd', 64 );
+        $this->assertSame( 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED', PGR_Upstream_Radar::persistCandidate( $candidate, $this->root ) );
+    }
+
+    public function test_modified_release_text_cannot_pass_with_new_full_page_hash(): void {
+        $candidate = $this->currentPerksCandidate();
+        $candidate['official_sources'][0]['sha256'] = 'dfb40bf4c46811d9fa8484a8bd0e08021eb68eb39cd5d3ea59a1cc08238cb097';
+        $candidate['official_sources'][0]['review_scope_sha256'] = str_repeat( 'e', 64 );
+        $this->assertSame( 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED', PGR_Upstream_Radar::persistCandidate( $candidate, $this->root ) );
     }
 
     public function test_future_changes_in_either_authoritative_source_still_fail_closed(): void {
