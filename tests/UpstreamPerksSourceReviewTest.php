@@ -94,6 +94,54 @@ final class UpstreamPerksSourceReviewTest extends TestCase {
         }
     }
 
+    public function test_weekly_only_validates_links_inside_unique_reviewed_release_entry(): void {
+        $entry = '<p><a href="https://gravitywiz.com/documentation/gravity-perks/">Gravity Perks</a> (v2.3.17)</p>'
+            . '<ul><li>Fixed issue where Spellbook would not be activated network-wide during migration process.</li></ul>'
+            . '<p><a href="https://gravitywiz.com/documentation/gp-ecommerce-fields/">GP eCommerce Fields</a> (v1.2.34)</p>';
+        $plain = '<html><nav><a href="/nav">Menu</a></nav>' . $entry
+            . '<footer><a href="/footer">Footer</a></footer></html>';
+        $digest = PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $plain);
+
+        $outOfScope = [
+            // A missing href in navigation cannot invalidate the release entry.
+            str_replace('<a href="/nav">Menu</a>', '<a>Menu</a>', $plain),
+            // An unsupported protocol in site navigation does not belong to the release.
+            str_replace('href="/nav"', 'href="javascript:alert(1)"', $plain),
+            // Footer markup is outside the release, even when its anchor is broken.
+            str_replace('<a href="/footer">Footer</a>', '<a href="/footer">Footer', $plain),
+            // Links in the *following* product are not part of Gravity Perks 2.3.17.
+            str_replace('href="https://gravitywiz.com/documentation/gp-ecommerce-fields/"',
+                'href="javascript:alert(1)"', $plain),
+            str_replace('href="https://gravitywiz.com/documentation/gp-ecommerce-fields/"', '', $plain),
+        ];
+        foreach ($outOfScope as $html) {
+            $this->assertSame($digest, PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $html));
+        }
+
+        // Release-entry destinations and release notes are still protected.
+        $this->assertNotSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('/documentation/gravity-perks/', '/documentation/other/', $plain)
+        ));
+        $this->assertNotSame($digest, PGR_Upstream_Perks_Source_Review::digest(
+            self::WEEKLY, str_replace('network-wide', 'single-site', $plain)
+        ));
+        foreach ([
+            str_replace('href="https://gravitywiz.com/documentation/gravity-perks/"', '', $plain),
+            str_replace('href="https://gravitywiz.com/documentation/gravity-perks/"',
+                'href="ftp://untrusted.example/other"', $plain),
+            str_replace('GP eCommerce Fields</a> (v1.2.34)', 'Other Product</a> (v1.2.34)', $plain),
+            str_replace('Gravity Perks</a> (v2.3.17)',
+                'Gravity Perks</a> (v2.3.17)<p>Gravity Perks (v2.3.17)', $plain),
+        ] as $invalidReviewed) {
+            try {
+                PGR_Upstream_Perks_Source_Review::digest(self::WEEKLY, $invalidReviewed);
+                $this->fail('Missing, malformed or ambiguous reviewed evidence was accepted');
+            } catch (RuntimeException $exception) {
+                $this->assertNotSame('', $exception->getMessage());
+            }
+        }
+    }
+
     public function test_spellbook_scope_preserves_licensing_migration_and_update_changes(): void {
         $chapter = '<h2>What is Spellbook?</h2><p>Spellbook is a platform plugin centralizing installation, licensing, updates, and product discovery.</p>'
             . '<h2>Installation Instructions</h2><p>After installation, Gravity Perks will be deactivated during migration.</p>'
