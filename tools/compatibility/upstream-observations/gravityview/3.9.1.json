@@ -1,0 +1,39 @@
+{
+    "schema_version": 1,
+    "product_key": "gravityview",
+    "product_name": "GravityView",
+    "detected_upstream_version": "3.9.1",
+    "project_baseline": {
+        "version": "3.3.4",
+        "authority_kind": "OWNER_SUPPLIED_EXACT_PACKAGE",
+        "authority_path": "tools/i18n/admission/baseline.json",
+        "authority_product": "gravityview"
+    },
+    "evidence_state": "DETECTED_ONLY",
+    "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+    "checked_at": "2026-10-24T20:39:04Z",
+    "official_sources": [
+        {
+            "url": "https://www.gravitykit.com/products/gravityview/changelog",
+            "role": "stable-release-and-changelog",
+            "sha256": "e37bdde460d053efa174d7cb98f55fa285cab8fda33372d26a546a450ec111b6"
+        }
+    ],
+    "classifications": [
+        "MODEL_REVIEW_REQUIRED",
+        "PACKAGE_REQUIRED_FOR_PROOF"
+    ],
+    "capability_observations": [
+        {
+            "capability": "profile.gravityview",
+            "classification": "MODEL_REVIEW_REQUIRED",
+            "summary": "Deterministic automation detected a newer stable release and bounded official identifiers. Semantic impact requires model/Owner review before any compatibility conclusion.",
+            "documented_identifiers": []
+        }
+    ],
+    "model_review_required": true,
+    "package_required_for_proof": true,
+    "review_state": "MODEL_REVIEW_REQUIRED",
+    "automation_generated": true,
+    "upstream_release_mode": "rolling"
+}
