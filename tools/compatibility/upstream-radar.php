@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/upstream-perks-source-review.php';
+
 final class PGR_Upstream_Radar {
     private const PROFILE_SCHEMA_VERSION = 1;
     private const OBSERVATION_SCHEMA_VERSION = 1;
@@ -470,6 +472,9 @@ final class PGR_Upstream_Radar {
             'role' => $releaseMode === 'terminal' ? 'terminal-stable-release' : 'stable-release-and-changelog',
             'sha256' => hash('sha256', $releaseBody),
         ]];
+        if ($profile['key'] === 'gravityperks' && $parsed['version'] === '2.3.17') {
+            $sourceRecords[0]['review_scope_sha256'] = PGR_Upstream_Perks_Source_Review::digest($releaseUrl, $releaseBody);
+        }
         $signalText = $parsed['release_block'];
         foreach ($profile['documentation_sources'] ?? [] as $docsUrl) {
             if ($docsUrl === $releaseUrl) {
@@ -481,6 +486,9 @@ final class PGR_Upstream_Radar {
                 'role' => 'official-documentation',
                 'sha256' => hash('sha256', $docsBody),
             ];
+            if ($profile['key'] === 'gravityperks' && $parsed['version'] === '2.3.17') {
+                $sourceRecords[count($sourceRecords) - 1]['review_scope_sha256'] = PGR_Upstream_Perks_Source_Review::digest($docsUrl, $docsBody);
+            }
             $signalText .= "\n" . substr($docsBody, 0, 30000);
         }
 
@@ -554,7 +562,11 @@ final class PGR_Upstream_Radar {
             $candidateFingerprints = self::sourceFingerprints($candidate['official_sources']);
             foreach ($existingFingerprints as $url => $fingerprint) {
                 if (($candidateFingerprints[$url] ?? null) !== $fingerprint) {
-                    return 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED';
+                    // A newly reviewed *current* source may be attested separately.
+                    // Historical MODEL_REVIEWED observations are never overwritten.
+                    return self::matchesPerksCurrentSourceReview($existing, $candidate, $root)
+                        ? 'REVIEWED_CURRENT_SOURCE_ATTESTED'
+                        : 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED';
                 }
             }
             return 'REVIEWED_DEDUPLICATED';
@@ -567,6 +579,71 @@ final class PGR_Upstream_Radar {
         }
         self::writeJson($path, $candidate);
         return 'AUTOMATED_UPDATED';
+    }
+
+    /**
+     * Authorize only the explicitly re-reviewed Gravity Perks 2.3.17 source set.
+     * Future source changes and any ambiguity continue to require review.
+     */
+    private static function matchesPerksCurrentSourceReview(array $existing, array $candidate, string $root): bool {
+        if (($existing['product_key'] ?? null) !== 'gravityperks'
+            || ($existing['detected_upstream_version'] ?? null) !== '2.3.17'
+            || ($candidate['product_key'] ?? null) !== 'gravityperks'
+            || ($candidate['detected_upstream_version'] ?? null) !== '2.3.17') {
+            return false;
+        }
+
+        $path = self::joinRepositoryPath($root, 'tools/compatibility/upstream-source-reviews/gravityperks-2.3.17.json');
+        if (!is_file($path)) {
+            return false;
+        }
+        $review = self::readJsonObject($path, 'current reviewed upstream source attestation');
+        $historical = self::sourceFingerprints($existing['official_sources']);
+        $current = self::sourceFingerprints($candidate['official_sources']);
+        $reviewedHistorical = $review['historical_source_fingerprints'] ?? null;
+        $reviewedCurrent = $review['current_source_fingerprints'] ?? null;
+
+        if (($review['schema_version'] ?? null) !== 1
+            || ($review['product_key'] ?? null) !== 'gravityperks'
+            || ($review['version'] ?? null) !== '2.3.17'
+            || !is_string($review['reviewed_at_utc'] ?? null)
+            || preg_match('/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/', $review['reviewed_at_utc']) !== 1
+            || !is_string($review['scope'] ?? null)
+            || $review['scope'] === ''
+            || !is_array($reviewedHistorical) || !is_array($reviewedCurrent)
+            || array_is_list($reviewedHistorical) || array_is_list($reviewedCurrent)
+            || count($historical) !== count($existing['official_sources'])
+            || count($current) !== count($candidate['official_sources'])
+            || count($historical) !== 2 || count($current) !== 2) {
+            return false;
+        }
+
+        ksort($reviewedHistorical, SORT_STRING);
+        ksort($reviewedCurrent, SORT_STRING);
+        if ($reviewedHistorical !== $historical) {
+            return false;
+        }
+        // Exact full-page review is valid for the originally inspected bytes.
+        if ($reviewedCurrent === $current) {
+            return true;
+        }
+        // A later page may change outside the reviewed release/docs scope.
+        // Accept only an independently reviewed, exact scoped digest for BOTH sources.
+        $reviewedScoped = $review['current_link_aware_scoped_fingerprints'] ?? null;
+        if (!is_array($reviewedScoped) || array_is_list($reviewedScoped)) {
+            return false;
+        }
+        $candidateScoped = [];
+        foreach ($candidate['official_sources'] as $source) {
+            $digest = $source['review_scope_sha256'] ?? null;
+            if (!is_string($digest) || preg_match('/^[a-f0-9]{64}$/', $digest) !== 1) {
+                return false;
+            }
+            $candidateScoped[$source['url']] = $digest;
+        }
+        ksort($reviewedScoped, SORT_STRING);
+        ksort($candidateScoped, SORT_STRING);
+        return count($candidateScoped) === 2 && $reviewedScoped === $candidateScoped;
     }
 
     public static function assertPersistenceOutcome(string $productKey, string $status): void {
