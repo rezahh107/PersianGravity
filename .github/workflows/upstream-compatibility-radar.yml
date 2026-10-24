@@ -17,6 +17,8 @@ on:
       - '.github/workflows/upstream-compatibility-radar.yml'
       - '.github/scripts/upstream-radar-observation-boundary.sh'
       - 'tools/compatibility/upstream-radar.php'
+      - 'tools/compatibility/upstream-radar-persistence-smoke.php'
+      - 'tools/compatibility/upstream-source-reviews/**'
       - 'tools/compatibility/upstream-radar-consistency.php'
       - 'tools/compatibility/upstream-radar-source-diagnostics.php'
       - 'tools/compatibility/upstream-radar-profiles.json'
@@ -25,6 +27,7 @@ on:
       - 'tools/compatibility/gravityflow-package.php'
       - 'tools/i18n/admission/baseline.json'
       - 'tools/i18n/admission/g007-gravity-perks.json'
+      - 'tests/UpstreamRadarCurrentSourceReviewTest.php'
       - 'tests/UpstreamCompatibilityRadarTest.php'
       - 'tests/UpstreamCompatibilityRadarConsistencyTest.php'
       - 'tests/UpstreamCompatibilityRadarSourceShapeTest.php'
@@ -83,6 +86,18 @@ jobs:
             exit "$diagnostic_status"
           fi
           exit "$consistency_status"
+
+      - name: Exercise scanned candidate persistence in isolated copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          isolated="$(mktemp -d)"
+          trap 'rm -rf "$isolated"' EXIT
+          mkdir -p "$isolated/tools/compatibility"
+          cp -a tools/compatibility/upstream-observations "$isolated/tools/compatibility/"
+          cp -a tools/compatibility/upstream-source-reviews "$isolated/tools/compatibility/"
+          php tools/compatibility/upstream-radar-persistence-smoke.php "$isolated" radar-evidence/candidates
+          git diff --exit-code -- tools/compatibility/upstream-observations tools/compatibility/gravityflow-package.json
 
       - name: Upload machine-readable radar evidence
         if: always()
