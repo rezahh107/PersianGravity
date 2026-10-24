@@ -145,6 +145,7 @@ $admin_url = admin_url();
 $manifest = array(
 	'schema_version' => '1.1.0',
 	'evidence_class' => 'REAL_LICENSED_HEADLESS_BROWSER_RUNTIME',
+	'php_version'    => PHP_VERSION,
 	'locale'         => get_locale(),
 	'rtl'            => is_rtl(),
 	'versions'       => $versions,
