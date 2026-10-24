@@ -39,7 +39,7 @@ final class UpstreamPerksSourceReviewTest extends TestCase {
             str_replace( 'license key transfers', 'license key must be replaced', $html )
         ) );
         $this->assertNotSame( $hash, PGR_Upstream_Perks_Source_Review::digest( self::SPELLBOOK,
-            str_replace( 'will be deactivated', 'will stay active', $html )
+            str_replace( 'after migration', 'before migration', $html )
         ) );
     }
 

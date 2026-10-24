@@ -91,6 +91,7 @@ final class UpstreamRadarCurrentSourceReviewTest extends TestCase {
         foreach ( array( 0, 1 ) as $index ) {
             $candidate = $this->currentPerksCandidate();
             $candidate['official_sources'][ $index ]['sha256'] = str_repeat( 'a', 64 );
+            $candidate['official_sources'][ $index ]['review_scope_sha256'] = str_repeat( 'b', 64 );
             $status = PGR_Upstream_Radar::persistCandidate( $candidate, $this->root );
             $this->assertSame( 'REVIEWED_SOURCE_CHANGED_REVIEW_REQUIRED', $status );
             try {
