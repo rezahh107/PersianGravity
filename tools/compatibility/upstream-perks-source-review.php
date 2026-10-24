@@ -13,9 +13,12 @@ final class PGR_Upstream_Perks_Source_Review {
             throw new RuntimeException('Gravity Perks source was missing or malformed');
         }
         if ($url === 'https://gravitywiz.com/gravity-wiz-weekly-269/') {
-            $text = self::cleanText($html);
-            $start = self::uniqueOffset($text, 'Gravity Perks (v2.3.17)');
-            $end = self::uniqueOffset($text, 'GP eCommerce Fields (v1.2.34)');
+            // Preserve both the reviewed release wording AND any href belonging
+            // to its versioned entry. The following product is an exclusive
+            // boundary: its own href and everything after it are out of scope.
+            $text = self::cleanTextWithLinks($html);
+            $start = self::uniqueReleaseOffset($text, 'Gravity Perks', '2.3.17');
+            $end = self::uniqueReleaseOffset($text, 'GP eCommerce Fields', '1.2.34');
             if ($end <= $start) {
                 throw new RuntimeException('Gravity Perks release block boundaries are invalid');
             }
@@ -120,6 +123,16 @@ final class PGR_Upstream_Perks_Source_Review {
             throw new RuntimeException('unparseable official source text');
         }
         return $normalized;
+    }
+
+    private static function uniqueReleaseOffset(string $text, string $product, string $version): int {
+        $pattern = '~' . preg_quote($product, '~')
+            . '(?: \[href=[^\]]+\])? \(v' . preg_quote($version, '~') . '\)~u';
+        $count = preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE);
+        if ($count !== 1) {
+            throw new RuntimeException('Gravity Perks named version boundary missing or ambiguous: ' . $product);
+        }
+        return $matches[0][0][1];
     }
 
     private static function uniqueOffset(string $text, string $needle): int {
