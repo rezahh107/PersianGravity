@@ -537,18 +537,58 @@ final class PGR_Upstream_Radar {
         ];
     }
 
-    public static function persistCandidate(array $candidate, ?string $root = null): string {
+    /**
+     * Check source consistency against the pre-write observation tree and
+     * preflight every candidate before making the first observation mutation.
+     * No source is fetched again: callers pass the results of their one scan.
+     */
+    public static function persistValidatedResults(array $summary, array $profiles, ?string $root = null): array {
+        $root ??= self::repositoryRoot();
+        require_once __DIR__ . '/upstream-radar-consistency.php';
+        PGR_Upstream_Radar_Consistency::validateSummary($summary, $profiles, $root);
+
+        $candidates = [];
+        foreach ($summary['results'] as $result) {
+            $candidate = $result['observation_candidate'] ?? null;
+            if ($candidate === null) {
+                continue;
+            }
+            $key = (string) $result['product_key'];
+            if (!isset($profiles[$key])
+                || !is_array($candidate)
+                || ($candidate['product_key'] ?? null) !== $key
+                || ($candidate['detected_upstream_version'] ?? null) !== $result['latest_upstream_version']
+                || isset($candidates[$key])) {
+                throw new RuntimeException("{$key}: scanned candidate identity is inconsistent");
+            }
+            self::validateObservation($candidate);
+            self::assertPersistenceOutcome($key, self::persistCandidate($candidate, $root, true));
+            $candidates[$key] = $candidate;
+        }
+
+        $statuses = [];
+        foreach ($candidates as $key => $candidate) {
+            $status = self::persistCandidate($candidate, $root);
+            self::assertPersistenceOutcome($key, $status);
+            $statuses[$key] = $status;
+        }
+        return $statuses;
+    }
+
+    public static function persistCandidate(array $candidate, ?string $root = null, bool $dryRun = false): string {
         self::validateObservation($candidate);
         $root ??= self::repositoryRoot();
         $observationRoot = self::joinRepositoryPath($root, 'tools/compatibility/upstream-observations');
         $directory = $observationRoot . '/' . $candidate['product_key'];
         $path = $directory . '/' . $candidate['detected_upstream_version'] . '.json';
-        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+        if (!$dryRun && !is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
             throw new RuntimeException("cannot create observation directory: {$directory}");
         }
 
         if (!file_exists($path)) {
-            self::writeJson($path, $candidate);
+            if (!$dryRun) {
+                self::writeJson($path, $candidate);
+            }
             return 'CREATED';
         }
 
@@ -577,7 +617,9 @@ final class PGR_Upstream_Radar {
         if ($existingFingerprints === $candidateFingerprints && ($existing['capability_observations'][0]['documented_identifiers'] ?? []) === ($candidate['capability_observations'][0]['documented_identifiers'] ?? [])) {
             return 'AUTOMATED_DEDUPLICATED';
         }
-        self::writeJson($path, $candidate);
+        if (!$dryRun) {
+            self::writeJson($path, $candidate);
+        }
         return 'AUTOMATED_UPDATED';
     }
 
@@ -915,10 +957,8 @@ function pgrUpstreamRadarMain(array $argv): int {
                         throw new RuntimeException("cannot create candidate directory: {$candidateDir}");
                     }
                     $candidatePath = $candidateDir . '/' . $result['latest_upstream_version'] . '.json';
-                    file_put_contents($candidatePath, json_encode($result['observation_candidate'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n");
-                    if ($persist) {
-                        $result['persistence'] = PGR_Upstream_Radar::persistCandidate($result['observation_candidate']);
-                        PGR_Upstream_Radar::assertPersistenceOutcome($key, $result['persistence']);
+                    if (file_put_contents($candidatePath, json_encode($result['observation_candidate'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n") === false) {
+                        throw new RuntimeException("cannot write scanned candidate: {$candidatePath}");
                     }
                 }
                 $results[] = $result;
@@ -934,6 +974,22 @@ function pgrUpstreamRadarMain(array $argv): int {
             'failures' => $failures,
             'evidence_ceiling' => 'DETECTED / DOCUMENTED != OWNER_SUPPLIED != TESTED != QUALIFIED != ADMITTED',
         ];
+        // Validate the complete scan and all same-version outcomes before writes.
+        // On failure the scheduled job cannot reach its bounded Git publication.
+        if ($persist && $failures === []) {
+            try {
+                $statuses = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles);
+                foreach ($summary['results'] as &$result) {
+                    if (isset($statuses[$result['product_key']])) {
+                        $result['persistence'] = $statuses[$result['product_key']];
+                    }
+                }
+                unset($result);
+            } catch (Throwable $exception) {
+                $failures['persistence'] = $exception->getMessage();
+                $summary['failures'] = $failures;
+            }
+        }
         file_put_contents(rtrim($output, '/') . '/summary.json', json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n");
         $renderedSummary = PGR_Upstream_Radar::renderSummary($results, $failures);
         file_put_contents(rtrim($output, '/') . '/summary.md', $renderedSummary);
