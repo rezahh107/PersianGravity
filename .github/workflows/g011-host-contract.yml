@@ -98,6 +98,13 @@ jobs:
           set -euo pipefail
           G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-host-source-inventory.php" --use-include
           test -s "$G011_ARTIFACT_DIR/host-source-inventory.json"
+      - name: Characterize actual native confirmation and merge-tag filter scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-host-runtime-characterization.php
+          G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-host-runtime-characterization.php" --use-include
+          test -s "$G011_ARTIFACT_DIR/host-runtime-characterization.json"
       - name: Upload bounded source inventory
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
