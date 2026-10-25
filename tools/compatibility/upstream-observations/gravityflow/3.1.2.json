@@ -1,0 +1,39 @@
+{
+    "schema_version": 1,
+    "product_key": "gravityflow",
+    "product_name": "Gravity Flow",
+    "detected_upstream_version": "3.1.2",
+    "project_baseline": {
+        "version": "3.1.0",
+        "authority_kind": "OWNER_SUPPLIED_GOOGLE_DRIVE",
+        "authority_path": "tools/compatibility/gravityflow-package.json",
+        "authority_product": "gravityflow"
+    },
+    "evidence_state": "DETECTED_ONLY",
+    "package_state": "NOT_SUPPLIED_FOR_DETECTED_VERSION",
+    "checked_at": "2026-10-24T20:39:04Z",
+    "official_sources": [
+        {
+            "url": "https://docs.gravityflow.io/changelog/",
+            "role": "stable-release-and-changelog",
+            "sha256": "f2024bb0964a2104a738fd1f5efbb0810ac72bffa45d16d306a04fdf3a7fc338"
+        }
+    ],
+    "classifications": [
+        "MODEL_REVIEW_REQUIRED",
+        "PACKAGE_REQUIRED_FOR_PROOF"
+    ],
+    "capability_observations": [
+        {
+            "capability": "profile.gravityflow",
+            "classification": "MODEL_REVIEW_REQUIRED",
+            "summary": "Deterministic automation detected a newer stable release and bounded official identifiers. Semantic impact requires model/Owner review before any compatibility conclusion.",
+            "documented_identifiers": []
+        }
+    ],
+    "model_review_required": true,
+    "package_required_for_proof": true,
+    "review_state": "MODEL_REVIEW_REQUIRED",
+    "automation_generated": true,
+    "upstream_release_mode": "rolling"
+}
