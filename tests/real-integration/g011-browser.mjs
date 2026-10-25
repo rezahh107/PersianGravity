@@ -18,7 +18,9 @@ try {
     assert.ok(url.startsWith('http://127.0.0.1:8080/'), 'Unexpected fixture URL: ' + url);
     const errors = [];
     page.on('pageerror', (error) => errors.push(String(error)));
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    console.log('G011_BROWSER_PAGE', mode, 'status=' + response?.status(), 'url=' + page.url(), 'title=' + await page.title());
+    console.log('G011_BROWSER_PAGE_BODY', (await page.locator('body').innerText()).slice(0, 550));
     const form = page.locator('#gform_' + fixture.form_id);
     await form.waitFor({ timeout: 20000 });
     await page.locator('#gform_submit_button_' + fixture.form_id).click();
