@@ -274,6 +274,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			return null;
 		}
 		list( $year, $month, $day ) = array_map( 'intval', $parts );
+
 		$months   = array( 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند' );
 		$calendar = array(
 			'Y' => sprintf( '%04d', $year ),
@@ -284,6 +285,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			'j' => (string) $day,
 			'F' => $months[ $month - 1 ],
 		);
+
 		$result  = '';
 		$escaped = false;
 		foreach ( str_split( $format ) as $character ) {
