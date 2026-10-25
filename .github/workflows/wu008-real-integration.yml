@@ -15,6 +15,11 @@ on:
       - 'includes/class-pgr-gregorian-jalali-converter.php'
       - 'includes/class-pgr-jalali-presentation.php'
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gf-confirmation-jalali-adapter.php'
+      - 'includes/class-pgr-core.php'
+      - 'persian-gravityforms.php'
+      - 'tests/G011ConfirmationJalaliTest.php'
+      - 'docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
@@ -135,6 +140,8 @@ jobs:
           bash -n tests/real-integration/verify-package.sh
           php -l tools/compatibility/gravityflow-package.php
           php -l tests/real-integration/setup-runtime.php
+          php -l tests/real-integration/g011-confirmation-runtime.php
+          node --check tests/real-integration/g011-confirmation-browser.mjs
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-state.php
@@ -682,6 +689,21 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g008-flow-residual-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-no-admission.json"
+
+      - name: Exercise G-011 authentic configured confirmations and negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $states = get_option("pgr_modules");
+            if (!is_array($states) || !isset($states["states"])) { throw new RuntimeException("Invalid module state"); }
+            $states["states"]["jalali_presentation"] = true;
+            update_option("pgr_modules", $states);
+          '
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-confirmation-runtime.php
+          test -s "$WU008_ARTIFACT_DIR/g011-confirmation.json"
+          node tests/real-integration/g011-confirmation-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g011-browser.json"
 
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
