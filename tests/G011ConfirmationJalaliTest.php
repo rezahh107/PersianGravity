@@ -97,6 +97,8 @@ final class G011ConfirmationJalaliTest extends TestCase {
 		if ( ! function_exists( 'date_i18n' ) ) {
 			eval( 'function date_i18n($fmt,$t,$gmt=false) { return gmdate($fmt,$t); }' );
 		}
+		$GLOBALS['pgr_test_options']['pgr_modules'] = array( 'schema_version' => 1, 'states' => array( 'jalali_presentation' => true ) );
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gregorian-jalali-converter.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-jalali-presentation.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-gf-confirmation-jalali-adapter.php';
