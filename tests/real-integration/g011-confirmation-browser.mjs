@@ -19,7 +19,7 @@ try {
       const response = await page.goto(manifest.urls[mode], { waitUntil: 'domcontentloaded' });
       if (!response || response.status() !== 200) throw new Error(mode + ': page not served');
       await page.locator('input[name="input_1"]').first().fill('G011 Browser Test');
-      await page.locator('form[id^="gform_"] input[type="submit"]').first().click();
+      await page.locator('form[id^="gform_"] input[type="submit"], form[id^="gform_"] button[type="submit"]').first().click();
       const message = page.locator('.gform_confirmation_message').first();
       await message.waitFor({ state: 'visible', timeout: 20000 });
       const text = await message.innerText();
