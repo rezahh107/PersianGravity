@@ -38,6 +38,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			return $text;
 		}
 
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Required to confine GF's global seam to its exact confirmation caller.
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 6 );
 		if (
 			! isset( $trace[3], $trace[4] ) ||
@@ -64,8 +65,8 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			}
 			$segments[ $index ] = preg_replace_callback(
 				'/\{(?:date_created|date_updated|payment_date|today)(?::[^{}]*)?\}|\{[^{}:]+:[0-9]+(?::[^{}]*)?\}/u',
-				function ( $match ) use ( $form, $entry, $segment ) {
-					$tag = $match[0];
+				function ( $matched ) use ( $form, $entry, $segment ) {
+					$tag    = $matched[0];
 					$offset = strpos( $segment, $tag );
 					if ( false !== $offset ) {
 						$before = substr( $segment, 0, $offset );
@@ -185,7 +186,11 @@ final class PGR_GF_Confirmation_Date_Adapter {
 				return null;
 			}
 			$source = 'today' === $kind ? new DateTimeImmutable( 'now', wp_timezone() ) : $this->parse_utc( $raw );
-			return null === $source ? null : array( 'kind' => $kind, 'source' => $source, 'modifier' => $modifier );
+			return null === $source ? null : array(
+				'kind'     => $kind,
+				'source'   => $source,
+				'modifier' => $modifier,
+			);
 		}
 		if ( ! preg_match( '/^\{[^{}:]+:([0-9]+)(?::([^{}]*))?\}$/u', $tag, $matches ) ) {
 			return null;
@@ -207,7 +212,13 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			if ( false === $source || $source->format( 'Y-m-d' ) !== $raw ) {
 				return null;
 			}
-			return array( 'kind' => 'date_field', 'source' => $source, 'modifier' => $modifier, 'date_format' => (string) ( $field->dateFormat ?? '' ) );
+			return array(
+				'kind'        => 'date_field',
+				'source'      => $source,
+				'modifier'    => $modifier,
+				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- GF native field property.
+				'date_format' => (string) ( $field->dateFormat ?? '' ),
+			);
 		}
 		return null;
 	}
@@ -232,7 +243,9 @@ final class PGR_GF_Confirmation_Date_Adapter {
 		}
 		$local = $spec['source']->setTimezone( wp_timezone() );
 		$jalali = PGR_Jalali_Presentation::format_date(
-			(int) $local->format( 'Y' ), (int) $local->format( 'm' ), (int) $local->format( 'd' )
+			(int) $local->format( 'Y' ),
+			(int) $local->format( 'm' ),
+			(int) $local->format( 'd' )
 		);
 		if ( null === $jalali ) {
 			return null;
