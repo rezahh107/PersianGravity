@@ -93,12 +93,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          isolated="$(mktemp -d)"
-          trap 'rm -rf "$isolated"' EXIT
-          mkdir -p "$isolated/tools/compatibility"
-          cp -a tools/compatibility/upstream-observations "$isolated/tools/compatibility/"
-          cp -a tools/compatibility/upstream-source-reviews "$isolated/tools/compatibility/"
-          php tools/compatibility/upstream-radar-persistence-smoke.php "$isolated" radar-evidence/candidates
+          first_run="$(mktemp -d)"
+          committed="$(mktemp -d)"
+          trap 'rm -rf "$first_run" "$committed"' EXIT
+          for isolated in "$first_run" "$committed"; do
+            mkdir -p "$isolated/tools/compatibility"
+            cp -a tools/compatibility/upstream-observations "$isolated/tools/compatibility/"
+            cp -a tools/compatibility/upstream-source-reviews "$isolated/tools/compatibility/"
+          done
+          php tools/compatibility/upstream-radar-persistence-smoke.php "$first_run" "$committed" radar-evidence/candidates
           git diff --exit-code -- tools/compatibility/upstream-observations tools/compatibility/gravityflow-package.json
 
       - name: Upload machine-readable radar evidence
