@@ -10,7 +10,11 @@ The active Owner decisions in the project's complete `GOAL_AUTHORITY`, including
 
 | Goal / work | Current evidence and disposition | Important limit |
 | --- | --- | --- |
-| Earlier G-001–G-005 surface/real-UI project | Prior accepted closure evidence retained under Owner authority; not reopened or re-executed by this documentation batch | This WU-06 review is not a fresh 19-surface browser qualification |
+| G-001 — classified surface/source authority | Prior accepted exact-package and 19-surface source/scope authority retained as historical accepted evidence; no new source-admission writes | Not requalified for newer vendor packages in this batch |
+| G-002 — admitted classified content | Prior accepted 19-surface bounded provider/content-admission outcome preserved in current source manifests and validation history | Current full-source G-006 supersedes the older residual out-of-scope limit only where explicitly authorized |
+| G-003 — deterministic native fallback | Prior accepted provider/host responsibility and fail-closed admission boundary remain unchanged in current architecture | A docs PR does not execute a fresh host-browser regression |
+| G-004 — real licensed UI/runtime/RTL | Prior achieved exact-package real-integration/browser evidence retained in Owner's closure history and current WU008/G-007/G-008 validation evidence | No new real-package/browser lane is implied by citation alone |
+| G-005 — earlier project closure | Historical accepted scope-specific closure preserved under superseding Owner decisions; no old dossier rewritten | It does not close later-added mandatory G-006 through G-011 |
 | G-006 full-source translation | Accepted exact-source coverage: GF `4207/4207`, Flow `1098/1098`, GravityView `3127/3127`, per merged source/content evidence and current admission manifests | Source-bound versions only; does not qualify newer vendor versions |
 | G-007 bounded Gravity Perks family | Achieved exact-package `83+39+5=127` source-backed translations plus admitted uploader/RTL integration; browser evidence is maintained under the separate G-007/WU008 validation history | No automatic enrollment of Spellbook or child addons beyond locked versions |
 | G-008 Jalali date presentation | Achieved only admitted typed presentation surfaces, canonical Gregorian/raw semantics protected | Excludes unadmitted Status due-date, Entry Detail Scheduled, and unqualified newer packages |
