@@ -105,6 +105,25 @@ jobs:
           php -l tests/real-integration/g011-host-runtime-characterization.php
           G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-host-runtime-characterization.php" --use-include
           test -s "$G011_ARTIFACT_DIR/host-runtime-characterization.json"
+      - name: Activate tested PersianGravity with only Jalali presentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_pgr_version="$(php tools/release/release-tool.php current)"
+          pgr="$G011_WP_PATH/wp-content/plugins/persian-gravityforms"
+          mkdir -p "$pgr"
+          tar --exclude=.git -cf - . | tar -xf - -C "$pgr"
+          php "$G011_WP_CLI" option update pgr_modules '{"schema_version":1,"states":{"national_id":false,"jalali_date":false,"jalali_presentation":true,"iranian_address":false,"digit_normalization":false,"iranian_currency":false,"structured_scanner":false}}' --format=json --path="$G011_WP_PATH"
+          php "$G011_WP_CLI" plugin activate persian-gravityforms --path="$G011_WP_PATH"
+          test "$(php "$G011_WP_CLI" plugin get persian-gravityforms --field=version --path="$G011_WP_PATH")" = "$expected_pgr_version"
+      - name: Verify enabled adapter with real configured ordinary/AJAX Text confirmations
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l includes/class-pgr-gf-confirmation-date-adapter.php
+          php -l tests/real-integration/g011-confirmation-runtime.php
+          G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-confirmation-runtime.php" --use-include
+          test -s "$G011_ARTIFACT_DIR/g011-enabled-runtime.json"
       - name: Upload bounded source inventory
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
