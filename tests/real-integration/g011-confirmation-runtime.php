@@ -57,7 +57,7 @@ if ( is_wp_error( $form_id ) || ! is_int( $form_id ) ) {
 	$fail( 'Could not create real Gravity Forms form.' );
 }
 $form = GFAPI::get_form( $form_id );
-$body = '<strong>G011_SELECTED</strong> Created={date_created:format:Y/m/d}; iso={date_created:format:Y-m-d H:i}; updated={date_updated:format:Y/m/d}; year={Visit:2:year}; ymd={Visit:2:ymd_dash}; raw={date_created:raw}; payment={payment_date}; relative={date_created:human}; other=2026-03-21 &amp; keep.';
+$body = '<strong>G011_SELECTED</strong> Created={date_created:format:Y/m/d}; iso={date_created:format:Y-m-d H\:i}; updated={date_updated:format:Y/m/d}; year={Visit:2:year}; ymd={Visit:2:ymd_dash}; raw={date_created:raw}; payment={payment_date}; relative={date_created:human}; other=2026-03-21 &amp; keep.';
 $form['confirmations'] = array(
 	'default' => array(
 		'id' => 'g011-default', 'name' => 'Default', 'isActive' => true, 'isDefault' => true,
