@@ -1,5 +1,9 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-011 candidate — exact-Head verification pending
+
+The post-selection Text confirmation-only adapter is gated by jalali_presentation and effective fa_IR and does not attach to shared Merge Tag filters. Its source contract, current native Page/Redirect fallback and full tag × modifier × path evidence matrix are in [G-011 confirmation document](G011_CONFIRMATION_DATE_MERGE_TAGS.md). PHPUnit and WU008 licensed/browser outcomes are NOT_VERIFIED until their current PR Head runs complete; prior G-008 results do not qualify G-011.
+
 ## G-010 / WU-06 — current executed Radar and documentation-truth checkpoint (2026-10-25)
 
 Current canonical `main` inspected at `1c7bc7248cf28b634517627082eceb37f1eaa9fb`. Merger state: PR #79 (pre-write persistence safety), #81 (growth-safe observation fixtures) and #80 (three published `DETECTED_ONLY` observations) are all merged. Non-persisting manual Radar run [40086954962](https://github.com/rezahh107/PersianGravity/actions/runs/40086954962) and genuine persisting manual run [40130703147](https://github.com/rezahh107/PersianGravity/actions/runs/40130703147) both succeeded; #80 is actual automation-created reviewable publication, not simulated branch/push evidence. This cures the **current** manual-dispatch/publication verification gap without retroactively changing the original #73 history.
