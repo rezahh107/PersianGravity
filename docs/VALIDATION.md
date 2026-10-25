@@ -1,5 +1,13 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-010 / WU-06 — current executed Radar and documentation-truth checkpoint (2026-10-25)
+
+Current canonical `main` inspected at `1c7bc7248cf28b634517627082eceb37f1eaa9fb`. Merger state: PR #79 (pre-write persistence safety), #81 (growth-safe observation fixtures) and #80 (three published `DETECTED_ONLY` observations) are all merged. Non-persisting manual Radar run [40086954962](https://github.com/rezahh107/PersianGravity/actions/runs/40086954962) and genuine persisting manual run [40130703147](https://github.com/rezahh107/PersianGravity/actions/runs/40130703147) both succeeded; #80 is actual automation-created reviewable publication, not simulated branch/push evidence. This cures the **current** manual-dispatch/publication verification gap without retroactively changing the original #73 history.
+
+Gravity Flow first-party response `fac0e6b6ca19525c5896a5a45eb3cb6965482085764c199086467518bc37bdd4` reported `3.1.2.1` first (run `40086954962`, artifact `12557197288`). Response `f2024bb0964a2104a738fd1f5efbb0810ac72bffa45d16d306a04fdf3a7fc338` reported `3.1.2` first (runs `40130703147`, `40175007477`; artifacts `12574354613`, `12591642899`). The eight-probe official-source HTTP investigation [40180969275](https://github.com/rezahh107/PersianGravity/actions/runs/40180969275) showed four ordinary and four no-cache/revalidation requests all returned HTTP 200, same `3.1.2` body fingerprint; cache-revalidation did **not** recover `3.1.2.1`. Root cause in CDN/cache/origin is **NOT_PROVEN**. The governed heading parser is consistent *within each response*. Upstream latest-version completeness is therefore **NOT_PROVEN**, although the bounded first-party detection and reviewable publication paths were executed.
+
+This is a documentation-only reconciliation. Previous sections in this validation document retain dated, original scope and exact-Head evidence. No previous runtime/browser/CI run becomes verified on the new WU-06 Head merely by citation; only the workflows actually executed on that Head may be reported as such. The exact Flow `3.1.0` package, historical `3.1.1.1` uncertainty, Entry Detail four-date Owner-approved version exception, contract-local native fallback, Timeline/Print behavior, reporting-only diagnostics and WU-05 commercial safety boundaries remain unchanged. The full current destination/Goal Coverage decision, including external freshness limitation and outstanding G-011, is recorded in [`docs/G010_WU06_GOAL_COVERAGE.md`](G010_WU06_GOAL_COVERAGE.md).
+
 ## G-010 / WU-03 — PR #71 Entry Detail semantic-contract evidence reconciliation — 2026-09-27
 
 Canonical conclusion: `NO_SAFE_REPLACEMENT_PROVEN`.
