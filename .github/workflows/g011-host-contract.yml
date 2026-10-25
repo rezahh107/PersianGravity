@@ -82,6 +82,9 @@ jobs:
           php "$G011_WP_CLI" core download --path="$G011_WP_PATH" --version=6.8.3 --force --skip-content
           php "$G011_WP_CLI" config create --path="$G011_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=g011-root --dbhost=127.0.0.1:3306 --skip-check
           php "$G011_WP_CLI" core install --path="$G011_WP_PATH" --url=http://127.0.0.1:8080 --title='G011 Host Probe' --admin_user=runtime_admin --admin_password="$G011_ADMIN_PASSWORD" --admin_email='runtime@example.invalid' --skip-email
+          php "$G011_WP_CLI" config set WP_HOME "http://127.0.0.1:8080" --path="$G011_WP_PATH"
+          php "$G011_WP_CLI" config set WP_SITEURL "http://127.0.0.1:8080" --path="$G011_WP_PATH"
+          test "$(php "$G011_WP_CLI" --path="$G011_WP_PATH" eval 'echo home_url();')" = "http://127.0.0.1:8080"
           php "$G011_WP_CLI" language core install fa_IR --activate --path="$G011_WP_PATH"
       - name: Download and verify licensed exact Gravity Forms package
         shell: bash
