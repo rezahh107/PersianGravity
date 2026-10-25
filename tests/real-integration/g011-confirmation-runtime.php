@@ -93,16 +93,18 @@ $entry['payment_date'] = '';
 $expected_native = GFCommon::replace_variables( '{date_created:format:Y/m/d}', $form, $entry, false, true, false, 'html' );
 $submitted = $form;
 $text = GFFormDisplay::handle_confirmation( $submitted, $entry, false );
-if (
-	! is_string( $text ) ||
-	false === strpos( $text, 'G011_SELECTED' ) ||
-	false === strpos( $text, '۱۴۰۵/۰۱/۰۱' ) ||
-	false === strpos( $text, '۱۴۰۵-۰۱-۰۱ ۰۰:۰۰' ) ||
-	false === strpos( $text, 'year=۱۴۰۵' ) ||
-	false === strpos( $text, 'ymd=۱۴۰۵-۰۱-۰۱' ) ||
-	false === strpos( $text, 'other=2026-03-21' )
-) {
-	$fail( 'Selected Text confirmation did not preserve HTML and present Jalali date tags.' );
+$text_checks = array(
+	'string' => is_string( $text ),
+	'selected' => is_string( $text ) && false !== strpos( $text, 'G011_SELECTED' ),
+	'jalali' => is_string( $text ) && false !== strpos( $text, '۱۴۰۵/۰۱/۰۱' ),
+	'iso' => is_string( $text ) && false !== strpos( $text, '۱۴۰۵-۰۱-۰۱ ۰۰:۰۰' ),
+	'year' => is_string( $text ) && false !== strpos( $text, 'year=۱۴۰۵' ),
+	'ymd' => is_string( $text ) && false !== strpos( $text, 'ymd=۱۴۰۵-۰۱-۰۱' ),
+	'untouched' => is_string( $text ) && false !== strpos( $text, 'other=2026-03-21' ),
+);
+$failed_text = array_keys( array_filter( $text_checks, static function ( $value ) { return ! $value; } ) );
+if ( $failed_text ) {
+	$fail( 'Selected Text contract failed checks: ' . implode( ',', $failed_text ) );
 }
 $ajax_form = $form;
 $ajax = GFFormDisplay::handle_confirmation( $ajax_form, $entry, true );
