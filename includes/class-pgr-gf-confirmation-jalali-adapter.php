@@ -36,6 +36,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			! is_string( $confirmation ) ||
 			! is_array( $form ) ||
 			! is_array( $entry ) ||
+			! PGR_Module_Registry::is_enabled( 'jalali_presentation' ) ||
 			'fa_IR' !== determine_locale() ||
 			! class_exists( 'PGR_Jalali_Presentation', false ) ||
 			! class_exists( 'GFFormDisplay', false ) ||
