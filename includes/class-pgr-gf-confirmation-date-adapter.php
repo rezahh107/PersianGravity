@@ -132,6 +132,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			$start = $marker['start'];
 			$end   = $marker['end'];
 			$match = '/' . preg_quote( $start, '/' ) . '(.*?)' . preg_quote( $end, '/' ) . '/us';
+
 			$confirmation = preg_replace_callback(
 				$match,
 				function ( $m ) use ( $marker, $form, $entry ) {
@@ -317,6 +318,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			'd' => $parts[2],
 			'j' => preg_replace( '/^۰(?=.)/u', '', $parts[2] ),
 		);
+
 		$allowed_time = array( 'H', 'G', 'h', 'g', 'i', 's', 'a', 'A' );
 		$output       = '';
 		$escaped      = false;
