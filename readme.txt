@@ -161,3 +161,7 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
 * Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.
+== G-011 source candidate (unreleased, not in stable 4.8.0) ==
+
+The opt-in `jalali_presentation` module is being qualified to present safe Gravity Forms 3.1.1.1 Text Confirmation date Merge Tags as Jalali in the Persian locale. It retains native raw/timestamp/relative modifiers, Gregorian storage, other consumers and unsupported query-string paths. This is not a published-release claim; see docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md for the exact support/evidence matrix and still-open goals.
+
