@@ -101,4 +101,19 @@ file_put_contents( $out . '/host-source-inventory.json', $json );
 foreach ( $inventory as $key => $matches ) {
     printf( 'HOST_SOURCE %s count=%d contexts=%s\n', $key, count( $matches ), implode( ',', array_slice( array_unique( array_column( $matches, 'nearest_function' ) ), 0, 12 ) ) );
 }
+foreach ( $methods as $class => $candidates ) {
+    foreach ( (array) $candidates as $m ) {
+        if ( ! is_array( $m ) ) { continue; }
+        if ( ! preg_match( '/confirm|replace_variables|date|merge/i', $m['name'] ) ) { continue; }
+        if ( 'GFFormsModel' === $class && ! preg_match( '/confirm/i', $m['name'] ) ) { continue; }
+        printf( 'HOST_METHOD %s::%s (%s) at %s:%d-%d\\n', $class, $m['name'], implode( ',', $m['parameters'] ), $m['source_file'], $m['first_line'], $m['last_line'] );
+    }
+}
+foreach ( array( 'gform_confirmation', 'gform_pre_replace_merge_tags', 'get_confirmation', 'replace_variables' ) as $term ) {
+    foreach ( (array) ( $inventory[ $term ] ?? array() ) as $hit ) {
+        if ( preg_match( '/form_display|common|class-gf-field-date/i', $hit['file'] ) ) {
+            printf( 'HOST_CALLSITE %s %s:%d %s\\n', $term, $hit['file'], $hit['line'], $hit['nearest_function'] );
+        }
+    }
+}
 echo "G011_HOST_SOURCE_INVENTORY_PASS\n";
