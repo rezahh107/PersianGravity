@@ -162,6 +162,19 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g011-browser.mjs
           test -s "$G011_ARTIFACT_DIR/g011-browser-results.json"
+      - name: Non-Persian native fallback (fresh WordPress process)
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$G011_WP_CLI" option update WPLANG en_US --path="$G011_WP_PATH"
+          G011_FALLBACK_MODE=english G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-native-fallback-runtime.php" --use-include
+          php "$G011_WP_CLI" option update WPLANG fa_IR --path="$G011_WP_PATH"
+      - name: Disabled module native fallback (fresh WordPress process)
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$G011_WP_CLI" option update pgr_modules '{"schema_version":1,"states":{"national_id":false,"jalali_date":false,"jalali_presentation":false,"iranian_address":false,"digit_normalization":false,"iranian_currency":false,"structured_scanner":false}}' --format=json --path="$G011_WP_PATH"
+          G011_FALLBACK_MODE=module_disabled G011_ARTIFACT_DIR="$G011_ARTIFACT_DIR" php "$G011_WP_CLI" --path="$G011_WP_PATH" eval-file "$GITHUB_WORKSPACE/tests/real-integration/g011-native-fallback-runtime.php" --use-include
       - name: Upload bounded source inventory
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
