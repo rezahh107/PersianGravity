@@ -1,5 +1,9 @@
 # Persian Gravity Forms
 
+## G-011 current implementation candidate (not yet admitted)
+
+The opt-in Jalali presentation module now contains a Text Confirmation-only adapter for Gravity Forms native date Merge Tags. The exact licensed Gravity Forms 3.1.1.1 host lifecycle and the separate Page/Redirect native-fallback boundary are recorded in [G-011 confirmation contract](docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md). Actual verified coverage is limited to scenarios exercised successfully by the exact-Head WU008/CI lanes; G-011 remains open and no future host package is automatically qualified.
+
 Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*` runtime.
 
 - Plugin version: `4.8.0`
