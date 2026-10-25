@@ -23,10 +23,14 @@ try {
       const message = page.locator('.gform_confirmation_message').first();
       await message.waitFor({ state: 'visible', timeout: 20000 });
       const text = await message.innerText();
-      if (!text.includes('G011_BROWSER_OK') ||
-          !/[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(text) ||
-          !text.includes('2026-03-21 unchanged')) {
-        throw new Error(mode + ': confirmation date/HTML regression');
+      const checks = {
+        selected: text.includes('G011_BROWSER_OK'),
+        jalali: /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(text),
+        untouched: text.includes('2026-03-21 unchanged'),
+        native_gregorian: /20[0-9]{2}[-/][0-9]{2}[-/][0-9]{2}/u.test(text),
+      };
+      if (!checks.selected || !checks.jalali || !checks.untouched) {
+        throw new Error(mode + ': confirmation contract failed: ' + JSON.stringify(checks));
       }
       if (errors.length) throw new Error(mode + ': browser runtime error: ' + errors.join(', '));
       results[mode] = { submission: 'CONFIRMED', jalali: true, untouched_text: true, pageerror_count: 0 };
