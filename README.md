@@ -1,5 +1,10 @@
 # Persian Gravity Forms
 
+## G-011 — Confirmation date Merge Tags (unreleased candidate)
+
+The G-008 opt-in `jalali_presentation` module also contains a **new exact Gravity Forms 3.1.1.1 Text Confirmation adapter**. For Persian `fa_IR` configured Text Confirmations, it presents supported system-date and native Gregorian Date-field Merge Tags in Jalali, preserving raw/timestamp/relative modifiers and GF's own local-time suffix. It never modifies Entry storage, other Merge Tag consumers, Page/Redirect Query String transport or already-Jalali field data. Other GF versions, non-Persian locales and a disabled module keep native output. This work is **partially qualified and unmerged**, not a published-release capability. For proof limits, per-tag support and remaining G-011 destinations, see [G-011 evidence matrix](docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md).
+
+
 Focused Persian/Iranian capabilities for Gravity Forms with one canonical `PGR_*` runtime.
 
 - Plugin version: `4.8.0`
