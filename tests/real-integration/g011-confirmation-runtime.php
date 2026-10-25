@@ -198,11 +198,47 @@ if ( GFAPI::get_entry( $entry_id )['date_created'] !== '2026-03-20 20:30:00' ) {
 }
 
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
-$browser_form = $form;
-$browser_form['confirmations'] = array( 'default' => $form['confirmations']['default'] );
-$browser_form['confirmations']['default']['message'] =
-	'<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged';
-GFAPI::update_form( $browser_form );
+// GFAPI persists confirmations using each confirmation's ID as the array key.
+require_once __DIR__ . '/g011-default-confirmation.php';
+
+$browser_form = GFAPI::get_form( $form_id );
+if ( ! is_array( $browser_form ) ) {
+	$fail( 'Browser fixture could not re-read its GFAPI form.' );
+}
+$selected_default = pgr_g011_select_default_text_confirmation( $browser_form );
+$default_key      = $selected_default['key'];
+
+// Reproduce the historical defect on the actual host: the original hard-coded
+// key is absent after GFAPI has persisted and rekeyed the confirmations.
+if ( array_key_exists( 'default', $browser_form['confirmations'] ) ) {
+	$fail( 'Original hard-coded default-key regression is not reproduced on this host.' );
+}
+
+$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged';
+$expected_confirmations = $browser_form['confirmations'];
+$expected_confirmations[ $default_key ]['message'] = $browser_message;
+$browser_form['confirmations'][ $default_key ]['message'] = $browser_message;
+
+if ( true !== GFAPI::update_form( $browser_form ) ) {
+	$fail( 'GFAPI rejected the browser confirmation message update.' );
+}
+
+// The persisted, re-read GFAPI state is the acceptance authority, not the
+// in-memory fixture or an assumed array key.
+$browser_persisted = GFAPI::get_form( $form_id );
+if ( ! is_array( $browser_persisted ) ) {
+	$fail( 'Browser confirmation could not be re-read after update.' );
+}
+$persisted_default = pgr_g011_select_default_text_confirmation( $browser_persisted );
+if (
+	$default_key !== $persisted_default['key'] ||
+	$selected_default['confirmation']['id'] !== $persisted_default['confirmation']['id'] ||
+	$browser_message !== $persisted_default['confirmation']['message'] ||
+	$expected_confirmations !== $browser_persisted['confirmations']
+) {
+	$fail( 'GFAPI did not persist the selected default message without altering native confirmation metadata.' );
+}
+
 $urls = array();
 foreach ( array( 'ordinary' => 'false', 'ajax' => 'true' ) as $key => $mode ) {
 	$page = wp_insert_post(
