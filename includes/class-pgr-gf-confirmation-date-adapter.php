@@ -50,7 +50,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 		}
 
 		// Do not reinterpret JavaScript, CSS, HTML attribute values or URLs.
-		if ( false !== strpos( $text, '<script' ) || false !== strpos( $text, '<style' ) || false !== strpos( $text, '<textarea' ) ) {
+		if ( false !== stripos( $text, '<script' ) || false !== stripos( $text, '<style' ) || false !== stripos( $text, '<textarea' ) ) {
 			return $text;
 		}
 		$segments = preg_split( '/(<[^>]*>)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE );
@@ -320,7 +320,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			if ( isset( $map[ $char ] ) ) {
 				$output .= $map[ $char ];
 			} elseif ( in_array( $char, $allowed_time, true ) ) {
-				$output .= strtr( $local->format( $char ), '0123456789', '۰۱۲۳۴۵۶۷۸۹' );
+				$output .= str_replace( str_split( '0123456789' ), array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' ), $local->format( $char ) );
 			} elseif ( preg_match( '/^[a-zA-Z]$/', $char ) ) {
 				// Textual Gregorian month/day and unsupported tokens: native fallback.
 				return null;
