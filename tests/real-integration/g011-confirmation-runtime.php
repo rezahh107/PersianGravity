@@ -123,6 +123,31 @@ if (
 ) {
 	$fail( 'Conditional confirmation was not selected/presented exclusively.' );
 }
+// Independently exercise native time composition and a populated payment date.
+$extra_form = $form;
+$extra_form['confirmations'] = array(
+	'single' => array(
+		'id' => 'g011-extra',
+		'name' => 'Extra system dates',
+		'isDefault' => true,
+		'type' => 'message',
+		'message' => 'clock={date_created:time:format:Y/m/d}; payment={payment_date:format:Y/m/d}; updated={date_updated:format:Y/m/d}',
+		'disableAutoformat' => true,
+	),
+);
+$payment_entry = $entry;
+$payment_entry['payment_date'] = '2026-03-22 20:30:00';
+$extra_output = GFFormDisplay::handle_confirmation( $extra_form, $payment_entry, false );
+if (
+	! is_string( $extra_output ) ||
+	false === strpos( $extra_output, 'clock=۱۴۰۵/۰۱/۰۱' ) ||
+	false === strpos( $extra_output, '۰۰:۰۰' ) && false === strpos( $extra_output, '00:00' ) ||
+	false === strpos( $extra_output, 'payment=۱۴۰۵/۰۱/۰۳' ) ||
+	false === strpos( $extra_output, 'updated=۱۴۰۵/۰۱/۰۳' )
+) {
+	$fail( 'Native system time composition or nonempty payment/update date failed.' );
+}
+
 $notification_after = GFCommon::replace_variables( '{date_created:format:Y/m/d}', $form, $entry, false, true, false, 'html' );
 if ( $expected_native !== $notification_after || false !== strpos( $notification_after, '۱۴۰۵/' ) ) {
 	$fail( 'Shared Merge Tag rendering was affected outside confirmation.' );
