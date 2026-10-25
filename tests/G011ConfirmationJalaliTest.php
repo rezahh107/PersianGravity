@@ -15,7 +15,7 @@ final class G011ConfirmationJalaliTest extends TestCase {
 		$GLOBALS['pgr_test_timezone'] = 'Asia/Tehran';
 		$entry = array( 'date_created' => '2026-03-20 20:30:00', 'date_updated' => 'bad', 'payment_date' => '' );
 		$this->assertSame( '۱۴۰۵/۰۱/۰۱', $this->tag( '{date_created:format:Y/m/d}', $entry ) );
-		$this->assertSame( '۱۴۰۵-۰۱-۰۱ ۰۰:۰۰', $this->tag( '{date_created:format:Y-m-d H:i}', $entry ) );
+		$this->assertSame( '۱۴۰۵-۰۱-۰۱ ۰۰:۰۰', $this->tag( '{date_created:format:Y-m-d H\:i}', $entry ) );
 		$this->assertSame( 'Y ۱۴۰۵', $this->tag( '{date_created:format:\Y Y}', $entry ) );
 		$this->assertSame( '۱۴۰۵/۰۱/۰۱', $this->tag( '{date_created}', $entry ) );
 		$this->assertNull( $this->tag( '{date_updated}', $entry ) );
