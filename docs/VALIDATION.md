@@ -1,5 +1,12 @@
 # Persian Gravity Forms Validation — 4.3.0
 
+## G-011 — Exact Gravity Forms Confirmation date Merge Tags (unreleased PR evidence)
+
+The feature work starts from verified main `f5dfd85ce1faed3436c70a6e91255dd705db3ebb`. Owner's original/refined October 23 G-011 decisions are retained in full. A new exact licensed GF 3.1.1.1 workflow validates package size/hash/version, traces actual `get_confirmation_message` vs `get_confirmation_url`, executes live GF WordPress Text Confirmation rendering, and attempts ordinary/AJAX browser submissions. The G-008 presentation module remains independently opt-in. The Text adapter is bounded by exact caller provenance and leaves other consumers untouched; URL paths are not assumed safe. See [the evidence matrix and claim limits](G011_CONFIRMATION_DATE_MERGE_TAGS.md).
+
+Initial exact-source runs: [40188177655](https://github.com/rezahh107/PersianGravity/actions/runs/40188177655) (licensed identity/source inventory), [40188308335](https://github.com/rezahh107/PersianGravity/actions/runs/40188308335) (callsite/method provenance), and [40188528420](https://github.com/rezahh107/PersianGravity/actions/runs/40188528420) (native merge-tag and hook-stack behavior). These source experiments are not browser PASS claims. The final, exact-head workflow result (not preceding repair attempts) determines actual integration/browser/negative-test admission. **G-011 stays open** until missing paths and interactions are independently proven.
+
+
 ## G-010 / WU-06 — current executed Radar and documentation-truth checkpoint (2026-10-25)
 
 Current canonical `main` inspected at `1c7bc7248cf28b634517627082eceb37f1eaa9fb`. Merger state: PR #79 (pre-write persistence safety), #81 (growth-safe observation fixtures) and #80 (three published `DETECTED_ONLY` observations) are all merged. Non-persisting manual Radar run [40086954962](https://github.com/rezahh107/PersianGravity/actions/runs/40086954962) and genuine persisting manual run [40130703147](https://github.com/rezahh107/PersianGravity/actions/runs/40130703147) both succeeded; #80 is actual automation-created reviewable publication, not simulated branch/push evidence. This cures the **current** manual-dispatch/publication verification gap without retroactively changing the original #73 history.
