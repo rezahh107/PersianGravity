@@ -161,3 +161,4 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
 * Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.
+G-011 candidate: opt-in Persian calendar presentation for supported native date Merge Tags in Text Confirmations. Page/Redirect Query Strings remain native until separately qualified. See docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md; the overall G-011 outcome remains open.
