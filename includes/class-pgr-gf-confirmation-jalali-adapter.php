@@ -53,7 +53,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		}
 
 		preg_match_all( '/\{[^{}]+\}/u', $template, $matches );
-		$tags = array_unique( $matches[0] );
+		$tags         = array_unique( $matches[0] );
 		$replacements = array();
 		$native       = array();
 		$marker_index = 0;
@@ -72,7 +72,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			}
 
 			++$marker_index;
-			$marker = 'PGRG011_' . str_replace( '-', '', wp_generate_uuid4() ) . '_' . $marker_index . '_END';
+			$marker               = 'PGRG011_' . str_replace( '-', '', wp_generate_uuid4() ) . '_' . $marker_index . '_END';
 			$replacements[ $tag ] = $marker;
 			$native[ $marker ]    = $native_value;
 		}
@@ -109,9 +109,9 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			return null;
 		}
 
-		$id = (int) $match[1];
+		$id       = (int) $match[1];
 		$modifier = $match[2] ?? '';
-		$field = null;
+		$field    = null;
 		foreach ( (array) rgar( $form, 'fields', array() ) as $candidate ) {
 			if ( $candidate instanceof GF_Field_Date && (int) $candidate->id === $id ) {
 				$field = $candidate;
@@ -123,7 +123,9 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			return null;
 		}
 
-		$parts = GFCommon::parse_date( $entry[ (string) $id ], $field->dateFormat ?: 'mdy' );
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms public Date-field property.
+		$input_format = empty( $field->dateFormat ) ? 'mdy' : $field->dateFormat;
+		$parts        = GFCommon::parse_date( $entry[ (string) $id ], $input_format );
 		if (
 			! is_array( $parts ) ||
 			! ctype_digit( (string) ( $parts['year'] ?? '' ) ) ||
@@ -145,7 +147,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		if ( '' !== $modifier && ! in_array( $modifier, $allowed, true ) ) {
 			return null;
 		}
-		$output_format = '' === $modifier ? ( $field->dateFormat ?: 'mdy' ) : $modifier;
+		$output_format = '' === $modifier ? $input_format : $modifier;
 		if ( ! in_array( $output_format, $allowed, true ) ) {
 			return null;
 		}
@@ -166,7 +168,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		}
 
 		$separator = str_ends_with( $output_format, '_dash' ) ? '-' : ( str_ends_with( $output_format, '_dot' ) ? '.' : '/' );
-		$order = substr( $output_format, 0, 3 );
+		$order     = substr( $output_format, 0, 3 );
 		if ( 'ymd' === $order ) {
 			return implode( $separator, array( $year, $month, $day ) );
 		}
@@ -178,10 +180,11 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 
 	/** Interpret the exact system-date modifier grammar from GF 3.1.1.1. */
 	private static function present_system_date( string $name, string $modifiers, array $entry ): ?string {
-		$segments = explode( ':', str_replace( '\:', '__PGR_COLON__', $modifiers ) );
-		$format = null;
-		$time = false;
-		for ( $i = 0; $i < count( $segments ); ++$i ) {
+		$segments      = explode( ':', str_replace( '\:', '__PGR_COLON__', $modifiers ) );
+		$format        = null;
+		$time          = false;
+		$segment_count = count( $segments );
+		for ( $i = 0; $i < $segment_count; ++$i ) {
 			$part = $segments[ $i ];
 			if ( '' === $part && 0 === $i ) {
 				continue;
@@ -216,20 +219,30 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		}
 
 		$local = $source->setTimezone( wp_timezone() );
-		$date = PGR_Jalali_Presentation::format_date( (int) $local->format( 'Y' ), (int) $local->format( 'n' ), (int) $local->format( 'j' ) );
+		$date  = PGR_Jalali_Presentation::format_date( (int) $local->format( 'Y' ), (int) $local->format( 'n' ), (int) $local->format( 'j' ) );
 		if ( null === $date ) {
 			return null;
 		}
 
 		$date_format = null === $format || '' === $format ? GFCommon::get_default_date_format() : $format;
-		$presented = self::format_calendar( $date, $date_format, $source->getTimestamp() );
+		$presented   = self::format_calendar( $date, $date_format, $source->getTimestamp() );
 		if ( null === $presented ) {
 			return null;
 		}
 
 		if ( $time ) {
-			$native_time = date_i18n( GFCommon::get_default_time_format(), GFCommon::get_local_timestamp( $source->getTimestamp() ), true );
-			$presented = sprintf( esc_html__( '%1$s at %2$s', 'gravityforms' ), $presented, $native_time );
+			// Preserve the native translated connector and time without owning
+			// another product's translation domain.
+			$native_local_date = date_i18n( $date_format, GFCommon::get_local_timestamp( $source->getTimestamp() ), true );
+			$native_full       = GFCommon::format_date( gmdate( 'Y-m-d H:i:s', $source->getTimestamp() ), false, $date_format, true );
+			if (
+				! is_string( $native_full ) ||
+				'' === $native_local_date ||
+				1 !== substr_count( $native_full, $native_local_date )
+			) {
+				return null;
+			}
+			$presented = str_replace( $native_local_date, $presented, $native_full );
 		}
 		return $presented;
 	}
@@ -239,12 +252,29 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 	 * to native WP formatting. Unsupported calendar-dependent tokens fall back.
 	 */
 	private static function format_calendar( string $date, string $format, int $timestamp ): ?string {
-		$parts = explode( '/', strtr( $date, array( '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9' ) ) );
+		$parts = explode(
+			'/',
+			strtr(
+				$date,
+				array(
+					'۰' => '0',
+					'۱' => '1',
+					'۲' => '2',
+					'۳' => '3',
+					'۴' => '4',
+					'۵' => '5',
+					'۶' => '6',
+					'۷' => '7',
+					'۸' => '8',
+					'۹' => '9',
+				)
+			)
+		);
 		if ( 3 !== count( $parts ) ) {
 			return null;
 		}
 		list( $year, $month, $day ) = array_map( 'intval', $parts );
-		$months = array( 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند' );
+		$months   = array( 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند' );
 		$calendar = array(
 			'Y' => sprintf( '%04d', $year ),
 			'y' => sprintf( '%02d', $year % 100 ),
@@ -254,7 +284,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			'j' => (string) $day,
 			'F' => $months[ $month - 1 ],
 		);
-		$result = '';
+		$result  = '';
 		$escaped = false;
 		foreach ( str_split( $format ) as $character ) {
 			if ( $escaped ) {
@@ -282,6 +312,20 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		if ( $escaped ) {
 			return null;
 		}
-		return strtr( $result, array( '0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹' ) );
+		return strtr(
+			$result,
+			array(
+				'0' => '۰',
+				'1' => '۱',
+				'2' => '۲',
+				'3' => '۳',
+				'4' => '۴',
+				'5' => '۵',
+				'6' => '۶',
+				'7' => '۷',
+				'8' => '۸',
+				'9' => '۹',
+			)
+		);
 	}
 }
