@@ -85,6 +85,41 @@ if ( is_wp_error( $ok ) ) {
     $fail( 'GFAPI could not persist confirmation.' );
 }
 $form = GFAPI::get_form( $form_id );
+// Obtain the exact same native Confirmation output without our adapter.
+// This is the proof that opaque/unsupported merge tags remain native.
+global $wp_filter;
+$temporarily_removed = array();
+foreach ( array( 'gform_pre_replace_merge_tags', 'gform_confirmation' ) as $hook_name ) {
+    foreach ( (array) ( $wp_filter[ $hook_name ]->callbacks ?? array() ) as $priority => $callbacks ) {
+        foreach ( $callbacks as $definition ) {
+            $callback = $definition['function'] ?? null;
+            if ( ! is_array( $callback ) || ! isset( $callback[0] ) || ! $callback[0] instanceof PGR_GF_Confirmation_Date_Adapter ) {
+                continue;
+            }
+            $temporarily_removed[] = array( $hook_name, $callback, $priority, $definition['accepted_args'] );
+            remove_filter( $hook_name, $callback, $priority );
+        }
+    }
+}
+if ( 2 !== count( $temporarily_removed ) ) {
+    $fail( 'Expected exactly two presentation adapter hooks.' );
+}
+$native_confirmation = GFFormDisplay::handle_confirmation( $form, $entry, false );
+foreach ( $temporarily_removed as $item ) {
+    add_filter( $item[0], $item[1], $item[2], $item[3] );
+}
+if ( ! is_string( $native_confirmation ) ) {
+    $fail( 'Could not render native comparison.' );
+}
+if ( ! preg_match( '/<p data-key="plain">plain=(.*?)<\/p>/us', $native_confirmation, $native_plain_match ) ) {
+    $fail( 'Could not locate the native unrelated field value.' );
+}
+$native_plain_confirmation = $native_plain_match[1];
+$native_time = GFCommon::replace_variables( '{date_created:time}', $form, $entry );
+if ( ! is_string( $native_time ) || ! str_starts_with( $native_time, $native_regular ) ) {
+    $fail( 'Native time suffix cannot be characterized.' );
+}
+$native_time_suffix = substr( $native_time, strlen( $native_regular ) );
 $observed = array();
 foreach ( array( false, true ) as $ajax ) {
     $html = GFFormDisplay::handle_confirmation( $form, $entry, $ajax );
@@ -107,7 +142,7 @@ foreach ( array( false, true ) as $ajax ) {
         'human' => $native_human,
         'diff' => $native_diff,
         'entry' => '2026-03-20 20:30:00',
-        'plain' => '2026-03-21',
+        'plain' => $native_plain_confirmation,
     );
     foreach ( $expected as $name => $value ) {
         if ( ! str_contains( $html, $name . '=' . $value . '</p>' ) ) {
@@ -117,7 +152,7 @@ foreach ( array( false, true ) as $ajax ) {
     if (
         ! str_contains( $html, 'Unrelated <b>HTML</b> is unchanged.' ) ||
         ! str_contains( $html, 'data-native="' . $native_regular . '"' ) ||
-        ! str_contains( $html, 'time=۱۴۰۵/۰۱/۰۱' ) ||
+        ! str_contains( $html, 'time=۱۴۰۵/۰۱/۰۱' . $native_time_suffix . '</p>' ) ||
         str_contains( $html, 'PGRG011' )
     ) {
         $fail( 'Unrelated HTML, native attribute, time suffix or marker cleanup regressed.' );
@@ -141,6 +176,7 @@ $manifest = array(
     'persiangravity_version' => PGR_VERSION,
     'utc_date_created' => $raw_entry['date_created'],
     'native_date_created' => $native_regular,
+    'native_unrelated_field_confirmation' => $native_plain_confirmation,
     'ordinary_ajax' => $observed,
     'machine_values_unchanged' => true,
 );
