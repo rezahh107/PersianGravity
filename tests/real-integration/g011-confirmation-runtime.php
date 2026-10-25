@@ -171,6 +171,8 @@ if ( GFCommon::replace_variables( '{date_created}', $form, $entry ) !== $native_
     $fail( 'Global merge-tag consumer changed.' );
 }
 $manifest = array(
+    'form_id' => $form_id,
+    'entry_id' => $entry_id,
     'gravity_forms_version' => GFForms::$version,
     'wordpress_version' => get_bloginfo( 'version' ),
     'persiangravity_version' => PGR_VERSION,
