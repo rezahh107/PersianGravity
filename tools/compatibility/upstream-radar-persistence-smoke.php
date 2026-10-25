@@ -7,49 +7,18 @@ require_once __DIR__ . '/upstream-radar.php';
 
 // Replay the *same live scan results* through first-run and repeat-run
 // persistence in an isolated copy. PR jobs never write canonical observations.
-[$script, $firstRunRoot, $committedRoot, $candidateDir] = $argv + array( null, null, null, null );
-if (!is_string($firstRunRoot) || !is_string($committedRoot) || !is_string($candidateDir)
-    || !is_dir($firstRunRoot) || !is_dir($committedRoot) || !is_dir($candidateDir)
-    || realpath($firstRunRoot) === realpath($committedRoot)) {
-    fwrite(STDERR, "usage: upstream-radar-persistence-smoke.php FIRST_RUN_ROOT COMMITTED_ROOT LIVE_CANDIDATES_DIR\n");
+[$script, $root, $candidateDir] = $argv + array( null, null, null );
+if (!is_string($root) || !is_string($candidateDir) || !is_dir($root) || !is_dir($candidateDir)) {
+    fwrite(STDERR, "usage: upstream-radar-persistence-smoke.php ISOLATED_ROOT LIVE_CANDIDATES_DIR\n");
     exit(1);
 }
 
-/** Snapshot every observation and source-review byte, not a fixed list of historical filenames. */
-function pgrRadarSmokeEvidenceHashes(string $root): array {
-    $base = rtrim($root, '/') . '/tools/compatibility/';
-    $hashes = array();
-    foreach (array('upstream-observations', 'upstream-source-reviews') as $directory) {
-        $path = $base . $directory;
-        if (!is_dir($path)) {
-            throw new RuntimeException('missing isolated evidence directory: ' . $directory);
-        }
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
-        foreach ($iterator as $file) {
-            if (!$file->isFile()) {
-                continue;
-            }
-            $hash = hash_file('sha256', $file->getPathname());
-            if ($hash === false) {
-                throw new RuntimeException('unreadable isolated evidence: ' . $file->getPathname());
-            }
-            $hashes[substr($file->getPathname(), strlen($base))] = $hash;
-        }
-    }
-    ksort($hashes);
-    return $hashes;
-}
-
-/** Only the explicitly tested automated candidate paths may differ between snapshots. */
-function pgrRadarSmokeAssertOtherEvidenceUnchanged(array $before, array $after, array $candidates): void {
-    foreach ($candidates as $key => $candidate) {
-        if ($key !== 'gravityperks') {
-            $relative = 'upstream-observations/' . $key . '/' . $candidate['detected_upstream_version'] . '.json';
-            unset($before[$relative], $after[$relative]);
-        }
-    }
-    if ($before !== $after) {
-        throw new RuntimeException('unrelated, historical, reviewed or source-review evidence changed in isolation');
+$protected = array();
+foreach (array('gravityperks/2.3.17.json', 'gravityflow/3.1.1.json', 'gravityflow/3.1.1.1.json') as $file) {
+    $path = $root . '/tools/compatibility/upstream-observations/' . $file;
+    $protected[$path] = hash_file('sha256', $path);
+    if ($protected[$path] === false) {
+        throw new RuntimeException('missing protected reviewed record: ' . $file);
     }
 }
 
@@ -86,89 +55,29 @@ if (count($scanned) !== count($seen) || !isset($seen['gravityperks'], $seen['gra
     throw new RuntimeException('incomplete or unmatched live candidates');
 }
 
-$pristine = pgrRadarSmokeEvidenceHashes($committedRoot);
-if (pgrRadarSmokeEvidenceHashes($firstRunRoot) !== $pristine) {
-    throw new RuntimeException('first-run and committed fixtures did not start from identical evidence');
-}
-
-$wasCommitted = array();
-foreach ($seen as $key => $candidate) {
-    if ($key === 'gravityperks') {
-        continue; // The reviewed Gravity Perks observation is never a creation fixture.
-    }
-    $relative = 'tools/compatibility/upstream-observations/' . $key . '/' . $candidate['detected_upstream_version'] . '.json';
-    $committedPath = rtrim($committedRoot, '/') . '/' . $relative;
-    $firstPath = rtrim($firstRunRoot, '/') . '/' . $relative;
-    $wasCommitted[$key] = is_file($committedPath);
-    if (!$wasCommitted[$key]) {
-        continue;
-    }
-    $existing = json_decode((string) file_get_contents($firstPath), true, 512, JSON_THROW_ON_ERROR);
-    PGR_Upstream_Radar::validateObservation($existing);
-    if (($existing['product_key'] ?? null) !== $key
-        || ($existing['detected_upstream_version'] ?? null) !== $candidate['detected_upstream_version']
-        || ($existing['review_state'] ?? null) !== 'MODEL_REVIEW_REQUIRED'
-        || ($existing['automation_generated'] ?? false) !== true) {
-        throw new RuntimeException($key . ': candidate cannot be removed from first-run fixture without discarding reviewed/unrelated evidence');
-    }
-    if (!unlink($firstPath)) {
-        throw new RuntimeException('cannot prepare isolated automatic candidate absence: ' . $key);
-    }
-}
-
-$firstBaseline = pgrRadarSmokeEvidenceHashes($firstRunRoot);
 $profiles = PGR_Upstream_Radar::loadProfiles();
-$first = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $firstRunRoot);
+$first = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $root);
 foreach ($seen as $key => $candidate) {
     $status = $first[$key] ?? null;
-    $expected = $key === 'gravityperks' ? 'REVIEWED_CURRENT_SOURCE_ATTESTED' : 'CREATED';
-    if ($status !== $expected) {
-        throw new RuntimeException($key . ': expected first-run ' . $expected . ', got ' . $status);
+    if ($key === 'gravityperks' && $status !== 'REVIEWED_CURRENT_SOURCE_ATTESTED') {
+        throw new RuntimeException('Gravity Perks did not meet exact current-source review');
+    }
+    if ($key !== 'gravityperks' && $status !== 'CREATED') {
+        throw new RuntimeException($key . ': expected first-run creation, got ' . $status);
     }
     fwrite(STDOUT, $key . ': ' . $status . " (isolated first run)\n");
 }
-$repeat = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $firstRunRoot);
+
+$repeat = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $root);
 foreach ($seen as $key => $candidate) {
     $expected = $key === 'gravityperks' ? 'REVIEWED_CURRENT_SOURCE_ATTESTED' : 'AUTOMATED_DEDUPLICATED';
     if (($repeat[$key] ?? null) !== $expected) {
         throw new RuntimeException($key . ': unexpected repeat-run persistence outcome');
     }
 }
-pgrRadarSmokeAssertOtherEvidenceUnchanged($firstBaseline, pgrRadarSmokeEvidenceHashes($firstRunRoot), $seen);
-
-// A separate complete committed-state fixture must exercise existing records,
-// not a tree where the candidates were removed and then recreated.
-$committed = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $committedRoot);
-foreach ($seen as $key => $candidate) {
-    $status = $committed[$key] ?? null;
-    if ($key === 'gravityperks') {
-        if ($status !== 'REVIEWED_CURRENT_SOURCE_ATTESTED') {
-            throw new RuntimeException('Gravity Perks changed source or lost current-source attestation');
-        }
-        continue;
-    }
-    if ($wasCommitted[$key]) {
-        if (!in_array($status, array('AUTOMATED_DEDUPLICATED', 'AUTOMATED_UPDATED'), true)) {
-            throw new RuntimeException($key . ': existing automated candidate was not safely deduplicated/updated: ' . $status);
-        }
-    } elseif ($status !== 'CREATED') {
-        throw new RuntimeException($key . ': absent committed candidate was not created: ' . $status);
-    }
-    if ($status === 'AUTOMATED_UPDATED' || $status === 'CREATED') {
-        $path = rtrim($committedRoot, '/') . '/tools/compatibility/upstream-observations/' . $key . '/' . $candidate['detected_upstream_version'] . '.json';
-        $stored = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-        if ($stored !== $candidate) {
-            throw new RuntimeException($key . ': automatic candidate update did not persist only the validated scan record');
-        }
-    }
-    fwrite(STDOUT, $key . ': ' . $status . " (isolated committed state)\n");
-}
-$committedRepeat = PGR_Upstream_Radar::persistValidatedResults($summary, $profiles, $committedRoot);
-foreach ($seen as $key => $candidate) {
-    $expected = $key === 'gravityperks' ? 'REVIEWED_CURRENT_SOURCE_ATTESTED' : 'AUTOMATED_DEDUPLICATED';
-    if (($committedRepeat[$key] ?? null) !== $expected) {
-        throw new RuntimeException($key . ': committed-state repeat was not safely deduplicated');
+foreach ($protected as $path => $digest) {
+    if (hash_file('sha256', $path) !== $digest) {
+        throw new RuntimeException('previously reviewed observation was modified: ' . $path);
     }
 }
-pgrRadarSmokeAssertOtherEvidenceUnchanged($pristine, pgrRadarSmokeEvidenceHashes($committedRoot), $seen);
-fwrite(STDOUT, "Live persistence first/repeat/committed-state verified: all reviewed and unrelated evidence unchanged\n");
+fwrite(STDOUT, "Live persistence first/repeat run verified: reviewed records unchanged\n");

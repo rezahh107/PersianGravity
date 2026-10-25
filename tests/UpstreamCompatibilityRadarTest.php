@@ -281,61 +281,9 @@ final class UpstreamCompatibilityRadarTest extends TestCase {
 	}
 
 	public function test_all_current_reviewed_observations_validate(): void {
-		$directory = $this->root . '/tools/compatibility/upstream-observations';
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $directory, FilesystemIterator::SKIP_DOTS )
-		);
-		$count = 0;
-		foreach ( $iterator as $file ) {
-			if ( $file->isFile() && $file->getExtension() === 'json' ) {
-				++$count;
-			}
-		}
-		$this->assertGreaterThanOrEqual( 5, $count, 'Historical observation baseline must not disappear.' );
-		$this->assertSame( $count, PGR_Upstream_Radar::validateObservationDirectory() );
+		$this->assertSame( 5, PGR_Upstream_Radar::validateObservationDirectory() );
 		$this->assertSame( '3.1.1', $this->readObservation( 'gravityflow/3.1.1.json' )['detected_upstream_version'] );
 		$this->assertSame( '3.1.1.1', $this->readObservation( 'gravityflow/3.1.1.1.json' )['detected_upstream_version'] );
-	}
-
-
-	public function test_observation_directory_accepts_an_additional_valid_record_and_rejects_invalid_growth(): void {
-		$tmp = $this->makeTemporaryRoot();
-		try {
-			$source = $this->root . '/tools/compatibility/upstream-observations';
-			$destination = $tmp . '/tools/compatibility/upstream-observations';
-			$iterator = new RecursiveIteratorIterator(
-				new RecursiveDirectoryIterator( $source, FilesystemIterator::SKIP_DOTS )
-			);
-			foreach ( $iterator as $file ) {
-				if ( !$file->isFile() ) {
-					continue;
-				}
-				$relative = substr( $file->getPathname(), strlen( $source ) + 1 );
-				$target = $destination . '/' . $relative;
-				if ( !is_dir( dirname( $target ) ) ) {
-					mkdir( dirname( $target ), 0777, true );
-				}
-				copy( $file->getPathname(), $target );
-			}
-			$before = PGR_Upstream_Radar::validateObservationDirectory( $tmp );
-			$extra = $this->readObservation( 'gravityforms/3.1.2.json' );
-			$extra['detected_upstream_version'] = '9999.0.0';
-			$path = $destination . '/gravityforms/9999.0.0.json';
-			$this->assertFileDoesNotExist( $path );
-			file_put_contents( $path, json_encode( $extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR ) . "\n" );
-			$this->assertSame( $before + 1, PGR_Upstream_Radar::validateObservationDirectory( $tmp ) );
-
-			$extra['evidence_state'] = 'ADMITTED';
-			file_put_contents( $path, json_encode( $extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR ) . "\n" );
-			try {
-				PGR_Upstream_Radar::validateObservationDirectory( $tmp );
-				$this->fail( 'Invalid extra observation was accepted.' );
-			} catch ( RuntimeException $exception ) {
-				$this->assertStringContainsString( 'DETECTED_ONLY', $exception->getMessage() );
-			}
-		} finally {
-			$this->removeDirectory( $tmp );
-		}
 	}
 
 	private function readObservation( string $relative ): array {

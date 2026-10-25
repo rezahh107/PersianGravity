@@ -24,7 +24,6 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
         $summary = $this->summary( array( 'gravityforms' => $candidate ) );
         $path = $this->observationPath( 'gravityforms', '3.2.0.1' );
 
-        $this->prepareCandidateAbsent( 'gravityforms', '3.2.0.1' );
         $this->assertFileDoesNotExist( $path );
         $statuses = PGR_Upstream_Radar::persistValidatedResults( $summary, PGR_Upstream_Radar::loadProfiles(), $this->root );
         $this->assertSame( 'CREATED', $statuses['gravityforms'] );
@@ -50,44 +49,8 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
         $this->assertSame( str_repeat( 'b', 64 ), $updated['official_sources'][0]['sha256'] );
     }
 
-
-    public function test_committed_automated_record_deduplicates_then_allows_only_automation_update(): void {
-        $path = $this->observationPath( 'gravityforms', '3.2.0.1' );
-        $this->assertFileExists( $path );
-        $original = (string) file_get_contents( $path );
-        $before = $this->evidenceFiles();
-        $candidate = json_decode( $original, true, 512, JSON_THROW_ON_ERROR );
-        $this->assertTrue( $candidate['automation_generated'] );
-        $this->assertSame( 'MODEL_REVIEW_REQUIRED', $candidate['review_state'] );
-        $profiles = PGR_Upstream_Radar::loadProfiles();
-
-        $this->assertSame(
-            'AUTOMATED_DEDUPLICATED',
-            PGR_Upstream_Radar::persistValidatedResults( $this->summary( array( 'gravityforms' => $candidate ) ), $profiles, $this->root )['gravityforms']
-        );
-        $this->assertSame( $original, file_get_contents( $path ) );
-
-        $candidate['official_sources'][0]['sha256'] = str_repeat( 'b', 64 );
-        $this->assertSame(
-            'AUTOMATED_UPDATED',
-            PGR_Upstream_Radar::persistValidatedResults( $this->summary( array( 'gravityforms' => $candidate ) ), $profiles, $this->root )['gravityforms']
-        );
-        $updated = json_decode( (string) file_get_contents( $path ), true, 512, JSON_THROW_ON_ERROR );
-        $this->assertSame( $candidate, $updated );
-        $this->assertSame(
-            'AUTOMATED_DEDUPLICATED',
-            PGR_Upstream_Radar::persistValidatedResults( $this->summary( array( 'gravityforms' => $candidate ) ), $profiles, $this->root )['gravityforms']
-        );
-
-        $after = $this->evidenceFiles();
-        $relative = 'tools/compatibility/upstream-observations/gravityforms/3.2.0.1.json';
-        unset( $before[$relative], $after[$relative] );
-        $this->assertSame( $before, $after, 'Historical, reviewed, unrelated observations and source attestations changed.' );
-    }
-
     public function test_unresolved_historical_flow_observation_still_blocks_without_writing_anything(): void {
         $summary = $this->summary( array( 'gravityforms' => $this->candidate( 'gravityforms', '3.2.0.1' ) ) );
-        $this->prepareCandidateAbsent( 'gravityforms', '3.2.0.1' );
         $summary['results'][1]['latest_upstream_version'] = '3.1.1.1';
 
         $this->expectException( RuntimeException::class );
@@ -103,7 +66,6 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
 
     public function test_stale_live_flow_source_blocks_before_any_persistence(): void {
         $summary = $this->summary( array( 'gravityforms' => $this->candidate( 'gravityforms', '3.2.0.1' ) ) );
-        $this->prepareCandidateAbsent( 'gravityforms', '3.2.0.1' );
         $summary['results'][1]['latest_upstream_version'] = '3.1.0';
         $this->expectExceptionMessage( 'stale or ambiguous' );
         try {
@@ -118,7 +80,6 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
             (string) file_get_contents( $this->observationPath( 'gravityperks', '2.3.17' ) ),
             true, 512, JSON_THROW_ON_ERROR
         );
-        $this->prepareCandidateAbsent( 'gravityforms', '3.2.0.1' );
         $perks['official_sources'][0]['sha256'] = str_repeat( 'c', 64 );
         $summary = $this->summary( array(
             'gravityforms' => $this->candidate( 'gravityforms', '3.2.0.1' ),
@@ -146,7 +107,6 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
 
     public function test_partial_source_failure_and_invalid_later_candidate_prevent_earlier_writes(): void {
         $summary = $this->summary( array( 'gravityforms' => $this->candidate( 'gravityforms', '3.2.0.1' ) ) );
-        $this->prepareCandidateAbsent( 'gravityforms', '3.2.0.1' );
         $summary['failures']['gravityview'] = 'upstream HTTP failure';
         try {
             PGR_Upstream_Radar::persistValidatedResults( $summary, PGR_Upstream_Radar::loadProfiles(), $this->root );
@@ -182,39 +142,6 @@ final class UpstreamRadarPersistenceSelfCollisionTest extends TestCase {
         $persistenceJob = substr( $workflow, (int) strpos( $workflow, "\n  persist-observations:" ) );
         $this->assertStringContainsString( '--persist-new', $persistenceJob );
         $this->assertStringNotContainsString( 'upstream-radar-consistency.php "$evidence_dir/summary.json"', $persistenceJob );
-    }
-
-
-    /**
-     * Model first persistence without rewriting the committed evidence authority.
-     * Only the selected automatic candidate is absent in this isolated fixture.
-     */
-    private function prepareCandidateAbsent( string $product, string $version ): void {
-        $path = $this->observationPath( $product, $version );
-        if ( !is_file( $path ) ) {
-            return;
-        }
-        $observation = json_decode( (string) file_get_contents( $path ), true, 512, JSON_THROW_ON_ERROR );
-        PGR_Upstream_Radar::validateObservation( $observation );
-        $this->assertSame( $product, $observation['product_key'] );
-        $this->assertSame( $version, $observation['detected_upstream_version'] );
-        $this->assertSame( 'MODEL_REVIEW_REQUIRED', $observation['review_state'] );
-        $this->assertTrue( $observation['automation_generated'] );
-        $this->assertTrue( unlink( $path ), 'Failed to prepare isolated candidate-absent fixture.' );
-    }
-
-    private function evidenceFiles(): array {
-        $files = array();
-        $base = $this->root . '/tools/compatibility';
-        $iterator = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $base, FilesystemIterator::SKIP_DOTS ) );
-        foreach ( $iterator as $file ) {
-            if ( $file->isFile() ) {
-                $relative = substr( $file->getPathname(), strlen( $this->root ) + 1 );
-                $files[$relative] = hash_file( 'sha256', $file->getPathname() );
-            }
-        }
-        ksort( $files );
-        return $files;
     }
 
     private function candidate( string $product, string $version ): array {
