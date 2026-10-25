@@ -1,5 +1,12 @@
 # Persian Gravity Forms Architecture — 4.8.0
 
+## G-011 — Exact-host Text Confirmation integration (unreleased)
+
+The separately gated `PGR_GF_Confirmation_Date_Adapter` loads only inside `PGR_Core`'s existing enabled `jalali_presentation` branch. Source-proven GF 3.1.1.1 calls `GFCommon::replace_variables` from `GFFormDisplay::get_confirmation_message`, then applies `gform_confirmation`. Its shared pre-merge-tag hook would be unsafe globally: other callers include notifications, calculations and placeholders. This adapter checks **caller provenance** and typed GF system/Date-field sources before it marks a Text confirmation token, lets native GF replace it, and substitutes the human display value in the exact matching final confirmation. It leaves unsupported/opaque tokens native. GF 3.1.1.1 is required as a verified caller contract; newer vendor packages are not admitted by inference.
+
+Page/Redirect `get_confirmation_url` branches are materially different and remain outside this adapter until URL-safety qualification. Full per-tag/method/path evidence and open G-011 outcomes: [G011_CONFIRMATION_DATE_MERGE_TAGS.md](G011_CONFIRMATION_DATE_MERGE_TAGS.md).
+
+
 ## Runtime topology
 
 ```text
