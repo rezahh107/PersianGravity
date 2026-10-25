@@ -241,7 +241,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 		if ( '' === $native ) {
 			return null;
 		}
-		$local = $spec['source']->setTimezone( wp_timezone() );
+		$local  = $spec['source']->setTimezone( wp_timezone() );
 		$jalali = PGR_Jalali_Presentation::format_date(
 			(int) $local->format( 'Y' ),
 			(int) $local->format( 'm' ),
@@ -309,7 +309,7 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			return null;
 		}
 		$chars = str_split( $format );
-		$map = array(
+		$map   = array(
 			'Y' => $parts[0],
 			'y' => implode( '', array_slice( preg_split( '//u', $parts[0], -1, PREG_SPLIT_NO_EMPTY ), -2 ) ),
 			'm' => $parts[1],
@@ -318,8 +318,8 @@ final class PGR_GF_Confirmation_Date_Adapter {
 			'j' => preg_replace( '/^۰(?=.)/u', '', $parts[2] ),
 		);
 		$allowed_time = array( 'H', 'G', 'h', 'g', 'i', 's', 'a', 'A' );
-		$output = '';
-		$escaped = false;
+		$output       = '';
+		$escaped      = false;
 		foreach ( $chars as $char ) {
 			if ( $escaped ) {
 				$output .= $char;
