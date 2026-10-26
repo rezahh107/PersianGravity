@@ -39,6 +39,21 @@ The existing WU008 workflow validates the exact private package and Head before 
 
 **Do not upgrade any matrix cell to VERIFIED or claim CI/browser PASS without observing a successful exact-Head run.** Append exact run evidence after execution.
 
+## Executed suffix-context repair evidence (2026-10-26)
+
+The G-011 occurrence-local classifier must also preserve native values when the date tag is *followed* by path/filename syntax. Deterministic negative controls for `{date_created:format:Y/m/d}/detail`, `{date_created:format:Y/m/d}#details`, `receipt-{date_created:format:Y/m/d}.pdf`, related filenames, relative paths, and repeated mixed HTML contexts initially failed on [pre-repair CI 40302218012](https://github.com/rezahh107/PersianGravity/actions/runs/40302218012). A first candidate also failed on [CI 40302754813](https://github.com/rezahh107/PersianGravity/actions/runs/40302754813) because the expression delimiter collided with a character class; no success is inferred from either failed candidate.
+
+With the corrected local suffix matcher at Head `230a8bcf5633079549f44734a2f163e045bac076`, [CI 40302963646](https://github.com/rezahh107/PersianGravity/actions/runs/40302963646) passed focused G-011 tests (10 tests / 94 assertions), four supported PHP jobs, and the existing full PHPUnit and quality checks. [Exact-package WU008 40302963658](https://github.com/rezahh107/PersianGravity/actions/runs/40302963658) passed on licensed Gravity Forms 3.1.1.1 (locked SHA-256 above), including native-output comparisons for path/filename suffixes, visible date labels, negative controls and authentic Chromium ordinary/AJAX DOM assertions. No notification, Page/Redirect, storage or module authority was added.
+
+WU008 independently measured the existing `gform_pre_replace_merge_tags` callback seam with disposable, controlled side-effect probes:
+
+| Controlled probe | Module disabled / native | Module enabled / selected Text |
+| --- | ---: | ---: |
+| Counting callback, unchanged input | 1 invocation | 3 invocations |
+| Non-idempotent callback, varying text | 1 invocation | 3 invocations |
+
+For the mutating probe, byte-exact native fallback preserved host output but **did not** undo the extra callback executions. This is a demonstrated architectural side-effect limitation of confirmation re-rendering, **not** proof that real third-party side effects are safe. Replacing or avoiding the re-render approach requires separate host-seam/method qualification before extending production changes. G-011 therefore stays **OPEN**, and non-idempotent third-party callbacks remain **NOT_PROVEN**. These observations qualify only the stated test scenarios and exact host version, not all modifier combinations or external extensions.
+
 ## Remaining G-011 outcomes
 
 1. Human-facing Page/Redirect Query String conversion with correct :urlencode, comma, percent, delimiter and repeated-key behavior, while opaque transport parameters remain unchanged.
