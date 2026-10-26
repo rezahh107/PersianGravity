@@ -52,51 +52,202 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			return $confirmation;
 		}
 
-		preg_match_all( '/\{[^{}]+\}/u', $template, $matches );
-		$tags         = array_unique( $matches[0] );
-		$replacements = array();
+		// Classify template offsets, not tag identities: the same tag may appear
+		// in presentation text and in a URL or HTML attribute.
+		$text_ranges = self::visible_text_ranges( $template );
+		if ( null === $text_ranges ) {
+			return $confirmation; // Malformed/ambiguous markup: full native fallback.
+		}
+
+		preg_match_all( '/\{[^{}]+\}/u', $template, $matches, PREG_OFFSET_CAPTURE );
 		$native       = array();
+		$presented    = array();
+		$markerized   = '';
+		$cursor       = 0;
 		$marker_index = 0;
 		$nl2br        = ! rgar( $selected, 'disableAutoformat' );
 
-		foreach ( $tags as $tag ) {
-			$jalali = self::present_tag( $tag, $form, $entry );
-			if ( null === $jalali ) {
+		foreach ( $matches[0] as $occurrence ) {
+			list( $tag, $offset ) = $occurrence;
+			$length             = strlen( $tag );
+			$range              = self::containing_text_range( $offset, $length, $text_ranges );
+			if (
+				null === $range ||
+				self::opaque_text_token( $template, $offset, $length, $range )
+			) {
+				continue;
+			}
+			$value = self::present_tag( $tag, $form, $entry );
+			if ( null === $value ) {
 				continue;
 			}
 
-			// Native replacement, escaping and filters remain the oracle.
+			// Native replacements and host escaping remain authoritative.
 			$native_value = GFCommon::replace_variables( $tag, $form, $entry, false, true, $nl2br, 'html' );
 			if ( ! is_string( $native_value ) || $native_value === $tag ) {
 				continue;
 			}
 
 			++$marker_index;
-			$marker               = 'PGRG011_' . str_replace( '-', '', wp_generate_uuid4() ) . '_' . $marker_index . '_END';
-			$replacements[ $tag ] = $marker;
-			$native[ $marker ]    = $native_value;
+			$marker = 'PGRG011_' . str_replace( '-', '', wp_generate_uuid4() ) . '_' . $marker_index . '_END';
+			if ( false !== strpos( $template, $marker ) || false !== strpos( $confirmation, $marker ) ) {
+				return $confirmation;
+			}
+			$markerized         .= substr( $template, $cursor, $offset - $cursor ) . $marker;
+			$cursor             = $offset + $length;
+			$native[ $marker ]   = $native_value;
+			$presented[ $marker ] = esc_html( $value );
 		}
 
-		if ( empty( $replacements ) ) {
+		if ( empty( $native ) ) {
 			return $confirmation;
 		}
 
-		$selected['message'] = strtr( $template, $replacements );
+		$selected['message'] = $markerized . substr( $template, $cursor );
 		$probe               = GFFormDisplay::get_confirmation_message( $selected, $form, $entry );
+		// Preserve the byte-exact native output round-trip guard.
 		if ( ! is_string( $probe ) || strtr( $probe, $native ) !== $confirmation ) {
 			return $confirmation;
 		}
 
-		$presented = array();
-		foreach ( $replacements as $tag => $marker ) {
-			$value = self::present_tag( $tag, $form, $entry );
-			if ( null === $value ) {
-				return $confirmation;
-			}
-			$presented[ $marker ] = esc_html( $value );
-		}
-
 		return strtr( $probe, $presented );
+	}
+
+	/**
+	 * Identify only plain human-text ranges in well-formed HTML. This is a
+	 * conservative scanner of the original template; it never rewrites HTML.
+	 * Tags/attributes, comments, raw-text elements and unknown elements are
+	 * never admitted. Unbalanced or unrecognized markup invalidates the whole
+	 * confirmation rather than guessing at display ownership.
+	 *
+	 * @return array<int,array{0:int,1:int}>|null
+	 */
+	private static function visible_text_ranges( string $template ): ?array {
+		$ranges = array();
+		$stack  = array();
+		$cursor = 0;
+		$total  = strlen( $template );
+		$void   = array( 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr' );
+		$opaque = array( 'script', 'style', 'code', 'pre', 'textarea', 'template', 'svg', 'math', 'noscript', 'iframe', 'object', 'canvas', 'select', 'title', 'xmp' );
+		$visible = array( 'a', 'article', 'aside', 'b', 'blockquote', 'caption', 'center', 'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'i', 'ins', 'label', 'li', 'main', 'mark', 'ol', 'p', 's', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul' );
+
+		while ( $cursor < $total ) {
+			$open = strpos( $template, '<', $cursor );
+			if ( false === $open ) {
+				$open = $total;
+			}
+			if ( $open > $cursor && ( empty( $stack ) || end( $stack )['visible'] ) ) {
+				$ranges[] = array( $cursor, $open );
+			}
+			if ( $open === $total ) {
+				break;
+			}
+			if ( '<!--' === substr( $template, $open, 4 ) ) {
+				$close = strpos( $template, '-->', $open + 4 );
+				if ( false === $close ) {
+					return null;
+				}
+				$cursor = $close + 3;
+				continue;
+			}
+
+			// Find the end of a tag without mistaking '>' inside an attribute
+			// string for a delimiter. Unknown directives are unsafe.
+			$quote = '';
+			$end   = null;
+			for ( $i = $open + 1; $i < $total; ++$i ) {
+				$char = $template[ $i ];
+				if ( '' !== $quote ) {
+					if ( $char === $quote ) {
+						$quote = '';
+					}
+				} elseif ( '"' === $char || "'" === $char ) {
+					$quote = $char;
+				} elseif ( '<' === $char ) {
+					return null;
+				} elseif ( '>' === $char ) {
+					$end = $i;
+					break;
+				}
+			}
+			if ( null === $end ) {
+				return null;
+			}
+			$markup = substr( $template, $open, $end - $open + 1 );
+			if ( ! preg_match( '/^<(\/?)([a-z][a-z0-9:-]*)(.*?)>$/isD', $markup, $tag_parts ) ) {
+				return null;
+			}
+			$closing = '/' === $tag_parts[1];
+			$name    = strtolower( $tag_parts[2] );
+			$attrs   = $tag_parts[3];
+			$cursor  = $end + 1;
+			if ( $closing ) {
+				if ( '' !== trim( $attrs ) || empty( $stack ) || end( $stack )['name'] !== $name ) {
+					return null;
+				}
+				array_pop( $stack );
+				continue;
+			}
+
+			$self_closing = '/' === substr( rtrim( $attrs ), -1 );
+			if ( $self_closing ) {
+				$attrs = substr( rtrim( $attrs ), 0, -1 );
+			}
+			if ( ! preg_match( '/^(?:\s+[a-z_:][a-z0-9_:.-]*(?:\s*=\s*(?:"[^"<>]*"|\'[^\'<>]*\'|[^\s"\'=<>\\x60]+))?)*\s*$/isD', $attrs ) ) {
+				return null;
+			}
+			if ( in_array( $name, $opaque, true ) ) {
+				if ( $self_closing ) {
+					continue;
+				}
+				if ( ! preg_match( '~</' . preg_quote( $name, '~' ) . '\s*>~i', $template, $close_match, PREG_OFFSET_CAPTURE, $cursor ) ) {
+					return null;
+				}
+				$cursor = $close_match[0][1] + strlen( $close_match[0][0] );
+				continue;
+			}
+			if ( $self_closing || in_array( $name, $void, true ) ) {
+				continue;
+			}
+			$parent_visible = empty( $stack ) || end( $stack )['visible'];
+			$hidden = (bool) preg_match( '/(?:^|\s)(?:hidden|inert)(?:\s|=|$)|aria-hidden\s*=\s*["\']?true\b|(?:display\s*:\s*none|visibility\s*:\s*hidden)/i', $attrs );
+			$stack[] = array(
+				'name'    => $name,
+				'visible' => $parent_visible && ! $hidden && in_array( $name, $visible, true ),
+			);
+		}
+		return empty( $stack ) ? $ranges : null;
+	}
+
+	/** @param array<int,array{0:int,1:int}> $ranges */
+	private static function containing_text_range( int $start, int $length, array $ranges ): ?array {
+		foreach ( $ranges as $range ) {
+			if ( $start >= $range[0] && $start + $length <= $range[1] ) {
+				return $range;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * A text node may itself contain a bare URL, query, JSON or machine token.
+	 * Its Merge Tag remains native even though the surrounding node is text.
+	 *
+	 * @param array{0:int,1:int} $range
+	 */
+	private static function opaque_text_token( string $template, int $offset, int $length, array $range ): bool {
+		$before = substr( $template, $range[0], $offset - $range[0] );
+		$after  = substr( $template, $offset + $length, $range[1] - $offset - $length );
+		$prefix = preg_replace( '/^.*\s/su', '', $before );
+		$suffix = preg_replace( '/\s.*$/su', '', $after );
+		if ( null === $prefix || null === $suffix ) {
+			return true;
+		}
+		$token = $prefix . $suffix; // Do not treat / or : inside tag modifiers as URL syntax.
+		return (bool) preg_match(
+			'~(?:https?://|ftp://|www\.|mailto:|javascript:|data:|[a-z0-9.-]+\.[a-z]{2,}[/?#]|[/?#&][a-z0-9_.-]+=|["{}\[\]])~i',
+			$token
+		);
 	}
 
 	/** Translate only recognized system and native Gregorian Date-field tags. */
