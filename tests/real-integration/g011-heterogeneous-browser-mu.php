@@ -70,7 +70,7 @@ final class WU008_G011_Heterogeneous_Browser {
 	public static function tie_after( $html, $form, $entry, $ajax ) {
 		if ( self::target( $form ) ) {
 			self::$trace[] = '20-after';
-			self::$trace[] = str_contains( (string) $html, '۱۴۰۵/' ) ? '20-after-jalali' : '20-after-other';
+			self::$trace[] = (bool) preg_match( '/[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u', (string) $html ) ? '20-after-jalali' : '20-after-other';
 		}
 		return $html;
 	}
