@@ -124,6 +124,22 @@ final class WU008_G011_Browser_Alignment {
 		$replacement = '<p class="human-a">Submitted on <strong>2031/11/30</strong></p>' . $needle;
 		return str_replace( $needle, $replacement, $output );
 	}
+	/**
+	 * Compare only actual persisted business fields across confirmation and
+	 * post-submission retrieval. Full request-local GFAPI records may contain
+	 * host transient/derived metadata; do not confuse this with a write.
+	 */
+	private static function entry_contract_values( $entry ): array {
+		if ( ! is_array( $entry ) ) {
+			return array();
+		}
+		$fields = array( 'id', 'form_id', 'status', 'date_created', '1', '2' );
+		$out = array();
+		foreach ( $fields as $field ) {
+			$out[ $field ] = isset( $entry[ $field ] ) ? (string) $entry[ $field ] : null;
+		}
+		return $out;
+	}
 	private static function expected_from_entry( array $entry ): array {
 		$raw = $entry['date_created'] ?? '';
 		$utc = DateTimeImmutable::createFromFormat(
@@ -173,6 +189,9 @@ final class WU008_G011_Browser_Alignment {
 			'third_party_pre_side_effect_calls' => self::$side_effect_calls,
 			'persisted_form_sha256' => hash( 'sha256', wp_json_encode( $persisted_form ) ),
 			'persisted_entry_sha256' => hash( 'sha256', wp_json_encode( $persisted_entry ) ),
+			// Stable business-owned Entry values, independent of host
+			// request-local presentation metadata and later GF lifecycle.
+			'entry_contract_values' => self::entry_contract_values( $persisted_entry ),
 			'candidate' => null,
 		);
 		return $output;
