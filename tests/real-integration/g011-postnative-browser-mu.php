@@ -41,10 +41,10 @@ final class WU008_G011_Browser_Alignment {
 		}
 		self::$side_effect_calls++;
 		$mode = self::mode();
-		if ( 'changed_date' === $mode ) {
+		if ( str_contains( $mode, 'changed_date' ) ) {
 			return str_replace( '{date_created:format:Y/m/d}', '2031/11/30', $text );
 		}
-		if ( 'changed_html' === $mode ) {
+		if ( str_contains( $mode, 'changed_html' ) ) {
 			return str_replace( 'Checked at <em>', '<i>Checked at</i> <em>', $text );
 		}
 		return $text;
@@ -74,7 +74,7 @@ final class WU008_G011_Browser_Alignment {
 	}
 	public static function third_party_post( $output, $form, $entry, $ajax ) {
 		if ( ! self::target( $form ) || ! is_string( $output ) ||
-			'ambiguous' !== self::mode( $entry ) ) {
+			! str_contains( self::mode( $entry ), 'ambiguous' ) ) {
 			return $output;
 		}
 		$needle = '<p class="human-a">Submitted on <strong>';
@@ -241,7 +241,7 @@ $align = static function ( $native, $selected_form, $given_entry ) use (
 			(string) ( $cfg['default_id'] ?? '' ) &&
 			'fa_IR' === determine_locale() &&
 			PGR_Module_Registry::is_enabled( 'jalali_presentation' ) &&
-			! in_array( $mode, array( 'native_ordinary', 'native_ajax', 'conditional' ), true );
+			! str_starts_with( $mode, 'native_' ) && 'conditional' !== $mode;
 		self::$state['candidate_eligible'] = $active;
 		if ( ! $active ) {
 			self::$state['candidate'] = array(
