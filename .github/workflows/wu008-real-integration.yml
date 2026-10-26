@@ -19,6 +19,7 @@ on:
       - 'includes/class-pgr-core.php'
       - 'persian-gravityforms.php'
       - 'tests/G011ConfirmationJalaliTest.php'
+      - 'tests/G011ConfirmationContextTest.php'
       - 'docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
