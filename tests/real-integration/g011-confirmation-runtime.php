@@ -197,6 +197,37 @@ if ( GFAPI::get_entry( $entry_id )['date_created'] !== '2026-03-20 20:30:00' ) {
 	$fail( 'GFAPI raw date changed after confirmation.' );
 }
 
+// Independently falsify global markerization against the authentic GF host.
+// Both native attributes must remain byte-identical, while both visible
+// occurrences of the same tag must change calendar.
+$context_tag = '{date_created:format:Y/m/d}';
+$context_message = '<div class="keep"><a href="/?day=' . $context_tag . '&amp;keep=1" data-day="' .
+	$context_tag . '"><strong>Context ' . $context_tag . '</strong></a> Again ' . $context_tag . '</div>';
+$context_confirmation = array(
+	'id' => 'g011-context', 'name' => 'Context', 'type' => 'message',
+	'isDefault' => true, 'isActive' => true, 'message' => $context_message,
+	'disableAutoformat' => true,
+);
+$context_form = $form;
+$context_form['confirmations'] = array( 'context' => $context_confirmation );
+$context_native = GFFormDisplay::get_confirmation_message( $context_confirmation, $context_form, $entry );
+$context_result = GFFormDisplay::handle_confirmation( $context_form, $entry, false );
+if (
+	! is_string( $context_native ) || ! is_string( $context_result ) ||
+	! preg_match( '/href="([^"]+)"/', $context_native, $native_href ) ||
+	! preg_match( '/href="([^"]+)"/', $context_result, $actual_href ) ||
+	! preg_match( '/data-day="([^"]+)"/', $context_native, $native_day ) ||
+	! preg_match( '/data-day="([^"]+)"/', $context_result, $actual_day ) ||
+	$native_href[1] !== $actual_href[1] ||
+	$native_day[1] !== $actual_day[1] ||
+	false === strpos( $context_result, '<strong>Context ۱۴۰۵/۰۱/۰۱</strong>' ) ||
+	false === strpos( $context_result, 'Again ۱۴۰۵/۰۱/۰۱' ) ||
+	false === strpos( $context_result, 'class="keep"' ) ||
+	$context_result === str_replace( $expected_native, '۱۴۰۵/۰۱/۰۱', $context_native )
+) {
+	$fail( 'Mixed human/attribute context violated native byte identity or falsification.' );
+}
+
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
 // GFAPI persists confirmations using each confirmation's ID as the array key.
 require_once __DIR__ . '/g011-default-confirmation.php';
@@ -214,7 +245,7 @@ if ( array_key_exists( 'default', $browser_form['confirmations'] ) ) {
 	$fail( 'Original hard-coded default-key regression is not reproduced on this host.' );
 }
 
-$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged';
+$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged <a id="g011-browser-link" href="/?day={date_created:format:Y/m/d}&amp;keep=1" data-created="{date_created:format:Y/m/d}" data-preserve="fixed">Visible {date_created:format:Y/m/d}</a>';
 $expected_confirmations = $browser_form['confirmations'];
 $expected_confirmations[ $default_key ]['message'] = $browser_message;
 $browser_form['confirmations'][ $default_key ]['message'] = $browser_message;
@@ -260,6 +291,7 @@ file_put_contents(
 			'package_sha256' => getenv( 'WU008_GF_SHA256' ),
 			'head' => getenv( 'WU008_PGR_SHA' ),
 			'text_selected' => true,
+			'contextual_native_attributes' => true,
 			'text_ajax_handler' => true,
 			'conditional_selected' => true,
 			'page_redirect_native' => true,
