@@ -123,5 +123,8 @@ jobs:
         env:
           PGR_WP_CORE: ${{ github.workspace }}/.wordpress-core
 
+      - name: Focused G-011 confirmation context and date regressions
+        run: vendor/bin/phpunit --filter 'G011Confirmation(Context|Jalali)Test'
+
       - name: Run PHPUnit
         run: composer test
