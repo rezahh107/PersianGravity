@@ -441,6 +441,206 @@ try {
 			break; // Decisive bounded falsifier: don't grow the algorithm.
 		}
 	}
+
+	// One genuine aliasing adversary (not an arbitrary overlapping string):
+	// two distinct, eligible template tags have identical ordinary human
+	// contexts. A third-party gform_confirmation filter removes the second
+	// fully native-rendered paragraph before the read-only candidate runs.
+	// If both source occurrences independently map to the ONE remaining
+	// Gregorian span, the ordered/overlap guard must reject the second.
+	if ( 9 === count( $cases ) && ! array_filter(
+		$cases,
+		static function ( $case ) { return 'PASS' !== $case['status']; }
+	) ) {
+		$source_a = '<p class="human-a">Submitted on <strong>' . $tag .
+			'</strong> (fixed G=' . $gregorian . ').</p>';
+		$source_b = '<p class="human-b">Checked at <em>' . $tag .
+			'</em> (fixed G=' . $gregorian . ').</p>';
+		$native_a = str_replace( $tag, $gregorian, $source_a );
+		$alias_template = str_replace( $source_b, $source_a, $template );
+		$alias_form = $test_form;
+		$alias_form['confirmations']['g011-multi-qual']['message'] = $alias_template;
+		$classification = $classify( $alias_template );
+		$source_offsets = $classification['eligible'];
+		$rendered_before_mutation = array();
+		$run_alias = static function ( bool $candidate ) use (
+			$alias_form, $entry, $native_a, $align, &$rendered_before_mutation
+		): array {
+			$pre_trace = array();
+			$observer = static function ( $text, $observed_form ) use ( &$pre_trace ) {
+				$pre_trace[] = array(
+					'hash' => hash( 'sha256', (string) $text ),
+					'length' => strlen( (string) $text ),
+					'type' => $observed_form['confirmation']['type'] ?? null,
+				);
+				return $text;
+			};
+			$third_party = static function ( $html ) use (
+				$native_a, &$rendered_before_mutation
+			) {
+				if ( ! is_string( $html ) ) {
+					return $html;
+				}
+				$before = substr_count( $html, $native_a );
+				$first = strpos( $html, $native_a );
+				$second = false === $first ? false :
+					strpos( $html, $native_a, $first + strlen( $native_a ) );
+				$after_html = false === $second ? $html :
+					substr_replace( $html, '', $second, strlen( $native_a ) );
+				$rendered_before_mutation[] = array(
+					'native_paragraph_count_before' => $before,
+					'native_paragraph_count_after' => substr_count( $after_html, $native_a ),
+					'removed_second_complete_paragraph' => false !== $second,
+				);
+				return $after_html;
+			};
+			$observed = null;
+			$post = static function ( $html, $selected_form, $selected_entry ) use (
+				$align, &$observed
+			) {
+				$observed = $align( $html, $selected_form, $selected_entry );
+				return $observed['output'];
+			};
+			add_filter( 'gform_pre_replace_merge_tags', $observer, 999, 2 );
+			add_filter( 'gform_confirmation', $third_party, 5, 1 );
+			if ( $candidate ) {
+				add_filter( 'gform_confirmation', $post, 25, 3 );
+			}
+			try {
+				$current = $alias_form;
+				$output = GFFormDisplay::handle_confirmation( $current, $entry, false );
+			} finally {
+				remove_filter( 'gform_pre_replace_merge_tags', $observer, 999 );
+				remove_filter( 'gform_confirmation', $third_party, 5 );
+				if ( $candidate ) {
+					remove_filter( 'gform_confirmation', $post, 25 );
+				}
+			}
+			return array(
+				'output' => $output,
+				'pre_trace' => $pre_trace,
+				'admitted' => $observed['admitted'] ?? null,
+				'reason' => $observed['reason'] ?? null,
+			);
+		};
+		$native_alias = $run_alias( false );
+		// Independent interval reconstruction, BEFORE candidate execution:
+		// require original source eligibility, individually unique anchors
+		// in rendered output, and an exact valid Gregorian span for BOTH.
+		$mapped = array();
+		foreach ( $source_offsets as $offset ) {
+			$left = substr( $alias_template, max( 0, $offset - 34 ), min( 34, $offset ) );
+			$right = substr( $alias_template, $offset + strlen( $tag ), 31 );
+			$left_count = substr_count( $native_alias['output'], $left );
+			$right_count = substr_count( $native_alias['output'], $right );
+			$start = 1 === $left_count ?
+				strpos( $native_alias['output'], $left ) + strlen( $left ) : null;
+			$end = 1 === $right_count ?
+				strpos( $native_alias['output'], $right ) : null;
+			$mapped[] = array(
+				'source_offset' => $offset,
+				'left_count' => $left_count,
+				'right_count' => $right_count,
+				'start' => $start,
+				'end' => $end,
+				'valid_native_gregorian' => is_int( $start ) && is_int( $end ) &&
+					$end > $start &&
+					substr( $native_alias['output'], $start, $end - $start ) === $gregorian,
+				'left_anchor_sha256' => hash( 'sha256', $left ),
+				'right_anchor_sha256' => hash( 'sha256', $right ),
+			);
+		}
+		$dom_valid = false;
+		$dom_errors = null;
+		if ( class_exists( 'DOMDocument' ) && class_exists( 'DOMXPath' ) &&
+			is_string( $native_alias['output'] ) ) {
+			$dom = new DOMDocument( '1.0', 'UTF-8' );
+			$old = libxml_use_internal_errors( true );
+			$loaded = $dom->loadHTML(
+				'<?xml encoding="utf-8"?>' . $native_alias['output'], LIBXML_NONET
+			);
+			$dom_errors = count( libxml_get_errors() );
+			libxml_clear_errors();
+			libxml_use_internal_errors( $old );
+			if ( $loaded ) {
+				$xp = new DOMXPath( $dom );
+				$nodes = $xp->query( '//div[@class="multi-g011"]/p[@class="human-a"]' );
+				$dom_valid = 0 === $dom_errors && 1 === $nodes->length;
+			}
+		}
+		$native_mutation = $rendered_before_mutation[0] ?? array();
+		$prerequisites = array(
+			'two_distinct_eligible_source_occurrences' =>
+				7 === $classification['all'] && 2 === count( $mapped ) &&
+				$mapped[0]['source_offset'] < $mapped[1]['source_offset'],
+			'authentic_native_replacement_preceded_third_party_collapse' =>
+				2 === ( $native_mutation['native_paragraph_count_before'] ?? null ) &&
+				1 === ( $native_mutation['native_paragraph_count_after'] ?? null ) &&
+				true === ( $native_mutation['removed_second_complete_paragraph'] ?? null ),
+			'each_left_and_right_anchor_individually_unique' =>
+				2 === count( $mapped ) &&
+				1 === $mapped[0]['left_count'] && 1 === $mapped[0]['right_count'] &&
+				1 === $mapped[1]['left_count'] && 1 === $mapped[1]['right_count'],
+			'each_span_exactly_authoritative_gregorian' =>
+				2 === count( $mapped ) &&
+				$mapped[0]['valid_native_gregorian'] &&
+				$mapped[1]['valid_native_gregorian'],
+			'same_nonempty_native_byte_interval_alias' =>
+				2 === count( $mapped ) &&
+				is_int( $mapped[0]['start'] ) && is_int( $mapped[0]['end'] ) &&
+				$mapped[0]['start'] === $mapped[1]['start'] &&
+				$mapped[0]['end'] === $mapped[1]['end'] &&
+				$mapped[0]['start'] < $mapped[0]['end'],
+			'third_party_preserved_structurally_valid_html' => $dom_valid,
+		);
+		$invalid = array_keys( array_filter(
+			$prerequisites, static function ( $ok ) { return ! $ok; }
+		) );
+		if ( $invalid ) {
+			$cases['aliasing_duplicate_source_collapse'] = array(
+				'status' => 'INVALID_FIXTURE',
+				'attack_preconditions' => $prerequisites,
+				'independently_mapped_intervals' => $mapped,
+				'dom_parse_errors' => $dom_errors,
+				'failed_preconditions' => $invalid,
+				'candidate_was_run' => false,
+			);
+		} else {
+			$candidate_alias = $run_alias( true );
+			$checks = array(
+				'guard_reached_at_second_alias' =>
+					'reordered_or_overlapping_spans' === $candidate_alias['reason'] &&
+					false === $candidate_alias['admitted'],
+				'byte_exact_native_fallback' =>
+					$native_alias['output'] === $candidate_alias['output'],
+				'one_shared_pre_replace_call_per_run_with_identical_inputs' =>
+					count( $native_alias['pre_trace'] ) === 1 &&
+					$native_alias['pre_trace'] === $candidate_alias['pre_trace'],
+				'third_party_mutation_equal_across_matched_runs' =>
+					count( $rendered_before_mutation ) === 2 &&
+					$rendered_before_mutation[0] === $rendered_before_mutation[1],
+			);
+			$bad = array_keys( array_filter(
+				$checks, static function ( $ok ) { return ! $ok; }
+			) );
+			$cases['aliasing_duplicate_source_collapse'] = array(
+				'status' => empty( $bad ) ? 'PASS' : 'CONFIRMED_FINDING',
+				'attack_preconditions' => $prerequisites,
+				'independently_mapped_intervals' => $mapped,
+				'anchor_pairs_same_across_source_occurrences' =>
+					$mapped[0]['left_anchor_sha256'] === $mapped[1]['left_anchor_sha256'] &&
+					$mapped[0]['right_anchor_sha256'] === $mapped[1]['right_anchor_sha256'],
+				'guard_reason' => $candidate_alias['reason'],
+				'checks' => $checks,
+				'failed_invariants' => $bad,
+				'native_sha256' => hash( 'sha256', $native_alias['output'] ),
+				'candidate_sha256' => hash( 'sha256', $candidate_alias['output'] ),
+				'dom_parse_errors' => $dom_errors,
+				'candidate_was_run' => true,
+			);
+		}
+	}
+
 	$stored_form = GFAPI::get_form( (int) $form['id'] );
 	$stored_entry = GFAPI::get_entry( $entry_id );
 	$persistence = is_array( $stored_form ) && is_array( $stored_entry ) &&
@@ -473,7 +673,7 @@ try {
 			$fail( 'Decisive ' . $name . ': ' . implode( ',', $case['failed_invariants'] ) );
 		}
 	}
-	if ( count( $cases ) !== 9 ) {
+	if ( count( $cases ) !== 10 ) {
 		$fail( 'Incomplete bounded multi-occurrence qualification.' );
 	}
 	echo "G011 two independent human occurrences: bounded observable PASS\n";
