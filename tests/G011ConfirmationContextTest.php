@@ -112,6 +112,63 @@ final class G011ConfirmationContextTest extends TestCase {
 		$this->assertStringContainsString( ' /archive/2026/03/21 ./archive/2026/03/21 ../archive/2026/03/21', $result );
 	}
 
+
+	#[RunInSeparateProcess]
+	public function test_tag_led_paths_fragments_and_filenames_remain_native(): void {
+		$this->bootstrap_context();
+		$tag = '{date_created:format:Y/m/d}';
+		$machine = array(
+			$tag . '/detail',
+			$tag . '/detail/receipt',
+			$tag . '#details',
+			$tag . '?download=1',
+			'receipt-' . $tag . '.pdf',
+			'file_' . $tag . '.csv',
+			$tag . '.json',
+			'./archive/' . $tag . '#download',
+			'../archive/' . $tag . '.pdf',
+		);
+		foreach ( $machine as $token ) {
+			$this->assertSame( $this->native( $token ), $this->present( $token ), $token );
+		}
+		foreach ( array(
+			'Created=' . $tag,
+			'Created ' . $tag . '.',
+			'Date: ' . $tag,
+			'<strong>Created=' . $tag . '</strong>',
+		) as $human ) {
+			$this->assertSame(
+				str_replace( '2026/03/21', '۱۴۰۵/۰۱/۰۱', $this->native( $human ) ),
+				$this->present( $human ),
+				$human
+			);
+		}
+	}
+
+	#[RunInSeparateProcess]
+	public function test_mixed_tag_led_machine_tokens_are_independent_of_visible_text(): void {
+		$this->bootstrap_context();
+		$tag = '{date_created:format:Y/m/d}';
+		$template = '<div class="keep">Created=' . $tag . ' ' . $tag . '/detail ' .
+			'receipt-' . $tag . '.pdf <a href="/receipt/' . $tag . '" data-name="receipt-' .
+			$tag . '.pdf">Shown ' . $tag . '</a> ' . $tag . '#details ' .
+			'https://example.test/file/' . $tag . ' /archive/' . $tag .
+			' <em>Printed ' . $tag . '</em></div>';
+		$native = $this->native( $template );
+		$expected = str_replace(
+			array( 'Created=2026/03/21', 'Shown 2026/03/21', 'Printed 2026/03/21' ),
+			array( 'Created=۱۴۰۵/۰۱/۰۱', 'Shown ۱۴۰۵/۰۱/۰۱', 'Printed ۱۴۰۵/۰۱/۰۱' ),
+			$native
+		);
+		$result = $this->present( $template );
+		$this->assertSame( $expected, $result );
+		$this->assertSame( $this->attribute( $native, 'href' ), $this->attribute( $result, 'href' ) );
+		$this->assertSame( $this->attribute( $native, 'data-name' ), $this->attribute( $result, 'data-name' ) );
+		$this->assertStringContainsString( 'receipt-2026/03/21.pdf', $result );
+		$this->assertStringContainsString( '2026/03/21#details', $result );
+	}
+
+
 	#[RunInSeparateProcess]
 	public function test_ambiguous_markup_and_native_roundtrip_drift_fail_closed(): void {
 		$this->bootstrap_context();
