@@ -248,6 +248,13 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		if ( null === $prefix || null === $suffix ) {
 			return true;
 		}
+		// A path separator before this occurrence is transport syntax, not a
+		// human-readable date. Match only URI-shaped tokens (including bare
+		// relative paths); do not treat label punctuation such as Created= as
+		// a path. Tag modifiers are deliberately excluded from $prefix.
+		if ( preg_match( '#^\(?(?:(?:/|\./|\.\./)(?:[a-z0-9._~%+-]+/)*|(?:[a-z0-9._~%+-]+/)+)$#iD', $prefix ) ) {
+			return true;
+		}
 		$token = $prefix . $suffix; // Do not treat / or : inside tag modifiers as URL syntax.
 		return (bool) preg_match(
 			'~(?:https?://|ftp://|www\.|mailto:|javascript:|data:|[a-z0-9.-]+\.[a-z]{2,}[/?#]|[/?#&][a-z0-9_.-]+=|["{}\[\]])~i',
