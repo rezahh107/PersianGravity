@@ -112,8 +112,8 @@ $align = static function ( $native, $selected_form, $given_entry ) use (
 	$spans = array();
 	$previous_end = 0;
 	foreach ( $classified['eligible'] as $template_offset ) {
-		$left = substr( $raw, max( 0, $template_offset - 40 ), min( 40, $template_offset ) );
-		$right = substr( $raw, $template_offset + strlen( $tag ), 44 );
+		$left = substr( $raw, max( 0, $template_offset - 34 ), min( 34, $template_offset ) );
+		$right = substr( $raw, $template_offset + strlen( $tag ), 31 );
 		if ( strlen( $left ) < 12 || strlen( $right ) < 12 ||
 			substr_count( $native, $left ) !== 1 || substr_count( $native, $right ) !== 1 ) {
 			return $base + array( 'reason' => 'missing_or_nonunique_anchors' );
@@ -193,7 +193,7 @@ $run = static function ( string $mode, bool $candidate ) use (
 			return $native;
 		}
 		$a = '~(<p class="human-a">.*?</p>)(.*?)(<p class="human-b">.*?</p>)~s';
-		if ( 'reordered' === $mode ) {
+		if ( in_array( $mode, array( 'reordered', 'ordered_guard_attack' ), true ) ) {
 			return preg_replace( $a, '$3$2$1', $native, 1 );
 		}
 		if ( 'removed' === $mode ) {
@@ -237,6 +237,8 @@ $run = static function ( string $mode, bool $candidate ) use (
 };
 
 $cases = array();
+$attack_preconditions = null;
+$ordinary_native_html = null;
 try {
 	// Independent oracle fixed from template knowledge, before ANY candidate
 	// execution. The two human labels are separate and machine tokens retain
@@ -259,9 +261,103 @@ try {
 	);
 	foreach ( array(
 		'normal', 'equivalent', 'different', 'changed_anchor',
-		'duplicate_anchor', 'reordered', 'removed', 'overlap_attempt',
+		'duplicate_anchor', 'reordered', 'removed', 'overlap_attempt', 'ordered_guard_attack',
 	) as $mode ) {
 		$native = $run( $mode, false );
+		if ( 'normal' === $mode ) {
+			$ordinary_native_html = $native['output'];
+		}
+		if ( 'ordered_guard_attack' === $mode ) {
+			// Evaluate attack validity BEFORE running the candidate.
+			$proof = array();
+			$m = array();
+			$source_ok = is_string( $ordinary_native_html ) &&
+				1 === preg_match(
+					'~(<p class="human-a">.*?</p>)(.*?)(<p class="human-b">.*?</p>)~s',
+					$ordinary_native_html, $m, PREG_OFFSET_CAPTURE
+				);
+			$expected_swap = null;
+			if ( $source_ok ) {
+				$i = $m[0][1];
+				$expected_swap = substr( $ordinary_native_html, 0, $i ) .
+					$m[3][0] . $m[2][0] . $m[1][0] .
+					substr( $ordinary_native_html, $i + strlen( $m[0][0] ) );
+			}
+			$proof['reordered_complete_sections_only'] =
+				$source_ok && $expected_swap === $native['output'];
+			$classified = $classify( $template );
+			$observed_spans = array();
+			$proof['two_eligible_occurrences'] =
+				7 === $classified['all'] && 2 === count( $classified['eligible'] );
+			foreach ( $classified['eligible'] as $template_offset ) {
+				$left = substr( $template, max( 0, $template_offset - 34 ), min( 34, $template_offset ) );
+				$right = substr( $template, $template_offset + strlen( $tag ), 31 );
+				$left_count = substr_count( $native['output'], $left );
+				$right_count = substr_count( $native['output'], $right );
+				$start = 1 === $left_count ? strpos( $native['output'], $left ) + strlen( $left ) : null;
+				$end = 1 === $right_count ? strpos( $native['output'], $right ) : null;
+				$observed_spans[] = array(
+					'anchor_pair_unique' => strlen( $left ) >= 12 && strlen( $right ) >= 12 &&
+						1 === $left_count && 1 === $right_count,
+					'start' => $start,
+					'end' => $end,
+					'encloses_exact_native_date' => is_int( $start ) && is_int( $end ) &&
+						$end > $start && substr( $native['output'], $start, $end - $start ) === $gregorian,
+				);
+			}
+			$proof['both_anchor_pairs_unique'] = count( $observed_spans ) === 2 &&
+				$observed_spans[0]['anchor_pair_unique'] &&
+				$observed_spans[1]['anchor_pair_unique'];
+			$proof['both_values_independently_valid'] = count( $observed_spans ) === 2 &&
+				$observed_spans[0]['encloses_exact_native_date'] &&
+				$observed_spans[1]['encloses_exact_native_date'];
+			$proof['native_spans_reversed_nonoverlapping'] = count( $observed_spans ) === 2 &&
+				$observed_spans[0]['encloses_exact_native_date'] &&
+				$observed_spans[1]['encloses_exact_native_date'] &&
+				$observed_spans[1]['end'] <= $observed_spans[0]['start'];
+
+			// Independently check that the reordered fragments form a
+			// well-formed DOM with both <p> nodes still in the same parent.
+			$valid_html = false;
+			$dom_detail = 'DOM parser not available';
+			if ( class_exists( 'DOMDocument' ) && class_exists( 'DOMXPath' ) ) {
+				$dom = new DOMDocument( '1.0', 'UTF-8' );
+				$old_errors = libxml_use_internal_errors( true );
+				$loaded = $dom->loadHTML( '<?xml encoding="utf-8"?>' . $native['output'], LIBXML_NONET );
+				$parse_errors = libxml_get_errors();
+				libxml_clear_errors();
+				libxml_use_internal_errors( $old_errors );
+				if ( $loaded ) {
+					$xpath = new DOMXPath( $dom );
+					$a = $xpath->query( '//div[@class="multi-g011"]/p[@class="human-a"]' );
+					$b = $xpath->query( '//div[@class="multi-g011"]/p[@class="human-b"]' );
+					$valid_html = 0 === count( $parse_errors ) && 1 === $a->length &&
+						1 === $b->length &&
+						$a->item( 0 )->parentNode->isSameNode( $b->item( 0 )->parentNode );
+					$dom_detail = sprintf( 'errors=%d, A=%d, B=%d, same-parent=%s',
+						count( $parse_errors ), $a->length, $b->length,
+						1 === $a->length && 1 === $b->length &&
+						$a->item( 0 )->parentNode->isSameNode( $b->item( 0 )->parentNode ) ? 'true' : 'false' );
+				}
+			}
+			$proof['html_remains_structurally_valid'] = $valid_html;
+			$attack_preconditions = array(
+				'checks' => $proof,
+				'independent_rendered_spans' => $observed_spans,
+				'dom' => $dom_detail,
+				'third_party_priority' => 5,
+				'candidate_priority' => 25,
+			);
+			if ( in_array( false, $proof, true ) ) {
+				$cases[$mode] = array(
+					'status' => 'INVALID_FIXTURE',
+					'failed_preconditions' => array_keys(
+						array_filter( $proof, static function ( $ok ) { return ! $ok; } )
+					),
+				);
+				break;
+			}
+		}
 		// Independent expected bytes built solely from matched native control.
 		$expected = $native['output'];
 		$positive = 'normal' === $mode || 'equivalent' === $mode;
@@ -281,6 +377,8 @@ try {
 			'callback_count_and_input_identity' => $counts,
 			'exact_oracle_output' => $candidate['output'] === $expected,
 			'expected_admission' => $candidate['admitted'] === $positive,
+			'ordered_guard_reached' => 'ordered_guard_attack' !== $mode ||
+				$candidate['reason'] === 'reordered_or_overlapping_spans',
 			'positive_liveness_or_native_fallback' =>
 				( $candidate['output'] !== $native['output'] ) === $positive,
 			'complete_mapping' => $positive ? count( $candidate['spans'] ) === 2 :
@@ -351,6 +449,7 @@ try {
 		'candidate_shared_merge_tag_invocations' => 0,
 		'original_form_entry_unchanged' => $persistence,
 		'cases' => $cases,
+		'ordered_attack_preconditions' => $attack_preconditions,
 	);
 	file_put_contents( $dir . '/g011-multi-occurrence-alignment.json',
 		wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
@@ -358,11 +457,14 @@ try {
 		$fail( 'Persisted Form/Entry drift.' );
 	}
 	foreach ( $cases as $name => $case ) {
+		if ( 'INVALID_FIXTURE' === $case['status'] ) {
+			$fail( 'INVALID attack fixture: ' . implode( ',', $case['failed_preconditions'] ) );
+		}
 		if ( 'PASS' !== $case['status'] ) {
 			$fail( 'Decisive ' . $name . ': ' . implode( ',', $case['failed_invariants'] ) );
 		}
 	}
-	if ( count( $cases ) !== 8 ) {
+	if ( count( $cases ) !== 9 ) {
 		$fail( 'Incomplete bounded multi-occurrence qualification.' );
 	}
 	echo "G011 two independent human occurrences: bounded observable PASS\n";
