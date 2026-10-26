@@ -51,7 +51,8 @@ async function submit(mode, selector) {
       opaque_filename_native: human.opaque === 'receipt-' + observed.local_gregorian + '.pdf',
       native_href: human.href === '/?d=' + observed.local_gregorian + '&keep=1',
       native_data: human.data === observed.local_gregorian,
-      third_party_text_preserved: (await confirmation.innerText()).includes('THIRD_PARTY_VISIBLE'),
+      third_party_text_preserved: await page.locator('.external-prefix').count() === 1 &&
+        (await page.locator('.external-prefix').innerText()) === 'THIRD_PARTY_VISIBLE',
       three_admitted_occurrences: observed.candidate_admitted &&
         observed.spans.length === 3 && observed.candidate_reason === 'typed_source_unique_static_alignment',
       no_second_native_render: observed.shared_merge_callback_count === 1,
