@@ -112,7 +112,7 @@ $align = static function ( $native, $selected_form, $given_entry ) use (
 	$spans = array();
 	$previous_end = 0;
 	foreach ( $classified['eligible'] as $template_offset ) {
-		$left = substr( $raw, max( 0, $template_offset - 44 ), min( 44, $template_offset ) );
+		$left = substr( $raw, max( 0, $template_offset - 40 ), min( 40, $template_offset ) );
 		$right = substr( $raw, $template_offset + strlen( $tag ), 44 );
 		if ( strlen( $left ) < 12 || strlen( $right ) < 12 ||
 			substr_count( $native, $left ) !== 1 || substr_count( $native, $right ) !== 1 ) {
