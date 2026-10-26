@@ -23,17 +23,27 @@ try {
       const message = page.locator('.gform_confirmation_message').first();
       await message.waitFor({ state: 'visible', timeout: 20000 });
       const text = await message.innerText();
+      const link = message.locator('#g011-browser-link');
+      const href = await link.getAttribute('href');
+      const date = await link.getAttribute('data-created');
+      const preserve = await link.getAttribute('data-preserve');
+      const label = await link.innerText();
       const checks = {
         selected: text.includes('G011_BROWSER_OK'),
+        native_href: typeof href === 'string' && typeof date === 'string' &&
+          href === '/?day=' + date + '&keep=1' && /^\d{4}\/\d{2}\/\d{2}$/.test(date),
+        native_data: typeof date === 'string' && !/[۰-۹]/u.test(date),
+        visible_link: /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(label),
+        unrelated_data: preserve === 'fixed',
         jalali: /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(text),
         untouched: text.includes('2026-03-21 unchanged'),
         native_gregorian: /20[0-9]{2}[-/][0-9]{2}[-/][0-9]{2}/u.test(text),
       };
-      if (!checks.selected || !checks.jalali || !checks.untouched) {
+      if (Object.entries(checks).some(([key, value]) => key !== 'native_gregorian' && !value)) {
         throw new Error(mode + ': confirmation contract failed: ' + JSON.stringify(checks));
       }
       if (errors.length) throw new Error(mode + ': browser runtime error: ' + errors.join(', '));
-      results[mode] = { submission: 'CONFIRMED', jalali: true, untouched_text: true, pageerror_count: 0 };
+      results[mode] = { submission: 'CONFIRMED', jalali: true, native_href: true, native_data: true, visible_link: true, unrelated_data: true, untouched_text: true, pageerror_count: 0 };
     } finally {
       await page.close();
     }
