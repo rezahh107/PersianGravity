@@ -55,6 +55,11 @@ final class WU008_G011_Browser_Alignment {
 			'locale' => determine_locale(),
 			'module_enabled' => PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
 			'pre_callback_calls' => self::$side_effect_calls,
+			'expected' => self::expected_from_entry( $entry ),
+			'persisted_form_sha256' => hash( 'sha256', wp_json_encode(
+				GFAPI::get_form( (int) $form['id'] ) ) ),
+			'persisted_entry_sha256' => hash( 'sha256', wp_json_encode(
+				GFAPI::get_entry( (int) $entry['id'] ) ) ),
 		);
 		file_put_contents( $dir . '/g011-browserqual-submitted-' . sanitize_file_name( $mode ) . '.json',
 			wp_json_encode( $details, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
