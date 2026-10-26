@@ -39,6 +39,22 @@ async function submit(route, mode, { conditional = false } = {}) {
     await page.locator('form[id^="gform_"] input[type="submit"], form[id^="gform_"] button[type="submit"]').first().click();
     const message = page.locator('.gform_confirmation_message').first();
     await message.waitFor({ state: 'visible', timeout: 25000 });
+    const evidencePath = dir + '/g011-browserqual-' + mode + '.json';
+    if (!fs.existsSync(evidencePath)) {
+      const submissionPath = dir + '/g011-browserqual-submitted-' + mode + '.json';
+      const submitted = fs.existsSync(submissionPath) ?
+        JSON.parse(fs.readFileSync(submissionPath, 'utf8')) : null;
+      const observed = {
+        confirmation_visible: true,
+        submitted,
+        rendered_classes: await message.getAttribute('class'),
+        human_occurrences: await message.locator('p.human-a').count(),
+        selected_conditional: await message.locator('#g011-q-conditional').count(),
+        form_ids: await page.locator('form[id^="gform_"]').evaluateAll(els => els.map(x => x.id)),
+      };
+      out.cases[mode] = { status: 'NOT_VERIFIED', reason: 'missing_confirmation_boundary_evidence', observed };
+      throw new Error(mode + ': missing server confirmation trace; diagnostic=' + JSON.stringify(observed));
+    }
     const r = record(mode);
     const checks = {
       entry_persisted: Number.isInteger(r.entry_id) && r.entry_id > 0,
