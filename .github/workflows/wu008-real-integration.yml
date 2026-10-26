@@ -722,6 +722,19 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-provenance-qualification.php
           test -s "$WU008_ARTIFACT_DIR/g011-provenance-qualification.json"
 
+      - name: Falsify G-011 gform_pre_process marker observer equivalence (ordinary submission)
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-preprocess-mu-qualification.php
+          php -l tests/real-integration/g011-preprocess-qualification-setup.php
+          php -l tests/real-integration/g011-preprocess-qualification-verify.php
+          node --check tests/real-integration/g011-preprocess-qualification-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-preprocess-qualification-setup.php
+          node tests/real-integration/g011-preprocess-qualification-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-preprocess-qualification-verify.php
+          test -s "$WU008_ARTIFACT_DIR/g011-preprocess-falsifier.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
