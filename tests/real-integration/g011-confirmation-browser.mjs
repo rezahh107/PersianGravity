@@ -28,6 +28,11 @@ try {
       const date = await link.getAttribute('data-created');
       const preserve = await link.getAttribute('data-preserve');
       const label = await link.innerText();
+      const relativeText = await message.locator('#g011-relative-paths').innerText();
+      const nativeRelativePaths = typeof date === 'string' &&
+        ['/archive/', './archive/', '../archive/', 'archive/']
+          .every((prefix) => relativeText.includes(prefix + date));
+      const visibleCreatedLabel = /Created=[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(relativeText);
       const checks = {
         selected: text.includes('G011_BROWSER_OK'),
         native_href: typeof href === 'string' && typeof date === 'string' &&
@@ -35,6 +40,8 @@ try {
         native_data: typeof date === 'string' && !/[۰-۹]/u.test(date),
         visible_link: /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(label),
         unrelated_data: preserve === 'fixed',
+        relative_paths_native: nativeRelativePaths,
+        human_created_label: visibleCreatedLabel,
         jalali: /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(text),
         untouched: text.includes('2026-03-21 unchanged'),
         native_gregorian: /20[0-9]{2}[-/][0-9]{2}[-/][0-9]{2}/u.test(text),
@@ -43,7 +50,7 @@ try {
         throw new Error(mode + ': confirmation contract failed: ' + JSON.stringify(checks));
       }
       if (errors.length) throw new Error(mode + ': browser runtime error: ' + errors.join(', '));
-      results[mode] = { submission: 'CONFIRMED', jalali: true, native_href: true, native_data: true, visible_link: true, unrelated_data: true, untouched_text: true, pageerror_count: 0 };
+      results[mode] = { submission: 'CONFIRMED', jalali: true, native_href: true, native_data: true, visible_link: true, unrelated_data: true, relative_paths_native: true, human_created_label: true, untouched_text: true, pageerror_count: 0 };
     } finally {
       await page.close();
     }
