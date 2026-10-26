@@ -795,6 +795,34 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-postnative-browser-verify.php
           test -s "$WU008_ARTIFACT_DIR/g011-browserqual-verified.json"
 
+      # Only after native-host typed positive qualification has passed.
+      - name: Browser qualify typed heterogeneous Candidate on Ordinary and AJAX
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-heterogeneous-browser-mu.php
+          php -l tests/real-integration/g011-heterogeneous-browser-setup.php
+          php -l tests/real-integration/g011-heterogeneous-browser-verify.php
+          node --check tests/real-integration/g011-heterogeneous-browser.mjs
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          cp tests/real-integration/g011-heterogeneous-candidate.php "$WU008_WP_PATH/wp-content/mu-plugins/g011-heterogeneous-candidate.php"
+          cp tests/real-integration/g011-heterogeneous-browser-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/g011-heterogeneous-browser.php"
+          trap 'rm -f "$WU008_WP_PATH/wp-content/mu-plugins/g011-heterogeneous-browser.php" "$WU008_WP_PATH/wp-content/mu-plugins/g011-heterogeneous-candidate.php"' EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-heterogeneous-browser-setup.php
+          test -s "$WU008_ARTIFACT_DIR/g011-heterogeneous-browser-fixture.json"
+          node tests/real-integration/g011-heterogeneous-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g011-heterogeneous-browser.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-heterogeneous-browser-verify.php
+          test -s "$WU008_ARTIFACT_DIR/g011-heterogeneous-browser-verified.json"
+
+      - name: Upload bounded heterogeneous browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g011-heterogeneous-browser
+          path: /tmp/wu008-artifacts/g011-heterogeneous-browser*.json
+          if-no-files-found: warn
+
       - name: Preserve G011 disposable browser qualification evidence independently
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
