@@ -18,6 +18,7 @@ final class WU008_G011_Browser_Alignment {
 		add_filter( 'gform_confirmation', array( __CLASS__, 'capture_native' ), 24, 4 );
 		add_filter( 'gform_confirmation', array( __CLASS__, 'candidate' ), 25, 4 );
 		add_filter( 'gform_confirmation', array( __CLASS__, 'record_and_restore' ), 30, 4 );
+		add_action( 'gform_after_submission', array( __CLASS__, 'submission_trace' ), 999, 2 );
 	}
 	private static function config(): array {
 		$cfg = get_option( 'wu008_g011_browser_qual_cfg', array() );
@@ -34,6 +35,29 @@ final class WU008_G011_Browser_Alignment {
 		}
 		$posted = $_POST['input_2'] ?? '';
 		return is_string( $posted ) ? sanitize_key( wp_unslash( $posted ) ) : '';
+	}
+	public static function submission_trace( $entry, $form ): void {
+		if ( ! self::target( $form ) || ! is_array( $entry ) ) {
+			return;
+		}
+		$mode = self::mode( $entry );
+		$dir = getenv( 'WU008_ARTIFACT_DIR' );
+		if ( ! is_string( $dir ) || ! is_dir( $dir ) ) {
+			return;
+		}
+		$details = array(
+			'mode' => $mode, 'entry_id' => (int) ( $entry['id'] ?? 0 ),
+			'form_id' => (int) ( $form['id'] ?? 0 ),
+			'confirmation_trace_exists' =>
+				is_file( $dir . '/g011-browserqual-' . sanitize_file_name( $mode ) . '.json' ),
+			'hook_registered' =>
+				false !== has_filter( 'gform_confirmation', array( __CLASS__, 'enter' ) ),
+			'locale' => determine_locale(),
+			'module_enabled' => PGR_Module_Registry::is_enabled( 'jalali_presentation' ),
+			'pre_callback_calls' => self::$side_effect_calls,
+		);
+		file_put_contents( $dir . '/g011-browserqual-submitted-' . sanitize_file_name( $mode ) . '.json',
+			wp_json_encode( $details, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 	}
 	public static function third_party_pre( $text, $form ) {
 		if ( ! self::target( $form ) || ! is_string( $text ) ) {
