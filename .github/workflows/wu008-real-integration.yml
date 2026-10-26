@@ -368,6 +368,28 @@ jobs:
           path: /tmp/wu008-artifacts/g011-multi-occurrence-alignment.json
           if-no-files-found: warn
 
+      - name: Discriminate heterogeneous native Text output on exact licensed GF
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous=$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled("jalali_presentation") ? "1" : "0";')
+          restore() {
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval "PGR_Module_Registry::set_enabled( 'jalali_presentation', $(test "$previous" = "1" && echo true || echo false) );"
+          }
+          trap restore EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          php -l tests/real-integration/g011-heterogeneous-native-host.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-heterogeneous-native-host.php
+          test -s "$WU008_ARTIFACT_DIR/g011-heterogeneous-native-host.json"
+
+      - name: Upload heterogeneous native-host discriminator
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g011-heterogeneous-native
+          path: /tmp/wu008-artifacts/g011-heterogeneous-native-host.json
+          if-no-files-found: warn
+
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
