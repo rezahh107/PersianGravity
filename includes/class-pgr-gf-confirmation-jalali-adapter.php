@@ -69,8 +69,8 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 
 		foreach ( $matches[0] as $occurrence ) {
 			list( $tag, $offset ) = $occurrence;
-			$length             = strlen( $tag );
-			$range              = self::containing_text_range( $offset, $length, $text_ranges );
+			$length               = strlen( $tag );
+			$range                = self::containing_text_range( $offset, $length, $text_ranges );
 			if (
 				null === $range ||
 				self::opaque_text_token( $template, $offset, $length, $range )
@@ -93,9 +93,9 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			if ( false !== strpos( $template, $marker ) || false !== strpos( $confirmation, $marker ) ) {
 				return $confirmation;
 			}
-			$markerized         .= substr( $template, $cursor, $offset - $cursor ) . $marker;
-			$cursor             = $offset + $length;
-			$native[ $marker ]   = $native_value;
+			$markerized          .= substr( $template, $cursor, $offset - $cursor ) . $marker;
+			$cursor               = $offset + $length;
+			$native[ $marker ]    = $native_value;
 			$presented[ $marker ] = esc_html( $value );
 		}
 
@@ -123,12 +123,12 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 	 * @return array<int,array{0:int,1:int}>|null
 	 */
 	private static function visible_text_ranges( string $template ): ?array {
-		$ranges = array();
-		$stack  = array();
-		$cursor = 0;
-		$total  = strlen( $template );
-		$void   = array( 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr' );
-		$opaque = array( 'script', 'style', 'code', 'pre', 'textarea', 'template', 'svg', 'math', 'noscript', 'iframe', 'object', 'canvas', 'select', 'title', 'xmp' );
+		$ranges  = array();
+		$stack   = array();
+		$cursor  = 0;
+		$total   = strlen( $template );
+		$void    = array( 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr' );
+		$opaque  = array( 'script', 'style', 'code', 'pre', 'textarea', 'template', 'svg', 'math', 'noscript', 'iframe', 'object', 'canvas', 'select', 'title', 'xmp' );
 		$visible = array( 'a', 'article', 'aside', 'b', 'blockquote', 'caption', 'center', 'dd', 'del', 'details', 'div', 'dl', 'dt', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'i', 'ins', 'label', 'li', 'main', 'mark', 'ol', 'p', 's', 'section', 'small', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul' );
 
 		while ( $cursor < $total ) {
@@ -206,12 +206,15 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				$cursor = $close_match[0][1] + strlen( $close_match[0][0] );
 				continue;
 			}
-			if ( $self_closing || in_array( $name, $void, true ) ) {
+			if ( $self_closing && ! in_array( $name, $void, true ) ) {
+				return null; // Non-void self-closing HTML is browser-ambiguous.
+			}
+			if ( in_array( $name, $void, true ) ) {
 				continue;
 			}
 			$parent_visible = empty( $stack ) || end( $stack )['visible'];
-			$hidden = (bool) preg_match( '/(?:^|\s)(?:hidden|inert)(?:\s|=|$)|aria-hidden\s*=\s*["\']?true\b|(?:display\s*:\s*none|visibility\s*:\s*hidden)/i', $attrs );
-			$stack[] = array(
+			$hidden         = (bool) preg_match( '/(?:^|\s)(?:hidden|inert)(?:\s|=|$)|aria-hidden\s*=\s*["\']?true\b|(?:display\s*:\s*none|visibility\s*:\s*hidden)/i', $attrs );
+			$stack[]        = array(
 				'name'    => $name,
 				'visible' => $parent_visible && ! $hidden && in_array( $name, $visible, true ),
 			);
