@@ -714,6 +714,14 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-architecture-qualification.php
           test -s "$WU008_ARTIFACT_DIR/g011-architecture-qualification.json"
 
+      - name: Falsify public-hook confirmation provenance on exact GF 3.1.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-provenance-qualification.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-provenance-qualification.php
+          test -s "$WU008_ARTIFACT_DIR/g011-provenance-qualification.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
