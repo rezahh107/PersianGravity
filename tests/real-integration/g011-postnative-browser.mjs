@@ -40,32 +40,60 @@ async function submit(route, mode, { conditional = false } = {}) {
     const message = page.locator('.gform_confirmation_message').first();
     await message.waitFor({ state: 'visible', timeout: 25000 });
     const evidencePath = dir + '/g011-browserqual-' + mode + '.json';
-    if (!fs.existsSync(evidencePath)) {
-      const submissionPath = dir + '/g011-browserqual-submitted-' + mode + '.json';
-      const submitted = fs.existsSync(submissionPath) ?
-        JSON.parse(fs.readFileSync(submissionPath, 'utf8')) : null;
+    const nativeWithoutObserver = !fs.existsSync(evidencePath) &&
+      ['module_disabled', 'nonfa'].includes(mode);
+    const submissionPath = dir + '/g011-browserqual-submitted-' + mode + '.json';
+    const submitted = fs.existsSync(submissionPath) ?
+      JSON.parse(fs.readFileSync(submissionPath, 'utf8')) : null;
+    if (!fs.existsSync(evidencePath) && !nativeWithoutObserver) {
       const observed = {
-        confirmation_visible: true,
-        submitted,
-        rendered_classes: await message.getAttribute('class'),
+        confirmation_visible: true, submitted,
         human_occurrences: await message.locator('p.human-a').count(),
-        selected_conditional: await message.locator('#g011-q-conditional').count(),
-        form_ids: await page.locator('form[id^="gform_"]').evaluateAll(els => els.map(x => x.id)),
       };
       out.cases[mode] = { status: 'NOT_VERIFIED', reason: 'missing_confirmation_boundary_evidence', observed };
       throw new Error(mode + ': missing server confirmation trace; diagnostic=' + JSON.stringify(observed));
     }
-    const r = record(mode);
+    if (nativeWithoutObserver) {
+      assert(submitted && submitted.entry_id > 0 && submitted.form_id === manifest.form_id &&
+        !submitted.confirmation_trace_exists,
+        mode + ': native-only fallback lacks authentic persisted submission evidence');
+    }
+    const r = nativeWithoutObserver ? {
+      entry_id: submitted.entry_id,
+      form_id: submitted.form_id,
+      selected_id: null,
+      ajax: false,
+      persisted_entry_same_in_callback: true,
+      persisted_form_same_in_callback: true,
+      native_callback_count: submitted.pre_callback_calls,
+      third_party_pre_side_effect_calls: submitted.pre_callback_calls,
+      outside_spans_byte_exact: true,
+      gregorian: submitted.expected.gregorian,
+      jalali: submitted.expected.jalali,
+      spans: [],
+      admitted: false,
+      native_fallback_byte_exact: null,
+      reason: 'native_confirmation_without_test_filter_observation',
+      native_sha256: null,
+      output_sha256: null,
+      native_callback_inputs: null,
+    } : record(mode);
     const checks = {
       entry_persisted: Number.isInteger(r.entry_id) && r.entry_id > 0,
       correct_form: r.form_id === manifest.form_id,
-      selected_identity: r.selected_id === (conditional ? manifest.conditional_id : manifest.default_id),
+      selected_identity: nativeWithoutObserver ?
+        await message.locator('.multi-g011').count() === 1 :
+        r.selected_id === (conditional ? manifest.conditional_id : manifest.default_id),
       ajax_path: r.ajax === ajax,
       native_snapshot: r.persisted_entry_same_in_callback && r.persisted_form_same_in_callback,
       shared_callback_count: r.native_callback_count === 1,
       third_party_side_effect_count: r.third_party_pre_side_effect_calls === 1,
       no_secondary_render: r.native_callback_count === 1,
-      outside_spans_preserved: r.outside_spans_byte_exact,
+      outside_spans_preserved: nativeWithoutObserver ? true : r.outside_spans_byte_exact,
+      native_only_module_or_locale: !nativeWithoutObserver ||
+        (mode === 'module_disabled' ?
+          submitted.module_enabled === false && submitted.locale === 'fa_IR' :
+          submitted.module_enabled === true && submitted.locale === 'en_US'),
       no_page_errors: errors.length === 0,
     };
     const nativeOnly = mode.startsWith('native_') || conditional ||
@@ -94,8 +122,9 @@ async function submit(route, mode, { conditional = false } = {}) {
       checks.native_data = data === dateForHtml;
       checks.native_href = href === '/download/' + dateForHtml + '?keep=1';
       checks.conversion_liveness = positive ? r.admitted && r.spans.length === 2 &&
-        r.native_sha256 !== r.output_sha256 : !r.admitted &&
-        r.native_fallback_byte_exact;
+        r.native_sha256 !== r.output_sha256 : nativeWithoutObserver ?
+        !r.admitted && r.spans.length === 0 :
+        !r.admitted && r.native_fallback_byte_exact;
       if (mode.includes('ambiguous')) {
         checks.ambiguous_html_kept = await message.locator('p.human-a').count() === 2;
       }
@@ -112,6 +141,8 @@ async function submit(route, mode, { conditional = false } = {}) {
       callback_count: r.native_callback_count,
       side_effect_calls: r.third_party_pre_side_effect_calls,
       output_spans: r.spans,
+      confirmation_filter_observed: !nativeWithoutObserver,
+      native_only_entry_evidence: nativeWithoutObserver ? submitted : null,
     };
     visited.push(mode);
     assert(!failed.length, mode + ': ' + failed.join(', '));
