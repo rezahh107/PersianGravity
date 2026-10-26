@@ -10,6 +10,8 @@ The opt-in jalali_presentation adapter registers **only gform_confirmation**. It
 
 Because the hook runs after host replacement, the adapter re-renders a copy of the **selected Text template** with collision-resistant opaque markers **per individual occurrence** only after conservative template-context classification. Only positively recognized human text nodes may be converted; HTML attributes, raw URLs, opaque/code/script/style/comment content, hidden or unknown elements and machine-like text remain native. Malformed or ambiguous HTML causes unchanged native confirmation fallback. Restoring native date replacements must exactly reproduce the original host confirmation HTML. Any mismatch causes complete native fallback. This comparison protects unrelated HTML, text and ordinary Merge Tags; it also entails an additional render. Non-idempotent third-party Merge Tag callbacks may run twice and remain **not qualified**. No form/Entry/API/mail/feed/workflow state is written by the adapter.
 
+For Text confirmations, root-relative (`/archive/{date_created}`), dot-relative (`./archive/{date_created}`), parent-relative (`../archive/{date_created}`), and other unambiguous path-bearing text tokens remain native per occurrence; a separate human-facing `Created={date_created}` remains eligible. Ambiguous contexts retain native fallback. This is not Page/Redirect transport conversion.
+
 Page/Redirect Query String evaluation is already complete before the hook. This batch deliberately keeps those transport paths native until their human-facing versus machine-valued parameters, escaping and :urlencode can be proven safe.
 
 ## Tag × modifier × confirmation-path evidence matrix
