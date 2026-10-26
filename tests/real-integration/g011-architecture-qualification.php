@@ -176,6 +176,114 @@ try {
 		'enabled_trace' => $enabled_mutation['trace'],
 	);
 
+	// A bounded same-level method trial. Temporarily remove the production
+	// adapter ONLY in this disposable CLI fixture; test a selected-Text
+	// pre-render marker and a post-render presentation hook, without a
+	// second native render. This does not qualify a general classifier.
+	$prototype = '<div><strong>Created=' . $tag . '</strong> receipt-' .
+		$tag . '.tar.gz <em>Again=' . $tag . '</em></div>';
+	$baseline = $run( $prototype, false );
+	$proto_form = $form;
+	$proto_form['confirmations'] = array(
+		'prototype' => array(
+			'id' => 'prototype', 'name' => 'Prototype', 'type' => 'message',
+			'isActive' => true, 'isDefault' => true,
+			'message' => $prototype, 'disableAutoformat' => true,
+		),
+	);
+	$proto_calls = 0;
+	$proto_phase_hits = 0;
+	$proto_post_hits = 0;
+	$marker = 'PGRQ_ARCH_TRIAL_OPAQUE_8F21_END';
+	$proto_pre = static function ( $text, $hook_form ) use ( $prototype, $tag, $marker, &$proto_phase_hits ) {
+		$selected = is_array( $hook_form ) ? ( $hook_form['confirmation'] ?? null ) : null;
+		if ( is_array( $selected ) && 'message' === ( $selected['type'] ?? null ) &&
+			$text === $prototype && $text === ( $selected['message'] ?? null ) &&
+			false === strpos( $text, $marker ) ) {
+			++$proto_phase_hits;
+			return str_replace( 'Created=' . $tag, 'Created=' . $marker, $text );
+		}
+		return $text;
+	};
+	$proto_post = static function ( $confirmation, $hook_form ) use ( $marker, &$proto_post_hits ) {
+		if ( is_string( $confirmation ) && 'message' === ( $hook_form['confirmation']['type'] ?? null ) ) {
+			++$proto_post_hits;
+			return str_replace( $marker, '۱۴۰۵/۰۱/۰۱', $confirmation );
+		}
+		return $confirmation;
+	};
+	$proto_counter = static function ( $text ) use ( &$proto_calls ) {
+		++$proto_calls;
+		return $text;
+	};
+	$adapter_callback = array( 'PGR_GF_Confirmation_Jalali_Adapter', 'filter_confirmation' );
+	$adapter_priority = has_filter( 'gform_confirmation', $adapter_callback );
+	if ( false === $adapter_priority ) {
+		$fail( 'Cannot isolate existing post-render adapter for method trial.' );
+	}
+	remove_filter( 'gform_confirmation', $adapter_callback, $adapter_priority );
+	add_filter( 'gform_pre_replace_merge_tags', $proto_pre, 5, 2 );
+	add_filter( 'gform_pre_replace_merge_tags', $proto_counter, 998, 1 );
+	add_filter( 'gform_confirmation', $proto_post, 25, 2 );
+	try {
+		$proto_copy = $proto_form;
+		$prototype_output = GFFormDisplay::handle_confirmation( $proto_copy, $entry, false );
+	} finally {
+		remove_filter( 'gform_confirmation', $proto_post, 25 );
+		remove_filter( 'gform_pre_replace_merge_tags', $proto_counter, 998 );
+		remove_filter( 'gform_pre_replace_merge_tags', $proto_pre, 5 );
+		add_filter( 'gform_confirmation', $adapter_callback, $adapter_priority, 4 );
+	}
+	$prototype_expected = str_replace(
+		array( 'Created=' . $native_date, 'Again=' . $native_date ),
+		array( 'Created=۱۴۰۵/۰۱/۰۱', 'Again=' . $native_date ),
+		$baseline['output']
+	);
+	$method_trial = array(
+		'host_native_calls' => $baseline['invocations'],
+		'marker_method_calls' => $proto_calls,
+		'pre_selected_hits' => $proto_phase_hits,
+		'post_selected_hits' => $proto_post_hits,
+		'expected_output_match' => $prototype_expected === $prototype_output,
+		'machine_native_preserved' => is_string( $prototype_output ) &&
+			false !== strpos( $prototype_output, 'receipt-' . $native_date . '.tar.gz' ),
+	);
+
+	// The Merge Tag prehook is shared. Exact selected-form metadata can be
+	// carried in an arbitrary API caller's form object; it is not, alone,
+	// proof of confirmation-only invocation provenance.
+	$shared_context = array();
+	$observe_shared = static function ( $text, $hook_form ) use ( &$shared_context ) {
+		$sel = is_array( $hook_form ) ? ( $hook_form['confirmation'] ?? null ) : null;
+		$shared_context[] = array(
+			'has_selected_message' => is_array( $sel ) && 'message' === ( $sel['type'] ?? null ),
+			'equals_selected_template' => is_array( $sel ) && $text === ( $sel['message'] ?? null ),
+		);
+		return $text;
+	};
+	add_filter( 'gform_pre_replace_merge_tags', $observe_shared, 1, 2 );
+	try {
+		$unselected_form = $form;
+		unset( $unselected_form['confirmation'] );
+		GFCommon::replace_variables( $prototype, $unselected_form, $entry, false, true, false, 'html' );
+		$provided_form = $form;
+		$provided_form['confirmation'] = $proto_form['confirmations']['prototype'];
+		GFCommon::replace_variables( $prototype, $provided_form, $entry, false, true, false, 'html' );
+	} finally {
+		remove_filter( 'gform_pre_replace_merge_tags', $observe_shared, 1 );
+	}
+	$method_trial['shared_pre_hook_direct_calls'] = $shared_context;
+	$results['same_level_method_trial'] = $method_trial;
+	if (
+		1 !== $proto_calls || 1 !== $proto_phase_hits || 1 !== $proto_post_hits ||
+		! $method_trial['expected_output_match'] || ! $method_trial['machine_native_preserved'] ||
+		count( $shared_context ) < 2 ||
+		$shared_context[0]['has_selected_message'] ||
+		! $shared_context[1]['equals_selected_template']
+	) {
+		$fail( 'Bounded pre-marker/post-presentation method trial did not conform; inspect artifact.' );
+	}
+
 	$evidence = array(
 		'qualification' => 'G011_ARCH_EXACT_HOST_V1',
 		'head' => getenv( 'WU008_PGR_SHA' ),
