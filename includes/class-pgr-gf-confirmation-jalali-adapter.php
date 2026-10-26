@@ -258,7 +258,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		// A Merge Tag can also START a path, fragment, query or filename.
 		// Inspect only the adjacent suffix, never the date tag's own
 		// formatting punctuation. A lone sentence-ending dot stays human.
-		if ( preg_match( '~^(?:/|#[a-z0-9_.~-]+(?:[/#?]|$)|\?[a-z][a-z0-9_.~-]*(?:=|&|$)|\.[a-z0-9]{2,8}(?:[?#]|$))~i', $suffix ) ) {
+		if ( preg_match( '@^(?:/|#[a-z0-9_.~-]+(?:[/#?]|$)|\?[a-z][a-z0-9_.~-]*(?:=|&|$)|\.[a-z0-9]{2,8}(?:[?#]|$))@i', $suffix ) ) {
 			return true;
 		}
 		$token = $prefix . $suffix; // Do not treat / or : inside tag modifiers as URL syntax.
