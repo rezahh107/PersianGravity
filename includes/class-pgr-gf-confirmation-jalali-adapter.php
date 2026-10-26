@@ -198,7 +198,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			}
 			if ( in_array( $name, $opaque, true ) ) {
 				if ( $self_closing ) {
-					continue;
+					return null; // Raw-text elements cannot safely self-close in HTML.
 				}
 				if ( ! preg_match( '~</' . preg_quote( $name, '~' ) . '\s*>~i', $template, $close_match, PREG_OFFSET_CAPTURE, $cursor ) ) {
 					return null;
