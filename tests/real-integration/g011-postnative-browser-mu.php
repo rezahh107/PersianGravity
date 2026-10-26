@@ -125,11 +125,14 @@ final class WU008_G011_Browser_Alignment {
 		return array(
 			'raw_utc' => $raw,
 			'gregorian' => $local->format( 'Y/m/d' ),
-			'jalali' => PGR_Jalali_Presentation::format_date(
-				(int) $local->format( 'Y' ),
-				(int) $local->format( 'n' ),
-				(int) $local->format( 'j' )
-			),
+			// PGR deliberately does NOT load this class with module OFF.
+			// Native-only control still has an authoritative Gregorian date.
+			'jalali' => class_exists( 'PGR_Jalali_Presentation', false ) ?
+				PGR_Jalali_Presentation::format_date(
+					(int) $local->format( 'Y' ),
+					(int) $local->format( 'n' ),
+					(int) $local->format( 'j' )
+				) : null,
 			'timezone' => wp_timezone_string(),
 		);
 	}
@@ -295,7 +298,8 @@ $align = static function ( $native, $selected_form, $given_entry ) use (
 			$base = $s['native'];
 			$result = $s['candidate'];
 			$spans = is_array( $result['spans'] ?? null ) ? $result['spans'] : array();
-			$expected_j = esc_html( $s['expected']['jalali'] );
+			$expected_j = is_string( $s['expected']['jalali'] ) ?
+				esc_html( $s['expected']['jalali'] ) : '';
 			$rebuilt = '';
 			$cursor = 0;
 			foreach ( $spans as $span ) {
