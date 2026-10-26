@@ -45,7 +45,7 @@ final class G011ConfirmationContextTest extends TestCase {
 			'<pre>' . $tag . '</pre><!-- ' . $tag . ' -->' .
 			'<span hidden>' . $tag . '</span><span aria-hidden="true">' . $tag . '</span>' .
 			'<span style="display:none">' . $tag . '</span><custom-tag>' . $tag . '</custom-tag>' .
-			'<span>Human ' . $tag . '</span>';
+			'<span>Human ' . $tag . '</span> {"created":"' . $tag . '"} Human ' . $tag;
 		$expected = str_replace( array( 'Date 2026/03/21', 'Human 2026/03/21' ), array( 'Date ۱۴۰۵/۰۱/۰۱', 'Human ۱۴۰۵/۰۱/۰۱' ), $this->native( $template ) );
 		$this->assertSame( $expected, $this->present( $template ) );
 		$this->assertStringContainsString( 'https://example.test/?day=2026/03/21&id=1', $expected );
@@ -58,6 +58,7 @@ final class G011ConfirmationContextTest extends TestCase {
 		foreach ( array(
 			'<a href="' . $tag . '><strong>Visible ' . $tag . '</strong>',
 			'<div><span>Visible ' . $tag . '</div>',
+			'<script/>Visible ' . $tag,
 			'Prefix <not a tag Visible ' . $tag,
 		) as $malformed ) {
 			$this->assertSame( $this->native( $malformed ), $this->present( $malformed ) );
