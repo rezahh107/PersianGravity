@@ -8,9 +8,18 @@ $fail = static function ( string $why ): void {
 	throw new RuntimeException( 'G011_MULTI_ALIGN: ' . $why );
 };
 $dir = getenv( 'WU008_ARTIFACT_DIR' );
-$manifest = json_decode( (string) file_get_contents( $dir . '/g011-confirmation.json' ), true );
-if ( ! is_array( $manifest ) || '3.1.1.1' !== GFForms::$version ||
-	getenv( 'WU008_PGR_SHA' ) !== ( $manifest['head'] ?? null ) ||
+// Reuse the actual persisted WU008 Form early, before optional browser setup.
+// The later G-011 fixture is equally valid when present.
+$manifest_path = is_file( $dir . '/g011-confirmation.json' ) ?
+	$dir . '/g011-confirmation.json' : $dir . '/runtime-manifest.json';
+$manifest = json_decode( (string) file_get_contents( $manifest_path ), true );
+$installed = json_decode(
+	(string) file_get_contents( WP_PLUGIN_DIR . '/persian-gravityforms/release-manifest.json' ), true
+);
+if ( ! is_array( $manifest ) || ! is_array( $installed ) ||
+	'3.1.1.1' !== GFForms::$version ||
+	getenv( 'WU008_PGR_SHA' ) !== ( $installed['source_commit'] ?? null ) ||
+	( isset( $manifest['head'] ) && getenv( 'WU008_PGR_SHA' ) !== $manifest['head'] ) ||
 	'fa_IR' !== determine_locale() ||
 	'542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b' !== getenv( 'WU008_GF_SHA256' )
 ) {
