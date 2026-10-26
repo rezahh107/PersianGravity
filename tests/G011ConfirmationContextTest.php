@@ -59,6 +59,7 @@ final class G011ConfirmationContextTest extends TestCase {
 			'<a href="' . $tag . '><strong>Visible ' . $tag . '</strong>',
 			'<div><span>Visible ' . $tag . '</div>',
 			'<script/>Visible ' . $tag,
+			'Visible ' . $tag . "\xC3\x28", // invalid UTF-8 must never guess the tag offsets
 			'Prefix <not a tag Visible ' . $tag,
 		) as $malformed ) {
 			$this->assertSame( $this->native( $malformed ), $this->present( $malformed ) );
