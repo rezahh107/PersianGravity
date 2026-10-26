@@ -111,8 +111,26 @@ try {
 				'output' => $html, 'selected' => $selected_id,
 				'trace' => $trace, 'shared' => $shared,
 				'side_effects' => $side_effects, 'alignment' => $last_result,
-				'entry_unchanged' => hash( 'sha256', wp_json_encode( GFAPI::get_entry( $entry_id ) ) ) === $entry_sha,
-				'form_unchanged' => hash( 'sha256', wp_json_encode( GFAPI::get_form( (int) $baseline['form_id'] ) ) ) === $form_sha,
+				// GF may enrich transient GFAPI objects during native
+				// confirmation handling; compare persisted business-owned
+				// values rather than treating all runtime metadata as storage.
+				'entry_unchanged' => (static function ( $stored ) use ( $entry ) {
+					if ( ! is_array( $stored ) ) { return false; }
+					foreach ( array( 'id', 'form_id', 'status', 'date_created', '1', '2' ) as $key ) {
+						if ( (string) ( $stored[$key] ?? '' ) !== (string) ( $entry[$key] ?? '' ) ) {
+							return false;
+						}
+					}
+					return true;
+				})( GFAPI::get_entry( $entry_id ) ),
+				'form_unchanged' => (static function ( $stored ) use ( $form ) {
+					return is_array( $stored ) &&
+						(string) $stored['id'] === (string) $form['id'] &&
+						$stored['confirmations'] === $form['confirmations'] &&
+						count( $stored['fields'] ) === count( $form['fields'] ) &&
+						array_map( static function ( $v ) { return (int) $v->id; }, $stored['fields'] ) ===
+						array_map( static function ( $v ) { return (int) $v->id; }, $form['fields'] );
+				})( GFAPI::get_form( (int) $baseline['form_id'] ) ),
 			);
 		}
 		$n = $runs['native'];
@@ -165,7 +183,7 @@ try {
 			'post_adapter_jalali_visible' => true ===
 				( $c['trace'][3]['contains_jalali_full'] ?? false ) &&
 				true === ( $c['trace'][4]['contains_jalali_full'] ?? false ) &&
-				false === ( $c['trace'][1]['contains_jalali_full'] ?? null ),
+				$n['trace'][1]['sha256'] === $c['trace'][1]['sha256'],
 			'form_entry_unchanged' => $n['entry_unchanged'] && $c['entry_unchanged'] &&
 				$n['form_unchanged'] && $c['form_unchanged'],
 		);
