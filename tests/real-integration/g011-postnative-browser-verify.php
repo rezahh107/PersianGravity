@@ -34,8 +34,13 @@ $previous_locale = get_option( 'WPLANG', '' );
 foreach ( $expected_modes as $mode ) {
 	$path = $dir . '/g011-browserqual-' . $mode . '.json';
 	$info = is_file( $path ) ? json_decode( (string) file_get_contents( $path ), true ) : null;
+	$native_only = in_array( $mode, array( 'module_disabled', 'nonfa' ), true );
+	$submitted_file = $dir . '/g011-browserqual-submitted-' . $mode . '.json';
+	$submitted = is_file( $submitted_file ) ?
+		json_decode( (string) file_get_contents( $submitted_file ), true ) : null;
 	$check = array(
-		'server_evidence_exists' => is_array( $info ),
+		'server_evidence_exists' => is_array( $info ) ||
+			( $native_only && is_array( $submitted ) ),
 		'browser_case_pass' => 'PASS' === ( $browser['cases'][$mode]['status'] ?? null ),
 	);
 	if ( is_array( $info ) ) {
@@ -83,6 +88,35 @@ foreach ( $expected_modes as $mode ) {
 		} else {
 			$check['native_fallback'] = true === $info['native_fallback_byte_exact'];
 		}
+	}
+	if ( ! is_array( $info ) && $native_only ) {
+		// GF browser submitted a real Entry and displayed native Text but
+		// the test's gform_confirmation observer was not called. This is
+		// native-only outcome evidence, NOT a byte-exact candidate seam test.
+		$entry = is_array( $submitted ) ?
+			GFAPI::get_entry( (int) $submitted['entry_id'] ) : null;
+		$check['native_submission_observed'] = is_array( $submitted ) &&
+			is_array( $entry ) &&
+			(int) $submitted['form_id'] === (int) $fixture['form_id'];
+		$check['entry_unchanged'] = is_array( $entry ) &&
+			hash( 'sha256', wp_json_encode( $entry ) ) ===
+				( $submitted['persisted_entry_sha256'] ?? null );
+		$check['form_unchanged'] =
+			( $submitted['persisted_form_sha256'] ?? null ) ===
+			$fixture['form_sha256'];
+		$check['pre_replace_callback_one_call'] =
+			1 === ( $submitted['pre_callback_calls'] ?? null );
+		$check['test_confirmation_filter_not_observed'] =
+			false === ( $submitted['confirmation_trace_exists'] ?? null );
+		$check['expected_native_calendar_from_entry'] = is_array( $entry ) &&
+			isset( $submitted['expected']['raw_utc'] ) &&
+			$entry['date_created'] === $submitted['expected']['raw_utc'];
+		$check['module_or_locale_expected_native'] =
+			'module_disabled' === $mode ?
+				false === ( $submitted['module_enabled'] ?? null ) &&
+				'fa_IR' === ( $submitted['locale'] ?? null ) :
+				true === ( $submitted['module_enabled'] ?? null ) &&
+				'en_US' === ( $submitted['locale'] ?? null );
 	}
 	$all[$mode] = $check;
 	foreach ( $check as $name => $pass ) {
