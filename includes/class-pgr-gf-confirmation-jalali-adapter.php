@@ -59,7 +59,9 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			return $confirmation; // Malformed/ambiguous markup: full native fallback.
 		}
 
-		preg_match_all( '/\{[^{}]+\}/u', $template, $matches, PREG_OFFSET_CAPTURE );
+		if ( false === preg_match_all( '/\{[^{}]+\}/u', $template, $matches, PREG_OFFSET_CAPTURE ) ) {
+			return $confirmation;
+		}
 		$native       = array();
 		$presented    = array();
 		$markerized   = '';
