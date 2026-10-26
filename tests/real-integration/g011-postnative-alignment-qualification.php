@@ -100,16 +100,24 @@ $align = static function ( $rendered, $selected_form, $given_entry ) use (
 	$suffix = substr( $template, $offset + strlen( $tag ) );
 	// One possible complete decomposition, requiring identical stable
 	// literal bytes and independently validated native system date.
+	$prefix_pos = strpos( $rendered, $prefix );
+	$suffix_pos = strpos( $rendered, $suffix );
 	if (
 		1 !== substr_count( $rendered, $prefix ) ||
 		1 !== substr_count( $rendered, $suffix ) ||
-		$rendered !== $prefix . $native_date . $suffix
+		false === $prefix_pos ||
+		false === $suffix_pos ||
+		$suffix_pos < $prefix_pos + strlen( $prefix ) ||
+		substr( $rendered, $prefix_pos + strlen( $prefix ), $suffix_pos - $prefix_pos - strlen( $prefix ) ) !== $native_date
 	) {
 		return array( 'admitted' => false, 'output' => $rendered );
 	}
+	// Native GF may add its own wrapper around the selected message. Only
+	// replace the uniquely aligned span, preserving all other native bytes.
 	return array(
 		'admitted' => true,
-		'output' => $prefix . esc_html( $jalali_date ) . $suffix,
+		'output' => substr( $rendered, 0, $prefix_pos + strlen( $prefix ) ) .
+			esc_html( $jalali_date ) . substr( $rendered, $suffix_pos ),
 	);
 };
 
@@ -186,8 +194,9 @@ try {
 
 	$same_visible_inputs = $native['out'] === $third_party_native['out'];
 	$liveness = $positive['candidate_admitted'] === true &&
-		$positive['out'] === '<strong>Created=' . esc_html( $jalali_date ) . '</strong> literal ' . $native_date &&
-		$positive['out'] !== $native['out'];
+		$positive['out'] !== $native['out'] &&
+		false !== strpos( $positive['out'], '<strong>Created=' . esc_html( $jalali_date ) . '</strong>' ) &&
+		false !== strpos( $positive['out'], ' literal ' . $native_date );
 	$causal_ambiguity = $falsifier['candidate_admitted'] === true &&
 		$falsifier['out'] === $positive['out'] &&
 		$same_visible_inputs &&
