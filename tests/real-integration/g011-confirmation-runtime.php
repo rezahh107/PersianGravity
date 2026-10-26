@@ -202,7 +202,10 @@ if ( GFAPI::get_entry( $entry_id )['date_created'] !== '2026-03-20 20:30:00' ) {
 // occurrences of the same tag must change calendar.
 $context_tag = '{date_created:format:Y/m/d}';
 $context_message = '<div class="keep"><a href="/?day=' . $context_tag . '&amp;keep=1" data-day="' .
-	$context_tag . '"><strong>Context ' . $context_tag . '</strong></a> Again ' . $context_tag . '</div>';
+	$context_tag . '"><strong>Context ' . $context_tag . '</strong></a> Again ' . $context_tag .
+	' Created=' . $context_tag . ' /archive/' . $context_tag . ' ./archive/' . $context_tag .
+	' ../archive/' . $context_tag . ' archive/' . $context_tag .
+	' ../../history/' . $context_tag . ' https://example.test/archive/' . $context_tag . '</div>';
 $context_confirmation = array(
 	'id' => 'g011-context', 'name' => 'Context', 'type' => 'message',
 	'isDefault' => true, 'isActive' => true, 'message' => $context_message,
@@ -228,6 +231,25 @@ if (
 	$fail( 'Mixed human/attribute context violated native byte identity or falsification.' );
 }
 
+// Every bare relative-URI token must remain byte-equivalent to the
+// independently rendered native GF output, despite repeated visible tags.
+$native_relative_fragments = array(
+	' /archive/' . $expected_native . ' ',
+	' ./archive/' . $expected_native . ' ',
+	' ../archive/' . $expected_native . ' ',
+	' archive/' . $expected_native . ' ',
+	' ../../history/' . $expected_native . ' ',
+	' https://example.test/archive/' . $expected_native,
+);
+foreach ( $native_relative_fragments as $fragment ) {
+	if ( false === strpos( $context_native, $fragment ) || false === strpos( $context_result, $fragment ) ) {
+		$fail( 'Relative URI token no longer preserves native date replacement.' );
+	}
+}
+if ( false === strpos( $context_result, ' Created=۱۴۰۵/۰۱/۰۱ ' ) ) {
+	$fail( 'Legitimate Created= human label lost Jalali conversion.' );
+}
+
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
 // GFAPI persists confirmations using each confirmation's ID as the array key.
 require_once __DIR__ . '/g011-default-confirmation.php';
@@ -245,7 +267,7 @@ if ( array_key_exists( 'default', $browser_form['confirmations'] ) ) {
 	$fail( 'Original hard-coded default-key regression is not reproduced on this host.' );
 }
 
-$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged <a id="g011-browser-link" href="/?day={date_created:format:Y/m/d}&amp;keep=1" data-created="{date_created:format:Y/m/d}" data-preserve="fixed">Visible {date_created:format:Y/m/d}</a>';
+$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged <a id="g011-browser-link" href="/?day={date_created:format:Y/m/d}&amp;keep=1" data-created="{date_created:format:Y/m/d}" data-preserve="fixed">Visible {date_created:format:Y/m/d}</a> <span id="g011-relative-paths">Created={date_created:format:Y/m/d} /archive/{date_created:format:Y/m/d} ./archive/{date_created:format:Y/m/d} ../archive/{date_created:format:Y/m/d} archive/{date_created:format:Y/m/d}</span>';
 $expected_confirmations = $browser_form['confirmations'];
 $expected_confirmations[ $default_key ]['message'] = $browser_message;
 $browser_form['confirmations'][ $default_key ]['message'] = $browser_message;
@@ -292,6 +314,7 @@ file_put_contents(
 			'head' => getenv( 'WU008_PGR_SHA' ),
 			'text_selected' => true,
 			'contextual_native_attributes' => true,
+			'contextual_native_relative_paths' => true,
 			'text_ajax_handler' => true,
 			'conditional_selected' => true,
 			'page_redirect_native' => true,
