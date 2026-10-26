@@ -343,6 +343,31 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g009-setup-runtime.php
           test -s "$WU008_MANIFEST_PATH"
 
+      # G-011 PHP-only seam qualification must not depend on Playwright
+      # downloads. Real GF/PGR packages and a persisted GF Form are ready.
+      - name: Qualify two equal-date human occurrences on exact licensed GF 3.1.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous=$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo PGR_Module_Registry::is_enabled("jalali_presentation") ? "1" : "0";')
+          test "$previous" = "0" || test "$previous" = "1"
+          restore() {
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval "PGR_Module_Registry::set_enabled( 'jalali_presentation', $(test "$previous" = "1" && echo true || echo false) );"
+          }
+          trap restore EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          php -l tests/real-integration/g011-multi-occurrence-alignment-qualification.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-multi-occurrence-alignment-qualification.php
+          test -s "$WU008_ARTIFACT_DIR/g011-multi-occurrence-alignment.json"
+
+      - name: Upload bounded ordered-guard qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g011-ordered-guard-early
+          path: /tmp/wu008-artifacts/g011-multi-occurrence-alignment.json
+          if-no-files-found: warn
+
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -750,14 +775,6 @@ jobs:
           php -l tests/real-integration/g011-observable-mixed-alignment-qualification.php
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-observable-mixed-alignment-qualification.php
           test -s "$WU008_ARTIFACT_DIR/g011-observable-mixed-qualification.json"
-
-      - name: Qualify two equal-date human occurrences on exact licensed GF 3.1.1.1
-        shell: bash
-        run: |
-          set -euo pipefail
-          php -l tests/real-integration/g011-multi-occurrence-alignment-qualification.php
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-multi-occurrence-alignment-qualification.php
-          test -s "$WU008_ARTIFACT_DIR/g011-multi-occurrence-alignment.json"
 
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
