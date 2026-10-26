@@ -735,6 +735,14 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-preprocess-qualification-verify.php
           test -s "$WU008_ARTIFACT_DIR/g011-preprocess-falsifier.json"
 
+      - name: Qualify post-native single-render structural alignment and causal provenance falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-postnative-alignment-qualification.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-postnative-alignment-qualification.php
+          test -s "$WU008_ARTIFACT_DIR/g011-postnative-alignment-falsifier.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
