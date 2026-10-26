@@ -205,7 +205,8 @@ $context_message = '<div class="keep"><a href="/?day=' . $context_tag . '&amp;ke
 	$context_tag . '"><strong>Context ' . $context_tag . '</strong></a> Again ' . $context_tag .
 	' Created=' . $context_tag . ' /archive/' . $context_tag . ' ./archive/' . $context_tag .
 	' ../archive/' . $context_tag . ' archive/' . $context_tag .
-	' ../../history/' . $context_tag . ' https://example.test/archive/' . $context_tag . '</div>';
+	' ../../history/' . $context_tag . ' https://example.test/archive/' . $context_tag .
+	' ' . $context_tag . '/detail ' . $context_tag . '#details receipt-' . $context_tag . '.pdf</div>';
 $context_confirmation = array(
 	'id' => 'g011-context', 'name' => 'Context', 'type' => 'message',
 	'isDefault' => true, 'isActive' => true, 'message' => $context_message,
@@ -239,7 +240,10 @@ $native_relative_fragments = array(
 	' ../archive/' . $expected_native . ' ',
 	' archive/' . $expected_native . ' ',
 	' ../../history/' . $expected_native . ' ',
-	' https://example.test/archive/' . $expected_native,
+	' https://example.test/archive/' . $expected_native . ' ',
+	' ' . $expected_native . '/detail ',
+	' ' . $expected_native . '#details ',
+	' receipt-' . $expected_native . '.pdf',
 );
 foreach ( $native_relative_fragments as $fragment ) {
 	if ( false === strpos( $context_native, $fragment ) || false === strpos( $context_result, $fragment ) ) {
@@ -249,6 +253,88 @@ foreach ( $native_relative_fragments as $fragment ) {
 if ( false === strpos( $context_result, ' Created=۱۴۰۵/۰۱/۰۱ ' ) ) {
 	$fail( 'Legitimate Created= human label lost Jalali conversion.' );
 }
+
+// Measure additional host Merge Tag callback executions independently.
+// The spy intentionally has a counting side effect but returns input unchanged.
+$probe_form = $form;
+$probe_form['confirmations'] = array(
+	'probe' => array(
+		'id' => 'g011-callback-probe', 'name' => 'Callback probe',
+		'type' => 'message', 'isDefault' => true, 'isActive' => true,
+		'message' => 'PGR_CALLBACK_PROBE Created={date_created:format:Y/m/d}',
+		'disableAutoformat' => true,
+	),
+);
+$probe_states = get_option( 'pgr_modules' );
+if ( ! is_array( $probe_states ) || ! isset( $probe_states['states'] ) ) {
+	$fail( 'Callback probe requires module state.' );
+}
+$probe_calls = 0;
+$spy = static function ( $text ) use ( &$probe_calls ) {
+	++$probe_calls;
+	return $text;
+};
+add_filter( 'gform_pre_replace_merge_tags', $spy, 999, 1 );
+$probe_states['states']['jalali_presentation'] = false;
+update_option( 'pgr_modules', $probe_states );
+$probe_copy = $probe_form;
+$native_probe_output = GFFormDisplay::handle_confirmation( $probe_copy, $entry, false );
+$native_probe_calls = $probe_calls;
+$probe_calls = 0;
+$probe_states['states']['jalali_presentation'] = true;
+update_option( 'pgr_modules', $probe_states );
+$probe_copy = $probe_form;
+$jalali_probe_output = GFFormDisplay::handle_confirmation( $probe_copy, $entry, false );
+$jalali_probe_calls = $probe_calls;
+remove_filter( 'gform_pre_replace_merge_tags', $spy, 999 );
+if (
+	! is_string( $native_probe_output ) ||
+	! is_string( $jalali_probe_output ) ||
+	$native_probe_calls < 1 ||
+	$jalali_probe_calls <= $native_probe_calls ||
+	false === strpos( $jalali_probe_output, '۱۴۰۵/۰۱/۰۱' )
+) {
+	$fail( 'Controlled read-only callback counter did not demonstrate the expected host re-execution.' );
+}
+
+// A separate non-idempotent callback changes its output on each invocation.
+// The second host render must fail the native byte-exact guard, retaining the
+// first host-produced confirmation; the callback side effects still occurred.
+$side_effect_calls = 0;
+$mutator = static function ( $text ) use ( &$side_effect_calls ) {
+	++$side_effect_calls;
+	return str_replace( 'PGR_CALLBACK_PROBE', 'PGR_CALLBACK_PROBE_' . $side_effect_calls, $text );
+};
+add_filter( 'gform_pre_replace_merge_tags', $mutator, 999, 1 );
+$probe_states['states']['jalali_presentation'] = false;
+update_option( 'pgr_modules', $probe_states );
+$probe_copy = $probe_form;
+$native_side_effect_output = GFFormDisplay::handle_confirmation( $probe_copy, $entry, false );
+$native_side_effect_calls = $side_effect_calls;
+$side_effect_calls = 0;
+$probe_states['states']['jalali_presentation'] = true;
+update_option( 'pgr_modules', $probe_states );
+$probe_copy = $probe_form;
+$jalali_side_effect_output = GFFormDisplay::handle_confirmation( $probe_copy, $entry, false );
+$jalali_side_effect_calls = $side_effect_calls;
+remove_filter( 'gform_pre_replace_merge_tags', $mutator, 999 );
+if (
+	! is_string( $native_side_effect_output ) ||
+	! is_string( $jalali_side_effect_output ) ||
+	$native_side_effect_output !== $jalali_side_effect_output ||
+	$native_side_effect_calls < 1 ||
+	$jalali_side_effect_calls <= $native_side_effect_calls
+) {
+	$fail( 'Non-idempotent callback native fallback or invocation observation failed.' );
+}
+
+$callback_observation = array(
+	'count_only_native' => $native_probe_calls,
+	'count_only_jalali' => $jalali_probe_calls,
+	'non_idempotent_native' => $native_side_effect_calls,
+	'non_idempotent_jalali' => $jalali_side_effect_calls,
+	'non_idempotent_output_native' => true,
+);
 
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
 // GFAPI persists confirmations using each confirmation's ID as the array key.
@@ -267,7 +353,7 @@ if ( array_key_exists( 'default', $browser_form['confirmations'] ) ) {
 	$fail( 'Original hard-coded default-key regression is not reproduced on this host.' );
 }
 
-$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged <a id="g011-browser-link" href="/?day={date_created:format:Y/m/d}&amp;keep=1" data-created="{date_created:format:Y/m/d}" data-preserve="fixed">Visible {date_created:format:Y/m/d}</a> <span id="g011-relative-paths">Created={date_created:format:Y/m/d} /archive/{date_created:format:Y/m/d} ./archive/{date_created:format:Y/m/d} ../archive/{date_created:format:Y/m/d} archive/{date_created:format:Y/m/d}</span>';
+$browser_message = '<strong>G011_BROWSER_OK</strong> {today:format:Y/m/d} | {date_created:format:Y/m/d} | 2026-03-21 unchanged <a id="g011-browser-link" href="/?day={date_created:format:Y/m/d}&amp;keep=1" data-created="{date_created:format:Y/m/d}" data-preserve="fixed">Visible {date_created:format:Y/m/d}</a> <span id="g011-relative-paths">Created={date_created:format:Y/m/d} /archive/{date_created:format:Y/m/d} ./archive/{date_created:format:Y/m/d} ../archive/{date_created:format:Y/m/d} archive/{date_created:format:Y/m/d}</span> <span id="g011-tagled">{date_created:format:Y/m/d}/detail {date_created:format:Y/m/d}#details receipt-{date_created:format:Y/m/d}.pdf</span>';
 $expected_confirmations = $browser_form['confirmations'];
 $expected_confirmations[ $default_key ]['message'] = $browser_message;
 $browser_form['confirmations'][ $default_key ]['message'] = $browser_message;
@@ -315,6 +401,8 @@ file_put_contents(
 			'text_selected' => true,
 			'contextual_native_attributes' => true,
 			'contextual_native_relative_paths' => true,
+			'callback_reexecution_probe' => $callback_observation,
+			'tag_led_native_paths' => true,
 			'text_ajax_handler' => true,
 			'conditional_selected' => true,
 			'page_redirect_native' => true,
