@@ -751,6 +751,14 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-observable-mixed-alignment-qualification.php
           test -s "$WU008_ARTIFACT_DIR/g011-observable-mixed-qualification.json"
 
+      - name: Qualify two equal-date human occurrences on exact licensed GF 3.1.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-multi-occurrence-alignment-qualification.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-multi-occurrence-alignment-qualification.php
+          test -s "$WU008_ARTIFACT_DIR/g011-multi-occurrence-alignment.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
