@@ -19,6 +19,7 @@ final class WU008_G011_Browser_Alignment {
 		add_filter( 'gform_confirmation', array( __CLASS__, 'candidate' ), 25, 4 );
 		add_filter( 'gform_confirmation', array( __CLASS__, 'record_and_restore' ), 30, 4 );
 		add_action( 'gform_after_submission', array( __CLASS__, 'submission_trace' ), 999, 2 );
+		add_action( 'gform_pre_submission', array( __CLASS__, 'switch_target_locale' ), 1, 1 );
 	}
 	private static function config(): array {
 		$cfg = get_option( 'wu008_g011_browser_qual_cfg', array() );
@@ -63,6 +64,19 @@ final class WU008_G011_Browser_Alignment {
 		);
 		file_put_contents( $dir . '/g011-browserqual-submitted-' . sanitize_file_name( $mode ) . '.json',
 			wp_json_encode( $details, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+	}
+	/**
+	 * Test-only request-local nonfa control. Changing WPLANG in WP-CLI
+	 * does not switch a PHP server request that has already loaded locale.
+	 * The host must use its own locale switcher before GF renders.
+	 */
+	public static function switch_target_locale( $form ): void {
+		if ( ! self::target( $form ) || 'nonfa' !== self::mode() ) {
+			return;
+		}
+		if ( ! switch_to_locale( 'en_US' ) || 'en_US' !== determine_locale() ) {
+			throw new RuntimeException( 'G011 test-only nonfa locale switch failed' );
+		}
 	}
 	public static function third_party_pre( $text, $form ) {
 		if ( ! self::target( $form ) || ! is_string( $text ) ) {
