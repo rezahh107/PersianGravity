@@ -743,6 +743,14 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-postnative-alignment-qualification.php
           test -s "$WU008_ARTIFACT_DIR/g011-postnative-alignment-falsifier.json"
 
+      - name: Qualify read-only observable mixed Text Confirmation alignment on exact GF 3.1.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-observable-mixed-alignment-qualification.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-observable-mixed-alignment-qualification.php
+          test -s "$WU008_ARTIFACT_DIR/g011-observable-mixed-qualification.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
