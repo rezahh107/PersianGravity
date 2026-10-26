@@ -51,6 +51,67 @@ final class G011ConfirmationContextTest extends TestCase {
 		$this->assertStringContainsString( 'https://example.test/?day=2026/03/21&id=1', $expected );
 	}
 
+
+	#[RunInSeparateProcess]
+	public function test_relative_uri_tokens_stay_native_without_suppressing_human_labels(): void {
+		$this->bootstrap_context();
+		$tag = '{date_created:format:Y/m/d}';
+		$paths = array(
+			'/archive/' . $tag,             // Root-relative.
+			'./archive/' . $tag,            // Current-directory relative.
+			'../archive/' . $tag,           // Parent-directory relative.
+			'../../history/2026/' . $tag,   // Repeated parent traversal.
+			'archive/' . $tag,              // Bare path with a directory component.
+			'docs/annual/' . $tag,          // Multi-segment relative path.
+			'./' . $tag,                    // Bare dot-relative.
+			'/' . $tag,                     // Bare root-relative.
+			'archive/' . $tag . '/detail',  // Tag in the middle of a path.
+		);
+		foreach ( $paths as $path ) {
+			$this->assertSame( $this->native( $path ), $this->present( $path ), $path );
+		}
+
+		foreach ( array(
+			'Created=' . $tag,
+			'Created: ' . $tag,
+			'Submitted on ' . $tag,
+			'<strong>Created=' . $tag . '</strong>',
+		) as $visible ) {
+			$this->assertSame(
+				str_replace( '2026/03/21', '۱۴۰۵/۰۱/۰۱', $this->native( $visible ) ),
+				$this->present( $visible ),
+				$visible
+			);
+		}
+	}
+
+	#[RunInSeparateProcess]
+	public function test_mixed_relative_paths_absolute_urls_attributes_and_repeated_visible_tags(): void {
+		$this->bootstrap_context();
+		$tag = '{date_created:format:Y/m/d}';
+		$template = '<div class="keep">Created=' . $tag . ' <a href="/archive/' . $tag .
+			'" data-date="' . $tag . '">Shown ' . $tag . '</a> ' .
+			'https://example.test/archive/' . $tag . ' ' .
+			'/archive/' . $tag . ' ./archive/' . $tag . ' ../archive/' . $tag .
+			' archive/' . $tag . ' ../../history/' . $tag .
+			' <strong>Approved ' . $tag . '</strong></div>';
+		$native   = $this->native( $template );
+		$expected = str_replace(
+			array( 'Created=2026/03/21', 'Shown 2026/03/21', 'Approved 2026/03/21' ),
+			array( 'Created=۱۴۰۵/۰۱/۰۱', 'Shown ۱۴۰۵/۰۱/۰۱', 'Approved ۱۴۰۵/۰۱/۰۱' ),
+			$native
+		);
+		$result = $this->present( $template );
+
+		$this->assertSame( $expected, $result );
+		$this->assertSame( $this->attribute( $native, 'href' ), $this->attribute( $result, 'href' ) );
+		$this->assertSame( $this->attribute( $native, 'data-date' ), $this->attribute( $result, 'data-date' ) );
+
+		// The pre-repair occurrence classifier would convert each plain
+		// relative-path date, so it cannot satisfy this exact assertion.
+		$this->assertStringContainsString( ' /archive/2026/03/21 ./archive/2026/03/21 ../archive/2026/03/21', $result );
+	}
+
 	#[RunInSeparateProcess]
 	public function test_ambiguous_markup_and_native_roundtrip_drift_fail_closed(): void {
 		$this->bootstrap_context();
