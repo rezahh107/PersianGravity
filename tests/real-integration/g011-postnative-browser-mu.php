@@ -370,6 +370,7 @@ $align = static function ( $native, $selected_form, $given_entry ) use (
 				'native_fallback_byte_exact' => $base === $output,
 				'form_snapshot_sha256' => $s['persisted_form_sha256'],
 				'entry_snapshot_sha256' => $s['persisted_entry_sha256'],
+				'entry_contract_values' => $s['entry_contract_values'],
 				'persisted_form_same_in_callback' =>
 					$s['persisted_form_sha256'] === hash( 'sha256', wp_json_encode(
 						GFAPI::get_form( $s['form_id'] ) ) ),
