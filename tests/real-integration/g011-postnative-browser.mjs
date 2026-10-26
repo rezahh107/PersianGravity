@@ -198,19 +198,16 @@ try {
       'native/candidate callback input, count or side-effect mismatch: ' + candidateMode);
   }
   await submit('ordinary', 'conditional', { conditional: true });
-  const originalLanguage = wp('echo get_option("WPLANG", "");').trim();
   try {
     wp('PGR_Module_Registry::set_enabled("jalali_presentation", false);');
     await submit('ordinary', 'module_disabled');
   } finally {
     wp('PGR_Module_Registry::set_enabled("jalali_presentation", true);');
   }
-  try {
-    wp('update_option("WPLANG", "en_US");');
-    await submit('ordinary', 'nonfa');
-  } finally {
-    wp('update_option("WPLANG", ' + JSON.stringify(originalLanguage) + ');');
-  }
+  // The isolated MU test hook switches ONLY the target form's submission
+  // request to en_US before GF confirmation replacement. WP-CLI WPLANG
+  // changes do not prove the locale of an already-running HTTP request.
+  await submit('ordinary', 'nonfa');
   await submitUnrelated();
   for (const type of ['page', 'redirect']) await submitTransport(type);
   out.status = 'PASS';
