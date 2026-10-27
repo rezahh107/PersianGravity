@@ -21,6 +21,7 @@ $evidence = array(
 	'gf_sha256'      => getenv( 'WU008_GF_SHA256' ),
 	'level'          => 'LICENSED_GFAPI_PHP_ONLY',
 	'product_wiring' => false,
+	'syntax' => 'pgr_jdate_field_2 (no colon-number: GF 3.1.1.1 treats colon-number as a native field tag)',
 	'methods'        => array(),
 );
 foreach ( array( array( 'GFCommon', 'replace_variables' ), array( 'GFCommon', 'replace_variables_prepopulate' ),
@@ -50,9 +51,9 @@ if ( ! is_int( $form_id ) || $form_id <= 0 ) {
 	throw new RuntimeException( 'G011 prototype add_form failed.' );
 }
 $form = GFAPI::get_form( $form_id );
-$body = '<p>WU008_G011_MARKER | Created={pgr_jdate_created} | VisitJ={pgr_jdate:2} | '
-	. 'Name={Name:1} | VisitNative={Visit:2} | WrongType={pgr_jdate:3} | '
-	. 'Unknown={pgr_jdate:99} | Untouched=plain-text.</p>';
+$body = '<p>WU008_G011_MARKER | Created={pgr_jdate_created} | VisitJ={pgr_jdate_field_2} | '
+	. 'Name={Name:1} | VisitNative={Visit:2} | WrongType={pgr_jdate_field_3} | '
+	. 'Unknown={pgr_jdate_field_99} | Untouched=plain-text.</p>';
 $form['confirmations'] = array( 'g011-test' => array(
 	'id' => 'g011-test', 'name' => 'G011 selected Text', 'type' => 'message',
 	'isDefault' => true, 'isActive' => true, 'disableAutoformat' => true, 'message' => $body,
@@ -103,7 +104,7 @@ $handler = static function ( $text, $current_form, $current_entry ) use ( &$hand
 		return $text;
 	}
 	return preg_replace_callback(
-		'/\{pgr_jdate_created\}|\{pgr_jdate:([0-9]+)\}/',
+		'/\{pgr_jdate_created\}|\{pgr_jdate_field_([0-9]+)\}/',
 		static function ( $hit ) use ( $current_form, $current_entry ) {
 			if ( '{pgr_jdate_created}' === $hit[0] ) {
 				$raw = $current_entry['date_created'] ?? null;
@@ -201,8 +202,8 @@ foreach ( $methods as $hook ) {
 			str_contains( $html, 'VisitJ=' . $expected_visit ) &&
 			str_contains( $html, 'Name=Ada' ) &&
 			str_contains( $html, 'VisitNative=03/20/2026' ) &&
-			str_contains( $html, 'WrongType={pgr_jdate:3}' ) &&
-			str_contains( $html, 'Unknown={pgr_jdate:99}' ) &&
+			str_contains( $html, 'WrongType={pgr_jdate_field_3}' ) &&
+			str_contains( $html, 'Unknown={pgr_jdate_field_99}' ) &&
 			str_contains( $html, 'Untouched=plain-text.' );
 	}
 	$ok = $ok && 1 === $enabled['confirmation_native_callbacks'] &&
