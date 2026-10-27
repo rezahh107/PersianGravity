@@ -25,12 +25,21 @@ final class ModuleUsageTest extends TestCase {
 	}
 
 	#[RunInSeparateProcess]
-	public function test_presentation_disable_is_always_safe_without_form_or_entry_scan() {
+	public function test_presentation_disable_detects_persisted_confirmation_and_notification_tags() {
+		eval( 'class GFAPI { public static function get_forms($active = null, $trash = false) { return array(array("id"=>1,"confirmations"=>array(array("message"=>"{pgr_jdate_created}"))),array("id"=>2,"notifications"=>array(array("message"=>"{pgr_jdate_field_2}")))); } }' );
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
 		$result = PGR_Module_Usage::inspect( 'jalali_presentation' );
-		$this->assertSame( PGR_Module_Usage::UNUSED, $result['status'] );
-		$this->assertSame( 0, $result['count'] );
+		$this->assertSame( PGR_Module_Usage::USED, $result['status'] );
+		$this->assertSame( 2, $result['count'] );
+	}
+
+	#[RunInSeparateProcess]
+	public function test_presentation_without_tags_can_be_disabled() {
+		eval( 'class GFAPI { public static function get_forms($active = null, $trash = false) { return array(array("id"=>1,"confirmations"=>array(array("message"=>"{date_created}")))); } }' );
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
+		$this->assertSame( PGR_Module_Usage::UNUSED, PGR_Module_Usage::inspect( 'jalali_presentation' )['status'] );
 	}
 
 	#[RunInSeparateProcess]
