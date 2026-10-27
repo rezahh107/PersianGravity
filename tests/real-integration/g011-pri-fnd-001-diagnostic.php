@@ -187,6 +187,119 @@ foreach ( $pri_formats as $format => $stored ) {
 		'converted' => $outputs['native'] !== $outputs['enabled'],
 	);
 }
+// Independent consistency trial: BOTH the form's dateFormat and the Entry
+// exist as persisted GFAPI records before native Confirmation selection.
+$pri_evidence['persisted_form_cases'] = array();
+foreach ( $pri_formats as $format => $stored ) {
+	$persisted_form_id = GFAPI::add_form( array(
+		'title' => 'PRI Diagnostic ' . $format,
+		'fields' => array(
+			array( 'id' => 1, 'type' => 'text', 'label' => 'Name' ),
+			array(
+				'id' => 2, 'type' => 'date', 'label' => 'Visit',
+				'dateType' => 'datepicker', 'dateFormat' => $format,
+			),
+		),
+	) );
+	if ( ! is_int( $persisted_form_id ) || $persisted_form_id <= 0 ) {
+		throw new RuntimeException( 'PRI-FND-001 cannot create persisted disposable GF form: ' . $format );
+	}
+	$record = GFAPI::get_form( $persisted_form_id );
+	if ( ! is_array( $record ) ) {
+		throw new RuntimeException( 'PRI-FND-001 persisted form unreadable: ' . $format );
+	}
+	$tag = '{Visit:2}';
+	$prefix = 'PRI-persisted-' . $format . ': ';
+	$suffix = '; end-persisted-' . $format . '</p>';
+	$record['confirmations'] = array(
+		'pri-default' => array(
+			'id' => 'pri-default', 'name' => 'Persisted Default', 'type' => 'message',
+			'isDefault' => true, 'isActive' => true, 'disableAutoformat' => true,
+			'message' => '<p>' . $prefix . $tag . $suffix,
+		),
+	);
+	if ( true !== GFAPI::update_form( $record ) ) {
+		throw new RuntimeException( 'PRI-FND-001 persisted form update failed: ' . $format );
+	}
+	$record = GFAPI::get_form( $persisted_form_id );
+	$persisted_format = null;
+	foreach ( $record['fields'] as $field ) {
+		if ( $field instanceof GF_Field_Date && 2 === (int) $field->id ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- GF API field property.
+			$persisted_format = $field->dateFormat;
+		}
+	}
+	$entry_id = GFAPI::add_entry( array(
+		'form_id' => $persisted_form_id, 'status' => 'active',
+		'date_created' => '2026-03-20 20:30:00',
+		'1' => 'synthetic-persisted', '2' => $stored,
+	) );
+	$entry = is_wp_error( $entry_id ) ? null : GFAPI::get_entry( $entry_id );
+	if ( ! is_array( $entry ) || $persisted_format !== $format || $entry['2'] !== $stored ) {
+		throw new RuntimeException( 'PRI-FND-001 form/entry persistence mismatch: ' . $format );
+	}
+	$parse = GFCommon::parse_date( $entry['2'], $persisted_format );
+	$proposed = $jalali_ref->invoke( null, $tag, $record, $entry );
+	$expected = $expected_ref->invoke( null, $tag, $record, $entry );
+	$outputs = array();
+	$before = array();
+	$counts = array();
+	$original_option = get_option( 'pgr_modules' );
+	try {
+		foreach ( array( 'native' => false, 'enabled' => true ) as $mode => $on ) {
+			$states = $original_option;
+			$states['states']['jalali_presentation'] = $on;
+			update_option( 'pgr_modules', $states );
+			$shared_count = 0;
+			$incoming = null;
+			$shared = static function ( $text ) use ( &$shared_count ) {
+				++$shared_count;
+				return $text;
+			};
+			$pre = static function ( $value ) use ( &$incoming ) {
+				$incoming = $value;
+				return $value;
+			};
+			add_filter( 'gform_pre_replace_merge_tags', $shared, 998, 1 );
+			add_filter( 'gform_confirmation', $pre, 19, 1 );
+			try {
+				$copy = $record;
+				$outputs[ $mode ] = GFFormDisplay::handle_confirmation( $copy, $entry, false );
+			} finally {
+				remove_filter( 'gform_pre_replace_merge_tags', $shared, 998 );
+				remove_filter( 'gform_confirmation', $pre, 19 );
+			}
+			$before[ $mode ] = $incoming;
+			$counts[ $mode ] = $shared_count;
+		}
+	} finally {
+		update_option( 'pgr_modules', $original_option );
+	}
+	$rendered = $before['enabled'];
+	$start_pos = is_string( $rendered ) ? strpos( $rendered, $prefix ) : false;
+	$start = false === $start_pos ? null : $start_pos + strlen( $prefix );
+	$end = null === $start ? false : strpos( $rendered, $suffix, $start );
+	$native_span = null === $start || false === $end ? null : substr( $rendered, $start, $end - $start );
+	$reason = null === $proposed ? 'present_tag_null -> no eligible conversion' :
+		( null === $expected ? 'expected_native_tag_null -> fallback' :
+		( $native_span !== $expected ? 'invalid_span_guard -> native expected mismatch' :
+		( $outputs['enabled'] === $outputs['native'] ? 'unexpected_native_fallback' : 'converted' ) ) );
+	$pri_evidence['persisted_form_cases'][ $format ] = array(
+		'GFAPI_persisted_field_dateFormat' => $persisted_format,
+		'GFAPI_persisted_raw_Entry' => $entry['2'],
+		'GFCommon_parse_date' => $parse,
+		'adapter_expected_native' => $expected,
+		'adapter_proposed_jalali' => $proposed,
+		'host_selected_native_date_span' => $native_span,
+		'GF_native_output' => $outputs['native'],
+		'GF_enabled_output' => $outputs['enabled'],
+		'module_off_merge_callback_count' => $counts['native'],
+		'module_on_merge_callback_count' => $counts['enabled'],
+		'GFAPI_Entry_unchanged' => $entry['2'] === ( GFAPI::get_entry( $entry_id )['2'] ?? null ),
+		'fallback_branch_and_reason' => $reason,
+		'converted' => $outputs['native'] !== $outputs['enabled'],
+	);
+}
 $path = getenv( 'WU008_ARTIFACT_DIR' ) . '/g011-pri-fnd-001-diagnostic.json';
 file_put_contents( $path, wp_json_encode(
 	$pri_evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
