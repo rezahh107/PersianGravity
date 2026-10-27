@@ -120,6 +120,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				if (
 					$span_start < $previous_end ||
 					$span_start < 0 ||
+					( '' !== $left && $span_start < strlen( $left ) ) ||
 					$span_end > strlen( $confirmation ) ||
 					substr( $confirmation, $span_start, strlen( $expected_native ) ) !== $expected_native ||
 					( '' !== $left && substr( $confirmation, $span_start - strlen( $left ), strlen( $left ) ) !== $left ) ||
@@ -208,7 +209,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			if ( ! $field instanceof GF_Field_Date || (int) $field->id !== $id ) {
 				continue;
 			}
-			$raw = $entry[ (string) $id ] ?? null;
+			$raw          = $entry[ (string) $id ] ?? null;
 			if ( ! is_string( $raw ) ) {
 				return null;
 			}
@@ -228,7 +229,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				return null;
 			}
 			$output_format = '' === $modifier ? $input_format : $modifier;
-			$allowed        = array(
+			$allowed       = array(
 				'year',
 				'month',
 				'day',
@@ -265,12 +266,15 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				'd' => sprintf( '%02d', $day ),
 			);
 			$order     = substr( $output_format, 0, 3 );
-			return implode( $separator, array_map(
-				static function ( string $key ) use ( $pieces ): string {
-					return $pieces[ $key ];
-				},
-				str_split( $order )
-			) );
+			return implode(
+				$separator,
+				array_map(
+					static function ( string $key ) use ( $pieces ): string {
+						return $pieces[ $key ];
+					},
+					str_split( $order )
+				)
+			);
 		}
 		return null;
 	}
