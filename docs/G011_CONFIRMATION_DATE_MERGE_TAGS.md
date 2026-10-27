@@ -16,22 +16,22 @@ Page/Redirect Query String evaluation is already complete before the hook. This 
 
 ## Tag × modifier × confirmation-path evidence matrix
 
-VERIFIED requires actual exact-package runtime/browser execution on this PR Head. NATIVE_FALLBACK means intentionally retained host semantics. BLOCKED identifies a specific unadmitted transport/host boundary. NOT_VERIFIED means no exact-Head execution.
+Evidence below is **specific to the exact licensed GF 3.1.1.1 package** and the production Adapter on source Head `cdd6a58fe2f0643512294706f68defb75c74e02b`. `HOST_PASS` means the authentic Gravity Forms `GFFormDisplay::handle_confirmation()` was exercised by WP-CLI; `BROWSER_PASS` means a real Chromium HTTP/AJAX submission. Neither implies every format was tried under every path. `NATIVE_PASS` means the tested exclusion remained byte-identical to native. `NOT_VERIFIED` names an untested interaction, not a product defect. Page/Redirect remain outside the **repair** and intentionally native.
 
-| Tag and modifier | Text ordinary | Text AJAX | Page Query String | Redirect Query String |
-| --- | --- | --- | --- | --- |
-| date_created default, :format:Y/m/d, :format:Y-m-d H:i, :time | NOT_VERIFIED | NOT_VERIFIED | BLOCKED (native) | BLOCKED (native) |
-| date_updated with valid UTC source | NOT_VERIFIED | NOT_VERIFIED | BLOCKED (native) | BLOCKED (native) |
-| payment_date with valid UTC source | NOT_VERIFIED | NOT_VERIFIED | BLOCKED (native) | BLOCKED (native) |
-| payment_date empty/missing | NOT_VERIFIED (native) | NOT_VERIFIED (native) | NATIVE_FALLBACK | NATIVE_FALLBACK |
-| today default and supported :format / :time | NOT_VERIFIED | NOT_VERIFIED | BLOCKED (native) | BLOCKED (native) |
-| Gregorian Date field :year, :month, :day, :ymd, :dmy and separator modifiers | NOT_VERIFIED | NOT_VERIFIED | BLOCKED (native) | BLOCKED (native) |
-| :human and :diff | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK |
-| :raw, :timestamp, entry:date_created, pgr_jalali_date | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK |
-| Invalid/unsupported modifiers, malformed/out-of-range date, time-only value | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK | NATIVE_FALLBACK |
-| URL :urlencode and repeated/reserved parameters | Not applicable | Not applicable | BLOCKED (native) | BLOCKED (native) |
+| Capability | Selected Text, host/runtime | Text, genuine browser | Page/Redirect |
+| --- | --- | --- | --- |
+| `date_created` default, `:format:Y/m/d`, escaped `Y-m-d H\\:i`, `\\Y Y`, `:time` | **HOST_PASS** for all enumerated variants | **BROWSER_PASS** `:format:Y/m/d` Ordinary + AJAX, Default + Conditional; other formats individually NOT_VERIFIED in browser | Native; conversion not admitted |
+| `date_updated` valid UTC, `payment_date` nonempty | **HOST_PASS** for both populated dates | Individual variants NOT_VERIFIED in browser | Native |
+| `payment_date` empty/missing or invalid | **NATIVE_PASS** for empty, unit/host fallback controls | Individual empty/missing cases NOT_VERIFIED in browser | Native |
+| `today` default, `:format:Y/m/d`, `:time` | **HOST_PASS** all three | **BROWSER_PASS** supported `:format:Y/m/d` Ordinary + AJAX; others individually NOT_VERIFIED in browser | Native |
+| Calendrical `Y y m n d j F`, escaped literal, selected time/weekday primitives | **HOST_PASS** combined calendrical-token grammar and escaped examples; full time-token Cartesian product NOT_VERIFIED | Only specified date/time cases tested | Native |
+| Native Gregorian `GF_Field_Date` `:year`, `:month`, `:day`, unmodified `mdy`, `:ymd`, `:mdy`, `:dmy`, and all nine named separator variants | **HOST_PASS** on native field with `mdy` source | **BROWSER_PASS** for `:year` in heterogeneous scenario; full selector-by-AJAX matrix NOT_VERIFIED | Native |
+| `:human`, `:diff`, `:raw`, `:timestamp`, `entry:date_created`, Date-field `:raw`/`:urlencode`, unsupported week format | **NATIVE_PASS** on explicit host grammar cases | Native invariants on selected browser fixture; not every variant individually | Native |
+| Already Jalali `pgr_jalali_date`, non-Date fields, out-of-range, malformed HTML, unsupported modifiers and locale/module off | Source/unit and bounded exact-host negative controls; do not infer universal coverage | Disabled/non-`fa_IR` and malformed/opaque controls exercised in licensed browser lanes | Native |
+| Human text vs `href`/`data-*`, filenames `.tar.gz`, `-v2.pdf`, `_final.pdf`, relative URLs, hidden/code/script content | **HOST_PASS** for mixed human/file/attribute controls and no extra shared callback | **BROWSER_PASS** for relevant human/transport/filename/URI occurrences; some raw-text exclusions are unit-only | Native |
+| Selected Text ordinary/AJAX, conditional selection, same-priority hook ties, post-filter visibility | **HOST_PASS** callbacks + selection; test-only tie qualification | **BROWSER_PASS** for Default + Conditional on Ordinary + AJAX, no page errors | Native |
 
-:human relative and :diff durations stay host-owned; any absolute :human branch stays native. Native Date fields are explicitly distinct from already-Jalali pgr_jalali_date and arbitrary text. Date-only values are not timezone shifted. System dates are interpreted as UTC instants and converted after applying the WordPress site timezone. Native time and weekday semantics remain intact; unsupported calendar-dependent formatting symbols fail native rather than mixing calendars.
+Native `:human` relative/absolute and `:diff` remain GF-owned. Dates with Jalali-domain ownership are never double-converted. Gregorian system instants are shifted to `wp_timezone()` before presentation only; stored UTC/Entry values are unchanged. `Page`/`Redirect` URL query encoding, repeated keys and reserved characters retain the native host implementation and are not promoted to Jalali by this repair.
 
 ## Executable qualification
 
@@ -43,7 +43,7 @@ The existing WU008 workflow validates the exact private package and Head before 
 
 The Owner approved exact `G011-POSTNATIVE-LOCK` Revision 1.1 and separately authorized bounded `repair_and_verify` on PR #83. Neither approval authorizes merge, tag, release or deployment. All 32 Matrix B `P=Y` rows are binding, including both positive conversion and intentionally native exclusions. The historical callback counts below are **not expected behavior** of the corrected Adapter.
 
-Current production-preservation integration checks use 24 discriminating positive tag/format/field cases plus eight native-only grammar controls, compared on the authentic selected Gravity Forms 3.1.1.1 Text Confirmation under disabled and enabled module states. Other checks cover controlled non-idempotent shared Merge Tag callbacks, HTML/machine boundaries and genuine Chromium submissions. These are test-case counts, **not a declaration that all 32 preservation rows have been verified**. Until final-Head WU008 and row-by-row review, independent combinations remain `NOT_PROVEN`.
+Exact-package preservation integration now reports **27 positive conversion cases PASS** and **8 explicitly native grammar cases NATIVE_PASS** on the configured selected Text Confirmation, with genuine Chromium Default/Conditional submissions in ordinary and AJAX modes. These test-case counts do **not** equate to all 32 preservation rows or a Cartesian product of every context. Exact independent row mapping is the table above; untested browser/modifier interactions remain `NOT_VERIFIED`.
 
 On a changed upstream anchor, invalid source/output mapping or ambiguous interval, the Adapter returns the exact received native output without re-render. Such fallback is an important safety property, but does not substitute for positive liveness under supported, independently attributable contexts.
 
@@ -60,10 +60,20 @@ With the corrected local suffix matcher at Head `230a8bcf5633079549f44734a2f163e
 | Counting callback, unchanged input | 1 invocation | 3 invocations |
 | Non-idempotent callback, varying text | 1 invocation | 3 invocations |
 
-For the mutating probe, byte-exact native fallback preserved host output but **did not** undo the extra callback executions. This is a demonstrated architectural side-effect limitation of confirmation re-rendering, **not** proof that real third-party side effects are safe. Replacing or avoiding the re-render approach requires separate host-seam/method qualification before extending production changes. G-011 therefore stays **OPEN**, and non-idempotent third-party callbacks remain **NOT_PROVEN**. These observations qualify only the stated test scenarios and exact host version, not all modifier combinations or external extensions.
+For this **historical, now-replaced Adapter**, the mutating probe preserved host output but did **not** undo extra callback executions. The production replacement's exact-host counter tests below now demonstrate 1 native versus 1 enabled call under their two controlled scenarios. Those results do not prove all possible third-party extensions. G-011 stays **OPEN** for Owner/merge governance and other still-unqualified surfaces.
+
+## Executed exact-host repair evidence (2026-10-27)
+
+At production Adapter source Head `cdd6a58fe2f0643512294706f68defb75c74e02b`:
+- [WU008 Licensed Real Integration run 40467290897](https://github.com/rezahh107/PersianGravity/actions/runs/40467290897): **SUCCESS**, exact GF 3.1.1.1 package SHA-256 `542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b`.
+- [CI 40467290920](https://github.com/rezahh107/PersianGravity/actions/runs/40467290920): **SUCCESS** including PHP 8.2, 8.3, 8.4 and 8.5 jobs and WPCS.
+- [G008 Runtime 40467290967](https://github.com/rezahh107/PersianGravity/actions/runs/40467290967) and [Artifact Install Smoke 40467290958](https://github.com/rezahh107/PersianGravity/actions/runs/40467290958): **SUCCESS**.
+
+The WU008 artifact `g011-production-preservation.json` confirms **27/27 positive** and **8/8 native** checks, each with its own result. `g011-confirmation.json` shows the repaired controlled counting/non-idempotent shared-hook invocations `native=1, enabled=1` in both cases. `g011-architecture-qualification.json` separately reports source-marked positive presentation, preservation of three machine filename forms, non-idempotent native fallback and priority 20. `g011-browser.json` reports all four genuine Chromium combinations: Default/Conditional × Ordinary/AJAX `CONFIRMED`, Jalali visible and zero page errors. Stored Entry and configured Form checks are exercised in the licensed WU008 tests. This establishes the **examined scenarios**, not arbitrary third-party callback safety.
 
 ## Remaining G-011 outcomes
 
-1. Human-facing Page/Redirect Query String conversion with correct :urlencode, comma, percent, delimiter and repeated-key behavior, while opaque transport parameters remain unchanged.
-2. Additional exact-package Text branches not independently exercised: valid nonempty payment_date, supported modifiers outside the enumerated set, non-idempotent third-party Merge Tag callbacks, broad timezone/browser edges and the absolute :human branch.
-3. Newer native Repeater Date children and mobile Datepicker behavior remain a separate Owner-supplied exact-package research opportunity, not implicit qualification here.
+1. Page/Redirect human-facing Query String conversion and `:urlencode` transport handling were **intentionally not authorized in this Text-only repair**, so stay native. They remain part of the broader G-011 goal, not a regression of this repair.
+2. Unexercised exact-host combinations remain bounded: non-`mdy` native Date-field input formats, additional weekday/time formatting permutations, broad daylight/timezone browser cases, every negative data shape on live browser, and unrelated real third-party extensions. Do not promote these from CI alone.
+3. Gravity Forms 3.2+ Repeater children, mobile Datepicker, and new package qualification require separate Owner-supplied package evidence and decision.
+
