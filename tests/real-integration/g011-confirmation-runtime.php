@@ -497,7 +497,7 @@ try {
 			'jalali_sha256' => is_string( $trial_outputs['jalali'] ) ? hash( 'sha256', $trial_outputs['jalali'] ) : null,
 		);
 		if ( ! $good ) {
-			$fail( 'Native Gregorian Date-field source format not proven: ' . $input_format );
+			$fail( 'Native Gregorian Date-field source format not proven: ' . $input_format . '; native=' . wp_json_encode( $trial_outputs['native'] ) . '; enabled=' . wp_json_encode( $trial_outputs['jalali'] ) );
 		}
 	}
 	foreach ( $matrix_native as $case => $token ) {
