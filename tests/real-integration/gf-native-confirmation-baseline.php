@@ -129,10 +129,17 @@ foreach ( $formats as $format => $raw_date ) {
 	$expected_mutated = '<p>WU008_MARKER_1 Native: ' . $raw_date . '; END_' . $format . '</p>';
 	$stored_entry = GFAPI::get_entry( $entry_id );
 	$stored_form = GFAPI::get_form( $form_id );
+	// GFAPI hydrates fresh field objects on every get_form() call.
+	// Compare the persisted definitions, not PHP object identities.
+	$definition = static function ( array $value ): string {
+		return wp_json_encode( array(
+			'fields' => $value['fields'] ?? array(),
+			'confirmations' => $value['confirmations'] ?? array(),
+		) );
+	};
 	$unchanged = is_array( $stored_entry ) && $stored_entry === $entry &&
 		is_array( $stored_form ) &&
-		$stored_form['fields'] === $form['fields'] &&
-		$stored_form['confirmations'] === $form['confirmations'];
+		$definition( $stored_form ) === $definition( $form );
 	// GFFormDisplay wraps the selected message in a native form-specific
 	// confirmation container. Compare the *entire* native output for callback
 	// side effects while asserting the exact Date span inside that wrapper.
