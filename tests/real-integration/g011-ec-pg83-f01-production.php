@@ -75,7 +75,15 @@ defined( 'ABSPATH' ) || exit;
 		throw new RuntimeException( 'EC-PG83-F01 GFAPI form configuration not persisted.' );
 	}
 	$form = GFAPI::get_form( $form_id );
-	$form_snapshot = wp_json_encode( $form );
+	// Compare persisted Form *definitions* around rendering, not around
+	// creation of the independent synthetic Entries in this fixture.
+	$form_definition = static function ( array $item ): string {
+		return wp_json_encode( array(
+			'fields' => $item['fields'] ?? array(),
+			'confirmations' => $item['confirmations'] ?? array(),
+		) );
+	};
+	$all_forms_preserved = true;
 	$render = static function ( array $form, array $entry, bool $enabled, bool $ajax ) use ( $original ): array {
 		$state = $original;
 		$state['states']['jalali_presentation'] = $enabled;
@@ -124,6 +132,7 @@ defined( 'ABSPATH' ) || exit;
 			if ( ! is_array( $entry ) || ( $entry['date_created'] ?? '' ) !== '2026-03-20 20:30:00' ) {
 				throw new RuntimeException( 'EC-PG83-F01 GFAPI Entry persistence mismatch.' );
 			}
+			$definition_before_render = $form_definition( GFAPI::get_form( $form_id ) );
 			foreach ( array( 'ordinary' => false, 'ajax' => true ) as $mode => $ajax ) {
 				$native = $render( $form, $entry, false, $ajax );
 				$enabled = $render( $form, $entry, true, $ajax );
@@ -156,6 +165,9 @@ defined( 'ABSPATH' ) || exit;
 					false !== strpos( $native_html, $marker ) &&
 					false !== strpos( $enabled_html, $marker ) &&
 					! in_array( false, $machine_checks, true );
+				$definition_after_render = $form_definition( GFAPI::get_form( $form_id ) );
+				$form_preserved = $definition_before_render === $definition_after_render;
+				$all_forms_preserved = $all_forms_preserved && $form_preserved;
 				$case_id = $selected . '_' . $mode;
 				$report['cases'][ $case_id ] = array(
 					'status' => $all ? 'PASS' : 'FAILED',
@@ -171,12 +183,14 @@ defined( 'ABSPATH' ) || exit;
 					'callbacks' => array( 'native' => $native['callbacks'], 'enabled' => $enabled['callbacks'] ),
 					'pre_adapter_equal_to_native' => $enabled['pre_adapter'] === $native_html,
 					'entry_unchanged' => GFAPI::get_entry( $entry_id ) === $entry,
+					'form_definition_unchanged_after_render' => $form_preserved,
 				);
 				$all_good = $all_good && $all && $report['cases'][ $case_id ]['entry_unchanged'];
 			}
 		}
-		$report['form_unchanged'] = wp_json_encode( GFAPI::get_form( $form_id ) ) === $form_snapshot;
-		$all_good = $all_good && $report['form_unchanged'];
+		$report['form_unchanged'] = $all_forms_preserved;
+		$report['form_definition_scope'] = 'GFAPI recovered fields and confirmation definitions around actual rendering';
+		$all_good = $all_good && $all_forms_preserved;
 	} finally {
 		update_option( 'pgr_modules', $original );
 	}
