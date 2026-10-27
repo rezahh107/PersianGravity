@@ -254,7 +254,7 @@ if ( false === strpos( $context_result, ' Created=۱۴۰۵/۰۱/۰۱ ' ) ) {
 	$fail( 'Legitimate Created= human label lost Jalali conversion.' );
 }
 
-// Measure additional host Merge Tag callback executions independently.
+// Prove that the repaired Adapter adds ZERO shared Merge Tag callback calls.
 // The spy intentionally has a counting side effect but returns input unchanged.
 $probe_form = $form;
 $probe_form['confirmations'] = array(
@@ -291,15 +291,15 @@ if (
 	! is_string( $native_probe_output ) ||
 	! is_string( $jalali_probe_output ) ||
 	$native_probe_calls < 1 ||
-	$jalali_probe_calls <= $native_probe_calls ||
+	$jalali_probe_calls !== $native_probe_calls ||
 	false === strpos( $jalali_probe_output, '۱۴۰۵/۰۱/۰۱' )
 ) {
-	$fail( 'Controlled read-only callback counter did not demonstrate the expected host re-execution.' );
+	$fail( 'Repaired Adapter replayed shared callback or lost positive Jalali output.' );
 }
 
-// A separate non-idempotent callback changes its output on each invocation.
-// The second host render must fail the native byte-exact guard, retaining the
-// first host-produced confirmation; the callback side effects still occurred.
+// A non-idempotent third-party callback mutates the message once.
+// Its effects must be identical in native/enabled modes, while the eligible
+// date still converts without any extra Merge Tag replacement.
 $side_effect_calls = 0;
 $mutator = static function ( $text ) use ( &$side_effect_calls ) {
 	++$side_effect_calls;
@@ -321,11 +321,11 @@ remove_filter( 'gform_pre_replace_merge_tags', $mutator, 999 );
 if (
 	! is_string( $native_side_effect_output ) ||
 	! is_string( $jalali_side_effect_output ) ||
-	$native_side_effect_output !== $jalali_side_effect_output ||
+	str_replace( $expected_native, '۱۴۰۵/۰۱/۰۱', $native_side_effect_output ) !== $jalali_side_effect_output ||
 	$native_side_effect_calls < 1 ||
-	$jalali_side_effect_calls <= $native_side_effect_calls
+	$jalali_side_effect_calls !== $native_side_effect_calls
 ) {
-	$fail( 'Non-idempotent callback native fallback or invocation observation failed.' );
+	$fail( 'Non-idempotent callback side-effect parity or Jalali conversion failed.' );
 }
 
 $callback_observation = array(
@@ -333,7 +333,7 @@ $callback_observation = array(
 	'count_only_jalali' => $jalali_probe_calls,
 	'non_idempotent_native' => $native_side_effect_calls,
 	'non_idempotent_jalali' => $jalali_side_effect_calls,
-	'non_idempotent_output_native' => true,
+	'non_idempotent_output_jalali' => true,
 );
 
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
