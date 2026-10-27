@@ -344,6 +344,15 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/gf-native-confirmation-baseline.php
           test -s "$WU008_ARTIFACT_DIR/gf-native-confirmation-baseline.json"
 
+      - name: Exercise production G011 explicit tags on the licensed host
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l includes/class-pgr-gf-explicit-jalali-merge-tags.php
+          php -l tests/real-integration/g011-explicit-production-runtime.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-production-runtime.php
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-production-runtime.json"
+
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -376,6 +385,13 @@ jobs:
         run: |
           set -euo pipefail
           node tests/real-integration/browser-tests.mjs
+
+      - name: Submit real G011 ordinary and AJAX Confirmations in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g011-explicit-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-browser.json"
 
       - name: Execute current-Head fa_IR RTL qualification
         shell: bash
