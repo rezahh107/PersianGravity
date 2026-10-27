@@ -209,6 +209,13 @@ foreach ( $methods as $hook ) {
 		1 === $disabled['confirmation_native_callbacks'] &&
 		$enabled['notification_native_callbacks'] === $disabled['notification_native_callbacks'] &&
 		1 === $enabled['notification_native_callbacks'];
+	if ( ! $ok ) {
+		// Synthetic fixture content only; neither licensed source nor private Entry data.
+		$evidence['diagnostic'][ $hook ] = array(
+			'confirmation' => substr( (string) $enabled['confirmation'], 0, 1200 ),
+			'notification' => substr( (string) $enabled['notification'], 0, 1200 ),
+		);
+	}
 	$evidence['methods'][ $hook ] = array(
 		'status'       => $ok ? 'PASS' : 'FAIL',
 		'confirmation' => array(
@@ -242,7 +249,7 @@ if ( false === file_put_contents( $file, wp_json_encode( $evidence, JSON_PRETTY_
 	throw new RuntimeException( 'Cannot write G011 prototype artifact.' );
 }
 if ( 'PASS' !== $evidence['result'] ) {
-	echo "G011 EVIDENCE: " . wp_json_encode( $evidence['methods'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
+	echo "G011 EVIDENCE: " . wp_json_encode( array( 'methods' => $evidence['methods'], 'diagnostic' => $evidence['diagnostic'] ?? array() ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
 	throw new RuntimeException( 'G011 explicit merge-tag candidate failed; inspect bounded artifact.' );
 }
 echo 'G011 explicit tags: ' . $evidence['selected_method'] . " PASS, Confirmation + Notification, one native pass\n";
