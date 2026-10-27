@@ -40,17 +40,17 @@ final class PGR_GF_Explicit_Jalali_Merge_Tags {
 
 		return preg_replace_callback(
 			'/\{pgr_jdate_(created|updated|payment|today)(?:_(date|time))?\}|\{pgr_jdate_field_([1-9][0-9]*)\}/',
-			static function ( $match ) use ( $form, $entry, $url_encode, $esc_html, $format ) {
-				$value = isset( $match[3] ) && '' !== $match[3]
-					? self::date_field( $form, $entry, (int) $match[3] )
-					: self::system_date( $entry, $match[1], $match[2] ?? '' );
+			static function ( $tag_match ) use ( $form, $entry, $url_encode, $esc_html, $format ) {
+				$value = isset( $tag_match[3] ) && '' !== $tag_match[3]
+					? self::date_field( $form, $entry, (int) $tag_match[3] )
+					: self::system_date( $entry, $tag_match[1], $tag_match[2] ?? '' );
 
 				// Null means unsafe/unavailable: leave the explicit token visible.
 				if ( null === $value ) {
-					return $match[0];
+					return $tag_match[0];
 				}
 				if ( $url_encode || 'url' === $format ) {
-					return urlencode( $value );
+					return rawurlencode( $value );
 				}
 				return $esc_html ? esc_html( $value ) : $value;
 			},
@@ -114,9 +114,9 @@ final class PGR_GF_Explicit_Jalali_Merge_Tags {
 			if ( ! is_array( $parts ) || ! isset( $parts['year'], $parts['month'], $parts['day'] ) ) {
 				return null;
 			}
-			$year = (int) $parts['year'];
+			$year  = (int) $parts['year'];
 			$month = (int) $parts['month'];
-			$day = (int) $parts['day'];
+			$day   = (int) $parts['day'];
 			return checkdate( $month, $day, $year )
 				? PGR_Jalali_Presentation::format_date( $year, $month, $day )
 				: null;
