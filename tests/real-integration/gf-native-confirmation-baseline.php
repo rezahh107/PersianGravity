@@ -133,8 +133,14 @@ foreach ( $formats as $format => $raw_date ) {
 		is_array( $stored_form ) &&
 		$stored_form['fields'] === $form['fields'] &&
 		$stored_form['confirmations'] === $form['confirmations'];
-	$good = $plain['html'] === $expected_plain &&
-		$mutated['html'] === $expected_mutated &&
+	// GFFormDisplay wraps the selected message in a native form-specific
+	// confirmation container. Compare the *entire* native output for callback
+	// side effects while asserting the exact Date span inside that wrapper.
+	$good = is_string( $plain['html'] ) &&
+		1 === substr_count( $plain['html'], $expected_plain ) &&
+		is_string( $mutated['html'] ) &&
+		1 === substr_count( $mutated['html'], $expected_mutated ) &&
+		$mutated['html'] === str_replace( 'WU008_MARKER', 'WU008_MARKER_1', $plain['html'] ) &&
 		1 === $plain['callbacks'] &&
 		1 === $mutated['callbacks'] &&
 		$unchanged;
