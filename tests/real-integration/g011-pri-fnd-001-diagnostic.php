@@ -285,6 +285,9 @@ foreach ( $pri_formats as $format => $stored ) {
 		( $native_span !== $expected ? 'invalid_span_guard -> native expected mismatch' :
 		( $outputs['enabled'] === $outputs['native'] ? 'unexpected_native_fallback' : 'converted' ) ) );
 	$pri_evidence['persisted_form_cases'][ $format ] = array(
+		'persisted_form_id' => $persisted_form_id,
+		'persisted_entry_id' => $entry_id,
+		'GF_before_adapter_output_enabled' => $before['enabled'],
 		'GFAPI_persisted_field_dateFormat' => $persisted_format,
 		'GFAPI_persisted_raw_Entry' => $entry['2'],
 		'GFCommon_parse_date' => $parse,
