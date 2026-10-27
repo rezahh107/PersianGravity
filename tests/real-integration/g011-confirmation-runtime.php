@@ -445,7 +445,11 @@ try {
 	// Test their real GF Date-field parse/merge path, not a print-shape guess.
 	foreach ( array(
 		'dmy' => array( '21/03/2026', '۰۱/۰۱/۱۴۰۵' ),
-		'ymd' => array( '2026/03/21', '۱۴۰۵/۰۱/۰۱' ),
+		'dmy_dash' => array( '21-03-2026', '۰۱-۰۱-۱۴۰۵' ),
+		'dmy_dot' => array( '21.03.2026', '۰۱.۰۱.۱۴۰۵' ),
+		'ymd_slash' => array( '2026/03/21', '۱۴۰۵/۰۱/۰۱' ),
+		'ymd_dash' => array( '2026-03-21', '۱۴۰۵-۰۱-۰۱' ),
+		'ymd_dot' => array( '2026.03.21', '۱۴۰۵.۰۱.۰۱' ),
 	) as $input_format => $input_case ) {
 		$case = 'field_source_' . $input_format;
 		$test_form = $form;
@@ -515,7 +519,7 @@ file_put_contents(
 			'head' => getenv( 'WU008_PGR_SHA' ),
 			'gf' => GFForms::$version,
 			'gf_sha256' => getenv( 'WU008_GF_SHA256' ),
-			'positive_cases' => count( $matrix_positive ) + 2,
+			'positive_cases' => count( $matrix_positive ) + 6,
 			'native_cases' => count( $matrix_native ),
 			'case_status' => $matrix_record,
 		),
