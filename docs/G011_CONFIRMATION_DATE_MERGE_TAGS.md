@@ -1,6 +1,6 @@
 # G-011 — Gravity Forms confirmation date Merge Tags
 
-**Status:** Scoped production candidate. G-011 remains **OPEN**. Host baseline: Owner-supplied Gravity Forms **3.1.1.1**, SHA-256 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b. No newer vendor version qualifies automatically.
+**Status:** Owner-approved `G011-POSTNATIVE-LOCK` Revision 1.1; bounded Text repair authorized and under exact-Head qualification. G-011 remains **OPEN**. Host baseline: Owner-supplied Gravity Forms **3.1.1.1**, SHA-256 542f56ae0747f3661d1474996527298027db3fb8ed3e6469a6391aaabf61069b. No newer vendor version qualifies automatically.
 
 ## Boundary
 
@@ -8,7 +8,7 @@ Gravity Forms selects the actual conditional confirmation in GFFormDisplay::hand
 
 The opt-in jalali_presentation adapter registers **only gform_confirmation**. It processes the selected Text confirmation under fa_IR, using authoritative raw UTC Entry system dates or strictly parsed Gregorian-owned GF_Field_Date values. It delegates calendar conversion solely to PGR_Jalali_Presentation::format_date().
 
-Because the hook runs after host replacement, the adapter re-renders a copy of the **selected Text template** with collision-resistant opaque markers **per individual occurrence** only after conservative template-context classification. Only positively recognized human text nodes may be converted; HTML attributes, raw URLs, opaque/code/script/style/comment content, hidden or unknown elements and machine-like text remain native. Malformed or ambiguous HTML causes unchanged native confirmation fallback. Restoring native date replacements must exactly reproduce the original host confirmation HTML. Any mismatch causes complete native fallback. This comparison protects unrelated HTML, text and ordinary Merge Tags; it also entails an additional render. Non-idempotent third-party Merge Tag callbacks may run twice and remain **not qualified**. No form/Entry/API/mail/feed/workflow state is written by the adapter.
+The authorized post-native repair operates on the **already rendered selected Text confirmation**. It reads the selected source template solely for per-occurrence context and position, and independently derives the expected host-native value from authoritative Gregorian/UTC dates or parsed native Date-field values using bounded native date formatting primitives. It admits Jalali replacement only where native representation, unique static context, order and non-overlap prove the rendered span's ownership; bytes outside admitted spans are preserved. It invokes neither `GFCommon::replace_variables()` nor `GFFormDisplay::get_confirmation_message()` nor any other host Merge Tag rendering pass. Only positively recognized human text nodes may be converted; attributes, raw URLs, opaque/code/script/style/comment content, hidden or unknown elements and machine-like text remain native. Ambiguous markup, changed upstream anchors, duplicate/nonunique alignment or native value mismatch cause unchanged received native fallback. No form/Entry/API/mail/feed/workflow state is written by the adapter. Positive liveness and callback parity still require independently observed exact-package runtime/browser evidence.
 
 For Text confirmations, root-relative (`/archive/{date_created}`), dot-relative (`./archive/{date_created}`), parent-relative (`../archive/{date_created}`), and other unambiguous path-bearing text tokens remain native per occurrence; a separate human-facing `Created={date_created}` remains eligible. Ambiguous contexts retain native fallback. This is not Page/Redirect transport conversion.
 
@@ -39,13 +39,21 @@ The existing WU008 workflow validates the exact private package and Head before 
 
 **Do not upgrade any matrix cell to VERIFIED or claim CI/browser PASS without observing a successful exact-Head run.** Append exact run evidence after execution.
 
+## Revision 1.1 post-native repair — evidence boundaries
+
+The Owner approved exact `G011-POSTNATIVE-LOCK` Revision 1.1 and separately authorized bounded `repair_and_verify` on PR #83. Neither approval authorizes merge, tag, release or deployment. All 32 Matrix B `P=Y` rows are binding, including both positive conversion and intentionally native exclusions. The historical callback counts below are **not expected behavior** of the corrected Adapter.
+
+Current production-preservation integration checks use 24 discriminating positive tag/format/field cases plus eight native-only grammar controls, compared on the authentic selected Gravity Forms 3.1.1.1 Text Confirmation under disabled and enabled module states. Other checks cover controlled non-idempotent shared Merge Tag callbacks, HTML/machine boundaries and genuine Chromium submissions. These are test-case counts, **not a declaration that all 32 preservation rows have been verified**. Until final-Head WU008 and row-by-row review, independent combinations remain `NOT_PROVEN`.
+
+On a changed upstream anchor, invalid source/output mapping or ambiguous interval, the Adapter returns the exact received native output without re-render. Such fallback is an important safety property, but does not substitute for positive liveness under supported, independently attributable contexts.
+
 ## Executed suffix-context repair evidence (2026-10-26)
 
 The G-011 occurrence-local classifier must also preserve native values when the date tag is *followed* by path/filename syntax. Deterministic negative controls for `{date_created:format:Y/m/d}/detail`, `{date_created:format:Y/m/d}#details`, `receipt-{date_created:format:Y/m/d}.pdf`, related filenames, relative paths, and repeated mixed HTML contexts initially failed on [pre-repair CI 40302218012](https://github.com/rezahh107/PersianGravity/actions/runs/40302218012). A first candidate also failed on [CI 40302754813](https://github.com/rezahh107/PersianGravity/actions/runs/40302754813) because the expression delimiter collided with a character class; no success is inferred from either failed candidate.
 
 With the corrected local suffix matcher at Head `230a8bcf5633079549f44734a2f163e045bac076`, [CI 40302963646](https://github.com/rezahh107/PersianGravity/actions/runs/40302963646) passed focused G-011 tests (10 tests / 94 assertions), four supported PHP jobs, and the existing full PHPUnit and quality checks. [Exact-package WU008 40302963658](https://github.com/rezahh107/PersianGravity/actions/runs/40302963658) passed on licensed Gravity Forms 3.1.1.1 (locked SHA-256 above), including native-output comparisons for path/filename suffixes, visible date labels, negative controls and authentic Chromium ordinary/AJAX DOM assertions. No notification, Page/Redirect, storage or module authority was added.
 
-WU008 independently measured the existing `gform_pre_replace_merge_tags` callback seam with disposable, controlled side-effect probes:
+**Historical pre-repair evidence:** WU008 on Head `22bdf84f67cba2b9a02424df4e934deae375c29e` independently measured the original rerendering Adapter's `gform_pre_replace_merge_tags` callback seam:
 
 | Controlled probe | Module disabled / native | Module enabled / selected Text |
 | --- | ---: | ---: |
