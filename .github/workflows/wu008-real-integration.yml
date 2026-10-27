@@ -15,6 +15,7 @@ on:
       - 'includes/class-pgr-gregorian-jalali-converter.php'
       - 'includes/class-pgr-jalali-presentation.php'
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gf-explicit-jalali-merge-tags.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
