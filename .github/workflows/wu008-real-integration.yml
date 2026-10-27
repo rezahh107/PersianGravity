@@ -683,6 +683,14 @@ jobs:
           node tests/real-integration/g008-flow-residual-reconcile.mjs
           test -s "$WU008_ARTIFACT_DIR/g008-flow-residual-no-admission.json"
 
+      - name: Preserve native GF Date Merge Tag and shared callback baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/gf-native-confirmation-baseline.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/gf-native-confirmation-baseline.php
+          test -s "$WU008_ARTIFACT_DIR/gf-native-confirmation-baseline.json"
+
       - name: Reconcile committed qualification claims with exact-run evidence
         shell: bash
         run: |
