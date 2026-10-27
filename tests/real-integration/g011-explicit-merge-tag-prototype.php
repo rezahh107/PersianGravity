@@ -59,8 +59,8 @@ $form['confirmations'] = array( 'g011-test' => array(
 ) );
 $notification = array(
 	'id' => 'g011-notify', 'name' => 'G011 disposable Notification', 'event' => 'form_submission',
-	'to' => 'probe@example.invalid', 'toType' => 'email',
-	'from' => 'probe@example.invalid', 'fromName' => 'WU008',
+	'to' => 'probe@example.com', 'toType' => 'email',
+	'from' => 'probe@example.com', 'fromName' => 'WU008',
 	'subject' => 'G011 disposable', 'message' => $body,
 	'isActive' => true, 'disableAutoformat' => true,
 );
@@ -155,6 +155,9 @@ $exercise = static function ( string $hook, bool $enabled ) use ( $form, $entry,
 	};
 	add_filter( 'gform_pre_replace_merge_tags', $spy, 998, 1 );
 	add_filter( 'gform_pre_send_email', $abort, 1, 1 );
+	// Defense in depth: no external mail even if GF changes its abort behavior.
+	$block_wp_mail = static function () { return true; };
+	add_filter( 'pre_wp_mail', $block_wp_mail, 1, 1 );
 	if ( $enabled ) {
 		add_filter( $hook, $handler, 10, 3 );
 	}
@@ -169,6 +172,7 @@ $exercise = static function ( string $hook, bool $enabled ) use ( $form, $entry,
 		}
 		remove_filter( 'gform_pre_replace_merge_tags', $spy, 998 );
 		remove_filter( 'gform_pre_send_email', $abort, 1 );
+		remove_filter( 'pre_wp_mail', $block_wp_mail, 1 );
 	}
 	return array(
 		'confirmation' => $html,
@@ -233,6 +237,7 @@ if ( false === file_put_contents( $file, wp_json_encode( $evidence, JSON_PRETTY_
 	throw new RuntimeException( 'Cannot write G011 prototype artifact.' );
 }
 if ( 'PASS' !== $evidence['result'] ) {
+	echo "G011 EVIDENCE: " . wp_json_encode( $evidence['methods'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
 	throw new RuntimeException( 'G011 explicit merge-tag candidate failed; inspect bounded artifact.' );
 }
 echo 'G011 explicit tags: ' . $evidence['selected_method'] . " PASS, Confirmation + Notification, one native pass\n";
