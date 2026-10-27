@@ -441,6 +441,61 @@ try {
 				'; expected_present=' . ( false !== strpos( $jalali_out, $expected ) ? 'yes' : 'no' ) );
 		}
 	}
+	// Native Date fields can store different *Gregorian* input layouts.
+	// Test their real GF Date-field parse/merge path, not a print-shape guess.
+	foreach ( array(
+		'dmy' => array( '21/03/2026', '۰۱/۰۱/۱۴۰۵' ),
+		'ymd' => array( '2026/03/21', '۱۴۰۵/۰۱/۰۱' ),
+	) as $input_format => $input_case ) {
+		$case = 'field_source_' . $input_format;
+		$test_form = $form;
+		$found_date = false;
+		foreach ( $test_form['fields'] as $index => $field ) {
+			if ( $field instanceof GF_Field_Date && 2 === (int) $field->id ) {
+				$test_form['fields'][ $index ] = clone $field;
+				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Native GF public field property.
+				$test_form['fields'][ $index ]->dateFormat = $input_format;
+				$found_date = true;
+			}
+		}
+		if ( ! $found_date ) {
+			$fail( 'Native Date-field missing for source format proof.' );
+		}
+		$test_form['confirmations'] = array(
+			'matrix-default' => array(
+				'id' => 'matrix-default',
+				'name' => 'Source layout',
+				'type' => 'message',
+				'isDefault' => true,
+				'isActive' => true,
+				'disableAutoformat' => true,
+				'message' => '<p>' . $case . ': {Visit:2}; end-' . $case . '</p>',
+			),
+		);
+		$trial_entry = $matrix_entry;
+		$trial_entry['2'] = $input_case[0];
+		$trial_outputs = array();
+		foreach ( array( 'native' => false, 'jalali' => true ) as $mode => $enabled ) {
+			$states = get_option( 'pgr_modules' );
+			$states['states']['jalali_presentation'] = $enabled;
+			update_option( 'pgr_modules', $states );
+			$selected_copy = $test_form;
+			$trial_outputs[ $mode ] = GFFormDisplay::handle_confirmation( $selected_copy, $trial_entry, false );
+		}
+		$good = is_string( $trial_outputs['native'] ) &&
+			is_string( $trial_outputs['jalali'] ) &&
+			$trial_outputs['jalali'] !== $trial_outputs['native'] &&
+			false !== strpos( $trial_outputs['jalali'], $input_case[1] ) &&
+			false !== strpos( $trial_outputs['jalali'], 'end-' . $case );
+		$matrix_record[ $case ] = array(
+			'status' => $good ? 'PASS' : 'FAIL',
+			'native_sha256' => is_string( $trial_outputs['native'] ) ? hash( 'sha256', $trial_outputs['native'] ) : null,
+			'jalali_sha256' => is_string( $trial_outputs['jalali'] ) ? hash( 'sha256', $trial_outputs['jalali'] ) : null,
+		);
+		if ( ! $good ) {
+			$fail( 'Native Gregorian Date-field source format not proven: ' . $input_format );
+		}
+	}
 	foreach ( $matrix_native as $case => $token ) {
 		$native_out = $run_matrix( $case, $token, $matrix_entry, false );
 		$jalali_out = $run_matrix( $case, $token, $matrix_entry, true );
@@ -460,7 +515,7 @@ file_put_contents(
 			'head' => getenv( 'WU008_PGR_SHA' ),
 			'gf' => GFForms::$version,
 			'gf_sha256' => getenv( 'WU008_GF_SHA256' ),
-			'positive_cases' => count( $matrix_positive ),
+			'positive_cases' => count( $matrix_positive ) + 2,
 			'native_cases' => count( $matrix_native ),
 			'case_status' => $matrix_record,
 		),
