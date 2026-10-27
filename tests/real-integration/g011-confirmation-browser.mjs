@@ -62,6 +62,33 @@ try {
       await page.close();
     }
   }
+  // Owner-approved Matrix B: conditional selection also works in BOTH HTTP
+  // and AJAX, not merely an independent conditional unit/CLI invocation.
+  for (const mode of ['ordinary', 'ajax']) {
+    const page = await browser.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    try {
+      const response = await page.goto(manifest.urls[mode], { waitUntil: 'domcontentloaded' });
+      if (!response || response.status() !== 200) throw new Error(mode + ': conditional page not served');
+      await page.locator('input[name="input_1"]').first().fill('special');
+      await page.locator('form[id^="gform_"] input[type="submit"], form[id^="gform_"] button[type="submit"]').first().click();
+      const message = page.locator('.gform_confirmation_message').first();
+      await message.waitFor({ state: 'visible', timeout: 20000 });
+      const text = await message.innerText();
+      const selected = text.includes('G011_CONDITIONAL') && !text.includes('G011_BROWSER_OK');
+      const converted = /[۰-۹]{4}\/[۰-۹]{2}\/[۰-۹]{2}/u.test(text);
+      if (!selected || !converted || errors.length) {
+        throw new Error(mode + ': conditional text verification failed: ' +
+          JSON.stringify({ selected, converted, errors }));
+      }
+      results['conditional_' + mode] = {
+        submission: 'CONFIRMED', selected: 'CONDITIONAL', jalali: true, pageerror_count: 0,
+      };
+    } finally {
+      await page.close();
+    }
+  }
   fs.writeFileSync(dir + '/g011-browser.json', JSON.stringify({ contract: 'G011_AUTHENTIC_CHROMIUM', results }, null, 2));
   console.log('G011 Chromium ordinary/AJAX confirmation assertions OK');
 } finally {
