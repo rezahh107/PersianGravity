@@ -775,6 +775,9 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-confirmation-runtime.php
           test -s "$WU008_ARTIFACT_DIR/g011-owner-matrix-b-rows-20-21.json"
           test -s "$WU008_ARTIFACT_DIR/g011-confirmation.json"
+          php -l tests/real-integration/g011-owner-matrix-partials.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-owner-matrix-partials.php
+          test -s "$WU008_ARTIFACT_DIR/g011-owner-matrix-partial-qualification.json"
           node tests/real-integration/g011-confirmation-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g011-browser.json"
 
