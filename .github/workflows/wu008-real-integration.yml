@@ -411,7 +411,8 @@ jobs:
             echo "G011 inactive-plugin native-unresolved PASS\n";
           '
           php "$WU008_WP_CLI" plugin activate persian-gravityforms --path="$WU008_WP_PATH"
-          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+          # Preserve WU008's pre-existing GravityView fixture precondition: OFF.
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
 
       - name: Execute current-Head fa_IR RTL qualification
         shell: bash
