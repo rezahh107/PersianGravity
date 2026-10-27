@@ -393,6 +393,15 @@ jobs:
           node tests/real-integration/g011-explicit-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g011-explicit-browser.json"
 
+      - name: Verify fresh-request disabled handler and restore module
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-disabled.php
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-disabled.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", true );'
+
       - name: Execute current-Head fa_IR RTL qualification
         shell: bash
         env:
