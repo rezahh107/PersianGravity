@@ -441,7 +441,10 @@ try {
 				'; expected_present=' . ( false !== strpos( $jalali_out, $expected ) ? 'yes' : 'no' ) );
 		}
 	}
-	// Native Date fields can store different *Gregorian* input layouts.
+	// PRI-FND-001 exact-host diagnostic runs before the existing fail-closed liveness gate.
+require __DIR__ . '/g011-pri-fnd-001-diagnostic.php';
+
+// Native Date fields can store different *Gregorian* input layouts.
 	// Test their real GF Date-field parse/merge path, not a print-shape guess.
 	foreach ( array(
 		'dmy' => array( '21/03/2026', '۰۱/۰۱/۱۴۰۵' ),
