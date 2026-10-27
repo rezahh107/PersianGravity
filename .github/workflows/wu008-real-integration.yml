@@ -771,7 +771,9 @@ jobs:
             $states["states"]["jalali_presentation"] = true;
             update_option("pgr_modules", $states);
           '
+          php -l tests/real-integration/g011-preservation-rows-20-21.php
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-confirmation-runtime.php
+          test -s "$WU008_ARTIFACT_DIR/g011-owner-matrix-b-rows-20-21.json"
           test -s "$WU008_ARTIFACT_DIR/g011-confirmation.json"
           node tests/real-integration/g011-confirmation-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g011-browser.json"
