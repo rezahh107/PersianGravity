@@ -15,13 +15,10 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 	}
 
 	/**
-	 * Reconstruct only a selected Text confirmation. Page/Redirect query
-	 * strings are intentionally native until their transport is qualified.
-	 *
-	 * The original GF rendering remains authoritative. We accept the
-	 * reconstructed rendering only if restoring its original date merge-tag
-	 * values yields byte-for-byte the original confirmation (including HTML).
-	 * This protects unrelated tags, formatting and host extensions.
+	 * Adapt only an already-rendered selected Text confirmation. Page/Redirect
+	 * query strings remain native until transport semantics are qualified.
+	 * Independently typed native values and uniquely ordered source anchors
+	 * prove ownership; no GF Merge Tag replacement or re-render is performed.
 	 *
 	 * @param mixed $confirmation Native rendered confirmation.
 	 * @param mixed $form         Selected form/confirmation.
@@ -62,14 +59,13 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 		if ( false === preg_match_all( '/\{[^{}]+\}/u', $template, $matches, PREG_OFFSET_CAPTURE ) ) {
 			return $confirmation;
 		}
-		$native       = array();
-		$presented    = array();
-		$markerized   = '';
-		$cursor       = 0;
-		$marker_index = 0;
-		$nl2br        = ! rgar( $selected, 'disableAutoformat' );
+		// Native has already expanded the selected template. Every occurrence
+		// must be mapped to that immutable output, never rendered a second time.
+		$tokens       = $matches[0];
+		$spans        = array();
+		$previous_end = 0;
 
-		foreach ( $matches[0] as $occurrence ) {
+		foreach ( $tokens as $index => $occurrence ) {
 			list( $tag, $offset ) = $occurrence;
 			$length               = strlen( $tag );
 			$range                = self::containing_text_range( $offset, $length, $text_ranges );
@@ -79,40 +75,177 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			) {
 				continue;
 			}
-			$value = self::present_tag( $tag, $form, $entry );
-			if ( null === $value ) {
-				continue;
+
+			$jalali = self::present_tag( $tag, $form, $entry );
+			if ( null === $jalali ) {
+				continue; // Explicitly native modifier, missing value or unowned field.
+			}
+			$expected_native = self::expected_native_tag( $tag, $form, $entry );
+			if ( ! is_string( $expected_native ) || '' === $expected_native ) {
+				return $confirmation; // Positive value without proven native semantics.
 			}
 
-			// Native replacements and host escaping remain authoritative.
-			$native_value = GFCommon::replace_variables( $tag, $form, $entry, false, true, $nl2br, 'html' );
-			if ( ! is_string( $native_value ) || $native_value === $tag ) {
-				continue;
+			// Derive the maximal unchanged static context between neighbouring
+			// SOURCE occurrences, including excluded or unsupported tags.
+			// Such tags are never treated as owned dates or searched globally.
+			$left_boundary  = 0 === $index ? 0 :
+				$tokens[ $index - 1 ][1] + strlen( $tokens[ $index - 1 ][0] );
+			$right_boundary = isset( $tokens[ $index + 1 ] ) ?
+				$tokens[ $index + 1 ][1] : strlen( $template );
+			$left  = substr( $template, $left_boundary, $offset - $left_boundary );
+			$right = substr( $template, $offset + $length, $right_boundary - $offset - $length );
+
+			// A whole-template lone tag has no anchor, but is provable if and
+			// only if the complete received output equals its native value.
+			if ( '' === $left && '' === $right ) {
+				if ( 1 !== count( $tokens ) || $confirmation !== $expected_native ) {
+					return $confirmation;
+				}
+				$span_start = 0;
+				$span_end   = strlen( $confirmation );
+			} else {
+				// Each available anchor must occur exactly once; duplicated
+				// labels or HTML are an ambiguity, not a license to guess.
+				if (
+					( '' !== $left && 1 !== substr_count( $confirmation, $left ) ) ||
+					( '' !== $right && 1 !== substr_count( $confirmation, $right ) )
+				) {
+					return $confirmation;
+				}
+
+				$span_start = '' === $left ? 0 :
+					strpos( $confirmation, $left ) + strlen( $left );
+				$span_end   = '' === $right ? strlen( $confirmation ) :
+					strpos( $confirmation, $right );
+				if (
+					$span_start < $previous_end ||
+					$span_end <= $span_start ||
+					substr( $confirmation, $span_start, $span_end - $span_start ) !== $expected_native
+				) {
+					return $confirmation;
+				}
 			}
 
-			++$marker_index;
-			$marker = 'PGRG011_' . str_replace( '-', '', wp_generate_uuid4() ) . '_' . $marker_index . '_END';
-			if ( false !== strpos( $template, $marker ) || false !== strpos( $confirmation, $marker ) ) {
-				return $confirmation;
-			}
-			$markerized          .= substr( $template, $cursor, $offset - $cursor ) . $marker;
-			$cursor               = $offset + $length;
-			$native[ $marker ]    = $native_value;
-			$presented[ $marker ] = esc_html( $value );
+			$spans[]      = array( $span_start, $span_end, esc_html( $jalali ) );
+			$previous_end = $span_end;
 		}
 
-		if ( empty( $native ) ) {
+		if ( ! $spans ) {
 			return $confirmation;
 		}
+		$result = '';
+		$cursor = 0;
+		foreach ( $spans as $span ) {
+			$result .= substr( $confirmation, $cursor, $span[0] - $cursor ) . $span[2];
+			$cursor  = $span[1];
+		}
+		return $result . substr( $confirmation, $cursor );
+	}
 
-		$selected['message'] = $markerized . substr( $template, $cursor );
-		$probe               = GFFormDisplay::get_confirmation_message( $selected, $form, $entry );
-		// Preserve the byte-exact native output round-trip guard.
-		if ( ! is_string( $probe ) || strtr( $probe, $native ) !== $confirmation ) {
-			return $confirmation;
+
+	/**
+	 * Independently derive the host's unescaped native date value using
+	 * source-typed GF/WP formatting primitives, never Merge Tag expansion.
+	 * An unproven native representation cannot own a rendered interval.
+	 */
+	private static function expected_native_tag( string $tag, array $form, array $entry ): ?string {
+		if ( preg_match( '/^\{(date_created|date_updated|payment_date|today)(?::(.*))?\}$/s', $tag, $match ) ) {
+			$segments = explode( ':', str_replace( '\:', '__PGR_COLON__', $match[2] ?? '' ) );
+			$format   = null;
+			$time     = false;
+			$count    = count( $segments );
+			for ( $i = 0; $i < $count; ++$i ) {
+				$part = $segments[ $i ];
+				if ( '' === $part && 0 === $i ) {
+					continue;
+				}
+				if ( 'time' === $part ) {
+					$time = true;
+					continue;
+				}
+				if ( 'format' === $part && isset( $segments[ $i + 1 ] ) ) {
+					$format = str_replace( '__PGR_COLON__', ':', $segments[ ++$i ] );
+					continue;
+				}
+				return null;
+			}
+
+			if ( 'today' === $match[1] ) {
+				$source = new DateTimeImmutable( '@' . time() );
+			} else {
+				$raw = $entry[ $match[1] ] ?? null;
+				if ( ! is_string( $raw ) || '' === $raw ) {
+					return null;
+				}
+				$source = DateTimeImmutable::createFromFormat( '!Y-m-d H:i:s', $raw, new DateTimeZone( 'UTC' ) );
+				$errors = DateTimeImmutable::getLastErrors();
+				if ( false === $source || $source->format( 'Y-m-d H:i:s' ) !== $raw ||
+					( is_array( $errors ) && ( $errors['warning_count'] || $errors['error_count'] ) ) ) {
+					return null;
+				}
+			}
+			$native_format = null === $format || '' === $format ? GFCommon::get_default_date_format() : $format;
+			if ( $time ) {
+				return GFCommon::format_date(
+					gmdate( 'Y-m-d H:i:s', $source->getTimestamp() ), false, $native_format, true
+				);
+			}
+			return date_i18n( $native_format, GFCommon::get_local_timestamp( $source->getTimestamp() ), true );
 		}
 
-		return strtr( $probe, $presented );
+		if ( ! preg_match( '/^\{[^{}]*:(\d+)(?::([^{}]+))?\}$/s', $tag, $match ) ) {
+			return null;
+		}
+		$id       = (int) $match[1];
+		$modifier = $match[2] ?? '';
+		foreach ( (array) rgar( $form, 'fields', array() ) as $field ) {
+			if ( ! $field instanceof GF_Field_Date || (int) $field->id !== $id ) {
+				continue;
+			}
+			$raw = $entry[ (string) $id ] ?? null;
+			if ( ! is_string( $raw ) ) {
+				return null;
+			}
+			$input_format = empty( $field->dateFormat ) ? 'mdy' : $field->dateFormat;
+			$parts = GFCommon::parse_date( $raw, $input_format );
+			if ( ! is_array( $parts ) ||
+				! ctype_digit( (string) ( $parts['year'] ?? '' ) ) ||
+				! ctype_digit( (string) ( $parts['month'] ?? '' ) ) ||
+				! ctype_digit( (string) ( $parts['day'] ?? '' ) ) ) {
+				return null;
+			}
+			$year  = (int) $parts['year'];
+			$month = (int) $parts['month'];
+			$day   = (int) $parts['day'];
+			if ( ! checkdate( $month, $day, $year ) ) {
+				return null;
+			}
+			$output_format = '' === $modifier ? $input_format : $modifier;
+			$allowed = array( 'year', 'month', 'day', 'ymd', 'ymd_dash', 'ymd_dot', 'ymd_slash',
+				'mdy', 'mdy_dash', 'mdy_dot', 'mdy_slash', 'dmy', 'dmy_dash', 'dmy_dot', 'dmy_slash' );
+			if ( ! in_array( $output_format, $allowed, true ) ) {
+				return null;
+			}
+			if ( 'year' === $output_format ) {
+				return sprintf( '%04d', $year );
+			}
+			if ( 'month' === $output_format ) {
+				return sprintf( '%02d', $month );
+			}
+			if ( 'day' === $output_format ) {
+				return sprintf( '%02d', $day );
+			}
+			$separator = str_ends_with( $output_format, '_dash' ) ? '-' :
+				( str_ends_with( $output_format, '_dot' ) ? '.' : '/' );
+			$pieces = array( 'y' => sprintf( '%04d', $year ), 'm' => sprintf( '%02d', $month ),
+				'd' => sprintf( '%02d', $day ) );
+			$order  = substr( $output_format, 0, 3 );
+			return implode( $separator, array_map(
+				static function ( string $key ) use ( $pieces ): string { return $pieces[ $key ]; },
+				str_split( $order )
+			) );
+		}
+		return null;
 	}
 
 	/**

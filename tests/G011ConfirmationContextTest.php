@@ -183,8 +183,12 @@ final class G011ConfirmationContextTest extends TestCase {
 			$this->assertSame( $this->native( $malformed ), $this->present( $malformed ) );
 		}
 		$valid = '<p>Visible ' . $tag . '</p>';
-		$GLOBALS['pgr_g011_test_render_drift'] = '<!-- a host callback mutated markup -->';
-		$this->assertSame( $this->native( $valid ), $this->present( $valid ) );
+		// An upstream post-render filter changed the expected Gregorian span.
+		// The adapter must preserve the *received* bytes without guessing.
+		$native = str_replace( '2026/03/21', '2026/03/22', $this->native( $valid ) );
+		$form = array( 'confirmation' => array( 'type' => 'message', 'message' => $valid, 'disableAutoformat' => true ), 'fields' => array() );
+		$entry = array( 'date_created' => '2026-03-20 20:30:00' );
+		$this->assertSame( $native, PGR_GF_Confirmation_Jalali_Adapter::filter_confirmation( $native, $form, $entry, false ) );
 	}
 
 	private function native( string $template ): string {
