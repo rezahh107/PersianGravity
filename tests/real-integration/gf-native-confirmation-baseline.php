@@ -170,3 +170,5 @@ if ( false === file_put_contents( $output, wp_json_encode( $evidence, JSON_PRETT
 	throw new RuntimeException( 'Cannot persist native GF baseline evidence.' );
 }
 echo "WU008 native GF confirmation baseline: 9/9 persisted formats + callback parity\n";
+// An isolated, test-only extension of this already executed WU008 native baseline.
+require __DIR__ . '/g011-explicit-merge-tag-prototype.php';
