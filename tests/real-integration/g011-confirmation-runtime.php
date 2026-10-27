@@ -370,6 +370,21 @@ $matrix_positive = array(
 	'field_dmy_dot' => array( '{Visit:2:dmy_dot}', '۰۱.۰۱.۱۴۰۵' ),
 	'field_dmy_slash' => array( '{Visit:2:dmy_slash}', '۰۱/۰۱/۱۴۰۵' ),
 );
+// Verify Today against the site-local civil date at execution, not a fixed
+// historical fixture day. The browser/host still owns the processing instant.
+$today_civil = new DateTimeImmutable( 'now', wp_timezone() );
+$today_jalali = PGR_Jalali_Presentation::format_date(
+	(int) $today_civil->format( 'Y' ),
+	(int) $today_civil->format( 'n' ),
+	(int) $today_civil->format( 'j' )
+);
+if ( ! is_string( $today_jalali ) ) {
+	$fail( 'Today outside the admitted calendar conversion range.' );
+}
+$matrix_positive['today_default'] = array( '{today}', $today_jalali );
+$matrix_positive['today_format'] = array( '{today:format:Y/m/d}', $today_jalali );
+$matrix_positive['today_time'] = array( '{today:time:format:Y/m/d}', $today_jalali );
+
 $matrix_native = array(
 	'raw_system' => '{date_created:raw}',
 	'timestamp_system' => '{date_created:timestamp}',
