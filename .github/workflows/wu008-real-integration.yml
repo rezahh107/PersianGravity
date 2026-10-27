@@ -887,6 +887,18 @@ jobs:
           set -euo pipefail
           node tests/real-integration/reconcile-qualification-evidence.mjs
 
+      - name: Qualify EC-PG83-F01 against production Adapter on licensed GF and real Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-ec-pg83-f01-production.php
+          node --check tests/real-integration/g011-ec-pg83-f01-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-ec-pg83-f01-production.php
+          test -s "$WU008_ARTIFACT_DIR/g011-ec-pg83-f01-production.json"
+          node tests/real-integration/g011-ec-pg83-f01-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g011-ec-pg83-f01-browser.json"
+          WU008_F01_PHASE=verify php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-ec-pg83-f01-production.php
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
