@@ -150,6 +150,25 @@ if ( PGR_Module_Usage::USED !== $usage['status'] ) {
 	throw new RuntimeException( 'G011 form metadata failed disable usage guard.' );
 }
 
+// Qualification only: verify host-owned Query String composition without
+// admitting destination-page rendering or rewriting any transport handlers.
+$qualified_redirect = GFFormDisplay::get_confirmation_url(
+	array(
+		'type' => 'redirect', 'url' => 'https://example.invalid/thanks?fixed=one%26two',
+		'queryString' => 'j={pgr_jdate_created_date}&name={Name:1}&repeat=first&repeat=second',
+	),
+	$form,
+	$entry
+);
+if (
+	false === strpos( $qualified_redirect, 'j=' . rawurlencode( '۱۴۰۵/۰۱/۰۱' ) ) ||
+	false === strpos( $qualified_redirect, 'fixed=one%26two' ) ||
+	false === strpos( $qualified_redirect, 'name=Ada' ) ||
+	false === strpos( $qualified_redirect, 'repeat=first&repeat=second' )
+) {
+	throw new RuntimeException( 'G011 GF Query String transport composition mismatch.' );
+}
+
 $pages = array();
 foreach ( array( 'ordinary' => 'false', 'ajax' => 'true' ) as $mode => $ajax ) {
 	$page_id = wp_insert_post( array(
@@ -171,6 +190,7 @@ $evidence = array(
 	'stored_data_unchanged' => true, 'disable_usage' => $usage,
 	'created_expected' => $expected_instant, 'visit_expected' => '۱۴۰۴/۱۲/۲۹',
 	'payment_persisted' => $payment_raw,
+	'gf_redirect_query_string_php' => 'PASS',
 );
 file_put_contents( $dir . '/g011-explicit-production-runtime.json', wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 echo "G011 production-path PHP PASS\n";
