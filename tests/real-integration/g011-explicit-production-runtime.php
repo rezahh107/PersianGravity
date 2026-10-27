@@ -36,7 +36,7 @@ $common = 'Created={pgr_jdate_created} | CreatedDate={pgr_jdate_created_date} | 
 	'CreatedTime={pgr_jdate_created_time} | Updated={pgr_jdate_updated} | ' .
 	'Payment={pgr_jdate_payment} | Today={pgr_jdate_today} | Visit={pgr_jdate_field_2} | ' .
 	'Name={Name:1} | Native={Visit:2} | Raw={entry:date_created} | ' .
-	'Jalali={Already Jalali:3} | Wrong={pgr_jdate_field_1} | ' .
+	'Jalali={Already Jalali:3} | JalaliUnconverted={pgr_jdate_field_3} | Wrong={pgr_jdate_field_1} | ' .
 	'Unknown={pgr_jdate_field_99} | Untouched=keep &amp; safe';
 $form['confirmations'] = array(
 	'default' => array(
@@ -90,12 +90,13 @@ if (
 	false === strpos( $html, 'Visit=۱۴۰۴/۱۲/۲۹' ) ||
 	false === strpos( $html, 'Native=03/20/2026' ) ||
 	false === strpos( $html, 'Wrong={pgr_jdate_field_1}' ) ||
+	false === strpos( $html, 'JalaliUnconverted={pgr_jdate_field_3}' ) ||
 	false === strpos( $html, 'Unknown={pgr_jdate_field_99}' )
 ) {
 	throw new RuntimeException( 'G011 selected native confirmation mismatch.' );
 }
 $payment_raw = $entry['payment_date'] ?? null;
-if ( is_string( $payment_raw ) && '2026-03-20 21:30:00' === $payment_raw &&
+if ( '2026-03-20 21:30:00' !== $payment_raw ||
 	false === strpos( $html, 'Payment=' . $expected_instant ) ) {
 	throw new RuntimeException( 'G011 persisted payment date mismatch.' );
 }
@@ -106,6 +107,13 @@ $notification = array(
 	'fromName' => 'Fixture', 'subject' => 'G011', 'message' => $common, 'isActive' => true,
 );
 $sent = array();
+$notification_native = 0;
+$notification_spy = static function ( $text ) use ( &$notification_native ) {
+	if ( is_string( $text ) && false !== strpos( $text, 'Created={pgr_jdate_created}' ) ) {
+		++$notification_native;
+	}
+	return $text;
+};
 $abort = static function ( $email ) use ( &$sent ) {
 	$sent[] = $email['message'] ?? '';
 	$email['abort_email'] = true;
@@ -114,16 +122,18 @@ $abort = static function ( $email ) use ( &$sent ) {
 $block = static function () { return true; };
 $sync = static function () { return false; };
 add_filter( 'gform_pre_send_email', $abort, 1, 1 );
+add_filter( 'gform_pre_replace_merge_tags', $notification_spy, 998, 1 );
 add_filter( 'pre_wp_mail', $block, 1, 1 );
 add_filter( 'gform_is_asynchronous_notifications_enabled', $sync, 999, 1 );
 try {
 	GFAPI::send_notification( $notification, $form, $entry );
 } finally {
 	remove_filter( 'gform_pre_send_email', $abort, 1 );
+	remove_filter( 'gform_pre_replace_merge_tags', $notification_spy, 998 );
 	remove_filter( 'pre_wp_mail', $block, 1 );
 	remove_filter( 'gform_is_asynchronous_notifications_enabled', $sync, 999 );
 }
-if ( 1 !== count( $sent ) || false === strpos( $sent[0], 'Visit=۱۴۰۴/۱۲/۲۹' ) ) {
+if ( 1 !== count( $sent ) || 1 !== $notification_native || false === strpos( $sent[0], 'Visit=۱۴۰۴/۱۲/۲۹' ) ) {
 	throw new RuntimeException( 'G011 native Notification replacement mismatch.' );
 }
 $missing = $entry;
@@ -187,6 +197,7 @@ $evidence = array(
 	'level' => 'LICENSED_GFAPI_PHP', 'form_id' => $form_id, 'entry_id' => $entry_id,
 	'pages' => $pages, 'native_confirmation_callback_count' => $native,
 	'notification_attempts_aborted' => count( $sent ),
+	'native_notification_callback_count' => $notification_native,
 	'stored_data_unchanged' => true, 'disable_usage' => $usage,
 	'created_expected' => $expected_instant, 'visit_expected' => '۱۴۰۴/۱۲/۲۹',
 	'payment_persisted' => $payment_raw,
