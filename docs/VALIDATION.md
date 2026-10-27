@@ -1,8 +1,8 @@
 # Persian Gravity Forms Validation — 4.3.0
 
-## G-011 candidate — exact-Head verification pending
+## G-011 — owner-approved post-native Text repair: executed evidence, pending PR review
 
-The post-selection Text confirmation-only adapter is gated by jalali_presentation and effective fa_IR and does not attach to shared Merge Tag filters. Its source contract, current native Page/Redirect fallback and full tag × modifier × path evidence matrix are in [G-011 confirmation document](G011_CONFIRMATION_DATE_MERGE_TAGS.md). PHPUnit and WU008 licensed/browser outcomes are NOT_VERIFIED until their current PR Head runs complete; prior G-008 results do not qualify G-011.
+On source Head `cdd6a58fe2f0643512294706f68defb75c74e02b`, [WU008 Licensed Real Integration 40467290897](https://github.com/rezahh107/PersianGravity/actions/runs/40467290897) completed SUCCESS on the exact private GF 3.1.1.1 package. Artifact `g011-production-preservation.json` contains 27 genuine-host Jalali positives and eight native-only controls; `g011-confirmation.json` observes 1 vs 1 shared Merge Tag callback invocation in both counting and mutating probes; `g011-browser.json` covers four real Default/Conditional × Ordinary/AJAX submissions. [CI 40467290920](https://github.com/rezahh107/PersianGravity/actions/runs/40467290920), [G008 40467290967](https://github.com/rezahh107/PersianGravity/actions/runs/40467290967) and [Install Smoke 40467290958](https://github.com/rezahh107/PersianGravity/actions/runs/40467290958) passed. The post-native Adapter does not invoke an additional GF Merge Tag rendering pass. See [per-capability and path evidence](G011_CONFIRMATION_DATE_MERGE_TAGS.md) for exact positive/negative coverage and unverified combinations. Page/Redirect query conversion remains native/outside this repair; no merge/release/deployment is authorized. G-011 remains OPEN pending Owner-controlled review and broader goal handling.
 
 ## G-010 / WU-06 — current executed Radar and documentation-truth checkpoint (2026-10-25)
 
