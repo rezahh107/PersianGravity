@@ -187,6 +187,17 @@ defined( 'ABSPATH' ) || exit;
             $fail( 'Row20 did not preserve Jalali/Text native bytes while converting only the Gregorian Date field.' );
         }
 
+        // Lock negative bounds to the production presentation support policy.
+        // 1800 dates are VALID; 1799-12-31 and 2124-03-20 are not.
+        if (
+            '1800-01-01' !== PGR_Jalali_Presentation::VALIDATED_PRODUCT_MIN ||
+            '2124-03-19' !== PGR_Jalali_Presentation::VALIDATED_PRODUCT_MAX ||
+            PGR_Jalali_Presentation::is_in_validated_product_range( 1799, 12, 31 ) ||
+            PGR_Jalali_Presentation::is_in_validated_product_range( 2124, 3, 20 )
+        ) {
+            $fail( 'Row21 test boundary drifted from the authoritative supported date range.' );
+        }
+
         // ROW 21: GFAPI persistence may reject/normalize impossible values.
         // Never label those inputs VERIFIED; only byte-exact cases that reach
         // the authentic selected Confirmation with their intended value count.
@@ -196,10 +207,10 @@ defined( 'ABSPATH' ) || exit;
             array( 'id' => 'malformed_payment_date', 'target' => 'payment_date', 'tag' => '{payment_date:format:Y/m/d}', 'value' => 'bad-utc' ),
             array( 'id' => 'calendar_invalid_payment_date', 'target' => 'payment_date', 'tag' => '{payment_date:format:Y/m/d}', 'value' => '2026-02-30 12:00:00' ),
             array( 'id' => 'out_of_range_future_payment', 'target' => 'payment_date', 'tag' => '{payment_date:format:Y/m/d}', 'value' => '2124-03-20 00:00:00' ),
-            array( 'id' => 'out_of_range_past_payment', 'target' => 'payment_date', 'tag' => '{payment_date:format:Y/m/d}', 'value' => '1800-03-20 00:00:00' ),
+            array( 'id' => 'out_of_range_past_payment', 'target' => 'payment_date', 'tag' => '{payment_date:format:Y/m/d}', 'value' => '1799-12-31 00:00:00' ),
             array( 'id' => 'calendar_invalid_gf_date', 'target' => '2', 'tag' => '{Visit:2}', 'value' => '02/30/2026' ),
             array( 'id' => 'out_of_range_future_gf_date', 'target' => '2', 'tag' => '{Visit:2}', 'value' => '03/20/2124' ),
-            array( 'id' => 'out_of_range_past_gf_date', 'target' => '2', 'tag' => '{Visit:2}', 'value' => '03/20/1800' ),
+            array( 'id' => 'out_of_range_past_gf_date', 'target' => '2', 'tag' => '{Visit:2}', 'value' => '12/31/1799' ),
         );
         $verified = 0;
         $unproven = 0;
