@@ -298,8 +298,9 @@ if (
 }
 
 // A non-idempotent third-party callback mutates the message once.
-// Its effects must be identical in native/enabled modes, while the eligible
-// date still converts without any extra Merge Tag replacement.
+// Its effects must be identical in native/enabled modes; since the changed
+// prefix invalidates source-to-output alignment, the entire received native
+// value must survive unchanged, with no extra Merge Tag replacement.
 $side_effect_calls = 0;
 $mutator = static function ( $text ) use ( &$side_effect_calls ) {
 	++$side_effect_calls;
@@ -321,11 +322,11 @@ remove_filter( 'gform_pre_replace_merge_tags', $mutator, 999 );
 if (
 	! is_string( $native_side_effect_output ) ||
 	! is_string( $jalali_side_effect_output ) ||
-	str_replace( $expected_native, '۱۴۰۵/۰۱/۰۱', $native_side_effect_output ) !== $jalali_side_effect_output ||
+	$native_side_effect_output !== $jalali_side_effect_output ||
 	$native_side_effect_calls < 1 ||
 	$jalali_side_effect_calls !== $native_side_effect_calls
 ) {
-	$fail( 'Non-idempotent callback side-effect parity or Jalali conversion failed.' );
+	$fail( 'Non-idempotent callback changed source anchor; native fallback or call-count parity failed.' );
 }
 
 $callback_observation = array(
@@ -333,7 +334,7 @@ $callback_observation = array(
 	'count_only_jalali' => $jalali_probe_calls,
 	'non_idempotent_native' => $native_side_effect_calls,
 	'non_idempotent_jalali' => $jalali_side_effect_calls,
-	'non_idempotent_output_jalali' => true,
+	'non_idempotent_output_native' => true,
 );
 
 // Owner-approved G011 Revision 1.1 positive-preservation discriminators.
