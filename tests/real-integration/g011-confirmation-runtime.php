@@ -336,6 +336,122 @@ $callback_observation = array(
 	'non_idempotent_output_jalali' => true,
 );
 
+// Owner-approved G011 Revision 1.1 positive-preservation discriminators.
+// Use genuine configured selected Text confirmations on the licensed host.
+// No GF replacement happens inside the production Adapter; these matched
+// native-only and enabled executions are independent test controls.
+$matrix_entry = $entry;
+$matrix_entry['date_updated'] = '2026-03-22 20:30:00';
+$matrix_entry['payment_date'] = '2026-03-22 20:30:00';
+$matrix_positive = array(
+	'created_default' => array( '{date_created}', '۱۴۰۵/۰۱/۰۱' ),
+	'created_format' => array( '{date_created:format:Y/m/d}', '۱۴۰۵/۰۱/۰۱' ),
+	'created_escaped_colon' => array( '{date_created:format:Y-m-d H\:i}', '۱۴۰۵-۰۱-۰۱ ۰۰:۰۰' ),
+	'created_escaped_year' => array( '{date_created:format:\Y Y}', 'Y ۱۴۰۵' ),
+	'created_time' => array( '{date_created:time:format:Y/m/d}', '۱۴۰۵/۰۱/۰۱' ),
+	'updated' => array( '{date_updated:format:Y/m/d}', '۱۴۰۵/۰۱/۰۳' ),
+	'payment' => array( '{payment_date:format:Y/m/d}', '۱۴۰۵/۰۱/۰۳' ),
+	'format_calendar_tokens' => array( '{date_created:format:Y|y|m|n|d|j|F}', '۱۴۰۵|۰۵|۰۱|۱|۰۱|۱|فروردین' ),
+	'field_year' => array( '{Visit:2:year}', '۱۴۰۵' ),
+	'field_month' => array( '{Visit:2:month}', '۰۱' ),
+	'field_day' => array( '{Visit:2:day}', '۰۱' ),
+	'field_default' => array( '{Visit:2}', '۰۱/۰۱/۱۴۰۵' ),
+	'field_ymd' => array( '{Visit:2:ymd}', '۱۴۰۵/۰۱/۰۱' ),
+	'field_mdy' => array( '{Visit:2:mdy}', '۰۱/۰۱/۱۴۰۵' ),
+	'field_dmy' => array( '{Visit:2:dmy}', '۰۱/۰۱/۱۴۰۵' ),
+	'field_ymd_dash' => array( '{Visit:2:ymd_dash}', '۱۴۰۵-۰۱-۰۱' ),
+	'field_ymd_dot' => array( '{Visit:2:ymd_dot}', '۱۴۰۵.۰۱.۰۱' ),
+	'field_ymd_slash' => array( '{Visit:2:ymd_slash}', '۱۴۰۵/۰۱/۰۱' ),
+	'field_mdy_dash' => array( '{Visit:2:mdy_dash}', '۰۱-۰۱-۱۴۰۵' ),
+	'field_mdy_dot' => array( '{Visit:2:mdy_dot}', '۰۱.۰۱.۱۴۰۵' ),
+	'field_mdy_slash' => array( '{Visit:2:mdy_slash}', '۰۱/۰۱/۱۴۰۵' ),
+	'field_dmy_dash' => array( '{Visit:2:dmy_dash}', '۰۱-۰۱-۱۴۰۵' ),
+	'field_dmy_dot' => array( '{Visit:2:dmy_dot}', '۰۱.۰۱.۱۴۰۵' ),
+	'field_dmy_slash' => array( '{Visit:2:dmy_slash}', '۰۱/۰۱/۱۴۰۵' ),
+);
+$matrix_native = array(
+	'raw_system' => '{date_created:raw}',
+	'timestamp_system' => '{date_created:timestamp}',
+	'human_relative' => '{date_created:human}',
+	'diff_relative' => '{date_created:diff}',
+	'raw_entry' => '{entry:date_created}',
+	'unsupported_week' => '{date_created:format:W}',
+	'date_field_raw' => '{Visit:2:raw}',
+	'date_field_urlencode' => '{Visit:2:urlencode}',
+);
+$matrix_record = array();
+$run_matrix = static function ( string $name, string $token, array $given_entry, bool $on ) use ( $form ): string {
+	$states = get_option( 'pgr_modules' );
+	$states['states']['jalali_presentation'] = $on;
+	update_option( 'pgr_modules', $states );
+	$selection = $form;
+	$selection['confirmations'] = array(
+		'matrix-default' => array(
+			'id' => 'matrix-default',
+			'name' => 'Matrix Default',
+			'type' => 'message',
+			'isDefault' => true,
+			'isActive' => true,
+			'disableAutoformat' => true,
+			'message' => '<p>G011-' . $name . '=' . $token . '; distinct-end-' . $name . '</p>',
+		),
+	);
+	$html = GFFormDisplay::handle_confirmation( $selection, $given_entry, false );
+	if ( ! is_string( $html ) ) {
+		throw new RuntimeException( 'G-011 matrix non-string rendered: ' . $name );
+	}
+	return $html;
+};
+$matrix_original_state = get_option( 'pgr_modules' );
+try {
+	foreach ( $matrix_positive as $case => $config ) {
+		list( $token, $expected ) = $config;
+		$native_out = $run_matrix( $case, $token, $matrix_entry, false );
+		$jalali_out = $run_matrix( $case, $token, $matrix_entry, true );
+		$native_tag_still_present = false !== strpos( $native_out, $token );
+		$good = ! $native_tag_still_present &&
+			false !== strpos( $jalali_out, $expected ) &&
+			$jalali_out !== $native_out &&
+			false !== strpos( $jalali_out, 'distinct-end-' . $case . '</p>' );
+		$matrix_record[ $case ] = array(
+			'status' => $good ? 'PASS' : 'FAIL',
+			'native_sha256' => hash( 'sha256', $native_out ),
+			'jalali_sha256' => hash( 'sha256', $jalali_out ),
+		);
+		if ( ! $good ) {
+			$fail( 'Matrix positive not proven: ' . $case .
+				'; tag_native=' . ( $native_tag_still_present ? 'yes' : 'no' ) .
+				'; converted=' . ( $jalali_out === $native_out ? 'no' : 'yes' ) .
+				'; expected_present=' . ( false !== strpos( $jalali_out, $expected ) ? 'yes' : 'no' ) );
+		}
+	}
+	foreach ( $matrix_native as $case => $token ) {
+		$native_out = $run_matrix( $case, $token, $matrix_entry, false );
+		$jalali_out = $run_matrix( $case, $token, $matrix_entry, true );
+		$good = $jalali_out === $native_out;
+		$matrix_record[ $case ] = array( 'status' => $good ? 'NATIVE_PASS' : 'FAIL' );
+		if ( ! $good ) {
+			$fail( 'Matrix native exclusion modified: ' . $case );
+		}
+	}
+} finally {
+	update_option( 'pgr_modules', $matrix_original_state );
+}
+file_put_contents(
+	$dir . '/g011-production-preservation.json',
+	wp_json_encode(
+		array(
+			'head' => getenv( 'WU008_PGR_SHA' ),
+			'gf' => GFForms::$version,
+			'gf_sha256' => getenv( 'WU008_GF_SHA256' ),
+			'positive_cases' => count( $matrix_positive ),
+			'native_cases' => count( $matrix_native ),
+			'case_status' => $matrix_record,
+		),
+		JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+	)
+);
+
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
 // GFAPI persists confirmations using each confirmation's ID as the array key.
 require_once __DIR__ . '/g011-default-confirmation.php';
