@@ -135,11 +135,45 @@ foreach ( $pri_formats as $format => $stored ) {
 		( null === $actual_value ? 'static_anchor_not_found' :
 		( $actual_value !== $expected ? 'invalid_span_guard -> substr(native,span_start,strlen(expected)) !== expected' :
 		( $outputs['enabled'] === $outputs['native'] ? 'no_conversion_despite_matching_native' : 'converted' ) ) ) );
+	// Probe documented host formatting primitives separately from the one
+	// already completed confirmation render. These calls are test-only.
+	$host_format_probes = array();
+	foreach ( array( 'default' => null, 'field_dateFormat' => $format, 'mdy' => 'mdy' ) as $name => $display_format ) {
+		try {
+			$host_format_probes[ 'GFCommon_date_display_' . $name ] = null === $display_format ?
+				GFCommon::date_display( $entry_actual['2'] ) :
+				GFCommon::date_display( $entry_actual['2'], $display_format );
+		} catch ( Throwable $problem ) {
+			$host_format_probes[ 'GFCommon_date_display_' . $name ] = array(
+				'exception_class' => get_class( $problem ),
+				'message' => $problem->getMessage(),
+			);
+		}
+	}
+	foreach ( $test_form['fields'] as $field ) {
+		if ( $field instanceof GF_Field_Date && 2 === (int) $field->id ) {
+			$host_format_probes['GF_Field_Date_get_value_merge_tag_signature'] =
+				( new ReflectionMethod( $field, 'get_value_merge_tag' ) )->getNumberOfParameters();
+			try {
+				$host_format_probes['GF_Field_Date_merge_raw_input'] = $field->get_value_merge_tag(
+					$entry_actual['2'], '2', $entry_actual, $test_form, '', $entry_actual['2'],
+					false, true, 'html', false
+				);
+			} catch ( Throwable $problem ) {
+				$host_format_probes['GF_Field_Date_merge_raw_input'] = array(
+					'exception_class' => get_class( $problem ),
+					'message' => $problem->getMessage(),
+				);
+			}
+			break;
+		}
+	}
 	$pri_evidence['cases'][ $format ] = array(
 		'raw_entry_value_from_GFAPI' => $entry_actual['2'],
 		'selected_dateFormat' => $format,
 		'selected_merge_tag' => $tag,
 		'GFCommon_parse_date_direct_result' => $parse,
+		'host_read_only_format_probes' => $host_format_probes,
 		'adapter_expected_native' => $expected,
 		'adapter_proposed_jalali' => $proposed,
 		'actual_native_value_in_selected_text' => $actual_value,
