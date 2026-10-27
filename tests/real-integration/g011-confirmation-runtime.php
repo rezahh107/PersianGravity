@@ -441,67 +441,169 @@ try {
 				'; expected_present=' . ( false !== strpos( $jalali_out, $expected ) ? 'yes' : 'no' ) );
 		}
 	}
-	// PRI-FND-001 exact-host diagnostic runs before the existing fail-closed liveness gate.
-require __DIR__ . '/g011-pri-fnd-001-diagnostic.php';
-
-// Native Date fields can store different *Gregorian* input layouts.
-	// Test their real GF Date-field parse/merge path, not a print-shape guess.
-	foreach ( array(
-		'dmy' => array( '21/03/2026', '۰۱/۰۱/۱۴۰۵' ),
-		'dmy_dash' => array( '21-03-2026', '۰۱-۰۱-۱۴۰۵' ),
-		'dmy_dot' => array( '21.03.2026', '۰۱.۰۱.۱۴۰۵' ),
+	// The locked-host diagnostic constructs/re-reads nine independent GFAPI
+	// forms and Entries. Only those persisted objects qualify positive cases;
+	// a transient field-dateFormat override is a negative control below.
+	require __DIR__ . '/g011-pri-fnd-001-diagnostic.php';
+	$source_formats = array(
+		'mdy'       => array( '03/21/2026', '۰۱/۰۱/۱۴۰۵' ),
+		'mdy_dash'  => array( '03-21-2026', '۰۱-۰۱-۱۴۰۵' ),
+		'mdy_dot'   => array( '03.21.2026', '۰۱.۰۱.۱۴۰۵' ),
+		'dmy'       => array( '21/03/2026', '۰۱/۰۱/۱۴۰۵' ),
+		'dmy_dash'  => array( '21-03-2026', '۰۱-۰۱-۱۴۰۵' ),
+		'dmy_dot'   => array( '21.03.2026', '۰۱.۰۱.۱۴۰۵' ),
 		'ymd_slash' => array( '2026/03/21', '۱۴۰۵/۰۱/۰۱' ),
-		'ymd_dash' => array( '2026-03-21', '۱۴۰۵-۰۱-۰۱' ),
-		'ymd_dot' => array( '2026.03.21', '۱۴۰۵.۰۱.۰۱' ),
-	) as $input_format => $input_case ) {
-		$case = 'field_source_' . $input_format;
-		$test_form = $form;
-		$found_date = false;
-		foreach ( $test_form['fields'] as $index => $field ) {
-			if ( $field instanceof GF_Field_Date && 2 === (int) $field->id ) {
-				$test_form['fields'][ $index ] = clone $field;
-				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Native GF public field property.
-				$test_form['fields'][ $index ]->dateFormat = $input_format;
-				$found_date = true;
+		'ymd_dash'  => array( '2026-03-21', '۱۴۰۵-۰۱-۰۱' ),
+		'ymd_dot'   => array( '2026.03.21', '۱۴۰۵.۰۱.۰۱' ),
+	);
+	$source_evidence = $pri_evidence['persisted_form_cases'] ?? array();
+	if ( count( $source_evidence ) !== count( $source_formats ) ) {
+		$fail( 'PRI-FND-001 exactly nine GFAPI-persisted source formats required.' );
+	}
+	foreach ( $source_formats as $format => $expected_values ) {
+		list( $raw, $jalali ) = $expected_values;
+		$case = 'field_source_' . $format;
+		$proof = $source_evidence[ $format ] ?? null;
+		if ( ! is_array( $proof ) ) {
+			$fail( 'PRI-FND-001 missing GFAPI-persisted format: ' . $format );
+		}
+		// Independently re-read authoritative Form and Entry. A test that
+		// mutates only a temporary field clone cannot satisfy this gate.
+		$stored_form = GFAPI::get_form( (int) ( $proof['persisted_form_id'] ?? 0 ) );
+		$stored_entry = GFAPI::get_entry( (int) ( $proof['persisted_entry_id'] ?? 0 ) );
+		if ( ! is_array( $stored_form ) || ! is_array( $stored_entry ) ||
+			(int) $stored_entry['form_id'] !== (int) $stored_form['id'] ||
+			( $stored_entry['2'] ?? null ) !== $raw
+		) {
+			$fail( 'PRI-FND-001 persisted Entry/Form identity or raw value mismatch: ' . $format );
+		}
+		$actual_format = null;
+		foreach ( $stored_form['fields'] as $stored_field ) {
+			if ( $stored_field instanceof GF_Field_Date && 2 === (int) $stored_field->id ) {
+				// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- GF native field property.
+				$actual_format = $stored_field->dateFormat;
 			}
 		}
-		if ( ! $found_date ) {
-			$fail( 'Native Date-field missing for source format proof.' );
+		$expected_template = '<p>PRI-persisted-' . $format . ': {Visit:2}; end-persisted-' . $format . '</p>';
+		$found_confirmation = false;
+		foreach ( (array) ( $stored_form['confirmations'] ?? array() ) as $selected_confirmation ) {
+			if ( 'message' === ( $selected_confirmation['type'] ?? null ) &&
+				! empty( $selected_confirmation['isDefault'] ) &&
+				( $selected_confirmation['message'] ?? null ) === $expected_template
+			) {
+				$found_confirmation = true;
+				break;
+			}
 		}
-		$test_form['confirmations'] = array(
-			'matrix-default' => array(
-				'id' => 'matrix-default',
-				'name' => 'Source layout',
-				'type' => 'message',
-				'isDefault' => true,
-				'isActive' => true,
-				'disableAutoformat' => true,
-				'message' => '<p>' . $case . ': {Visit:2}; end-' . $case . '</p>',
-			),
-		);
-		$trial_entry = $matrix_entry;
-		$trial_entry['2'] = $input_case[0];
-		$trial_outputs = array();
-		foreach ( array( 'native' => false, 'jalali' => true ) as $mode => $enabled ) {
-			$states = get_option( 'pgr_modules' );
-			$states['states']['jalali_presentation'] = $enabled;
-			update_option( 'pgr_modules', $states );
-			$selected_copy = $test_form;
-			$trial_outputs[ $mode ] = GFFormDisplay::handle_confirmation( $selected_copy, $trial_entry, false );
-		}
-		$good = is_string( $trial_outputs['native'] ) &&
-			is_string( $trial_outputs['jalali'] ) &&
-			$trial_outputs['jalali'] !== $trial_outputs['native'] &&
-			false !== strpos( $trial_outputs['jalali'], $input_case[1] ) &&
-			false !== strpos( $trial_outputs['jalali'], 'end-' . $case );
+		$parsed = GFCommon::parse_date( $raw, $actual_format );
+		$parts_valid = is_array( $parsed ) &&
+			'2026' === (string) ( $parsed['year'] ?? '' ) &&
+			'03' === (string) ( $parsed['month'] ?? '' ) &&
+			'21' === (string) ( $parsed['day'] ?? '' );
+		$native = $proof['GF_native_output'] ?? null;
+		$enabled = $proof['GF_enabled_output'] ?? null;
+		$left = '<p>PRI-persisted-' . $format . ': ';
+		$right = '; end-persisted-' . $format . '</p>';
+		$left_pos = is_string( $native ) ? strpos( $native, $left ) : false;
+		$start = false === $left_pos ? null : $left_pos + strlen( $left );
+		$right_pos = null === $start ? false : strpos( $native, $right, $start );
+		$aligned = null !== $start && false !== $right_pos &&
+			$right_pos === $start + strlen( $raw ) &&
+			1 === substr_count( $native, $left ) &&
+			1 === substr_count( $native, $right );
+		// Match the complete native confirmation, not merely a Jalali
+		// substring. Every byte outside the one proved Date span stays native.
+		$expected_enabled = $aligned ?
+			substr_replace( $native, esc_html( $jalali ), $start, strlen( $raw ) ) : null;
+		$good = $actual_format === $format &&
+			$found_confirmation && $parts_valid &&
+			( $proof['GFAPI_persisted_field_dateFormat'] ?? null ) === $format &&
+			( $proof['GFAPI_persisted_raw_Entry'] ?? null ) === $raw &&
+			( $proof['adapter_expected_native'] ?? null ) === $raw &&
+			( $proof['adapter_proposed_jalali'] ?? null ) === $jalali &&
+			( $proof['host_selected_native_date_span'] ?? null ) === $raw &&
+			( $proof['GF_before_adapter_output_enabled'] ?? null ) === $native &&
+			$aligned && is_string( $enabled ) &&
+			$enabled === $expected_enabled && $enabled !== $native &&
+			true === ( $proof['GFAPI_Entry_unchanged'] ?? false ) &&
+			1 === ( $proof['module_off_merge_callback_count'] ?? null ) &&
+			1 === ( $proof['module_on_merge_callback_count'] ?? null );
 		$matrix_record[ $case ] = array(
 			'status' => $good ? 'PASS' : 'FAIL',
-			'native_sha256' => is_string( $trial_outputs['native'] ) ? hash( 'sha256', $trial_outputs['native'] ) : null,
-			'jalali_sha256' => is_string( $trial_outputs['jalali'] ) ? hash( 'sha256', $trial_outputs['jalali'] ) : null,
+			'dateFormat' => $actual_format,
+			'raw_entry' => $stored_entry['2'],
+			'expected_jalali' => $jalali,
+			'native_sha256' => is_string( $native ) ? hash( 'sha256', $native ) : null,
+			'jalali_sha256' => is_string( $enabled ) ? hash( 'sha256', $enabled ) : null,
+			'shared_callback_native' => $proof['module_off_merge_callback_count'] ?? null,
+			'shared_callback_enabled' => $proof['module_on_merge_callback_count'] ?? null,
 		);
 		if ( ! $good ) {
-			$fail( 'Native Gregorian Date-field source format not proven: ' . $input_format . '; native=' . wp_json_encode( $trial_outputs['native'] ) . '; enabled=' . wp_json_encode( $trial_outputs['jalali'] ) );
+			$fail( 'PRI-FND-001 persisted GFAPI source-format qualification failed: ' . $format );
 		}
+	}
+
+	// A transient-only dmy_dash override contradicts the persisted Form.
+	// Retain it deliberately as a negative; it must never qualify positive.
+	$transient = $pri_evidence['cases']['dmy_dash'] ?? null;
+	$original_persisted_form = GFAPI::get_form( (int) $form_id );
+	$persisted_default_format = null;
+	foreach ( (array) ( $original_persisted_form['fields'] ?? array() ) as $original_field ) {
+		if ( $original_field instanceof GF_Field_Date && 2 === (int) $original_field->id ) {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- GF native field property.
+			$persisted_default_format = $original_field->dateFormat;
+		}
+	}
+	$negative_good = is_array( $transient ) &&
+		'dmy_dash' !== $persisted_default_format &&
+		'21-03-2026' === ( $transient['raw_entry_value_from_GFAPI'] ?? null ) &&
+		'21-03-2026' === ( $transient['adapter_expected_native'] ?? null ) &&
+		'21/03/2026' === ( $transient['actual_native_value_in_selected_text'] ?? null ) &&
+		( $transient['GF_native_output'] ?? null ) === ( $transient['GF_enabled_output'] ?? null ) &&
+		true === ( $transient['entry_unchanged'] ?? false ) &&
+		false === ( $transient['converted'] ?? null ) &&
+		1 === ( $transient['merge_callback_count_native'] ?? null ) &&
+		1 === ( $transient['merge_callback_count_enabled'] ?? null ) &&
+		str_starts_with( (string) ( $transient['fallback_branch_and_reason'] ?? '' ), 'invalid_span_guard' );
+	$matrix_record['transient_dateFormat_mismatch_negative'] = array(
+		'status' => $negative_good ? 'NATIVE_PASS' : 'FAIL',
+		'persisted_dateFormat' => $persisted_default_format,
+		'transient_dateFormat' => 'dmy_dash',
+		'fallback_reason' => $transient['fallback_branch_and_reason'] ?? null,
+	);
+	if ( ! $negative_good ) {
+		$fail( 'PRI-FND-001 transient metadata contradiction must fail closed, byte-exact.' );
+	}
+
+	// Mutation discriminator: temporarily remove ONLY the production adapter
+	// from the selected Text seam. Positive Jalali assertions must reject
+	// the resulting native output. Restore the registered hook in all paths.
+	$adapter_callback = array( 'PGR_GF_Confirmation_Jalali_Adapter', 'filter_confirmation' );
+	if ( 20 !== has_filter( 'gform_confirmation', $adapter_callback ) ) {
+		$fail( 'PRI-FND-001 adapter hook unavailable for mutation discriminator.' );
+	}
+	$mutation_case = $source_evidence['dmy_dash'];
+	$mutation_form = GFAPI::get_form( (int) $mutation_case['persisted_form_id'] );
+	$mutation_entry = GFAPI::get_entry( (int) $mutation_case['persisted_entry_id'] );
+	$states = get_option( 'pgr_modules' );
+	$states['states']['jalali_presentation'] = true;
+	update_option( 'pgr_modules', $states );
+	remove_filter( 'gform_confirmation', $adapter_callback, 20 );
+	try {
+		$mutation_output = GFFormDisplay::handle_confirmation( $mutation_form, $mutation_entry, false );
+	} finally {
+		add_filter( 'gform_confirmation', $adapter_callback, 20, 4 );
+	}
+	$mutation_good = is_string( $mutation_output ) &&
+		$mutation_output === $mutation_case['GF_native_output'] &&
+		$mutation_output !== $mutation_case['GF_enabled_output'] &&
+		false === strpos( $mutation_output, '۰۱-۰۱-۱۴۰۵' );
+	$matrix_record['adapter_removed_positive_mutation'] = array(
+		'status' => $mutation_good ? 'NEGATIVE_PASS' : 'FAIL',
+		'mutation_native_sha256' => is_string( $mutation_output ) ? hash( 'sha256', $mutation_output ) : null,
+	);
+	if ( ! $mutation_good ) {
+		$fail( 'PRI-FND-001 disabled-adapter mutation must break positive Jalali output.' );
 	}
 	foreach ( $matrix_native as $case => $token ) {
 		$native_out = $run_matrix( $case, $token, $matrix_entry, false );
@@ -522,7 +624,8 @@ file_put_contents(
 			'head' => getenv( 'WU008_PGR_SHA' ),
 			'gf' => GFForms::$version,
 			'gf_sha256' => getenv( 'WU008_GF_SHA256' ),
-			'positive_cases' => count( $matrix_positive ) + 6,
+			'positive_cases' => count( $matrix_positive ) + count( $source_formats ),
+			'negative_cases' => 2,
 			'native_cases' => count( $matrix_native ),
 			'case_status' => $matrix_record,
 		),
