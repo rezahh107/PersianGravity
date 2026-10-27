@@ -170,6 +170,29 @@ final class G011ConfirmationContextTest extends TestCase {
 
 
 	#[RunInSeparateProcess]
+	public function test_composite_filename_suffixes_remain_native_beside_live_human_date(): void {
+		$this->bootstrap_context();
+		$tag = '{date_created:format:Y/m/d}';
+		$template = '<div>Human <strong>' . $tag . '</strong> receipt-' . $tag .
+			'.tar.gz report_' . $tag . '-v2.pdf report_' . $tag .
+			'_final.pdf Human again <em>' . $tag . '</em></div>';
+		$native = $this->native( $template );
+		$expected = str_replace(
+			array( '<strong>2026/03/21</strong>', '<em>2026/03/21</em>' ),
+			array( '<strong>۱۴۰۵/۰۱/۰۱</strong>', '<em>۱۴۰۵/۰۱/۰۱</em>' ),
+			$native
+		);
+		$this->assertSame( $expected, $this->present( $template ) );
+		foreach ( array(
+			'receipt-2026/03/21.tar.gz',
+			'report_2026/03/21-v2.pdf',
+			'report_2026/03/21_final.pdf',
+		) as $filename ) {
+			$this->assertStringContainsString( $filename, $this->present( $template ) );
+		}
+	}
+
+	#[RunInSeparateProcess]
 	public function test_ambiguous_markup_and_native_roundtrip_drift_fail_closed(): void {
 		$this->bootstrap_context();
 		$tag = '{date_created:format:Y/m/d}';
