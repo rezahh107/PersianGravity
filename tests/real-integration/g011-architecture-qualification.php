@@ -171,7 +171,7 @@ try {
 		'native_invocations' => $native_mutation['invocations'],
 		'enabled_invocations' => $enabled_mutation['invocations'],
 		'host_output_preserved' => $native_mutation['output'] === $enabled_mutation['output'],
-		'persistent_effects_after_fallback' => $enabled_mutation['invocations'] > $native_mutation['invocations'],
+		'callback_count_parity' => $enabled_mutation['invocations'] === $native_mutation['invocations'],
 		'native_trace' => $native_mutation['trace'],
 		'enabled_trace' => $enabled_mutation['trace'],
 	);
@@ -285,7 +285,7 @@ try {
 	}
 
 	$evidence = array(
-		'qualification' => 'G011_ARCH_EXACT_HOST_V1',
+		'qualification' => 'G011_ARCH_EXACT_HOST_V2_POSTNATIVE',
 		'head' => getenv( 'WU008_PGR_SHA' ),
 		'host_version' => GFForms::$version,
 		'gf_sha256' => getenv( 'WU008_GF_SHA256' ),
@@ -299,7 +299,7 @@ try {
 		),
 	);
 	file_put_contents( $path, wp_json_encode( $evidence, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
-	$expected = array( 'zero' => array( 1, 1 ), 'one' => array( 1, 3 ), 'multiple' => array( 1, 4 ),
+	$expected = array( 'zero' => array( 1, 1 ), 'one' => array( 1, 1 ), 'multiple' => array( 1, 1 ),
 		'opaque_only' => array( 1, 1 ), 'malformed' => array( 1, 1 ) );
 	foreach ( $expected as $name => $counts ) {
 		if ( $results[ $name ]['native_invocations'] !== $counts[0] ||
@@ -309,17 +309,17 @@ try {
 	}
 	foreach ( array( 'machine_0', 'machine_1', 'machine_2' ) as $token ) {
 		if ( ! $results['bypass_mixed']['oracle'][ $token ]['native_has'] ||
-			$results['bypass_mixed']['oracle'][ $token ]['enabled_has'] ) {
-			$fail( 'Expected representation bypass not observed at ' . $token . '.' );
+			! $results['bypass_mixed']['oracle'][ $token ]['enabled_has'] ) {
+			$fail( 'Machine output did not preserve native bytes at ' . $token . '.' );
 		}
 	}
 	if ( ! $results['bypass_mixed']['oracle']['human_native'] ||
 		! $results['bypass_mixed']['oracle']['human_jalali'] ||
 		! $results['non_idempotent']['host_output_preserved'] ||
-		! $results['non_idempotent']['persistent_effects_after_fallback'] ) {
+		! $results['non_idempotent']['callback_count_parity'] ) {
 		$fail( 'Human presentation or callback fallback observation disagrees.' );
 	}
-	echo "G011 architecture qualification: observed host bypass and callback side effects\n";
+	echo "G011 architecture qualification: native machine parity and zero callback replay\n";
 } finally {
 	update_option( 'pgr_modules', $states_original );
 	delete_option( $counter_key );
