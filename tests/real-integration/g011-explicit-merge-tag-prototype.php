@@ -158,6 +158,10 @@ $exercise = static function ( string $hook, bool $enabled ) use ( $form, $entry,
 	// Defense in depth: no external mail even if GF changes its abort behavior.
 	$block_wp_mail = static function () { return true; };
 	add_filter( 'pre_wp_mail', $block_wp_mail, 1, 1 );
+	// Pinned GF 3.1.1.1 queues notifications by default; force synchronous
+	// processing for this disposable single-request observation only.
+	$sync_notifications = static function () { return false; };
+	add_filter( 'gform_is_asynchronous_notifications_enabled', $sync_notifications, 999, 1 );
 	if ( $enabled ) {
 		add_filter( $hook, $handler, 10, 3 );
 	}
@@ -173,6 +177,7 @@ $exercise = static function ( string $hook, bool $enabled ) use ( $form, $entry,
 		remove_filter( 'gform_pre_replace_merge_tags', $spy, 998 );
 		remove_filter( 'gform_pre_send_email', $abort, 1 );
 		remove_filter( 'pre_wp_mail', $block_wp_mail, 1 );
+		remove_filter( 'gform_is_asynchronous_notifications_enabled', $sync_notifications, 999 );
 	}
 	return array(
 		'confirmation' => $html,
