@@ -163,7 +163,7 @@ $qualified_redirect = GFFormDisplay::get_confirmation_url(
 if (
 	false === strpos( $qualified_redirect, 'j=' . rawurlencode( '۱۴۰۵/۰۱/۰۱' ) ) ||
 	false === strpos( $qualified_redirect, 'fixed=one%26two' ) ||
-	false === strpos( $qualified_redirect, 'name=Ada' ) ||
+	false === strpos( $qualified_redirect, 'name=ordinary' ) ||
 	false === strpos( $qualified_redirect, 'repeat=first&repeat=second' )
 ) {
 	throw new RuntimeException( 'G011 GF Query String transport composition mismatch.' );
