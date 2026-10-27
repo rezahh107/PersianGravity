@@ -633,6 +633,10 @@ file_put_contents(
 	)
 );
 
+// Owner Matrix B rows 20/21: mandatory licensed-host verification before browser fixtures.
+// The standalone fixture emits per-case VERIFIED_HOST / NOT_PROVEN, never inferred PASS.
+require __DIR__ . '/g011-preservation-rows-20-21.php';
+
 // Browser-facing configured forms (ordinary and AJAX, real HTTP submission).
 // GFAPI persists confirmations using each confirmation's ID as the array key.
 require_once __DIR__ . '/g011-default-confirmation.php';
