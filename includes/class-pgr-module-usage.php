@@ -29,13 +29,6 @@ final class PGR_Module_Usage {
 			);
 		}
 
-		if ( 'jalali_presentation' === $module_id ) {
-			return array(
-				'status' => self::UNUSED,
-				'count'  => 0,
-			);
-		}
-
 		if ( 'iranian_currency' === $module_id ) {
 			return array(
 				'status' => self::UNKNOWN,
@@ -90,6 +83,14 @@ final class PGR_Module_Usage {
 	private static function form_uses_module( $form, $module_id ) {
 		if ( ! is_array( $form ) ) {
 			return false;
+		}
+
+		if ( 'jalali_presentation' === $module_id ) {
+			// Form metadata contains saved Confirmation/Notification/field text.
+			// Broad prefix is deliberate: unresolved or future dedicated tags
+			// also block an unsafe disable; no Entry/SQL scan is needed.
+			$metadata = wp_json_encode( $form );
+			return ! is_string( $metadata ) || false !== strpos( $metadata, '{pgr_jdate_' );
 		}
 
 		if ( 'digit_normalization' === $module_id ) {
