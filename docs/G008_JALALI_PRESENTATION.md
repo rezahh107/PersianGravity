@@ -98,3 +98,7 @@ The raw Entry remains authoritative Gregorian UTC. No save/update/export/global 
 Repository tests cover official golden cases, Nowruz/Esfand/leap/month/year boundaries, malformed dates, product-range boundaries, deterministic repeatability, timezone day-crossings and historical IANA behavior, opt-in module state, all four `jalali_date` / `jalali_presentation` state combinations, native fallback, and existing Jalali-domain regression behavior.
 
 `tests/js/g008-jalali-oracles.test.js` provides reproducible exhaustive differential/property verification. `.github/workflows/g008-jalali-presentation-runtime.yml` performs exact-package Gravity Forms `3.1.1.1` source/runtime proof without shipping the licensed package or adding any production dependency.
+
+## G-011 explicit tags (separate consumer, 2026-10-27)
+
+The Owner approved explicit dedicated Jalali Merge Tags for GF Text Confirmations and Notifications rather than automatic reinterpretation of native GF merge-tag output. The new bounded consumer uses `gform_replace_merge_tags` and the **existing** typed `PGR_Jalali_Presentation` converter; it does not change the G-008 source/calendar range or storage contract. See [G-011 guide](G011_EXPLICIT_JALALI_MERGE_TAGS.md). Page/Redirect qualification remains open.
