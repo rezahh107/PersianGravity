@@ -92,8 +92,8 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				$tokens[ $index - 1 ][1] + strlen( $tokens[ $index - 1 ][0] );
 			$right_boundary = isset( $tokens[ $index + 1 ] ) ?
 				$tokens[ $index + 1 ][1] : strlen( $template );
-			$left  = substr( $template, $left_boundary, $offset - $left_boundary );
-			$right = substr( $template, $offset + $length, $right_boundary - $offset - $length );
+			$left           = substr( $template, $left_boundary, $offset - $left_boundary );
+			$right          = substr( $template, $offset + $length, $right_boundary - $offset - $length );
 
 			// A whole-template lone tag has no anchor, but is provable if and
 			// only if the complete received output equals its native value.
@@ -104,23 +104,26 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				$span_start = 0;
 				$span_end   = strlen( $confirmation );
 			} else {
-				// Each available anchor must occur exactly once; duplicated
-				// labels or HTML are an ambiguity, not a license to guess.
-				if (
-					( '' !== $left && 1 !== substr_count( $confirmation, $left ) ) ||
-					( '' !== $right && 1 !== substr_count( $confirmation, $right ) )
-				) {
+				// One unique static anchor is enough when the other side
+				// matches immediately adjacent to the *typed* native value.
+				// A repeated delimiter (e.g. one space) is not by itself
+				// ambiguous. Neither unique anchor => native fallback.
+				$left_unique  = '' !== $left && 1 === substr_count( $confirmation, $left );
+				$right_unique = '' !== $right && 1 === substr_count( $confirmation, $right );
+				if ( ! $left_unique && ! $right_unique ) {
 					return $confirmation;
 				}
-
-				$span_start = '' === $left ? 0 :
-					strpos( $confirmation, $left ) + strlen( $left );
-				$span_end   = '' === $right ? strlen( $confirmation ) :
-					strpos( $confirmation, $right );
+				$span_start = $left_unique ?
+					strpos( $confirmation, $left ) + strlen( $left ) :
+					strpos( $confirmation, $right ) - strlen( $expected_native );
+				$span_end   = $span_start + strlen( $expected_native );
 				if (
 					$span_start < $previous_end ||
-					$span_end <= $span_start ||
-					substr( $confirmation, $span_start, $span_end - $span_start ) !== $expected_native
+					$span_start < 0 ||
+					$span_end > strlen( $confirmation ) ||
+					substr( $confirmation, $span_start, strlen( $expected_native ) ) !== $expected_native ||
+					( '' !== $left && substr( $confirmation, $span_start - strlen( $left ), strlen( $left ) ) !== $left ) ||
+					( '' !== $right && substr( $confirmation, $span_end, strlen( $right ) ) !== $right )
 				) {
 					return $confirmation;
 				}
@@ -187,7 +190,10 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			$native_format = null === $format || '' === $format ? GFCommon::get_default_date_format() : $format;
 			if ( $time ) {
 				return GFCommon::format_date(
-					gmdate( 'Y-m-d H:i:s', $source->getTimestamp() ), false, $native_format, true
+					gmdate( 'Y-m-d H:i:s', $source->getTimestamp() ),
+					false,
+					$native_format,
+					true
 				);
 			}
 			return date_i18n( $native_format, GFCommon::get_local_timestamp( $source->getTimestamp() ), true );
@@ -206,6 +212,7 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			if ( ! is_string( $raw ) ) {
 				return null;
 			}
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Native Gravity Forms field property.
 			$input_format = empty( $field->dateFormat ) ? 'mdy' : $field->dateFormat;
 			$parts = GFCommon::parse_date( $raw, $input_format );
 			if ( ! is_array( $parts ) ||
@@ -221,8 +228,23 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 				return null;
 			}
 			$output_format = '' === $modifier ? $input_format : $modifier;
-			$allowed = array( 'year', 'month', 'day', 'ymd', 'ymd_dash', 'ymd_dot', 'ymd_slash',
-				'mdy', 'mdy_dash', 'mdy_dot', 'mdy_slash', 'dmy', 'dmy_dash', 'dmy_dot', 'dmy_slash' );
+			$allowed        = array(
+				'year',
+				'month',
+				'day',
+				'ymd',
+				'ymd_dash',
+				'ymd_dot',
+				'ymd_slash',
+				'mdy',
+				'mdy_dash',
+				'mdy_dot',
+				'mdy_slash',
+				'dmy',
+				'dmy_dash',
+				'dmy_dot',
+				'dmy_slash',
+			);
 			if ( ! in_array( $output_format, $allowed, true ) ) {
 				return null;
 			}
@@ -237,11 +259,16 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			}
 			$separator = str_ends_with( $output_format, '_dash' ) ? '-' :
 				( str_ends_with( $output_format, '_dot' ) ? '.' : '/' );
-			$pieces = array( 'y' => sprintf( '%04d', $year ), 'm' => sprintf( '%02d', $month ),
-				'd' => sprintf( '%02d', $day ) );
-			$order  = substr( $output_format, 0, 3 );
+			$pieces    = array(
+				'y' => sprintf( '%04d', $year ),
+				'm' => sprintf( '%02d', $month ),
+				'd' => sprintf( '%02d', $day ),
+			);
+			$order     = substr( $output_format, 0, 3 );
 			return implode( $separator, array_map(
-				static function ( string $key ) use ( $pieces ): string { return $pieces[ $key ]; },
+				static function ( string $key ) use ( $pieces ): string {
+					return $pieces[ $key ];
+				},
 				str_split( $order )
 			) );
 		}
