@@ -130,7 +130,7 @@ defined( 'ABSPATH' ) || exit;
 				$native_html = $native['html'];
 				$enabled_html = $enabled['html'];
 				$machine = array(
-					'extensionless' => 'receipt-2026/03/21',
+					'extensionless' => 'receipt-2026/03/21 ',
 					'relative_fragment' => './archive/report#release-2026/03/21',
 					'path' => '/archive/2026/03/21',
 					'filename_pdf' => 'receipt-2026/03/21.pdf',
