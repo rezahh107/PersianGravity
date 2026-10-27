@@ -1,8 +1,8 @@
 # Persian Gravity Forms Architecture — 4.8.0
 
-## G-011 current implementation candidate (not yet admitted)
+## G-011 post-native Text Confirmation repair (PR #83, OPEN)
 
-The opt-in Jalali presentation module now contains a Text Confirmation-only adapter for Gravity Forms native date Merge Tags. The exact licensed Gravity Forms 3.1.1.1 host lifecycle and the separate Page/Redirect native-fallback boundary are recorded in [G-011 confirmation contract](docs/G011_CONFIRMATION_DATE_MERGE_TAGS.md). Actual verified coverage is limited to scenarios exercised successfully by the exact-Head WU008/CI lanes; G-011 remains open and no future host package is automatically qualified.
+The opt-in `jalali_presentation` module owns a bounded `gform_confirmation` Text adapter under effective `fa_IR`. It processes only the **already rendered, selected** Confirmation, using typed source dates, G-008 conversion and uniquely attributable source/output intervals; ambiguous intervals fall back to the complete received native output. No `GFCommon::replace_variables()` or host Confirmation re-render is invoked by the Adapter; callback priority 20 and native conditional/AJAX selection remain host-owned. No Page/Redirect transport conversion, cross-plugin Merge Tag interception, persisted dates, API mutations or vendor modifications are introduced. The original root-cause callback replay (native 1 versus previous enabled 3) was repaired; exact licensed source Head `cdd6a58fe2f0643512294706f68defb75c74e02b` completed [WU008 40467290897](https://github.com/rezahh107/PersianGravity/actions/runs/40467290897) with matched 1-versus-1 callbacks and real browser confirmation cases. Exact proven versus still unverified cases are classified in the [G-011 confirmation contract](G011_CONFIRMATION_DATE_MERGE_TAGS.md). G-011 remains OPEN for Owner review/merge control; newer Gravity Forms packages are not automatically qualified.
 
 ## Runtime topology
 
