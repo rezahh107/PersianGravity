@@ -209,13 +209,13 @@ final class PGR_GF_Confirmation_Jalali_Adapter {
 			if ( ! $field instanceof GF_Field_Date || (int) $field->id !== $id ) {
 				continue;
 			}
-			$raw          = $entry[ (string) $id ] ?? null;
+			$raw = $entry[ (string) $id ] ?? null;
 			if ( ! is_string( $raw ) ) {
 				return null;
 			}
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Native Gravity Forms field property.
 			$input_format = empty( $field->dateFormat ) ? 'mdy' : $field->dateFormat;
-			$parts = GFCommon::parse_date( $raw, $input_format );
+			$parts        = GFCommon::parse_date( $raw, $input_format );
 			if ( ! is_array( $parts ) ||
 				! ctype_digit( (string) ( $parts['year'] ?? '' ) ) ||
 				! ctype_digit( (string) ( $parts['month'] ?? '' ) ) ||
