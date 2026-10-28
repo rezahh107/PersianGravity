@@ -118,7 +118,11 @@ final class ModuleUsageTest extends TestCase {
 
 		$recursive         = $valid;
 		$recursive['self']  = &$recursive;
-		$cases[] = array( 'invalid JSON remains conservative', array( $recursive ), 'jalali_presentation', 'USED', 1 );
+		$cases[] = array( 'invalid JSON is indeterminate', array( $recursive ), 'jalali_presentation', 'UNKNOWN', 0 );
+		$cases[] = array( 'mixed used and unserializable', array( $used, $recursive ), 'jalali_presentation', 'USED', 1 );
+		$cases[] = array( 'mixed unused and unserializable', array( $native, $recursive ), 'jalali_presentation', 'UNKNOWN', 0 );
+		$cases[] = array( 'used only', array( $used ), 'jalali_presentation', 'USED', 1 );
+		$cases[] = array( 'malformed only', array( $recursive ), 'jalali_presentation', 'UNKNOWN', 0 );
 
 		foreach ( $cases as $case ) {
 			GFAPI::$forms = $case[1];
