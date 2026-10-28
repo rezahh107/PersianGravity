@@ -365,6 +365,8 @@ jobs:
           cp tests/real-integration/g011-destination-receipt-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/g011-destination-receipt.php"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-setup.php
           test -s "$WU008_ARTIFACT_DIR/g011-destination-fixture.json"
+          WU008_G011_STORAGE_PHASE=baseline php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-storage.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-stored-baseline.json"
 
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
