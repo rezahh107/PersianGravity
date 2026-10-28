@@ -1,3 +1,13 @@
+## Current G-011 merged validation checkpoint — 2026-10-28
+
+[PR #86](https://github.com/rezahh107/PersianGravity/pull/86) merged 2026-10-28T08:10:03Z; exact qualified PR Head `cc1f88807e5dedeb560c647df62169eaafb37ed2`, merge/main `06a5406a7b477a0db6485c0901ff894b53a3a0ca`. This is the current implementation/evidence status, whereas older dated sections below remain historical. No version bump, package upgrade, release or live deployment.
+
+Exact licensed GF 3.1.1.1 WU008 [#40653366355](https://github.com/rezahh107/PersianGravity/actions/runs/40653366355) SUCCESS: independent native GF Date baseline 9/9; production explicit-tag PHP/Notification no-send and unchanged stored Form/Entry; 29 explicit token-matrix cases including 12 system variants and typed Date; real Chromium selected Text Confirmation 3/3; real Page/Redirect navigation 4/4 enabled + 4/4 disabled (8/8) with destination receipts, native/UTF-8/repeated/unrelated parameters; en_US enabled-handler fallback 13; disabled-module and inactive-plugin unresolved-tag checks. [G008 #40653366365](https://github.com/rezahh107/PersianGravity/actions/runs/40653366365), [CI #40653366413](https://github.com/rezahh107/PersianGravity/actions/runs/40653366413), [Artifact Install Smoke #40653366393](https://github.com/rezahh107/PersianGravity/actions/runs/40653366393) all SUCCESS. Post-merge main [CI #40654861962](https://github.com/rezahh107/PersianGravity/actions/runs/40654861962) and [install smoke #40654861926](https://github.com/rezahh107/PersianGravity/actions/runs/40654861926) SUCCESS.
+
+The Owner-approved 2026-10-27 contract replaced automatic native date tag conversion with explicit, user-selected Jalali tags. This was implemented with `gform_replace_merge_tags` and existing G-008. Historic PR #83 remains unmerged; PR #84 preserved reusable evidence. G-011 functionality and previously unqualified Page/Redirect paths are evidenced for this **exact pinned host and tested combinations**, not arbitrary newer GF versions, real production deployment, external mail delivery or third-party extension contexts. No blanket overall-project Done assertion follows from these executions. See `docs/G011_EXPLICIT_JALALI_MERGE_TAGS.md` and `docs/WU008_REAL_INTEGRATION.md` for details.
+
+---
+
 # Persian Gravity Forms Validation — 4.3.0
 
 ## G-010 / WU-06 — current executed Radar and documentation-truth checkpoint (2026-10-25)
