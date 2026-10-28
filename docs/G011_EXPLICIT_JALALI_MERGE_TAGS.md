@@ -2,7 +2,7 @@
 
 ## Form editor quick guide / راهنمای ویرایش فرم
 
-In PersianGravity → Overview, enable the **System-date Jalali Presentation** module (OFF by default). In Gravity Forms → Forms → Edit → Settings → Confirmations, add dedicated tags to a **Text** Confirmation. Do not rewrite the native tags automatically. Existing forms require manual editing.
+In PersianGravity → Overview, enable the **System-date Jalali Presentation** module (OFF by default). In Gravity Forms → Forms → Edit → Settings → Confirmations, add dedicated tags to a **Text** Confirmation or to the Query String of **Page/Redirect** Confirmations. Do not rewrite the native tags automatically. Existing forms require manual editing.
 
 در تنظیمات افزونه، ماژول «نمایش جلالی تاریخ‌های سیستمی» را فعال کنید؛ پیش‌فرض خاموش است. سپس در متن Confirmation فرم، تگ اختصاصی را تایپ کنید. تگ‌های قدیمی خودکار تغییر نمی‌کنند.
 
@@ -29,18 +29,18 @@ A missing payment date yields an empty value. Invalid Gregorian data, unsupporte
 
 ## Disable and missing-plugin expectations
 
-Module disable performs an on-demand metadata-only `GFAPI::get_forms()` usage check. Saved custom-tag references block Disable as `USED`; unavailable/malformed form inspection follows the existing conservative `UNKNOWN` handling. Remove dedicated tags from forms before disabling. If the module is OFF from an earlier configuration, its handler is not loaded; if the entire plugin is inactive/missing, the handler is also absent. Native GF 3.1.1.1 can leave unresolved custom tags visible. This is an accepted Owner decision, not a guarantee for every future host version. Disabling never deletes forms or entries.
+Module disable performs an on-demand metadata-only `GFAPI::get_forms()` usage check. Saved custom-tag references block Disable as `USED`; unserializable or otherwise indeterminate form metadata is `UNKNOWN` (requires the existing explicit second confirmation), unless another form has confirmed `USED` (which takes precedence). Valid inspected forms without use are `UNUSED`. Remove dedicated tags from forms before disabling. If the module is OFF from an earlier configuration, its handler is not loaded; if the entire plugin is inactive/missing, the handler is also absent. Native GF 3.1.1.1 can leave unresolved custom tags visible. This is an accepted Owner decision, not a guarantee for every future host version. Disabling never deletes forms or entries.
 
 ## Current support and evidence boundary
 
 | Path | Ownership | Current admission |
 | --- | --- | --- |
-| Selected default and conditional Text Confirmation | Gravity Forms selects; post-native handler replaces **only explicit tags** | WU008 exact licensed GF 3.1.1.1 + ordinary/AJAX browser gate required |
-| Notifications containing explicit tags | GF owns notification and transport; rendering hook may replace dedicated tags | WU008 synchronous isolated notification, no external email |
+| Selected default and conditional Text Confirmation | Gravity Forms selects; post-native handler replaces **only explicit tags** | Exact GF 3.1.1.1 real ordinary/AJAX Chromium submissions **PASS** on [Head 84267d0](https://github.com/rezahh107/PersianGravity/actions/runs/40649882507) |
+| Notifications containing explicit tags | GF owns notification and transport; rendering hook may replace dedicated tags | Exact GF 3.1.1.1 synchronous GFAPI no-send notification **PASS**; external mail delivery NOT PROVEN |
 | Native Merge Tags, raw/timestamp/relative values | Gravity Forms native | Intentionally not converted |
-| Page/Redirect Query String | GF owns URL composition/encoding and destination | **OPEN**: separate human-facing transport/destination qualification; no blanket claim |
+| Page/Redirect Query String | GF owns URL composition/encoding and destination | Exact GF 3.1.1.1 disposable WordPress/Chromium: Page + Redirect, ordinary + AJAX, enabled + disabled **8/8 PASS** with server-rendered destination receipts; duplicate/existing parameters, UTF-8, native tags and persisted Form/Entry verified in [WU008 #40649882507](https://github.com/rezahh107/PersianGravity/actions/runs/40649882507) |
 | Gravity Forms 3.2+, nested Repeater children, other add-on contexts | Respective hosts | NOT QUALIFIED |
 
-The October 23 original/refined G-011 and G011-POSTNATIVE-LOCK Revision 1.1 remain historical records. The October 27 Owner decision replaces *automatic Post-native conversion*, not independent product safety requirements, Text Confirmation/Notification validation, or the open Page/Redirect outcome. No G-011 DONE declaration while the latter remains unqualified.
+The October 23 original/refined G-011 and G011-POSTNATIVE-LOCK Revision 1.1 remain historical records. The October 27 Owner decision replaces *automatic Post-native conversion*, not independent product safety requirements. Page/Redirect destination behavior is now qualified **only** for the locked WordPress 6.8.3 / PHP 8.2 / GF 3.1.1.1 WU008 combinations above, not for newer GF packages, untested consumers or real production destinations. The complete 13-token and en_US tests are separately gated by WU008; their status must be read from the exact-Head artifact, not inferred from the earlier 8/8 browser result.
 
 Prior evidence: [PR #84](https://github.com/rezahh107/PersianGravity/pull/84), [disposable PR #85](https://github.com/rezahh107/PersianGravity/pull/85), [licensed prototype WU008](https://github.com/rezahh107/PersianGravity/actions/runs/40555944091). These establish the candidate and baseline, not this production implementation's final runtime result.
