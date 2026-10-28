@@ -8,7 +8,7 @@ function run( clipboard ) {
 	const code = { textContent: '{pgr_jdate_created_date}' };
 	const status = { textContent: '' };
 	const sample = { querySelector: ( selector ) => selector === 'pre code' ? code : status };
-	const button = { dataset: { pgrCopySuccess: 'Copied.', pgrCopyFailure: 'Copy failed.' }, closest: ( selector ) => selector.startsWith( '.pgr-help' ) ? button : sample, focus() {} };
+	const button = { dataset: { pgrCopySuccess: 'Copied.', pgrCopyFailure: 'Copy failed.' }, closest: ( selector ) => selector === '.pgr-help [data-pgr-copy]' ? button : sample, focus() {} };
 	let listener;
 	const document = { activeElement: button, body: { appendChild() {} }, createElement: () => ( { value: '', style: {}, setAttribute() {}, select() {}, remove() {} } ), execCommand: () => false, addEventListener: ( name, callback ) => { if ( name === 'click' ) { listener = callback; } } };
 	vm.runInNewContext( source, { navigator: { clipboard }, document } );
