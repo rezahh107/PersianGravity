@@ -354,6 +354,14 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-production-runtime.php
           test -s "$WU008_ARTIFACT_DIR/g011-explicit-production-runtime.json"
 
+      - name: Qualify each G011 system tag and typed Date field against licensed Gravity Forms
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-token-matrix.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-token-matrix.php
+          test -s "$WU008_ARTIFACT_DIR/g011-token-matrix.json"
+
       - name: Install disposable G011 destination receiver and create Page/Redirect fixtures
         shell: bash
         run: |
@@ -414,6 +422,23 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g011-destination-browser.mjs enabled
           test -s "$WU008_ARTIFACT_DIR/g011-destination-browser-enabled.json"
+
+      - name: Verify enabled G011 en_US fallback on fresh native Gravity Forms request
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-enabled-english-fallback.php
+          restore_fa() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_fa EXIT
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-enabled-english-fallback.php
+          test -s "$WU008_ARTIFACT_DIR/g011-enabled-english-fallback.json"
+          restore_fa
+          trap - EXIT
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
 
       - name: Verify disabled G011 Page/Redirect and persisted Form/Entry values
         shell: bash
