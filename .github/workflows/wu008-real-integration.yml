@@ -147,6 +147,7 @@ jobs:
           php -l tests/real-integration/g008-gravityview-setup-runtime.php
           php -l tests/real-integration/g008-gravityview-state.php
           php -l tests/real-integration/g008-gravityview-production-state.php
+          node --check tests/real-integration/g011-destination-browser.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
@@ -353,6 +354,18 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-production-runtime.php
           test -s "$WU008_ARTIFACT_DIR/g011-explicit-production-runtime.json"
 
+      - name: Install disposable G011 destination receiver and create Page/Redirect fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-destination-receipt-mu.php
+          php -l tests/real-integration/g011-destination-setup.php
+          php -l tests/real-integration/g011-destination-storage.php
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          cp tests/real-integration/g011-destination-receipt-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/g011-destination-receipt.php"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-setup.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-fixture.json"
+
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -392,6 +405,23 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g011-explicit-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g011-explicit-browser.json"
+
+      - name: Verify enabled G011 Page/Redirect actual browser destinations
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g011-destination-browser.mjs enabled
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-browser-enabled.json"
+
+      - name: Verify disabled G011 Page/Redirect and persisted Form/Entry values
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          node tests/real-integration/g011-destination-browser.mjs disabled
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-browser-disabled.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-storage.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-storage.json"
 
       - name: Verify fresh-request disabled handler and restore module
         shell: bash
