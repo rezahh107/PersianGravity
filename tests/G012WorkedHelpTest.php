@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
 require_once dirname( __DIR__ ) . '/includes/class-pgr-utils.php';
+require_once dirname( __DIR__ ) . '/includes/class-pgr-address.php';
 require_once dirname( __DIR__ ) . '/includes/class-pgr-persian-date.php';
 require_once dirname( __DIR__ ) . '/admin/class-pgr-help-catalog.php';
 
@@ -33,6 +34,15 @@ final class G012WorkedHelpTest extends TestCase {
 		$this->assertSame( '0013546244', PGR_Utils::normalize_national_id( '۰۰۱-۳۵۴۶۲۴-۴' ) );
 		$this->assertSame( '1404-02-31', PGR_Persian_Date::canonicalize( '۱۴۰۴/۰۲/۳۱', 'ymd_slash' ) );
 		$this->assertNull( PGR_Persian_Date::canonicalize( '1404/07/31', 'ymd_slash' ) );
+	}
+
+	public function test_iranian_address_example_uses_the_real_province_value() {
+		$this->assertContains( 'فارس', PGR_Address::provinces() );
+		$this->assertNotContains( 'Fars', PGR_Address::provinces() );
+		foreach ( array( 'fa', 'en' ) as $lang ) {
+			$examples = PGR_Help_Catalog::examples()['iranian-address'][ $lang ]['samples'];
+			$this->assertStringContainsString( 'Province: فارس', $examples[0]['value'] );
+		}
 	}
 
 	public function test_full_explicit_token_inventory_in_both_languages() {
