@@ -215,14 +215,14 @@ Selected: {pgr_jdate_field_2}',
 			'steps'         => array(
 				'Gravity Forms ← Forms ← Edit؛ فیلد Address را اضافه کنید.',
 				'Address Type را Iran تنظیم کنید؛ Label را «نشانی تحویل» بگذارید و Save کنید.',
-				'در Preview خیابان و شهر نمونه را پر، Province را Fars انتخاب و ارسال کنید؛ سپس Entry را بررسی کنید.',
+				'در Preview خیابان و شهر نمونه را پر، Province را فارس انتخاب و ارسال کنید؛ سپس Entry را بررسی کنید.',
 				'برای فرم فقط استان، Drop Down با Predefined Choices با نام Iranian Provinces نیز ممکن است.',
 			),
 			'samples'       => array(
 				array(
 					'label' => 'تنظیم نمونه',
 					'value' => 'Address Type: Iran
-Province: Fars',
+Province: فارس',
 				),
 				array(
 					'label' => 'ورودی آزمایشی',
@@ -241,14 +241,14 @@ Postal Code: 1234567890',
 			'steps'         => array(
 				'Gravity Forms → Forms → Edit: add Address.',
 				'Set Address Type to Iran; label Delivery address and Save.',
-				'Preview, enter sample address and choose Fars under Province; submit and inspect Entry.',
+				'Preview, enter sample address and choose فارس under Province; submit and inspect Entry.',
 				'For province alone, use a Drop Down with Iranian Provinces Predefined Choices.',
 			),
 			'samples'       => array(
 				array(
 					'label' => 'Field configuration',
 					'value' => 'Address Type: Iran
-Province: Fars',
+Province: فارس',
 				),
 				array(
 					'label' => 'Fictional address',
