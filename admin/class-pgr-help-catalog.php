@@ -37,7 +37,7 @@ final class PGR_Help_Catalog {
 			),
 			'jalali-presentation' => self::topic(
 				'نمایش جلالی تاریخ‌های سیستمی',
-				'<p>ماژول <code dir="ltr">jalali_presentation</code> مستقل از field type <code dir="ltr">pgr_jalali_date</code> است. این module فقط منبعی را که semantics میلادی/سیستمی آن از host مشخص است برای نمایش به جلالی تبدیل می‌کند و مقدار ذخیره‌شده را بازنویسی نمی‌کند.</p><p>سطوح تأییدشده شامل Gravity Forms Entries List، سطوح مشخص Gravity Flow 3.1.0 و در GravityView 3.3.4 فقط <code dir="ltr">date_created</code> و <code dir="ltr">date_updated</code> از مسیرهای field-output دقیق است. مقدارهای خام DB/API، sorting و filtering در اختیار host باقی می‌مانند. module پیش‌فرض خاموش است و locale، context، version، parsing یا range نامعتبر به خروجی native برمی‌گردد.</p><p>برای تاریخ جلالی در Confirmation متنی، پس از فعال‌سازی ماژول، از <code dir="ltr">{pgr_jdate_created}</code> برای تاریخ ثبت یا <code dir="ltr">{pgr_jdate_field_2}</code> برای فیلد تاریخ میلادی شمارهٔ ۲ استفاده کنید (عدد را با شناسهٔ واقعی فیلد عوض کنید). تگ‌های اصلی Gravity Forms تغییر نمی‌کنند. هنگام نبودن افزونه/ماژول ممکن است تگ اختصاصی حل‌نشده نمایش داده شود؛ استفادهٔ ثبت‌شده در فرم، Disable را مسدود می‌کند. راهنمای کامل: docs/G011_EXPLICIT_JALALI_MERGE_TAGS.md.</p>',
+				'<p>ماژول <code dir="ltr">jalali_presentation</code> مستقل از field type <code dir="ltr">pgr_jalali_date</code> است. این module فقط منبعی را که semantics میلادی/سیستمی آن از host مشخص است برای نمایش به جلالی تبدیل می‌کند و مقدار ذخیره‌شده را بازنویسی نمی‌کند.</p><p>سطوح تأییدشده شامل Gravity Forms Entries List، سطوح مشخص Gravity Flow 3.1.0 و در GravityView 3.3.4 فقط <code dir="ltr">date_created</code> و <code dir="ltr">date_updated</code> از مسیرهای field-output دقیق است. مقدارهای خام DB/API، sorting و filtering در اختیار host باقی می‌مانند. module پیش‌فرض خاموش است و locale، context، version، parsing یا range نامعتبر به خروجی native برمی‌گردد.</p><p>برای تاریخ جلالی در Confirmation متنی، پس از فعال‌سازی ماژول، از <code dir="ltr">{pgr_jdate_created}</code> برای تاریخ ثبت یا <code dir="ltr">{pgr_jdate_field_2}</code> برای فیلد تاریخ میلادی شمارهٔ ۲ استفاده کنید (عدد را با شناسهٔ واقعی فیلد عوض کنید). تگ‌های اصلی Gravity Forms تغییر نمی‌کنند. هنگام نبودن افزونه/ماژول ممکن است تگ اختصاصی حل‌نشده نمایش داده شود؛ استفادهٔ ثبت‌شده در فرم، Disable را مسدود می‌کند. راهنمای کامل توکن‌ها و نمونه‌های قابل کپی در همین بخش موجود است.</p>',
 				'Jalali System-Date Presentation',
 				'<p><code>jalali_presentation</code> is independent from the <code>pgr_jalali_date</code> field. It converts only sources whose Gregorian/system semantics are explicitly known from the host, and never rewrites the stored value.</p><p>Verified surfaces include the Gravity Forms Entries List, bounded Gravity Flow 3.1.0 surfaces, and exactly GravityView 3.3.4 <code>date_created</code> and <code>date_updated</code> through their field-specific output seams. Raw DB/API values plus sorting and filtering remain host-owned. The module defaults off; unsupported locale, context, version, parsing, timezone, or range conditions retain native presentation.</p>'
 			),
@@ -108,6 +108,11 @@ final class PGR_Help_Catalog {
 				'<p>PersianGravity does not own Gravity Flow workflow, GravityView, SRWF business logic, font delivery, payment gateways, online Sayad inquiry, OCR/camera scanning, custom databases, or translations for other plugins. Module Manager is not an extension marketplace or third-party runtime registry.</p>'
 			),
 		);
+	}
+
+	/** Load the seven static bilingual practical examples. */
+	public static function examples() {
+		return require __DIR__ . '/pgr-help-examples.php';
 	}
 
 	/** Return one topic/language or null. */
