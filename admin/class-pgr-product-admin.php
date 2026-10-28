@@ -238,8 +238,8 @@ final class PGR_Product_Admin {
 			return;
 		}
 
-		$lang   = $this->help_language();
-		$topics = PGR_Help_Catalog::all();
+		$lang     = $this->help_language();
+		$topics   = PGR_Help_Catalog::all();
 		$examples = PGR_Help_Catalog::examples();
 		?>
 		<div class="wrap pgr-admin pgr-help">
@@ -262,7 +262,9 @@ final class PGR_Product_Admin {
 						<section class="pgr-panel" id="<?php echo esc_attr( $id ); ?>">
 							<h2><?php echo esc_html( $translations[ $lang ]['title'] ); ?></h2>
 							<?php echo wp_kses_post( $translations[ $lang ]['body'] ); ?>
-							<?php if ( isset( $examples[ $id ][ $lang ] ) ) { $this->render_worked_example( $examples[ $id ][ $lang ], $lang ); } ?>
+							<?php if ( isset( $examples[ $id ][ $lang ] ) ) { ?>
+								<?php $this->render_worked_example( $examples[ $id ][ $lang ], $lang ); ?>
+							<?php } ?>
 						</section>
 					<?php } ?>
 				</main>
@@ -275,8 +277,32 @@ final class PGR_Product_Admin {
 	/** Render one escaped example and keyboard-copyable text samples. */
 	private function render_worked_example( $example, $lang ) {
 		$labels = 'fa' === $lang
-			? array( 'title' => 'مثال عملی گام‌به‌گام', 'scenario' => 'سناریو', 'prerequisites' => 'پیش‌نیاز', 'steps' => 'مراحل تنظیم و اجرا', 'samples' => 'نمونه‌های قابل کپی', 'expected' => 'نتیجه مورد انتظار', 'verification' => 'روش بررسی', 'notes' => 'نکات و محدودیت‌ها', 'copy' => 'کپی', 'success' => 'کپی شد.', 'failure' => 'کپی خودکار ممکن نشد؛ متن را دستی انتخاب و کپی کنید.' )
-			: array( 'title' => 'Step-by-step worked example', 'scenario' => 'Scenario', 'prerequisites' => 'Prerequisites', 'steps' => 'Configure and try', 'samples' => 'Copy-ready samples', 'expected' => 'Expected result', 'verification' => 'How to verify', 'notes' => 'Notes and limits', 'copy' => 'Copy', 'success' => 'Copied.', 'failure' => 'Copy failed; select and copy the text manually.' );
+			? array(
+				'title'         => 'مثال عملی گام‌به‌گام',
+				'scenario'      => 'سناریو',
+				'prerequisites' => 'پیش‌نیاز',
+				'steps'         => 'مراحل تنظیم و اجرا',
+				'samples'       => 'نمونه‌های قابل کپی',
+				'expected'      => 'نتیجه مورد انتظار',
+				'verification'  => 'روش بررسی',
+				'notes'         => 'نکات و محدودیت‌ها',
+				'copy'          => 'کپی',
+				'success'       => 'کپی شد.',
+				'failure'       => 'کپی خودکار ممکن نشد؛ متن را دستی انتخاب و کپی کنید.',
+			)
+			: array(
+				'title'         => 'Step-by-step worked example',
+				'scenario'      => 'Scenario',
+				'prerequisites' => 'Prerequisites',
+				'steps'         => 'Configure and try',
+				'samples'       => 'Copy-ready samples',
+				'expected'      => 'Expected result',
+				'verification'  => 'How to verify',
+				'notes'         => 'Notes and limits',
+				'copy'          => 'Copy',
+				'success'       => 'Copied.',
+				'failure'       => 'Copy failed; select and copy the text manually.',
+			);
 		?>
 		<div class="pgr-help-example" aria-label="<?php echo esc_attr( $labels['title'] ); ?>">
 			<h3><?php echo esc_html( $labels['title'] ); ?></h3>
