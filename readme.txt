@@ -2,7 +2,7 @@
 Contributors: rezahh107
 Requires at least: 6.7
 Requires PHP: 8.2
-Stable tag: 4.8.0
+Stable tag: 4.9.0
 Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
@@ -103,6 +103,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+
+= 4.9.0 =
 * Added G-011 opt-in, explicit Jalali date Merge Tags for Gravity Forms confirmations and notifications: Entry created/updated/payment/today datetime, date-only and time-only tags, plus typed native Gregorian Date-field tags (e.g. `{pgr_jdate_created_date}`, `{pgr_jdate_field_2}`). Existing native Merge Tags are never auto-converted; existing form templates must opt in manually. Reuses the G-008 calendar engine and leaves stored dates, native tokens and other Gravity Forms consumers unchanged.
 * Qualified G-011 against the locked Gravity Forms 3.1.1.1 host using real Form/Entry persistence and browser Text/Page/Redirect confirmations, including ordinary/AJAX, conditional selection, English-locale fallback, and disabled-handler behavior. The module stays disabled by default; saved tag use is protected against unsafe module disable. Unsupported/invalid cases retain unresolved tags, and absent handlers may expose literal tokens. No newer Gravity Forms release, third-party Merge Tag consumer, external email delivery or live-site destination is qualified by these tests.
 * Migrated Gravity Flow Timeline/history runtime compatibility from exact Flow/GF version equality and whole-file runtime SHA-256 gates to the stronger capability-local behavioral contract while retaining canonical Flow identity, native fallback, one-shot/re-entrancy isolation, exact Owner-supplied Flow 3.1.0 package/source qualification in CI, and truthful request-local diagnostics. Print remains an inherited capability only when its live renderer traverses the same admitted Timeline path; nested Timeline calls cannot borrow an outer Print owner. Synthetic version/source drift does not qualify a real newer package.
@@ -110,7 +112,6 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Migrated the existing Gravity Flow Inbox `date_created`/`last_updated`/`due_date` and Status `date_created`/`workflow_timestamp` presentation adapters from exact-version runtime vetoes to capability-local host/callback/data/context contracts. Canonical Flow plugin identity, native fallbacks and request-local provenance remain required; diagnostics are reporting-only, localization/source-admission package policy remains exact 3.1.0, and no real newer Flow package is qualified by this change.
 * Added bounded production Jalali presentation for exact GravityView 3.3.4 `date_created` and `date_updated`, preserving native DB/API/query/search/sort/filter semantics and returning native output for module-disabled, non-Persian, malformed-context, or exact-version-drift states.
 * Completed bounded Persian localization coverage for exact GravityView 3.3.4 across the accepted 3127/3127 source census: the historical 461-identity surface union remains provenance and the reviewed 2666-identity product remainder completes exact-source content authority. One exact singular/plural source collision yields 3126 canonical runtime provider entries; native script handles remain zero, `gk-query-filters` remains outside `gk-gravityview` provider authority, and no future-version or broader ecosystem compatibility is implied.
-
 
 = 4.8.0 =
 * Fixed mixed-digit exact Gravity Flow 3.1.0 Timeline/history and inherited Print presentation in `fa_IR`: admitted Jalali dates now keep the host-owned time value while rendering its visible digits with Persian glyphs. Timeline bodies, note IDs/order, raw timestamps, timezone/workflow semantics, APIs and native disabled/English controls remain unchanged.
