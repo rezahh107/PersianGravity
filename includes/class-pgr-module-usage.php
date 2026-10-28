@@ -29,13 +29,6 @@ final class PGR_Module_Usage {
 			);
 		}
 
-		if ( 'jalali_presentation' === $module_id ) {
-			return array(
-				'status' => self::UNUSED,
-				'count'  => 0,
-			);
-		}
-
 		if ( 'iranian_currency' === $module_id ) {
 			return array(
 				'status' => self::UNKNOWN,
@@ -67,15 +60,19 @@ final class PGR_Module_Usage {
 			);
 		}
 
-		$count = 0;
+		$count         = 0;
+		$indeterminate = false;
 		foreach ( $forms as $form ) {
-			if ( self::form_uses_module( $form, $module_id ) ) {
+			$usage = self::form_uses_module( $form, $module_id );
+			if ( self::USED === $usage ) {
 				++$count;
+			} elseif ( self::UNKNOWN === $usage ) {
+				$indeterminate = true;
 			}
 		}
 
 		return array(
-			'status' => $count > 0 ? self::USED : self::UNUSED,
+			'status' => $count > 0 ? self::USED : ( $indeterminate ? self::UNKNOWN : self::UNUSED ),
 			'count'  => $count,
 		);
 	}
@@ -85,15 +82,28 @@ final class PGR_Module_Usage {
 	 *
 	 * @param mixed  $form      Gravity Forms form meta.
 	 * @param string $module_id Module ID.
-	 * @return bool
+	 * @return string USED, UNUSED or UNKNOWN.
 	 */
 	private static function form_uses_module( $form, $module_id ) {
 		if ( ! is_array( $form ) ) {
-			return false;
+			return self::UNKNOWN;
 		}
 
-		if ( 'digit_normalization' === $module_id ) {
-			return ! empty( $form['pgr_normalize_digits'] );
+		if ( 'jalali_presentation' === $module_id ) {
+			// Form metadata contains saved Confirmation/Notification/field text.
+			// Broad prefix is deliberate: unresolved or future dedicated tags
+			// also block an unsafe disable; no Entry/SQL scan is needed.
+			$metadata = wp_json_encode( $form );
+			if ( ! is_string( $metadata ) ) {
+				return self::UNKNOWN;
+			}
+			if ( false !== strpos( $metadata, '{pgr_jdate_' ) ) {
+				return self::USED;
+			}
+		}
+
+		if ( 'digit_normalization' === $module_id && ! empty( $form['pgr_normalize_digits'] ) ) {
+			return self::USED;
 		}
 
 		$types = array(
@@ -102,29 +112,48 @@ final class PGR_Module_Usage {
 			'structured_scanner' => 'pgr_structured_scanner',
 		);
 
-		foreach ( (array) rgar( $form, 'fields', array() ) as $field ) {
-			$type = is_object( $field ) ? (string) ( $field->type ?? '' ) : ( is_array( $field ) ? (string) ( $field['type'] ?? '' ) : '' );
+		$fields        = $form['fields'] ?? null;
+		$indeterminate = ! is_array( $fields );
+		foreach ( is_array( $fields ) ? $fields : array() as $field ) {
+			$type = is_object( $field ) ? ( $field->type ?? null ) : ( is_array( $field ) ? ( $field['type'] ?? null ) : null );
+			if ( ! is_string( $type ) || '' === $type ) {
+				$indeterminate = true;
+				continue;
+			}
 
 			if ( isset( $types[ $module_id ] ) && $types[ $module_id ] === $type ) {
-				return true;
+				return self::USED;
 			}
 
 			if ( 'iranian_address' === $module_id && 'address' === $type ) {
 				if ( is_object( $field ) ) {
 					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- addressType is defined by the Gravity Forms public field API.
-					$address_type = (string) ( $field->addressType ?? '' );
+					$address_type = $field->addressType ?? '';
 				} elseif ( is_array( $field ) ) {
-					$address_type = (string) ( $field['addressType'] ?? '' );
+					$address_type = $field['addressType'] ?? '';
 				} else {
 					$address_type = '';
 				}
 
+				if ( ! is_string( $address_type ) ) {
+					$indeterminate = true;
+					continue;
+				}
 				if ( 'iran' === $address_type ) {
-					return true;
+					return self::USED;
 				}
 			}
 		}
 
-		return false;
+		// GFAPI::get_form() supplies an ID and a normalized fields array.
+		// Missing identity or unusable field metadata cannot prove non-use.
+		$id = $form['id'] ?? null;
+		if ( ! is_int( $id ) && ! ( is_string( $id ) && ctype_digit( $id ) ) ) {
+			$indeterminate = true;
+		}
+		if ( ! $indeterminate && (int) $id < 1 ) {
+			$indeterminate = true;
+		}
+		return $indeterminate ? self::UNKNOWN : self::UNUSED;
 	}
 }

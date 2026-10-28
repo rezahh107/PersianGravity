@@ -58,7 +58,7 @@ Disabled modules must not register owned fields/hooks/assets merely to return ea
 
 `pgr_modules` is a small autoloaded option with schema version 1 and booleans only. Missing/malformed state falls back safely to source defaults. The six pre-G-008 modules default enabled; `jalali_presentation` defaults disabled. When a schema-v1 option from an older installation lacks the new key, source-default merging keeps all stored legacy states unchanged and leaves G-008 disabled. Do not persist labels, callbacks, class names, paths or Help content.
 
-Disable checks run only on the explicit admin disable request. Use supported Gravity Forms APIs and form metadata only; never direct SQL or Entry scans. `USED` blocks. `UNKNOWN` requires explicit second confirmation. Gravity Forms unavailable is `UNKNOWN`. Enable does not require a usage scan. `jalali_presentation` owns no persisted form configuration, so its disable usage result is `UNUSED`.
+Disable checks run only on the explicit admin disable request. Use supported Gravity Forms APIs and form metadata only; never direct SQL or Entry scans. `USED` blocks. `UNKNOWN` requires explicit second confirmation. Gravity Forms unavailable is `UNKNOWN`. Enable does not require a usage scan. `jalali_presentation` now supplies explicit Merge Tags that can persist in form metadata; the on-demand disable check conservatively detects `{pgr_jdate_` in form definitions. Detected use blocks disable; missing GFAPI/indeterminate metadata follows the existing UNKNOWN confirmation policy. Its default remains OFF.
 
 Disabling must never delete Entries, form definitions, `pgr_settings`, `pgr_scanner_profiles`, mappings or form settings.
 

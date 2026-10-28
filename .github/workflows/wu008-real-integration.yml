@@ -15,6 +15,7 @@ on:
       - 'includes/class-pgr-gregorian-jalali-converter.php'
       - 'includes/class-pgr-jalali-presentation.php'
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gf-explicit-jalali-merge-tags.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
@@ -146,6 +147,7 @@ jobs:
           php -l tests/real-integration/g008-gravityview-setup-runtime.php
           php -l tests/real-integration/g008-gravityview-state.php
           php -l tests/real-integration/g008-gravityview-production-state.php
+          node --check tests/real-integration/g011-destination-browser.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
@@ -343,6 +345,37 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/gf-native-confirmation-baseline.php
           test -s "$WU008_ARTIFACT_DIR/gf-native-confirmation-baseline.json"
 
+      - name: Exercise production G011 explicit tags on the licensed host
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l includes/class-pgr-gf-explicit-jalali-merge-tags.php
+          php -l tests/real-integration/g011-explicit-production-runtime.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-production-runtime.php
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-production-runtime.json"
+
+      - name: Qualify each G011 system tag and typed Date field against licensed Gravity Forms
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-token-matrix.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-token-matrix.php
+          test -s "$WU008_ARTIFACT_DIR/g011-token-matrix.json"
+
+      - name: Install disposable G011 destination receiver and create Page/Redirect fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-destination-receipt-mu.php
+          php -l tests/real-integration/g011-destination-setup.php
+          php -l tests/real-integration/g011-destination-storage.php
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          cp tests/real-integration/g011-destination-receipt-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/g011-destination-receipt.php"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-setup.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-fixture.json"
+          WU008_G011_STORAGE_PHASE=baseline php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-storage.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-stored-baseline.json"
+
       - name: Set up exact browser runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -375,6 +408,68 @@ jobs:
         run: |
           set -euo pipefail
           node tests/real-integration/browser-tests.mjs
+
+      - name: Submit real G011 ordinary and AJAX Confirmations in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g011-explicit-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-browser.json"
+
+      - name: Verify enabled G011 Page/Redirect actual browser destinations
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g011-destination-browser.mjs enabled
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-browser-enabled.json"
+
+      - name: Verify enabled G011 en_US fallback on fresh native Gravity Forms request
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/g011-enabled-english-fallback.php
+          restore_fa() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_fa EXIT
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-enabled-english-fallback.php
+          test -s "$WU008_ARTIFACT_DIR/g011-enabled-english-fallback.json"
+          restore_fa
+          trap - EXIT
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+
+      - name: Verify disabled G011 Page/Redirect and persisted Form/Entry values
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          node tests/real-integration/g011-destination-browser.mjs disabled
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-browser-disabled.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-destination-storage.php
+          test -s "$WU008_ARTIFACT_DIR/g011-destination-storage.json"
+
+      - name: Verify fresh-request disabled handler and restore module
+        shell: bash
+        run: |
+          set -euo pipefail
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g011-explicit-disabled.php
+          test -s "$WU008_ARTIFACT_DIR/g011-explicit-disabled.json"
+          php "$WU008_WP_CLI" plugin deactivate persian-gravityforms --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            if ( class_exists( "PGR_GF_Explicit_Jalali_Merge_Tags", false ) ) { throw new RuntimeException( "G011 handler loaded despite inactive plugin" ); }
+            $data = json_decode( file_get_contents( getenv( "WU008_ARTIFACT_DIR" ) . "/g011-explicit-production-runtime.json" ), true );
+            $form = GFAPI::get_form( $data["form_id"] );
+            $entry = GFAPI::get_entry( $data["entry_id"] );
+            $text = "Raw={pgr_jdate_created}";
+            if ( $text !== GFCommon::replace_variables( $text, $form, $entry ) ) { throw new RuntimeException( "G011 inactive plugin altered tag" ); }
+            echo "G011 inactive-plugin native-unresolved PASS\n";
+          '
+          php "$WU008_WP_CLI" plugin activate persian-gravityforms --path="$WU008_WP_PATH"
+          # Preserve WU008's pre-existing GravityView fixture precondition: OFF.
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'PGR_Module_Registry::set_enabled( "jalali_presentation", false );'
 
       - name: Execute current-Head fa_IR RTL qualification
         shell: bash
