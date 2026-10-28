@@ -12,7 +12,7 @@ if (!/^[0-9a-f]{40}$/.test(fixture.head) || fixture.gf_version !== '3.1.1.1') {
 const browser = await chromium.launch({ headless: true });
 const evidence = { head: fixture.head, gf_version: fixture.gf_version, module_state: mode, status: 'FAIL', results: [] };
 const expectedJalali = '۱۴۰۴/۱۲/۲۹';
-const pDigits = /^[۰-۹]{4}\\/[۰-۹]{2}\\/[۰-۹]{2}$/u;
+const pDigits = /^[۰-۹]{4}[/][۰-۹]{2}[/][۰-۹]{2}$/u;
 function assert(condition, message) { if (!condition) throw Error(message); }
 function values(receipt, key) { return receipt.pairs.filter((pair) => pair.key === key).map((pair) => pair.value); }
 function exact(receipt, key, expected) {
