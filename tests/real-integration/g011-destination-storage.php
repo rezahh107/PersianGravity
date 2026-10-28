@@ -48,6 +48,12 @@ if ( ! $form_equal || ! $entry_equal ) {
 }
 $enabled  = json_decode( (string) file_get_contents( $dir . '/g011-destination-browser-enabled.json' ), true );
 $disabled = json_decode( (string) file_get_contents( $dir . '/g011-destination-browser-disabled.json' ), true );
+// Locked GF_Field_Date::get_value_save_input() uses GFFormsModel::prepare_date()
+// on real submissions; GFAPI::add_entry() in the baseline is a different path.
+$native_stored_date = GFFormsModel::prepare_date( 'mdy', '03/20/2026' );
+if ( '2026-03-20' !== $native_stored_date ) {
+	throw new RuntimeException( 'G011 native Date storage semantics changed.' );
+}
 $count = 0;
 foreach ( array( $enabled, $disabled ) as $batch ) {
 	if ( 'PASS' !== ( $batch['status'] ?? '' ) || 4 !== count( $batch['results'] ?? array() ) ) {
@@ -58,7 +64,7 @@ foreach ( array( $enabled, $disabled ) as $batch ) {
 		if ( ! is_array( $entry ) ||
 			(int) $entry['form_id'] !== (int) $fixture['form_id'] ||
 			( $entry['1'] ?? null ) !== $result['route'] ||
-			( $entry['2'] ?? null ) !== '03/20/2026' ) {
+			( $entry['2'] ?? null ) !== $native_stored_date ) {
 			throw new RuntimeException( 'G011 destination submission stored unexpected Entry data.' );
 		}
 		++$count;
