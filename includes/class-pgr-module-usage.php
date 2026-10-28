@@ -94,7 +94,10 @@ final class PGR_Module_Usage {
 			// Broad prefix is deliberate: unresolved or future dedicated tags
 			// also block an unsafe disable; no Entry/SQL scan is needed.
 			$metadata = wp_json_encode( $form );
-			if ( ! is_string( $metadata ) || false !== strpos( $metadata, '{pgr_jdate_' ) ) {
+			if ( ! is_string( $metadata ) ) {
+				return self::UNKNOWN;
+			}
+			if ( false !== strpos( $metadata, '{pgr_jdate_' ) ) {
 				return self::USED;
 			}
 		}
