@@ -49,8 +49,8 @@ const assert = (truth, description) => { if (!truth) throw Error(description); }
 const open = async (url) => {
   const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
   assert(response?.ok(), 'HTTP error or redirect to wrong page: ' + page.url());
-  await page.locator('#wpadminbar').waitFor();
-  await page.locator('#adminmenu').waitFor();
+  await page.locator('#wpadminbar').waitFor({ state: 'attached' });
+  await page.locator('#adminmenu').waitFor({ state: 'attached' });
   assert(!page.url().includes('wp-login.php'), 'Unauthenticated admin page');
   assert((await page.locator('body').getAttribute('class') || '').includes('wp-admin'),
     'Not the WordPress admin shell');
@@ -79,10 +79,14 @@ try {
   for (const topic of topics) {
     await check('OVERVIEW_TO_HELP_' + topic, async () => {
       await open(overviewUrl);
-      const card = page.locator('article.pgr-module-card').filter({
-        has: page.locator('code[dir="ltr"]').getByText(topic, { exact: true }),
-      });
-      assert(await card.count() === 1, 'Module card missing or duplicated: ' + topic);
+      const cards = await page.locator('article.pgr-module-card').all();
+      const matching = [];
+      for (const candidate of cards) {
+        const id = (await candidate.locator('code[dir="ltr"]').first().textContent() || '').trim();
+        if (id === topic) matching.push(candidate);
+      }
+      assert(matching.length === 1, 'Module card missing or duplicated: ' + topic);
+      const card = matching[0];
       const target = card.locator('a.button[href*="persian-gravityforms-help"]');
       assert(await target.count() === 1, 'Module Help link missing: ' + topic);
       await target.click();
