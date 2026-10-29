@@ -214,3 +214,16 @@
 		position: static;
 	}
 }
+
+/* G-012: Help-only practical examples and narrow viewports. */
+.pgr-help-example { margin-block: 20px 8px; padding: 16px; border: 1px solid #c3c4c7; border-inline-start: 4px solid #2271b1; border-radius: 4px; background: #f6f7f7; overflow-wrap: anywhere; }
+.pgr-help-example h3 { margin-block: 0 16px; }
+.pgr-help-example h4 { margin-block: 16px 6px; }
+.pgr-help-example ol { padding-inline-start: 24px; }
+.pgr-help-sample { min-width: 0; margin-block: 12px; padding: 10px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
+.pgr-help-sample__header { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.pgr-help-sample__code { max-width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; unicode-bidi: plaintext; background: #f6f7f7; }
+.pgr-help-sample__code code { white-space: inherit; unicode-bidi: plaintext; }
+.pgr-help-sample__status:not(:empty) { display: block; margin-block-start: 6px; }
+.pgr-module-card__feature { padding: 10px; border-inline-start: 3px solid #2271b1; background: #f6f7f7; overflow-wrap: anywhere; }
+@media (max-width: 782px) { .pgr-help-example { padding: 12px; } }

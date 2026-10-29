@@ -80,6 +80,9 @@ final class PGR_Product_Admin {
 		}
 
 		wp_enqueue_style( 'pgr-admin', PGR_URL . 'assets/css/pgr-admin.css', array(), PGR_VERSION );
+		if ( false !== strpos( $hook_suffix, self::HELP_SLUG ) ) {
+			wp_enqueue_script( 'pgr-admin-help', PGR_URL . 'assets/js/pgr-admin-help.js', array(), PGR_VERSION, true );
+		}
 		if ( false === strpos( $hook_suffix, PGR_Admin::PROFILES_SLUG ) ) {
 			return;
 		}
@@ -235,8 +238,9 @@ final class PGR_Product_Admin {
 			return;
 		}
 
-		$lang   = $this->help_language();
-		$topics = PGR_Help_Catalog::all();
+		$lang     = $this->help_language();
+		$topics   = PGR_Help_Catalog::all();
+		$examples = PGR_Help_Catalog::examples();
 		?>
 		<div class="wrap pgr-admin pgr-help">
 			<h1><?php esc_html_e( 'Help & Documentation', 'persian-gravityforms' ); ?></h1>
@@ -258,10 +262,75 @@ final class PGR_Product_Admin {
 						<section class="pgr-panel" id="<?php echo esc_attr( $id ); ?>">
 							<h2><?php echo esc_html( $translations[ $lang ]['title'] ); ?></h2>
 							<?php echo wp_kses_post( $translations[ $lang ]['body'] ); ?>
+							<?php if ( isset( $examples[ $id ][ $lang ] ) ) { ?>
+								<?php $this->render_worked_example( $examples[ $id ][ $lang ], $lang ); ?>
+							<?php } ?>
 						</section>
 					<?php } ?>
 				</main>
 			</div>
+		</div>
+		<?php
+	}
+
+
+	/** Render one escaped example and keyboard-copyable text samples. */
+	private function render_worked_example( $example, $lang ) {
+		$labels = 'fa' === $lang
+			? array(
+				'title'         => 'مثال عملی گام‌به‌گام',
+				'scenario'      => 'سناریو',
+				'prerequisites' => 'پیش‌نیاز',
+				'steps'         => 'مراحل تنظیم و اجرا',
+				'samples'       => 'نمونه‌های قابل کپی',
+				'expected'      => 'نتیجه مورد انتظار',
+				'verification'  => 'روش بررسی',
+				'notes'         => 'نکات و محدودیت‌ها',
+				'copy'          => 'کپی',
+				'success'       => 'کپی شد.',
+				'failure'       => 'کپی خودکار ممکن نشد؛ متن را دستی انتخاب و کپی کنید.',
+			)
+			: array(
+				'title'         => 'Step-by-step worked example',
+				'scenario'      => 'Scenario',
+				'prerequisites' => 'Prerequisites',
+				'steps'         => 'Configure and try',
+				'samples'       => 'Copy-ready samples',
+				'expected'      => 'Expected result',
+				'verification'  => 'How to verify',
+				'notes'         => 'Notes and limits',
+				'copy'          => 'Copy',
+				'success'       => 'Copied.',
+				'failure'       => 'Copy failed; select and copy the text manually.',
+			);
+		?>
+		<div class="pgr-help-example" aria-label="<?php echo esc_attr( $labels['title'] ); ?>">
+			<h3><?php echo esc_html( $labels['title'] ); ?></h3>
+			<?php foreach ( array( 'scenario', 'prerequisites' ) as $section ) { ?>
+				<h4><?php echo esc_html( $labels[ $section ] ); ?></h4>
+				<p><?php echo esc_html( $example[ $section ] ); ?></p>
+			<?php } ?>
+			<h4><?php echo esc_html( $labels['steps'] ); ?></h4>
+			<ol>
+				<?php foreach ( $example['steps'] as $step ) { ?>
+					<li><?php echo esc_html( $step ); ?></li>
+				<?php } ?>
+			</ol>
+			<h4><?php echo esc_html( $labels['samples'] ); ?></h4>
+			<?php foreach ( $example['samples'] as $sample ) { ?>
+				<div class="pgr-help-sample">
+					<div class="pgr-help-sample__header">
+						<strong><?php echo esc_html( $sample['label'] ); ?></strong>
+						<button type="button" class="button button-small" data-pgr-copy="1" data-pgr-copy-success="<?php echo esc_attr( $labels['success'] ); ?>" data-pgr-copy-failure="<?php echo esc_attr( $labels['failure'] ); ?>" aria-label="<?php echo esc_attr( $labels['copy'] . ': ' . $sample['label'] ); ?>"><?php echo esc_html( $labels['copy'] ); ?></button>
+					</div>
+					<pre class="pgr-help-sample__code" dir="auto" tabindex="0"><code><?php echo esc_html( $sample['value'] ); ?></code></pre>
+					<span class="pgr-help-sample__status" role="status" aria-live="polite" aria-atomic="true"></span>
+				</div>
+			<?php } ?>
+			<?php foreach ( array( 'expected', 'verification', 'notes' ) as $section ) { ?>
+				<h4><?php echo esc_html( $labels[ $section ] ); ?></h4>
+				<p><?php echo esc_html( $example[ $section ] ); ?></p>
+			<?php } ?>
 		</div>
 		<?php
 	}
@@ -357,6 +426,9 @@ final class PGR_Product_Admin {
 			<p dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $primary ] ); ?></p>
 			<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $secondary ] ); ?></p>
 			<code dir="ltr"><?php echo esc_html( $id ); ?></code>
+			<?php if ( 'jalali_presentation' === $id ) { ?>
+				<p class="pgr-module-card__feature" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( 'fa' === $primary ? 'تگ‌های اختصاصی جلالی برای تأییدیه، اعلان و Query String؛ مثال آماده و فهرست کامل در Help همین ماژول.' : 'Explicit Jalali Merge Tags for confirmations, notifications and qualified query strings; full copyable guide in this module’s Help.' ); ?> <code dir="ltr">{pgr_jdate_created_date}</code></p>
+			<?php } ?>
 			<?php if ( $enabled && $confirm === $id ) { ?>
 				<div class="pgr-warning-note" role="alert"><?php esc_html_e( 'Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk.', 'persian-gravityforms' ); ?></div>
 			<?php } ?>

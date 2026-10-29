@@ -148,6 +148,7 @@ jobs:
           php -l tests/real-integration/g008-gravityview-state.php
           php -l tests/real-integration/g008-gravityview-production-state.php
           node --check tests/real-integration/g011-destination-browser.mjs
+          node --check tests/real-integration/g012-admin-help-browser.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
@@ -402,6 +403,13 @@ jobs:
           done
           cat /tmp/wu008-wp-server.log >&2
           exit 1
+
+      - name: Validate G012 Help in licensed authenticated WordPress admin Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/g012-admin-help-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/g012-admin-help-browser.json"
 
       - name: Execute existing WU008 provider/fallback regression on current Head
         shell: bash
