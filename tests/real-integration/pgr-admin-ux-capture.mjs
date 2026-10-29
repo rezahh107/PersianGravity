@@ -4,7 +4,6 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
@@ -61,7 +60,7 @@ echo wp_json_encode(array(
 "modules"=>get_option("pgr_modules","__missing__"),
 "profiles"=>get_option("pgr_scanner_profiles","__missing__"),
 "settings"=>get_option("pgr_settings","__missing__"),
-"wordpress"=>get_bloginfo("version"),"php"=>PHP_VERSION));`;
+"wordpress"=>get_bloginfo("version"),"php"=>PHP_VERSION,"theme"=>wp_get_theme()->get("Name")));`;
 const state = () => JSON.parse(cli(stateCode));
 const b64 = (value) => Buffer.from(JSON.stringify(value), 'utf8').toString('base64');
 const restoreOption = (name, value) => {
@@ -278,6 +277,7 @@ try {
   assert(original.php.startsWith('8.2.'), 'Unexpected PHP major/minor');
   evidence.environment.wordpress = original.wordpress;
   evidence.environment.php = original.php;
+  evidence.environment.theme = original.theme;
   evidence.environment.playwright = JSON.parse(fs.readFileSync('node_modules/playwright/package.json', 'utf8')).version;
   browser = await chromium.launch({ headless: true });
   evidence.environment.chromium = browser.version();
@@ -293,7 +293,8 @@ try {
       runningErrors.push({ kind: 'http-error', url: shortUrl(response.url()), status: response.status() });
     }
   });
-  await go(manifest.login_url);
+  const loginResponse = await page.goto(manifest.login_url, { waitUntil: 'domcontentloaded' });
+  assert(loginResponse?.ok(), 'Login endpoint unavailable');
   await page.locator('#user_login').fill('runtime_admin');
   await page.locator('#user_pass').fill(process.env.WU008_ADMIN_PASSWORD);
   await Promise.all([
