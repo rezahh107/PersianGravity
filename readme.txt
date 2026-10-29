@@ -103,6 +103,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Changelog ==
 
 = Unreleased =
+* Added seven practical Persian/English worked examples to in-plugin Help & Documentation, covering module setup, copy-ready sample inputs, expected results, verification steps, and limitations.
+* Improved G-011 Jalali Merge Tag discoverability from Overview to the relevant Help section, with copy-ready tags, keyboard-operable copy controls and accessible status feedback, plus responsive RTL/LTR Help layouts. These merged changes are not in the published 4.9.0 package.
 
 = 4.9.0 =
 * Added G-011 opt-in, explicit Jalali date Merge Tags for Gravity Forms confirmations and notifications: Entry created/updated/payment/today datetime, date-only and time-only tags, plus typed native Gregorian Date-field tags (e.g. `{pgr_jdate_created_date}`, `{pgr_jdate_field_2}`). Existing native Merge Tags are never auto-converted; existing form templates must opt in manually. Reuses the G-008 calendar engine and leaves stored dates, native tokens and other Gravity Forms consumers unchanged.
