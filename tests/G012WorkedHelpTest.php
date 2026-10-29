@@ -28,6 +28,24 @@ final class G012WorkedHelpTest extends TestCase {
 		}
 	}
 
+
+	public function test_plain_text_description_has_no_literal_markdown_formatting() {
+		foreach ( PGR_Help_Catalog::examples() as $topic_id => $translations ) {
+			foreach ( array( 'fa', 'en' ) as $lang ) {
+				$example = $translations[ $lang ];
+				$prose   = array_merge(
+					array( $example['scenario'], $example['prerequisites'], $example['expected'], $example['verification'], $example['notes'] ),
+					$example['steps']
+				);
+				foreach ( $prose as $text ) {
+					$context = $topic_id . '/' . $lang;
+					$this->assertStringNotContainsString( '`', $text, $context );
+					$this->assertDoesNotMatchRegularExpression( '/(?:^|\\s)\\*[^*\\s][^*\\r\\n]*\\*/u', $text, $context );
+				}
+			}
+		}
+	}
+
 	public function test_source_validated_id_and_date_fixtures() {
 		$this->assertTrue( PGR_Utils::is_valid_iran_national_id( '۰۰۱-۳۵۴۶۲۴-۴' ) );
 		$this->assertFalse( PGR_Utils::is_valid_iran_national_id( '۰۰۱-۳۵۴۶۲۴-۵' ) );
