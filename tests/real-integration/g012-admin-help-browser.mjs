@@ -19,6 +19,10 @@ const topics = [
   'national-id', 'jalali-date', 'jalali-presentation', 'iranian-address',
   'digit-normalization', 'iranian-currency', 'structured-scanner',
 ];
+const moduleIds = [
+  'national_id', 'jalali_date', 'jalali_presentation', 'iranian_address',
+  'digit_normalization', 'iranian_currency', 'structured_scanner',
+];
 const base = new URL(manifest.admin_url);
 const overviewUrl = new URL('admin.php?page=persian-gravityforms', base).href;
 const helpUrl = (lang) => new URL('admin.php?page=persian-gravityforms-help&lang=' + lang, base).href;
@@ -83,7 +87,7 @@ try {
       const matching = [];
       for (const candidate of cards) {
         const id = (await candidate.locator('code[dir="ltr"]').first().textContent() || '').trim();
-        if (id === topic) matching.push(candidate);
+        if (id === moduleIds[topics.indexOf(topic)]) matching.push(candidate);
       }
       assert(matching.length === 1, 'Module card missing or duplicated: ' + topic);
       const card = matching[0];
