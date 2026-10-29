@@ -97,6 +97,7 @@ try {
       assert(new URL(page.url()).hash === '#' + topic, 'Wrong Overview to Help anchor: ' + page.url());
       assert(new URL(page.url()).searchParams.get('lang') === 'fa', 'Overview default language drift');
       const section = page.locator('section#' + topic);
+      await section.waitFor({ state: 'attached', timeout: 15000 });
       assert(await section.count() === 1, 'Help anchor not present in actual DOM');
       assert(await section.locator('.pgr-help-example').count() === 1, 'Worked example not rendered');
       return { target: page.url(), exampleRendered: true };
