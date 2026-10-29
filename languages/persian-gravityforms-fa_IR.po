@@ -1,7 +1,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Persian Gravity Forms 4.9.0\n"
+"Project-Id-Version: Persian Gravity Forms 4.10.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/PersianGravity\n"
 "POT-Creation-Date: 2026-09-27T05:44:15+00:00\n"
 "Language: fa_IR\n"
