@@ -149,6 +149,7 @@ jobs:
           php -l tests/real-integration/g008-gravityview-production-state.php
           node --check tests/real-integration/g011-destination-browser.mjs
           node --check tests/real-integration/g012-admin-help-browser.mjs
+          node --check tests/real-integration/pgr-admin-ux-capture.mjs
           node --check tests/real-integration/browser-diagnostics.mjs
           node --check tests/real-integration/browser-tests.mjs
           node --check tests/real-integration/source-discovery.mjs
@@ -410,6 +411,15 @@ jobs:
           set -euo pipefail
           node tests/real-integration/g012-admin-help-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/g012-admin-help-browser.json"
+
+      - name: Capture authenticated bilingual PersianGravity admin UX evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/real-integration/pgr-admin-ux-capture.mjs
+          test -s "$WU008_ARTIFACT_DIR/pgr-admin-ux-capture.json"
+          test -s "$WU008_ARTIFACT_DIR/pgr-admin-desktop-contact-sheet.png"
+          test -s "$WU008_ARTIFACT_DIR/pgr-admin-mobile-contact-sheet.png"
 
       - name: Execute existing WU008 provider/fallback regression on current Head
         shell: bash
