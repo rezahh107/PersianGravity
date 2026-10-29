@@ -179,7 +179,7 @@ States:
 Detection:
 
 - custom field modules: field type match.
-- `jalali_presentation`: always `UNUSED` because it owns no persisted form configuration or migrated data.
+- `jalali_presentation`: saved G-011 `{pgr_jdate_*}` references in serializable Gravity Forms form metadata return `USED` and block disable, even though the module does not own migrated Entry data. Verified absence with valid form metadata returns `UNUSED`; missing/invalid metadata, unavailable GFAPI or failed enumeration returns `UNKNOWN` and requires the existing second confirmation. Inspection is metadata-only, with no Entry or direct SQL scan.
 - digit normalization: form-level `pgr_normalize_digits`.
 - Iranian address: Address field with `addressType = iran`.
 - Iranian currency: intentionally `UNKNOWN`; safe site-wide non-use is not inferred from incomplete form metadata.
