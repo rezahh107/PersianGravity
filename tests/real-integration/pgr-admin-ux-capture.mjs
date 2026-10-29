@@ -75,11 +75,16 @@ const setUserLocale = (value, present = true) => {
       : 'delete_user_meta($u->ID,"locale");'));
 };
 const setLocale = (locale) => {
-  cli('update_option("WPLANG","' + locale + '");');
+  // WordPress/this WU008 harness represents the default English locale by
+  // removing WPLANG, as its existing G-011 and G-009 controls already do.
+  if (locale === 'en_US') cli('delete_option("WPLANG");');
+  else cli('update_option("WPLANG","' + locale + '");');
   setUserLocale(locale);
   const check = state();
   assert(check.site === locale && check.effective_user === locale,
-    'WordPress site and authenticated-user locale did not both switch to ' + locale);
+    'Locale mismatch: requested ' + locale +
+      ', site=' + check.site + ', user=' + check.effective_user +
+      ', storedSite=' + check.site_setting + ', storedUser=' + check.user_locale);
   return check;
 };
 const urlFor = (item, args = {}) => {
