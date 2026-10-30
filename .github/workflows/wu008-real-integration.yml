@@ -1051,6 +1051,13 @@ jobs:
           requireTrue((sheet.match(/<img\b/g) || []).length === 60 && imgSources.length === 60,
             'contact sheet image count mismatch: found ' + imgSources.length + ', expected 60');
           requireTrue(imageLinks.length === 60, 'contact sheet JPEG link count mismatch: ' + imageLinks.length);
+          const pairedLinks = [...sheet.matchAll(/\[<img\s+src="([^"]+)"[^>]*>\]\(([^)]+)\)/g)];
+          requireTrue(pairedLinks.length === 60, 'contact sheet paired thumbnail/link count mismatch: ' + pairedLinks.length);
+          for (const pair of pairedLinks) {
+            requireTrue(pair[1] === pair[2], 'contact sheet thumbnail/link mismatch: ' + pair[1] + ' vs ' + pair[2]);
+          }
+          const allImageLinks = (sheet.match(/\]\([^)]+\.(?:jpe?g|png|webp)\)/gi) || []);
+          requireTrue(allImageLinks.length === 60, 'unexpected/unresolved image links in contact sheet: ' + allImageLinks.length);
           for (const group of [imgSources,imageLinks]) {
             const seen = new Set();
             for (const name of group) {
