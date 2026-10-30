@@ -883,7 +883,7 @@ jobs:
           retention-days: 30
 
   publish-admin-ui-evidence:
-    name: Publish captured screenshots to an immutable evidence branch
+    name: Publish validated screenshots to a run-attempt-scoped evidence branch
     needs: real-integration
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
@@ -964,7 +964,7 @@ jobs:
             const bytes = fs.readFileSync(path.join(source, filename));
             requireTrue(bytes.length > 100 && bytes[0] === 0xff && bytes[1] === 0xd8, 'empty/invalid JPEG SOI: ' + filename);
             requireTrue(bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9, 'truncated JPEG EOI: ' + filename);
-            let cursor = 2, frame = false, scan = false, end = false;
+            let cursor = 2, frame = false, scan = false, end = false, dimensions = null;
             while (cursor < bytes.length) {
               requireTrue(bytes[cursor++] === 0xff, 'invalid JPEG marker at ' + (cursor - 1) + ': ' + filename);
               while (bytes[cursor] === 0xff) cursor++;
@@ -977,8 +977,10 @@ jobs:
               const size = bytes.readUInt16BE(cursor);
               requireTrue(size >= 2 && cursor + size <= bytes.length, 'invalid JPEG segment length: ' + filename);
               if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
-                requireTrue(size >= 8 && bytes.readUInt16BE(cursor + 3) > 0 && bytes.readUInt16BE(cursor + 5) > 0,
-                  'invalid JPEG frame dimensions: ' + filename);
+                const height = bytes.readUInt16BE(cursor + 3), width = bytes.readUInt16BE(cursor + 5);
+                requireTrue(size >= 8 && width > 0 && height > 0 && !frame,
+                  'invalid/duplicate JPEG frame dimensions: ' + filename);
+                dimensions = {width, height};
                 frame = true;
               }
               cursor += size;
@@ -994,8 +996,10 @@ jobs:
               }
             }
             requireTrue(frame && scan && end && cursor === bytes.length, 'invalid/incomplete JPEG structure: ' + filename);
+            return dimensions;
           }
-          for (const filename of [...screenshots, ...controls]) checkJpeg(filename);
+          const imageDimensions = new Map();
+          for (const filename of [...screenshots, ...controls]) imageDimensions.set(filename, checkJpeg(filename));
           const caseStates = new Set(['CAPTURED_NO_DETECTED_OVERFLOW','VISUAL_FINDING']);
           let baselineRuntime = null;
           for (const locale of locales) for (const mode of ['normal','disabled']) {
@@ -1033,6 +1037,14 @@ jobs:
               requireTrue(caseStates.has(item.state), 'incomplete capture state: ' + filename + '/' + label);
               requireTrue(item.measured && item.measured.viewport?.width === item.width,
                 'missing/inconsistent viewport measurements: ' + filename + '/' + label);
+              // Full-page screenshots may be wider than the viewport when a genuine
+              // overflow is present. Reject only undersized images: they cannot
+              // contain the captured viewport at the recorded device pixel ratio.
+              const image = imageDimensions.get(item.screenshot);
+              requireTrue(image.width >= item.width * item.dpr && image.height >= item.height * item.dpr,
+                'JPEG smaller than declared viewport: ' + item.screenshot + ' (' + image.width + 'x' +
+                image.height + '; expected at least ' + (item.width * item.dpr) + 'x' +
+                (item.height * item.dpr) + ')');
             }
             requireTrue(visited.size === requiredCases.size, 'missing required scenario: ' + filename);
             if (mode === 'normal') {
@@ -1041,6 +1053,9 @@ jobs:
                 control.mode === 'ISOLATED_HTML_NOT_PRODUCT' && control.viewport_width === 320 &&
                 Number.isFinite(control.document_width) && control.document_width > 322,
                 'missing/failed 320px overflow negative control: ' + filename);
+              const controlImage = imageDimensions.get('ui-negative-control-' + locale + '-320.jpg');
+              requireTrue(controlImage.width >= control.viewport_width && controlImage.height >= 700,
+                'negative-control JPEG smaller than 320x700 viewport: ' + locale);
             } else {
               requireTrue(manifest.negative_control === null, 'unexpected disabled-mode negative-control claim: ' + filename);
             }
@@ -1087,11 +1102,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git checkout --orphan "evidence/wu008-admin-ui-${GITHUB_RUN_ID}"
+          publication_branch="evidence/wu008-admin-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          # Never replace an existing run-attempt branch, including reruns of a
+          # publisher job. The non-force push also fails closed on remote races.
+          if git ls-remote --exit-code --heads origin "refs/heads/${publication_branch}" > /dev/null; then
+            echo "Evidence branch already exists; refusing to overwrite: ${publication_branch}" >&2
+            exit 1
+          fi
+          git checkout --orphan "${publication_branch}"
           mkdir -p admin-ui-evidence
           cp -a "$source_dir/." admin-ui-evidence/
           git add -- admin-ui-evidence
-          git commit -m "evidence: WU008 licensed PersianGravity admin UI capture run ${GITHUB_RUN_ID}"
-          git push origin "HEAD:refs/heads/evidence/wu008-admin-ui-${GITHUB_RUN_ID}"
-          echo "Durable evidence branch: evidence/wu008-admin-ui-${GITHUB_RUN_ID}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Contact sheet: https://github.com/${GITHUB_REPOSITORY}/blob/evidence/wu008-admin-ui-${GITHUB_RUN_ID}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
+          git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+          evidence_commit="$(git rev-parse HEAD)"
+          git push origin "HEAD:refs/heads/${publication_branch}"
+          remote_commit="$(git ls-remote origin "refs/heads/${publication_branch}" | cut -f1)"
+          test "${remote_commit}" = "${evidence_commit}"
+          echo "Run-attempt branch (mutable reference): ${publication_branch}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exact published commit SHA: ${evidence_commit}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
