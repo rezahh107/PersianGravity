@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {inflateSync} from 'node:zlib';
 
 const HEAD='0123456789abcdef0123456789abcdef01234567';
 const workflow=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
@@ -13,7 +14,16 @@ const gate=match[1].split('\n').map(line=>line.trim()?line.replace(/^          /
 assert.ok(workflow.indexOf('WU008_EVIDENCE_GATE_BEGIN')<workflow.indexOf('git push origin'),'Gate must precede push');
 assert.match(workflow,/WU008_EVIDENCE_EXPECTED_HEAD: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
 
-const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3GiiigD//2Q==','base64');
+const tinyJpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3GiiigD//2Q==','base64');
+// Independently decodable grayscale JPEGs at the declared viewport sizes.
+// Deflated base64 keeps these deterministic fixtures dependency-free.
+const jpegByViewport = new Map(Object.entries({
+  1280: 'eNrtzL0JgEAYg+EcIhxYqKDzWAgHOpdDOI6FQ/jTuMnnaaetjcX7pAshttihog9dkHOSi5HtamVfTcp8MqTxtpTNqu//hyTWVfFuZZv8tW00CgAAAAAAAH+Q23oCLaZRng==',
+  390: 'eNr7f+P/AwYBLzdPNwZGRgYGRiBk+H+bwZnhP6XgAAM3B7MPYxsjoyDD/yMMomDzUQAzUFhEAF2U4f8tBg6QWnuGGQyjYBSMglEwCmCF400AMn9R2Q==',
+  320: 'eNr7f+P/AwYBLzdPNwZGRgYGRiBk+H+bwZnhP6XgAAM3B9MeRgdGRkGG/0cYRMHmowBmoLCIALoow/9bDBwgtfYMMxhGwSgYBfQC/P9vAgAhUFIR',
+  control: 'eNr7f+P/AwYBLzdPNwZGRgYGRiBk+H+bwZnhP6XgAAM3B9MeZgVGRkGG/0cYRMHmowBmoLCIALoow/9bDBwgtfYMMxhGwSgYBaNgFIyCUTAKBgfg/38TAIjUUfM=',
+}).map(([key,b64])=>[key,inflateSync(Buffer.from(b64,'base64'))]));
+function imageFor(width){const value=jpegByViewport.get(String(width));assert.ok(value,'No JPEG fixture for '+width);return value;}
 const locales=['fa_IR','en_US'];
 const normal=['overview','profiles-list','profiles-new','profiles-edit','profiles-built-in','settings','system-status','module-confirm'];
 const disabled=['overview-disabled','profiles-disabled-warning','settings-disabled-notice','system-status-disabled'];
@@ -29,7 +39,7 @@ function fixture(){
       for(const name of names){
         const filename='ui-'+mode+'-'+locale+'-'+name+'-'+width+'.jpg';
         images.push(filename);
-        fs.writeFileSync(path.join(dir,filename),jpeg);
+        fs.writeFileSync(path.join(dir,filename),imageFor(width));
         cases.push({name,width,height:width===1280?900:width===390?844:700,dpr:1,locale,mode,
           state:name==='system-status'&&width===390?'VISUAL_FINDING':'CAPTURED_NO_DETECTED_OVERFLOW',
           measured:{viewport:{width}},screenshot:filename});
@@ -44,7 +54,7 @@ function fixture(){
     const file='manifest-'+mode+'-'+locale+'.json';
     manifests.set(file,manifest);
     fs.writeFileSync(path.join(dir,file),JSON.stringify(manifest));
-    if(mode==='normal')fs.writeFileSync(path.join(dir,'ui-negative-control-'+locale+'-320.jpg'),jpeg);
+    if(mode==='normal')fs.writeFileSync(path.join(dir,'ui-negative-control-'+locale+'-320.jpg'),jpegByViewport.get('control'));
   }
   fs.writeFileSync(path.join(dir,'CONTACT_SHEET.md'),
     images.map(name=>'[<img src="'+name+'" alt="capture" />]('+name+')').join('\n'));
@@ -83,12 +93,18 @@ test('complete four manifests, 60 JPEGs, two controls and VISUAL_FINDING pass',(
     assert.match(result.stdout,/manifests=4, product_jpegs=60, negative_controls=2/);
   }finally{fs.rmSync(f.dir,{recursive:true,force:true});}
 });
+mutation('structurally valid but unusable 1x1 product screenshot',f=>{
+  fs.writeFileSync(path.join(f.dir,f.images[0]),tinyJpeg);
+},'JPEG smaller than declared viewport');
+mutation('structurally valid but unusable 1x1 negative-control screenshot',f=>{
+  fs.writeFileSync(path.join(f.dir,'ui-negative-control-en_US-320.jpg'),tinyJpeg);
+},'negative-control JPEG smaller than 320x700 viewport');
 mutation('missing product JPEG',f=>fs.unlinkSync(path.join(f.dir,f.images[0])),'missing required evidence file');
 mutation('missing isolated control JPEG',f=>fs.unlinkSync(path.join(f.dir,'ui-negative-control-fa_IR-320.jpg')),'missing required evidence file');
 mutation('oversized JPEG artifact',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),Buffer.alloc(4*1024*1024+1)), 'empty/oversized evidence file');
 mutation('empty JPEG',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),''),'empty/oversized evidence file');
 mutation('invalid JPEG bytes',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),Buffer.from('INVALID'.repeat(40))),'empty/invalid JPEG');
-mutation('truncated JPEG',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),jpeg.subarray(0,200)),'truncated JPEG EOI');
+mutation('truncated JPEG',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),imageFor(1280).subarray(0,200)),'truncated JPEG EOI');
 mutation('duplicate screenshot ref',f=>{const m=f.manifests.get('manifest-normal-fa_IR.json');m.cases[1].screenshot=m.cases[0].screenshot;save(f,'manifest-normal-fa_IR.json');},'wrong/duplicate screenshot reference');
 mutation('altered screenshot ref',f=>{const m=f.manifests.get('manifest-normal-fa_IR.json');m.cases[0].screenshot='ui-other.jpg';save(f,'manifest-normal-fa_IR.json');},'wrong/duplicate screenshot reference');
 mutation('missing manifest',f=>fs.unlinkSync(path.join(f.dir,'manifest-disabled-en_US.json')),'missing required evidence file');
