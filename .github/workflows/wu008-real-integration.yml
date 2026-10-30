@@ -179,6 +179,7 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
