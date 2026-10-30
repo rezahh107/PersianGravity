@@ -136,6 +136,9 @@ jobs:
           bash -n tests/real-integration/verify-package.sh
           php -l tools/compatibility/gravityflow-package.php
           php -l tests/real-integration/setup-runtime.php
+          php -l tests/real-integration/admin-ui-evidence-fixture.php
+          node --check tests/real-integration/admin-ui-evidence-browser.mjs
+          node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-state.php
@@ -176,6 +179,7 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
+          node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
@@ -800,6 +804,57 @@ jobs:
           set -euo pipefail
           node tests/real-integration/reconcile-qualification-evidence.mjs
 
+      - name: Capture authenticated PersianGravity admin UI evidence (isolated and reversible)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $data = array(
+              "national_id" => PGR_Module_Registry::is_enabled("national_id"),
+              "structured_scanner" => PGR_Module_Registry::is_enabled("structured_scanner"),
+            );
+            file_put_contents(getenv("WU008_ARTIFACT_DIR")."/admin-ui-original-modules.json", wp_json_encode($data));
+          '
+          restore_admin_ui_state() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $file = getenv("WU008_ARTIFACT_DIR")."/admin-ui-original-modules.json";
+              $state = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+              foreach (array("national_id", "structured_scanner") as $id) {
+                if (!isset($state[$id]) || !is_bool($state[$id])) {
+                  throw new RuntimeException("Cannot restore original module state");
+                }
+                PGR_Module_Registry::set_enabled($id, $state[$id]);
+                if (PGR_Module_Registry::is_enabled($id) !== $state[$id]) {
+                  throw new RuntimeException("Module restoration failed: ".$id);
+                }
+              }
+            '
+          }
+          trap restore_admin_ui_state EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/admin-ui-evidence-fixture.php
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            PGR_Module_Registry::set_enabled("national_id", false);
+            PGR_Module_Registry::set_enabled("structured_scanner", false);
+            if (PGR_Module_Registry::is_enabled("national_id") || PGR_Module_Registry::is_enabled("structured_scanner")) {
+              throw new RuntimeException("Disposable warning state could not be created");
+            }
+          '
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          restore_admin_ui_state
+          trap - EXIT
+          node tests/real-integration/admin-ui-evidence-contact-sheet.mjs
+          test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
@@ -826,3 +881,244 @@ jobs:
           path: /tmp/wu008-upload
           if-no-files-found: ignore
           retention-days: 30
+
+  publish-admin-ui-evidence:
+    name: Publish validated screenshots to a run-attempt-scoped evidence branch
+    needs: real-integration
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download completed exact-run evidence as DATA only
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/wu008-downloaded-evidence
+
+      - name: Reject incomplete downloaded evidence before publication
+        shell: bash
+        env:
+          WU008_EVIDENCE_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          WU008_EVIDENCE_SOURCE_DIR: /tmp/wu008-downloaded-evidence/admin-ui-evidence
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'WU008_EVIDENCE_GATE_JS'
+          // WU008_EVIDENCE_GATE_BEGIN
+          import fs from 'node:fs';
+          import path from 'node:path';
+          
+          const source = process.env.WU008_EVIDENCE_SOURCE_DIR;
+          const expectedHead = process.env.WU008_EVIDENCE_EXPECTED_HEAD;
+          function fail(message) { throw new Error('WU008_EVIDENCE_GATE: ' + message); }
+          function requireTrue(ok, message) { if (!ok) fail(message); }
+          requireTrue(typeof source === 'string' && source.length > 0, 'missing evidence source directory');
+          requireTrue(/^[0-9a-f]{40}$/.test(expectedHead || ''), 'missing/invalid exact PR Head');
+          requireTrue(fs.existsSync(source) && fs.lstatSync(source).isDirectory() && !fs.lstatSync(source).isSymbolicLink(), 'evidence root is not a real directory');
+          
+          const locales = ['fa_IR', 'en_US'];
+          const matrix = {
+            normal: {
+              1280: ['overview','profiles-list','profiles-new','profiles-edit','profiles-built-in','settings','system-status','module-confirm'],
+              390: ['overview','profiles-list','profiles-new','profiles-edit','profiles-built-in','settings','system-status','module-confirm'],
+              320: ['overview','profiles-edit','system-status','module-confirm'],
+            },
+            disabled: {
+              1280: ['overview-disabled','profiles-disabled-warning','settings-disabled-notice','system-status-disabled'],
+              390: ['overview-disabled','profiles-disabled-warning','settings-disabled-notice','system-status-disabled'],
+              320: ['profiles-disabled-warning','settings-disabled-notice'],
+            },
+          };
+          const expected = new Map(), screenshots = new Set(), manifests = new Set();
+          for (const locale of locales) for (const mode of ['normal','disabled']) {
+            const key = mode + '-' + locale;
+            manifests.add('manifest-' + key + '.json');
+            const cases = new Map();
+            for (const [width, names] of Object.entries(matrix[mode])) for (const name of names) {
+              const screenshot = 'ui-' + key + '-' + name + '-' + width + '.jpg';
+              cases.set(name + '@' + width, screenshot);
+              requireTrue(!screenshots.has(screenshot), 'duplicate expected filename ' + screenshot);
+              screenshots.add(screenshot);
+            }
+            requireTrue(cases.size === (mode === 'normal' ? 20 : 10), 'incorrect source-defined scenario matrix ' + key);
+            expected.set(key, cases);
+          }
+          const controls = new Set(locales.map(locale => 'ui-negative-control-' + locale + '-320.jpg'));
+          const requiredFiles = new Set(['CONTACT_SHEET.md', ...manifests, ...screenshots, ...controls]);
+          const actualEntries = fs.readdirSync(source, {withFileTypes:true});
+          for (const entry of actualEntries) {
+            requireTrue(entry.isFile() && !entry.isSymbolicLink(), 'unexpected/nonregular artifact entry: ' + entry.name);
+            requireTrue(requiredFiles.has(entry.name), 'unexpected artifact content: ' + entry.name);
+          const byteCount = fs.statSync(path.join(source, entry.name)).size;
+          requireTrue(byteCount > 0 && byteCount <= 4 * 1024 * 1024,
+            'empty/oversized evidence file: ' + entry.name);
+          }
+          const actualNames = new Set(actualEntries.map(entry => entry.name));
+          for (const filename of requiredFiles) requireTrue(actualNames.has(filename), 'missing required evidence file: ' + filename);
+          requireTrue(actualNames.size === 67, 'incorrect evidence file count: ' + actualNames.size + ', expected 67');
+          
+          // Validate real JPEG marker/segment structure rather than trusting names or magic bytes.
+          // No file from downloaded evidence is executed.
+          function checkJpeg(filename) {
+            const bytes = fs.readFileSync(path.join(source, filename));
+            requireTrue(bytes.length > 100 && bytes[0] === 0xff && bytes[1] === 0xd8, 'empty/invalid JPEG SOI: ' + filename);
+            requireTrue(bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9, 'truncated JPEG EOI: ' + filename);
+            let cursor = 2, frame = false, scan = false, end = false, dimensions = null;
+            while (cursor < bytes.length) {
+              requireTrue(bytes[cursor++] === 0xff, 'invalid JPEG marker at ' + (cursor - 1) + ': ' + filename);
+              while (bytes[cursor] === 0xff) cursor++;
+              requireTrue(cursor < bytes.length, 'truncated JPEG marker: ' + filename);
+              const marker = bytes[cursor++];
+              if (marker === 0xd9) { end = true; break; }
+              requireTrue(marker !== 0xd8 && marker !== 0x00, 'invalid JPEG marker ' + marker + ': ' + filename);
+              if (marker >= 0xd0 && marker <= 0xd7 || marker === 0x01) continue;
+              requireTrue(cursor + 1 < bytes.length, 'truncated JPEG segment: ' + filename);
+              const size = bytes.readUInt16BE(cursor);
+              requireTrue(size >= 2 && cursor + size <= bytes.length, 'invalid JPEG segment length: ' + filename);
+              if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+                const height = bytes.readUInt16BE(cursor + 3), width = bytes.readUInt16BE(cursor + 5);
+                requireTrue(size >= 8 && width > 0 && height > 0 && !frame,
+                  'invalid/duplicate JPEG frame dimensions: ' + filename);
+                dimensions = {width, height};
+                frame = true;
+              }
+              cursor += size;
+              if (marker === 0xda) {
+                scan = true;
+                while (cursor < bytes.length - 1) {
+                  if (bytes[cursor] !== 0xff) { cursor++; continue; }
+                  const next = bytes[cursor + 1];
+                  if (next === 0x00 || next >= 0xd0 && next <= 0xd7) { cursor += 2; continue; }
+                  if (next === 0xff) { cursor++; continue; }
+                  break;
+                }
+              }
+            }
+            requireTrue(frame && scan && end && cursor === bytes.length, 'invalid/incomplete JPEG structure: ' + filename);
+            return dimensions;
+          }
+          const imageDimensions = new Map();
+          for (const filename of [...screenshots, ...controls]) imageDimensions.set(filename, checkJpeg(filename));
+          const caseStates = new Set(['CAPTURED_NO_DETECTED_OVERFLOW','VISUAL_FINDING']);
+          let baselineRuntime = null;
+          for (const locale of locales) for (const mode of ['normal','disabled']) {
+            const key = mode + '-' + locale;
+            const filename = 'manifest-' + key + '.json';
+            let manifest;
+            try { manifest = JSON.parse(fs.readFileSync(path.join(source, filename), 'utf8')); }
+            catch (e) { fail('invalid manifest JSON: ' + filename + ': ' + e.message); }
+            requireTrue(manifest && typeof manifest === 'object' && !Array.isArray(manifest), 'invalid manifest body: ' + filename);
+            requireTrue(manifest.exact_head === expectedHead, 'PR Head mismatch: ' + filename);
+            requireTrue(manifest.locale === locale && manifest.mode === mode, 'locale/mode mismatch: ' + filename);
+            requireTrue(manifest.status === 'CAPTURED', 'incomplete manifest status: ' + filename);
+            requireTrue(manifest.evidence_class === 'AUTHENTIC_LICENSED_WU008_ADMIN_BROWSER', 'invalid evidence classification: ' + filename);
+            const runtime = JSON.stringify(manifest.runtime);
+            requireTrue(manifest.runtime && typeof manifest.runtime === 'object', 'missing runtime identity: ' + filename);
+            if (baselineRuntime === null) baselineRuntime = runtime;
+            else requireTrue(baselineRuntime === runtime, 'inconsistent installed runtime versions: ' + filename);
+            const requiredCases = expected.get(key);
+            requireTrue(Array.isArray(manifest.cases) && manifest.cases.length === requiredCases.size,
+              'incomplete scenario count in ' + filename + ': expected ' + requiredCases.size + ', got ' + manifest.cases?.length);
+            const visited = new Set();
+            for (const item of manifest.cases) {
+              requireTrue(item && typeof item === 'object', 'invalid capture entry: ' + filename);
+              const label = item.name + '@' + item.width;
+              requireTrue(requiredCases.has(label), 'unexpected scenario ' + label + ': ' + filename);
+              requireTrue(!visited.has(label), 'duplicate scenario ' + label + ': ' + filename);
+              visited.add(label);
+              const expectedScreenshot = requiredCases.get(label);
+              requireTrue(typeof item.screenshot === 'string' && /^[a-zA-Z0-9_-]+\.jpg$/.test(item.screenshot),
+                'unsafe screenshot filename: ' + filename + '/' + label);
+              requireTrue(item.screenshot === expectedScreenshot, 'wrong/duplicate screenshot reference: ' + filename + '/' + label);
+              requireTrue(item.locale === locale && item.mode === mode, 'capture identity mismatch: ' + filename + '/' + label);
+              requireTrue(item.dpr === 1 && item.height === (item.width === 1280 ? 900 : item.width === 390 ? 844 : 700),
+                'viewport/DPR identity mismatch: ' + filename + '/' + label);
+              requireTrue(caseStates.has(item.state), 'incomplete capture state: ' + filename + '/' + label);
+              requireTrue(item.measured && item.measured.viewport?.width === item.width,
+                'missing/inconsistent viewport measurements: ' + filename + '/' + label);
+              // Full-page screenshots may be wider than the viewport when a genuine
+              // overflow is present. Reject only undersized images: they cannot
+              // contain the captured viewport at the recorded device pixel ratio.
+              const image = imageDimensions.get(item.screenshot);
+              requireTrue(image.width >= item.width * item.dpr && image.height >= item.height * item.dpr,
+                'JPEG smaller than declared viewport: ' + item.screenshot + ' (' + image.width + 'x' +
+                image.height + '; expected at least ' + (item.width * item.dpr) + 'x' +
+                (item.height * item.dpr) + ')');
+            }
+            requireTrue(visited.size === requiredCases.size, 'missing required scenario: ' + filename);
+            if (mode === 'normal') {
+              const control = manifest.negative_control;
+              requireTrue(control && control.state === 'DETECTED' && control.detected === true &&
+                control.mode === 'ISOLATED_HTML_NOT_PRODUCT' && control.viewport_width === 320 &&
+                Number.isFinite(control.document_width) && control.document_width > 322,
+                'missing/failed 320px overflow negative control: ' + filename);
+              const controlImage = imageDimensions.get('ui-negative-control-' + locale + '-320.jpg');
+              requireTrue(controlImage.width >= control.viewport_width && controlImage.height >= 700,
+                'negative-control JPEG smaller than 320x700 viewport: ' + locale);
+            } else {
+              requireTrue(manifest.negative_control === null, 'unexpected disabled-mode negative-control claim: ' + filename);
+            }
+          }
+          const sheet = fs.readFileSync(path.join(source,'CONTACT_SHEET.md'),'utf8');
+          requireTrue(sheet.trim().length > 0, 'empty CONTACT_SHEET.md');
+          const imgSources = [...sheet.matchAll(/<img\s+src="([^"]+)"/g)].map(m => m[1]);
+          const imageLinks = [...sheet.matchAll(/\]\(([^)]+\.jpe?g)\)/g)].map(m => m[1]);
+          requireTrue((sheet.match(/<img\b/g) || []).length === 60 && imgSources.length === 60,
+            'contact sheet image count mismatch: found ' + imgSources.length + ', expected 60');
+          requireTrue(imageLinks.length === 60, 'contact sheet JPEG link count mismatch: ' + imageLinks.length);
+          const pairedLinks = [...sheet.matchAll(/\[<img\s+src="([^"]+)"[^>]*>\]\(([^)]+)\)/g)];
+          requireTrue(pairedLinks.length === 60, 'contact sheet paired thumbnail/link count mismatch: ' + pairedLinks.length);
+          for (const pair of pairedLinks) {
+            requireTrue(pair[1] === pair[2], 'contact sheet thumbnail/link mismatch: ' + pair[1] + ' vs ' + pair[2]);
+          }
+          const allImageLinks = (sheet.match(/\]\([^)]+\.(?:jpe?g|png|webp)\)/gi) || []);
+          requireTrue(allImageLinks.length === 60, 'unexpected/unresolved image links in contact sheet: ' + allImageLinks.length);
+          for (const group of [imgSources,imageLinks]) {
+            const seen = new Set();
+            for (const name of group) {
+              requireTrue(/^[a-zA-Z0-9_-]+\.jpg$/.test(name), 'unsafe/unresolved contact-sheet JPEG link: ' + name);
+              requireTrue(screenshots.has(name), 'unresolved/unexpected contact-sheet screenshot link: ' + name);
+              requireTrue(!seen.has(name), 'duplicate contact-sheet image reference: ' + name);
+              seen.add(name);
+            }
+            requireTrue(seen.size === screenshots.size, 'contact sheet missing required screenshot links');
+          }
+          console.log('WU008_EVIDENCE_GATE PASS: Head=' + expectedHead + ', manifests=4, product_jpegs=' +
+            screenshots.size + ', negative_controls=' + controls.size + ', files=' + requiredFiles.size);
+          // WU008_EVIDENCE_GATE_END
+          WU008_EVIDENCE_GATE_JS
+
+      - name: Publish verified evidence with exact commit links
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source_dir=/tmp/wu008-downloaded-evidence/admin-ui-evidence
+          mkdir -p /tmp/wu008-evidence-repo
+          cd /tmp/wu008-evidence-repo
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          publication_branch="evidence/wu008-admin-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          # Never replace an existing run-attempt branch, including reruns of a
+          # publisher job. The non-force push also fails closed on remote races.
+          if git ls-remote --exit-code --heads origin "refs/heads/${publication_branch}" > /dev/null; then
+            echo "Evidence branch already exists; refusing to overwrite: ${publication_branch}" >&2
+            exit 1
+          fi
+          git checkout --orphan "${publication_branch}"
+          mkdir -p admin-ui-evidence
+          cp -a "$source_dir/." admin-ui-evidence/
+          git add -- admin-ui-evidence
+          git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+          evidence_commit="$(git rev-parse HEAD)"
+          git push origin "HEAD:refs/heads/${publication_branch}"
+          remote_commit="$(git ls-remote origin "refs/heads/${publication_branch}" | cut -f1)"
+          test "${remote_commit}" = "${evidence_commit}"
+          echo "Run-attempt branch (mutable reference): ${publication_branch}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exact published commit SHA: ${evidence_commit}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
