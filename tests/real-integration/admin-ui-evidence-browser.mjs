@@ -155,8 +155,8 @@ try {
               resultUrl.searchParams.get('pgr_confirm_module') === 'iranian_currency',
               'Real first-stage UNKNOWN disable confirmation not reached');
             const decision=page.locator('.pgr-module-decision');
-            assert(await decision.count()===1 && await decision.getByRole('button',{name:'Confirm disable'}).count()===1 &&
-              await decision.getByRole('link',{name:'Cancel and return'}).count()===1,
+            assert(await decision.count()===1 && await decision.getByRole('button',{name:locale==='fa_IR'?'تأیید غیرفعال‌سازی':'Confirm disable'}).count()===1 &&
+              await decision.getByRole('link',{name:locale==='fa_IR'?'لغو و بازگشت':'Cancel and return'}).count()===1,
               'Single top-level UNKNOWN confirmation with Cancel is absent');
             assert(await decision.locator('input[name="confirm"][value="1"]').count()===1 &&
               await decision.locator('input[name="confirm_token"]').inputValue()!=='',
