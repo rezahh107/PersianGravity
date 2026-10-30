@@ -151,25 +151,40 @@ final class ModuleUsageTest extends TestCase {
 		function admin_url( $path ) { return 'https://example.test/wp-admin/' . $path; }
 		function add_query_arg( $args, $url ) { return $url . '&' . http_build_query( $args ); }
 		function wp_safe_redirect( $url ) { throw new RuntimeException( $url ); }
+		function get_current_user_id() { return 7; }
+		function wp_generate_uuid4() { return '123e4567-e89b-42d3-a456-426614174000'; }
+		function set_transient( $key, $value, $expiration ) { $GLOBALS['pgr_test_transients'][ $key ] = $value; return $expiration > 0; }
+		function get_transient( $key ) { return $GLOBALS['pgr_test_transients'][ $key ] ?? false; }
+		function delete_transient( $key ) { unset( $GLOBALS['pgr_test_transients'][ $key ] ); return true; }
 
 		$handler = new PGR_Product_Admin( new PGR_Admin() );
 		$valid   = array( 'id' => 1, 'fields' => array() );
 		$cases   = array(
-			array( 'USED', array( array_replace( $valid, array( 'confirmations' => array( array( 'message' => '{pgr_jdate_created}' ) ) ) ) ), false, 'blocked', true ),
-			array( 'UNKNOWN', array( false, $valid ), false, 'confirm', true ),
-			array( 'UNUSED', array( $valid ), false, 'disabled', false ),
-			array( 'UNKNOWN confirmed', array( false ), true, 'disabled', false ),
+			array( 'USED', array( array_replace( $valid, array( 'confirmations' => array( array( 'message' => '{pgr_jdate_created}' ) ) ) ) ), false, 'blocked', true, false ),
+			array( 'UNKNOWN', array( false, $valid ), false, 'confirm', true, false ),
+			array( 'UNUSED', array( $valid ), false, 'disabled', false, false ),
+			array( 'UNKNOWN forged confirmation', array( false ), true, 'invalid', true, false ),
+			array( 'UNKNOWN valid confirmation', array( false ), true, 'disabled', false, true ),
+			array( 'USED stale confirmation', array( array_replace( $valid, array( 'confirmations' => array( array( 'message' => '{pgr_jdate_created}' ) ) ) ) ), true, 'blocked', true, true ),
 		);
 		foreach ( $cases as $case ) {
 			$GLOBALS['pgr_test_options'] = array(
 				'pgr_modules' => array( 'schema_version' => 1, 'states' => array( 'jalali_presentation' => true ) ),
 			);
 			GFAPI::$forms               = $case[1];
+			$GLOBALS['pgr_test_transients'] = array();
+			if ( $case[5] ) {
+				$GLOBALS['pgr_test_transients']['pgr_disable_confirm_7'] = array(
+					'module_id' => 'jalali_presentation',
+					'token' => '123e4567-e89b-42d3-a456-426614174000',
+				);
+			}
 			$_SERVER['REQUEST_METHOD']  = 'POST';
 			$_POST = array(
 				'module_id' => 'jalali_presentation',
 				'enable'    => '0',
 				'confirm'   => $case[2] ? '1' : '0',
+				'confirm_token' => $case[5] ? '123e4567-e89b-42d3-a456-426614174000' : '',
 			);
 			$url = '';
 			try {
@@ -180,6 +195,13 @@ final class ModuleUsageTest extends TestCase {
 			}
 			$this->assertStringContainsString( 'pgr_module_notice=' . $case[3], $url, $case[0] );
 			$this->assertSame( $case[4], PGR_Module_Registry::is_enabled( 'jalali_presentation' ), $case[0] );
+			if ( 'UNKNOWN' === $case[0] ) {
+				$this->assertStringContainsString( 'pgr_confirm_token=123e4567-e89b-42d3-a456-426614174000', $url );
+				$this->assertSame( 'jalali_presentation', $GLOBALS['pgr_test_transients']['pgr_disable_confirm_7']['module_id'] );
+			}
+			if ( 'UNKNOWN valid confirmation' === $case[0] ) {
+				$this->assertArrayNotHasKey( 'pgr_disable_confirm_7', $GLOBALS['pgr_test_transients'] );
+			}
 		}
 	}
 }
