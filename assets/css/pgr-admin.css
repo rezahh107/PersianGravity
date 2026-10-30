@@ -243,3 +243,35 @@
 	outline: 2px solid #2271b1;
 	outline-offset: 2px;
 }
+
+/* One bounded decision surface for uncertain module disable requests. */
+.pgr-module-decision {
+	border-inline-start: 4px solid #dba617;
+}
+
+.pgr-module-decision h2,
+.pgr-module-decision h3 {
+	margin-block-start: 0;
+}
+
+.pgr-module-decision__actions {
+	flex-wrap: wrap;
+	margin-block-start: 16px;
+}
+
+.pgr-module-decision__actions form {
+	margin: 0;
+}
+
+@media (max-width: 782px) {
+	.pgr-module-decision__actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.pgr-module-decision__actions .button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+	}
+}
