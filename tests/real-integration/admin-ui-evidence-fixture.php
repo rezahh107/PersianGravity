@@ -39,7 +39,18 @@ if ( ! is_array( $result ) || empty( $result['success'] ) ) {
 }
 $stored = PGR_Scanner_Profile_Registry::get( $id );
 if ( ! is_array( $stored ) || $stored['label'] !== $long || count( $stored['outputs'] ) !== 1 ) {
-	throw new RuntimeException( 'Isolated fixture persistence could not be verified.' );
+	$raw_option = get_option( PGR_Scanner_Profile_Registry::OPTION, null );
+	$info = array(
+		'getter_returned' => is_array( $stored ),
+		'getter_label_bytes' => is_array( $stored ) ? strlen( (string) $stored['label'] ) : null,
+		'expected_label_bytes' => strlen( $long ),
+		'getter_output_count' => is_array( $stored ) ? count( $stored['outputs'] ) : null,
+		'raw_option_is_array' => is_array( $raw_option ),
+		'raw_schema_version' => is_array( $raw_option ) ? ( $raw_option['schema_version'] ?? null ) : null,
+		'raw_profiles_count' => is_array( $raw_option ) ? count( $raw_option['profiles'] ?? array() ) : null,
+		'raw_first_profile_id' => is_array( $raw_option ) ? ( $raw_option['profiles'][0]['id'] ?? null ) : null,
+	);
+	throw new RuntimeException( 'Isolated fixture persistence could not be verified: ' . wp_json_encode( $info ) );
 }
 file_put_contents( $dir . '/ui-evidence-fixture.json', wp_json_encode( array(
 	'evidence_class' => 'DISPOSABLE_REAL_REGISTRY_SYNTHETIC_FIXTURE',
