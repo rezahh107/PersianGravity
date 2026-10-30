@@ -897,15 +897,13 @@ jobs:
           name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
           path: /tmp/wu008-downloaded-evidence
 
-      - name: Publish only synthetic admin screenshots, JSON measurements and contact sheet
+      - name: Reject incomplete downloaded evidence before publication
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           WU008_EVIDENCE_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
           WU008_EVIDENCE_SOURCE_DIR: /tmp/wu008-downloaded-evidence/admin-ui-evidence
         run: |
           set -euo pipefail
-          source_dir=/tmp/wu008-downloaded-evidence/admin-ui-evidence
           node --input-type=module <<'WU008_EVIDENCE_GATE_JS'
           // WU008_EVIDENCE_GATE_BEGIN
           import fs from 'node:fs';
@@ -952,6 +950,9 @@ jobs:
           for (const entry of actualEntries) {
             requireTrue(entry.isFile() && !entry.isSymbolicLink(), 'unexpected/nonregular artifact entry: ' + entry.name);
             requireTrue(requiredFiles.has(entry.name), 'unexpected artifact content: ' + entry.name);
+          const byteCount = fs.statSync(path.join(source, entry.name)).size;
+          requireTrue(byteCount > 0 && byteCount <= 4 * 1024 * 1024,
+            'empty/oversized evidence file: ' + entry.name);
           }
           const actualNames = new Set(actualEntries.map(entry => entry.name));
           for (const filename of requiredFiles) requireTrue(actualNames.has(filename), 'missing required evidence file: ' + filename);
@@ -1072,6 +1073,14 @@ jobs:
             screenshots.size + ', negative_controls=' + controls.size + ', files=' + requiredFiles.size);
           // WU008_EVIDENCE_GATE_END
           WU008_EVIDENCE_GATE_JS
+
+      - name: Publish verified evidence to immutable branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source_dir=/tmp/wu008-downloaded-evidence/admin-ui-evidence
           mkdir -p /tmp/wu008-evidence-repo
           cd /tmp/wu008-evidence-repo
           git init -q
