@@ -136,6 +136,9 @@ jobs:
           bash -n tests/real-integration/verify-package.sh
           php -l tools/compatibility/gravityflow-package.php
           php -l tests/real-integration/setup-runtime.php
+          php -l tests/real-integration/admin-ui-evidence-fixture.php
+          node --check tests/real-integration/admin-ui-evidence-browser.mjs
+          node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-state.php
@@ -800,6 +803,57 @@ jobs:
           set -euo pipefail
           node tests/real-integration/reconcile-qualification-evidence.mjs
 
+      - name: Capture authenticated PersianGravity admin UI evidence (isolated and reversible)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $data = array(
+              "national_id" => PGR_Module_Registry::is_enabled("national_id"),
+              "structured_scanner" => PGR_Module_Registry::is_enabled("structured_scanner"),
+            );
+            file_put_contents(getenv("WU008_ARTIFACT_DIR")."/admin-ui-original-modules.json", wp_json_encode($data));
+          '
+          restore_admin_ui_state() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $file = getenv("WU008_ARTIFACT_DIR")."/admin-ui-original-modules.json";
+              $state = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+              foreach (array("national_id", "structured_scanner") as $id) {
+                if (!isset($state[$id]) || !is_bool($state[$id])) {
+                  throw new RuntimeException("Cannot restore original module state");
+                }
+                PGR_Module_Registry::set_enabled($id, $state[$id]);
+                if (PGR_Module_Registry::is_enabled($id) !== $state[$id]) {
+                  throw new RuntimeException("Module restoration failed: ".$id);
+                }
+              }
+            '
+          }
+          trap restore_admin_ui_state EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/admin-ui-evidence-fixture.php
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            PGR_Module_Registry::set_enabled("national_id", false);
+            PGR_Module_Registry::set_enabled("structured_scanner", false);
+            if (PGR_Module_Registry::is_enabled("national_id") || PGR_Module_Registry::is_enabled("structured_scanner")) {
+              throw new RuntimeException("Disposable warning state could not be created");
+            }
+          '
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          restore_admin_ui_state
+          trap - EXIT
+          node tests/real-integration/admin-ui-evidence-contact-sheet.mjs
+          test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
@@ -826,3 +880,49 @@ jobs:
           path: /tmp/wu008-upload
           if-no-files-found: ignore
           retention-days: 30
+
+  publish-admin-ui-evidence:
+    name: Publish captured screenshots to an immutable evidence branch
+    needs: real-integration
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download completed exact-run evidence as DATA only
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: wu008-real-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/wu008-downloaded-evidence
+
+      - name: Publish only synthetic admin screenshots, JSON measurements and contact sheet
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source_dir=/tmp/wu008-downloaded-evidence/admin-ui-evidence
+          test -s "$source_dir/CONTACT_SHEET.md"
+          test -s "$source_dir/manifest-normal-fa_IR.json"
+          test -s "$source_dir/manifest-normal-en_US.json"
+          test -s "$source_dir/manifest-disabled-fa_IR.json"
+          test -s "$source_dir/manifest-disabled-en_US.json"
+          test -z "$(find "$source_dir" -type l -print -quit)"
+          test -z "$(find "$source_dir" -type f ! -name '*.json' ! -name '*.jpg' ! -name 'CONTACT_SHEET.md' -print -quit)"
+          test -z "$(find "$source_dir" -type f -size +4M -print -quit)"
+          test "$(find "$source_dir" -type f -name 'ui-*.jpg' | wc -l)" -ge 40
+          mkdir -p /tmp/wu008-evidence-repo
+          cd /tmp/wu008-evidence-repo
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout --orphan "evidence/wu008-admin-ui-${GITHUB_RUN_ID}"
+          mkdir -p admin-ui-evidence
+          cp -a "$source_dir/." admin-ui-evidence/
+          git add -- admin-ui-evidence
+          git commit -m "evidence: WU008 licensed PersianGravity admin UI capture run ${GITHUB_RUN_ID}"
+          git push origin "HEAD:refs/heads/evidence/wu008-admin-ui-${GITHUB_RUN_ID}"
+          echo "Durable evidence branch: evidence/wu008-admin-ui-${GITHUB_RUN_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Contact sheet: https://github.com/${GITHUB_REPOSITORY}/blob/evidence/wu008-admin-ui-${GITHUB_RUN_ID}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
