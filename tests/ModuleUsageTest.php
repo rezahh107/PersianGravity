@@ -204,4 +204,83 @@ final class ModuleUsageTest extends TestCase {
 			}
 		}
 	}
+	#[RunInSeparateProcess]
+	public function test_confirmation_get_requires_real_fresh_user_bound_unknown_intent_and_cancel_revokes_it() {
+		eval( 'class GFAPI { public static $forms = array(); public static function get_forms($active = null, $trash = false) { return self::$forms; } }' );
+		eval( 'class PGR_Admin { const CAPABILITY = "manage_options"; const MENU_SLUG = "persian-gravityforms"; }' );
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
+		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
+		require_once dirname( __DIR__ ) . '/admin/class-pgr-product-admin.php';
+		function wp_unslash( $value ) { return $value; }
+		function sanitize_key( $value ) { return strtolower( (string) $value ); }
+		function get_current_user_id() { return 7; }
+		function get_transient( $key ) { return $GLOBALS['pgr_test_transients'][ $key ] ?? false; }
+		function delete_transient( $key ) { unset( $GLOBALS['pgr_test_transients'][ $key ] ); return true; }
+		function get_user_locale() { return $GLOBALS['pgr_test_locale']; }
+		function esc_html_e( $text ) { echo htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' ); }
+		function esc_url( $url ) { return htmlspecialchars( $url, ENT_QUOTES, 'UTF-8' ); }
+		function wp_nonce_field( $action ) { echo '<input name="_wpnonce" value="unit-nonce">'; }
+		function admin_url( $path ) { return 'https://example.test/wp-admin/' . $path; }
+		function add_query_arg( $key, $value, $url ) { return $url . '&' . rawurlencode( $key ) . '=' . rawurlencode( $value ); }
+		function wp_safe_redirect( $url ) { throw new RuntimeException( $url ); }
+		GFAPI::$forms = array( false ); // Real classification is UNKNOWN, not cached from GET.
+		$GLOBALS['pgr_test_options'] = array(
+			'pgr_modules' => array( 'schema_version' => 1, 'states' => array( 'iranian_currency' => true ) ),
+		);
+		$token = '123e4567-e89b-42d3-a456-426614174000';
+		$GLOBALS['pgr_test_transients'] = array(
+			'pgr_disable_confirm_7' => array( 'module_id' => 'iranian_currency', 'token' => $token ),
+		);
+		$handler = new PGR_Product_Admin( new PGR_Admin() );
+		$_GET = array( 'pgr_module_notice' => 'confirm', 'pgr_module' => 'iranian_currency',
+			'pgr_confirm_module' => 'iranian_currency', 'pgr_confirm_token' => $token );
+		ob_start();
+		$handler->render_overview_page();
+		$html = ob_get_clean();
+		$this->assertSame( 1, substr_count( $html, 'class="pgr-panel pgr-module-decision"' ) );
+		$this->assertSame( 6, substr_count( $html, '<article class="pgr-card pgr-module-card">' ) );
+		$this->assertSame( 1, substr_count( $html, 'name="confirm" value="1"' ) );
+		$this->assertStringContainsString( 'Confirm disable', $html );
+		$this->assertStringContainsString( 'Cancel and return', $html );
+		$this->assertStringContainsString( 'ریال و تومان ایران', $html );
+		$this->assertStringContainsString( 'Iranian Rial / Toman', $html );
+		foreach ( array(
+			array( 'pgr_confirm_token', 'forged' ),
+			array( 'pgr_confirm_module', 'national_id' ),
+			array( 'pgr_module', 'national_id' ),
+		) as $invalid ) {
+			$_GET[ $invalid[0] ] = $invalid[1];
+			ob_start();
+			$handler->render_overview_page();
+			$html = ob_get_clean();
+			$this->assertStringNotContainsString( 'class="pgr-panel pgr-module-decision"', $html );
+			$this->assertStringNotContainsString( 'name="confirm" value="1"', $html );
+			$_GET[ $invalid[0] ] = 'pgr_confirm_token' === $invalid[0] ? $token : 'iranian_currency';
+		}
+		GFAPI::$forms = array( array( 'id' => 1, 'fields' => array( (object) array( 'type' => 'text' ) ) ) );
+		// Currency remains UNKNOWN, but the module mismatch and ticket requirements still apply.
+		$GLOBALS['pgr_test_transients'] = array();
+		ob_start();
+		$handler->render_overview_page();
+		$html = ob_get_clean();
+		$this->assertStringNotContainsString( 'class="pgr-panel pgr-module-decision"', $html );
+		$this->assertTrue( PGR_Module_Registry::is_enabled( 'iranian_currency' ) );
+		$GLOBALS['pgr_test_transients']['pgr_disable_confirm_7'] = array( 'module_id' => 'iranian_currency', 'token' => $token );
+		$_GET = array( 'pgr_cancel_confirm' => $token );
+		try {
+			$handler->render_overview_page();
+			$this->fail( 'Cancel must safely redirect' );
+		} catch ( RuntimeException $exception ) {
+			$this->assertStringContainsString( 'admin.php?page=persian-gravityforms', $exception->getMessage() );
+		}
+		$this->assertArrayNotHasKey( 'pgr_disable_confirm_7', $GLOBALS['pgr_test_transients'] );
+		$this->assertTrue( PGR_Module_Registry::is_enabled( 'iranian_currency' ) );
+		$_GET = array();
+		ob_start();
+		$handler->render_overview_page();
+		$html = ob_get_clean();
+		$this->assertSame( 7, substr_count( $html, '<article class="pgr-card pgr-module-card">' ) );
+		$this->assertStringNotContainsString( 'class="pgr-panel pgr-module-decision"', $html );
+	}
+
 }
