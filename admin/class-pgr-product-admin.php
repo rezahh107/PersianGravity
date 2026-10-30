@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class PGR_Product_Admin {
 	const HELP_SLUG = 'persian-gravityforms-help';
+	const CONFIRM_TTL = 300;
 
 	/** @var PGR_Admin */
 	private $legacy;
@@ -109,8 +110,8 @@ final class PGR_Product_Admin {
 			return;
 		}
 
-		$lang    = $this->primary_language();
-		$confirm = $this->query_key( 'pgr_confirm_module' );
+		$lang     = $this->primary_language();
+		$decision = $this->pending_disable_confirmation();
 		?>
 		<div class="wrap pgr-admin">
 			<div class="pgr-admin__header">
@@ -120,11 +121,14 @@ final class PGR_Product_Admin {
 				</div>
 				<span class="pgr-badge" data-state="AVAILABLE"><?php echo esc_html( PGR_VERSION ); ?></span>
 			</div>
-			<?php $this->render_notice(); ?>
+			<?php $this->render_notice( $decision ); ?>
+			<?php if ( $decision ) { $this->render_disable_decision( $decision['module'], $decision['token'], $lang ); } ?>
 			<div class="pgr-card-grid pgr-module-grid">
 				<?php
 				foreach ( PGR_Module_Registry::all() as $module ) {
-					$this->module_card( $module, $lang, $confirm );
+					if ( ! $decision || $decision['module']['id'] !== $module['id'] ) {
+						$this->module_card( $module, $lang );
+					}
 				}
 				?>
 			</div>
@@ -146,6 +150,76 @@ final class PGR_Product_Admin {
 			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'National ID is disabled. Its saved default remains preserved but is inactive until the module is enabled again.', 'persian-gravityforms' ) . '</p></div>';
 		}
 		$this->legacy->render_settings_page();
+	}
+
+	/**
+	 * Return only a recent, user-bound UNKNOWN decision for an enabled module.
+	 * GET parameters select a candidate; they never establish inspection authority.
+	 *
+	 * @return array{module:array<string,mixed>,token:string}|null
+	 */
+	private function pending_disable_confirmation() {
+		if ( 'confirm' !== $this->query_key( 'pgr_module_notice' ) ) {
+			return null;
+		}
+		$id = $this->query_key( 'pgr_module' );
+		if ( $id !== $this->query_key( 'pgr_confirm_module' ) ||
+			! PGR_Module_Registry::exists( $id ) ||
+			! PGR_Module_Registry::is_enabled( $id ) ) {
+			return null;
+		}
+		$token   = $this->query_key( 'pgr_confirm_token' );
+		$pending = get_transient( $this->disable_confirmation_key() );
+		if ( ! $this->matches_disable_confirmation( $pending, $id, $token ) ||
+			PGR_Module_Usage::UNKNOWN !== PGR_Module_Usage::inspect( $id )['status'] ) {
+			return null;
+		}
+		return array( 'module' => PGR_Module_Registry::get( $id ), 'token' => $token );
+	}
+
+	/** User-specific ephemeral presentation intent, not a usage-inspection cache. */
+	private function disable_confirmation_key() {
+		return 'pgr_disable_confirm_' . get_current_user_id();
+	}
+
+	/** @param mixed $pending Stored one-time decision context. */
+	private function matches_disable_confirmation( $pending, $module_id, $token ) {
+		return is_array( $pending ) && is_string( $pending['module_id'] ?? null ) &&
+			is_string( $pending['token'] ?? null ) && '' !== $token &&
+			$pending['module_id'] === $module_id && hash_equals( $pending['token'], $token );
+	}
+
+	/** Render the only actionable confirmation, immediately before module grid. */
+	private function render_disable_decision( $module, $token, $lang ) {
+		$primary   = 'fa' === $lang ? 'fa' : 'en';
+		$secondary = 'fa' === $primary ? 'en' : 'fa';
+		?>
+		<section class="pgr-panel pgr-module-decision" aria-labelledby="pgr-module-decision-title">
+			<h2 id="pgr-module-decision-title"><?php esc_html_e( 'Confirm module disable', 'persian-gravityforms' ); ?></h2>
+			<h3 dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'label_' . $primary ] ); ?></h3>
+			<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'label_' . $secondary ] ); ?></p>
+			<p dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $primary ] ); ?></p>
+			<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $secondary ] ); ?></p>
+			<code dir="ltr"><?php echo esc_html( $module['id'] ); ?></code>
+			<div class="notice notice-warning inline" role="alert">
+				<p><?php esc_html_e( 'Safe non-use could not be established. Disabling this module could affect existing forms or functionality.', 'persian-gravityforms' ); ?></p>
+				<p><?php esc_html_e( 'No module state has changed yet. Confirm only if you accept the possible consequences.', 'persian-gravityforms' ); ?></p>
+			</div>
+			<div class="pgr-actions pgr-module-decision__actions">
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="pgr_module_toggle">
+					<input type="hidden" name="module_id" value="<?php echo esc_attr( $module['id'] ); ?>">
+					<input type="hidden" name="enable" value="0">
+					<input type="hidden" name="confirm" value="1">
+					<input type="hidden" name="confirm_token" value="<?php echo esc_attr( $token ); ?>">
+					<?php wp_nonce_field( 'pgr_module_toggle' ); ?>
+					<button type="submit" class="button button-primary"><?php esc_html_e( 'Confirm disable', 'persian-gravityforms' ); ?></button>
+				</form>
+				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) ); ?>"><?php esc_html_e( 'Cancel and return', 'persian-gravityforms' ); ?></a>
+				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::HELP_SLUG . '&lang=' . $lang . '#' . $module['help_topic'] ) ); ?>"><?php esc_html_e( 'Help', 'persian-gravityforms' ); ?></a>
+			</div>
+		</section>
+		<?php
 	}
 
 	/** Render concise System Status including module state. */
@@ -374,12 +448,14 @@ final class PGR_Product_Admin {
 		$module_id = isset( $_POST['module_id'] ) ? sanitize_key( wp_unslash( $_POST['module_id'] ) ) : '';
 		$enable    = isset( $_POST['enable'] ) && '1' === (string) wp_unslash( $_POST['enable'] );
 		$confirm   = isset( $_POST['confirm'] ) && '1' === (string) wp_unslash( $_POST['confirm'] );
+		$token     = isset( $_POST['confirm_token'] ) ? sanitize_key( wp_unslash( $_POST['confirm_token'] ) ) : '';
 
 		if ( ! PGR_Module_Registry::exists( $module_id ) ) {
 			$this->redirect( array( 'pgr_module_notice' => 'invalid' ) );
 		}
 
 		if ( ! $enable ) {
+			// Always reinspect: a confirmation ticket is never evidence of non-use.
 			$usage = PGR_Module_Usage::inspect( $module_id );
 			if ( PGR_Module_Usage::USED === $usage['status'] ) {
 				$this->redirect(
@@ -390,12 +466,30 @@ final class PGR_Product_Admin {
 					)
 				);
 			}
-			if ( PGR_Module_Usage::UNKNOWN === $usage['status'] && ! $confirm ) {
+			if ( $confirm ) {
+				$pending = get_transient( $this->disable_confirmation_key() );
+				if ( ! $this->matches_disable_confirmation( $pending, $module_id, $token ) ||
+					! PGR_Module_Registry::is_enabled( $module_id ) ) {
+					$this->redirect( array( 'pgr_module_notice' => 'invalid' ) );
+				}
+				// One-time intent; even a reinspection that now says UNUSED never
+				// promotes a stale token to ongoing permission.
+				delete_transient( $this->disable_confirmation_key() );
+			} elseif ( PGR_Module_Usage::UNKNOWN === $usage['status'] ) {
+				$token = wp_generate_uuid4();
+				if ( ! set_transient(
+					$this->disable_confirmation_key(),
+					array( 'module_id' => $module_id, 'token' => $token ),
+					self::CONFIRM_TTL
+				) ) {
+					$this->redirect( array( 'pgr_module_notice' => 'invalid' ) );
+				}
 				$this->redirect(
 					array(
 						'pgr_module_notice'  => 'confirm',
 						'pgr_module'         => $module_id,
 						'pgr_confirm_module' => $module_id,
+						'pgr_confirm_token'  => $token,
 					)
 				);
 			}
@@ -411,7 +505,7 @@ final class PGR_Product_Admin {
 	}
 
 	/** @param array<string,mixed> $module Module metadata. */
-	private function module_card( $module, $lang, $confirm ) {
+	private function module_card( $module, $lang ) {
 		$id        = $module['id'];
 		$enabled   = PGR_Module_Registry::is_enabled( $id );
 		$primary   = 'fa' === $lang ? 'fa' : 'en';
@@ -431,17 +525,11 @@ final class PGR_Product_Admin {
 			<?php if ( 'jalali_presentation' === $id ) { ?>
 				<p class="pgr-module-card__feature" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( 'fa' === $primary ? 'تگ‌های اختصاصی جلالی برای تأییدیه، اعلان و Query String؛ مثال آماده و فهرست کامل در Help همین ماژول.' : 'Explicit Jalali Merge Tags for confirmations, notifications and qualified query strings; full copyable guide in this module’s Help.' ); ?> <code dir="ltr">{pgr_jdate_created_date}</code></p>
 			<?php } ?>
-			<?php if ( $enabled && $confirm === $id ) { ?>
-				<div class="pgr-warning-note" role="alert"><?php esc_html_e( 'Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk.', 'persian-gravityforms' ); ?></div>
-			<?php } ?>
 			<div class="pgr-actions">
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="pgr_module_toggle">
 					<input type="hidden" name="module_id" value="<?php echo esc_attr( $id ); ?>">
 					<input type="hidden" name="enable" value="<?php echo $enabled ? '0' : '1'; ?>">
-					<?php if ( $enabled && $confirm === $id ) { ?>
-						<input type="hidden" name="confirm" value="1">
-					<?php } ?>
 					<?php wp_nonce_field( 'pgr_module_toggle' ); ?>
 					<button type="submit" class="button"><?php echo esc_html( $enabled ? __( 'Disable', 'persian-gravityforms' ) : __( 'Enable', 'persian-gravityforms' ) ); ?></button>
 				</form>
@@ -451,7 +539,7 @@ final class PGR_Product_Admin {
 		<?php
 	}
 
-	private function render_notice() {
+	private function render_notice( $decision = null ) {
 		$notice = $this->query_key( 'pgr_module_notice' );
 		$id     = $this->query_key( 'pgr_module' );
 		$module = PGR_Module_Registry::get( $id );
@@ -477,9 +565,9 @@ final class PGR_Product_Admin {
 			$count = isset( $_GET['pgr_usage_count'] ) ? absint( $_GET['pgr_usage_count'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			/* translators: 1: module label, 2: number of forms using the module. */
 			$message = sprintf( __( '%1$s is used by %2$d form(s) and cannot be disabled safely.', 'persian-gravityforms' ), $label, $count );
-		} elseif ( 'confirm' === $notice ) {
+		} elseif ( 'confirm' === $notice && ! $decision ) {
 			$class   = 'notice-warning';
-			$message = __( 'Current use could not be determined confidently. Review the module card and confirm again to disable it.', 'persian-gravityforms' );
+			$message = __( 'This disable confirmation is no longer valid. Start a new request from the module card.', 'persian-gravityforms' );
 		} elseif ( 'invalid' === $notice ) {
 			$class   = 'notice-error';
 			$message = __( 'The requested module state change was invalid.', 'persian-gravityforms' );
