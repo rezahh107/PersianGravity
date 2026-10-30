@@ -18,6 +18,8 @@ const report={exact_head:head,locale:lang,phase,status:'INCOMPLETE',
   runtime:{php:runtime.php_version,versions:runtime.versions,chromium:browser.version(),wordpress:'6.8.3'},
   cases:[],limits:['Automated focus and layout probes are not screen-reader or human usability acceptance']};
 const key=phase+'-'+lang;
+const confirmLabel=lang==='fa_IR'?'تأیید غیرفعال‌سازی':'Confirm disable';
+const cancelLabel=lang==='fa_IR'?'لغو و بازگشت':'Cancel and return';
 const home=new URL('admin.php?page=persian-gravityforms',runtime.admin_url).href;
 const submit='form[action$="admin-post.php"]';
 function check(ok,msg){if(!ok)throw Error('MODULE_DECISION: '+msg);}
@@ -89,8 +91,8 @@ try {
         check(await decision.locator('input[name="confirm"][value="1"]').count()===1,'No explicit second POST');
         const token=await decision.locator('input[name="confirm_token"]').inputValue();
         check(token.length>=20,'No server-generated ticket');
-        check(await decision.locator('button[type=submit]').innerText()==='Confirm disable','Unclear dangerous action label');
-        check(await decision.getByRole('link',{name:'Cancel and return'}).count()===1,'Cancel missing');
+        check(await decision.locator('button[type=submit]').innerText()===confirmLabel,'Unclear dangerous action label');
+        check(await decision.getByRole('link',{name:cancelLabel}).count()===1,'Cancel missing');
         check(await page.locator('.pgr-module-card').count()===6,'Decision module duplicated in grid');
         check(await card(page,'iranian_currency').count()===0,'Target module duplicated');
         check(await page.locator('.pgr-warning-note').count()===0,'Competing old warning retained');
@@ -99,7 +101,7 @@ try {
         for(const name of ['Iranian Rial / Toman','ریال و تومان ایران','IRR','IRT']){
           check(body.includes(name),'Missing bilingual identity or description '+name);
         }
-        check(body.includes('No module state has changed yet'),'Missing explicit no-change statement');
+        check(body.includes(lang==='fa_IR'?'هنوز وضعیت ماژول تغییر نکرده است':'No module state has changed yet'),'Missing explicit no-change statement');
         check((await page.locator('.pgr-module-decision').boundingBox()).y <
           (await page.locator('.pgr-module-grid').boundingBox()).y,'Decision appears below module grid');
         const layout=await measure(page);
