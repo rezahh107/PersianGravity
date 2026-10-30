@@ -1089,7 +1089,7 @@ jobs:
           // WU008_EVIDENCE_GATE_END
           WU008_EVIDENCE_GATE_JS
 
-      - name: Publish verified evidence to immutable branch
+      - name: Publish verified evidence with exact commit links
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
