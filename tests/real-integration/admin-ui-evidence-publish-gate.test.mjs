@@ -99,8 +99,7 @@ mutation('unresolved contact sheet link',f=>{const p=path.join(f.dir,'CONTACT_SH
 mutation('swapped contact sheet thumbnail target',f=>{
   const p=path.join(f.dir,'CONTACT_SHEET.md');
   const content=fs.readFileSync(p,'utf8');
-  fs.writeFileSync(p,content.replace(']('+f.images[0]+')',']('+f.images[1]+')')
-    .replace(']('+f.images[1]+')',']('+f.images[0]+')'));
+  fs.writeFileSync(p,content.replace(']('+f.images[0]+')',']('+f.images[1]+')'));
 },'duplicate contact-sheet image reference|contact sheet thumbnail/link mismatch');
 mutation('path traversal in screenshot',f=>{const m=f.manifests.get('manifest-normal-fa_IR.json');m.cases[0].screenshot='../private.jpg';save(f,'manifest-normal-fa_IR.json');},'unsafe screenshot filename');
 mutation('unexpected evidence file',f=>fs.writeFileSync(path.join(f.dir,'extraneous.json'),'{}'),'unexpected artifact content');
