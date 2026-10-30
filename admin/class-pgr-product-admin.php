@@ -629,7 +629,11 @@ final class PGR_Product_Admin {
 	}
 
 	private function query_key( $key ) {
-		return isset( $_GET[ $key ] ) ? sanitize_key( wp_unslash( $_GET[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// GET selectors are presentation data, never an authority; reject
+		// malformed arrays rather than passing them into sanitize_key().
+		return isset( $_GET[ $key ] ) && is_string( $_GET[ $key ] )
+			? sanitize_key( wp_unslash( $_GET[ $key ] ) )
+			: ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	private function redirect( $args ) {
