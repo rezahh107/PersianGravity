@@ -161,9 +161,15 @@ try {
           }
           assert(await page.locator(selector).count() >= minCount,
             'Expected authentic UI surface missing: ' + selector);
-          if (name === 'profiles-list' || name === 'profiles-edit') {
+          if (name === 'profiles-list') {
             assert((await page.locator('.pgr-admin').innerText()).includes('LongLabel_12345'),
-              'Synthetic long-label fixture missing');
+              'Synthetic long-label fixture missing from persisted list');
+          }
+          if (name === 'profiles-edit') {
+            assert((await page.locator('input[name="profile[label]"]').inputValue()).includes('LongLabel_12345'),
+              'Synthetic long-label fixture missing from real edit field value');
+            assert((await page.locator('input[name="profile[outputs][0][label]"]').inputValue()).includes('LongLabel_12345'),
+              'Synthetic long-label output missing from real edit field value');
           }
           const measured = await page.evaluate(metrics);
           assert(measured.plugin_style_loaded, 'Actual product stylesheet not loaded');
