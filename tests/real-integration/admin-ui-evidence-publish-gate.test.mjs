@@ -15,7 +15,7 @@ assert.ok(workflow.indexOf('WU008_EVIDENCE_GATE_BEGIN')<workflow.indexOf('git pu
 assert.match(workflow,/WU008_EVIDENCE_EXPECTED_HEAD: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
 
 const validationStep = workflow.indexOf('      - name: Reject incomplete downloaded evidence before publication');
-const tokenStep = workflow.indexOf('      - name: Publish verified evidence to immutable branch');
+const tokenStep = workflow.indexOf('      - name: Publish verified evidence with exact commit links');
 assert.ok(validationStep >= 0 && tokenStep > validationStep, 'Gate must precede token-bearing publication');
 assert.ok(!workflow.slice(validationStep, tokenStep).includes('GH_TOKEN:'), 'Gate must remain token-free');
 assert.ok(workflow.slice(tokenStep).includes('GH_TOKEN: ' + '$' + '{{ github.token }}'), 'Only publisher receives write token');
