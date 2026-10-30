@@ -90,7 +90,7 @@ const allCases = mode === 'normal'
       ['profiles-built-in', url(profile, '&action=edit&profile=sayad_v01'), '.pgr-output-summary', 1],
       ['settings', url('persian-gravityforms-settings'), 'form', 1],
       ['system-status', url('persian-gravityforms-system-status'), '.pgr-card-grid', 1],
-      ['module-confirm', url(overview), '.pgr-warning-note[role="alert"]', 1],
+      ['module-confirm', url(overview), '.pgr-module-decision .notice-warning[role="alert"]', 1],
     ]
   : [
       ['overview-disabled', url(overview), 'article.pgr-module-card', 7],
