@@ -96,6 +96,12 @@ mutation('Head mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json
 mutation('locale mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json');m.locale='fa_IR';save(f,'manifest-normal-en_US.json');},'locale/mode mismatch');
 mutation('mode mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json');m.mode='disabled';save(f,'manifest-normal-en_US.json');},'locale/mode mismatch');
 mutation('unresolved contact sheet link',f=>{const p=path.join(f.dir,'CONTACT_SHEET.md');fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(']('+f.images[0]+')','](missing.jpg)'));},'unresolved/unexpected contact-sheet screenshot link');
+mutation('swapped contact sheet thumbnail target',f=>{
+  const p=path.join(f.dir,'CONTACT_SHEET.md');
+  const content=fs.readFileSync(p,'utf8');
+  fs.writeFileSync(p,content.replace(']('+f.images[0]+')',']('+f.images[1]+')')
+    .replace(']('+f.images[1]+')',']('+f.images[0]+')'));
+},'duplicate contact-sheet image reference|contact sheet thumbnail/link mismatch');
 mutation('path traversal in screenshot',f=>{const m=f.manifests.get('manifest-normal-fa_IR.json');m.cases[0].screenshot='../private.jpg';save(f,'manifest-normal-fa_IR.json');},'unsafe screenshot filename');
 mutation('unexpected evidence file',f=>fs.writeFileSync(path.join(f.dir,'extraneous.json'),'{}'),'unexpected artifact content');
 mutation('unexpected nested directory',f=>fs.mkdirSync(path.join(f.dir,'nested')),'unexpected/nonregular artifact entry');
