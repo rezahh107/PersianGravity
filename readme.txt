@@ -170,3 +170,6 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 * Consolidated the repository to one `PGR_*` runtime.
 * Moved Gravity Forms initialization to `gform_loaded`.
 * Reduced National ID and Jalali behavior to canonical field implementations and removed obsolete legacy architecture.
+== Consequential module disable ==
+
+When current use cannot be determined, the Module Manager displays a bilingual confirmation panel near the top. It names the module, explains possible effects and confirms no change has occurred. Explicit Confirm disable and Cancel and return actions replace the old separated notices/forms. A short-lived, user-scoped decision ticket is required for the second POST; WordPress capability/nonce checks and fresh USED/UNUSED/UNKNOWN inspection remain authoritative. Cancel changes no module state.
