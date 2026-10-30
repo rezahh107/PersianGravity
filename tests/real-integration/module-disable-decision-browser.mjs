@@ -166,11 +166,11 @@ try {
           await view(page); await toggle(page,'iranian_currency','0');
           const pending=page.locator('.pgr-module-decision');
           await pending.locator('input[name="_wpnonce"]').evaluate(el=>el.value='invalid-nonce');
-          await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),pending.locator('button[type=submit]').click()]);
-          check((await page.locator('body').innerText()).includes('Are you sure') ||
-            (await page.locator('body').innerText()).includes('expired') ||
-            (await page.locator('body').innerText()).includes('اطمینان'),
-            'Invalid nonce did not produce WordPress refusal');
+          const [denied]=await Promise.all([
+            page.waitForNavigation({waitUntil:'domcontentloaded'}),
+            pending.locator('button[type=submit]').click()
+          ]);
+          check(denied?.status()===403,'Invalid nonce did not receive the WordPress HTTP 403 refusal');
           await view(page);
           check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0',
             'Invalid nonce disabled currency');
@@ -196,6 +196,7 @@ try {
           const guest=await browser.newContext();
           try{
             const res=await guest.request.post(new URL('admin-post.php',runtime.admin_url).href,{
+              maxRedirects:0,
               form:{action:'pgr_module_toggle',module_id:'iranian_currency',enable:'0',confirm:'1'}
             });
             check(!res.ok(),'Unauthenticated POST incorrectly returned success');
