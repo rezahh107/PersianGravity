@@ -235,6 +235,9 @@ final class PGR_Product_Admin {
 			<p dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $primary ] ); ?></p>
 			<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $secondary ] ); ?></p>
 			<code dir="ltr"><?php echo esc_html( $module['id'] ); ?></code>
+			<?php if ( 'jalali_presentation' === $module['id'] ) { ?>
+				<p class="pgr-module-card__feature" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( 'fa' === $primary ? 'تگ‌های اختصاصی جلالی برای تأییدیه، اعلان و Query String؛ مثال آماده و فهرست کامل در Help همین ماژول.' : 'Explicit Jalali Merge Tags for confirmations, notifications and qualified query strings; full copyable guide in this module’s Help.' ); ?> <code dir="ltr">{pgr_jdate_created_date}</code></p>
+			<?php } ?>
 			<div class="notice notice-warning inline" role="alert">
 				<p><?php echo esc_html( $copy['risk'] ); ?></p>
 				<p><?php echo esc_html( $copy['pending'] ); ?></p>
