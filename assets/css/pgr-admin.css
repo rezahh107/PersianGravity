@@ -227,3 +227,19 @@
 .pgr-help-sample__status:not(:empty) { display: block; margin-block-start: 6px; }
 .pgr-module-card__feature { padding: 10px; border-inline-start: 3px solid #2271b1; background: #f6f7f7; overflow-wrap: anywhere; }
 @media (max-width: 782px) { .pgr-help-example { padding: 12px; } }
+
+/* Keep wide Gravity Flow diagnostics inside a labelled, keyboard-scrollable region. */
+.pgr-compatibility-status__table-scroll {
+	max-width: 100%;
+	min-width: 0;
+	overflow-x: auto;
+}
+
+.pgr-compatibility-status__table-scroll .widefat {
+	min-width: 760px;
+}
+
+.pgr-compatibility-status__table-scroll:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}

@@ -196,8 +196,9 @@ final class PGR_Product_Admin {
 		$snapshot     = PGR_Gravity_Flow_Compatibility_Diagnostics::status_snapshot();
 		?>
 		<section class="pgr-panel pgr-compatibility-status">
-			<h2><?php echo esc_html__( 'Gravity Flow compatibility diagnostics', 'persian-gravityforms' ); ?></h2>
+			<h2 id="pgr-gravity-flow-compatibility-heading"><?php echo esc_html__( 'Gravity Flow compatibility diagnostics', 'persian-gravityforms' ); ?></h2>
 			<p class="pgr-status-value"><?php echo esc_html__( 'Informational maintenance evidence only. These observations do not enable or disable compatibility.', 'persian-gravityforms' ); ?></p>
+			<div class="pgr-compatibility-status__table-scroll" role="region" aria-labelledby="pgr-gravity-flow-compatibility-heading" tabindex="0">
 			<table class="widefat striped">
 				<thead>
 					<tr>
@@ -228,6 +229,7 @@ final class PGR_Product_Admin {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+			</div>
 		</section>
 		<?php
 	}

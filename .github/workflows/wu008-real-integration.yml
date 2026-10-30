@@ -138,6 +138,8 @@ jobs:
           php -l tests/real-integration/setup-runtime.php
           php -l tests/real-integration/admin-ui-evidence-fixture.php
           node --check tests/real-integration/admin-ui-evidence-browser.mjs
+          node --check tests/real-integration/system-status-responsive-browser.mjs
+          node --check tests/real-integration/system-status-scroll-summary.mjs
           node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
           php -l tests/real-integration/g009-setup-runtime.php
           php -l tests/real-integration/g008-flow-inbox-setup-runtime.php
@@ -835,9 +837,11 @@ jobs:
           trap restore_admin_ui_state EXIT
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/admin-ui-evidence-fixture.php
           WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=normal node tests/real-integration/system-status-responsive-browser.mjs
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
           WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=normal node tests/real-integration/admin-ui-evidence-browser.mjs
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=normal node tests/real-integration/system-status-responsive-browser.mjs
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
             PGR_Module_Registry::set_enabled("national_id", false);
@@ -847,12 +851,15 @@ jobs:
             }
           '
           WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          WU008_ADMIN_UI_LOCALE=fa_IR WU008_ADMIN_UI_MODE=disabled node tests/real-integration/system-status-responsive-browser.mjs
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
           WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=disabled node tests/real-integration/admin-ui-evidence-browser.mjs
+          WU008_ADMIN_UI_LOCALE=en_US WU008_ADMIN_UI_MODE=disabled node tests/real-integration/system-status-responsive-browser.mjs
           restore_admin_ui_state
           trap - EXIT
           node tests/real-integration/admin-ui-evidence-contact-sheet.mjs
+          node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
       - name: Stage privacy-checked bounded evidence for upload
@@ -1089,6 +1096,59 @@ jobs:
           // WU008_EVIDENCE_GATE_END
           WU008_EVIDENCE_GATE_JS
 
+          WU008_STATUS_EVIDENCE_DIR=/tmp/wu008-downloaded-evidence/system-status-scroll-evidence \
+          node --input-type=module <<'WU008_STATUS_EVIDENCE_JS'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const root=process.env.WU008_STATUS_EVIDENCE_DIR;
+          const head=process.env.WU008_EVIDENCE_EXPECTED_HEAD;
+          const names=['normal-fa_IR','normal-en_US','disabled-fa_IR','disabled-en_US'];
+          const required=new Set(['README.md']);
+          for(const name of names){
+            required.add('status-'+name+'.json');
+            for(const width of [1280,390,320])required.add('status-after-'+name+'-'+width+'.jpg');
+            required.add('status-stress-'+name+'-320.jpg');
+            required.add('status-negative-uncontained-'+name+'-320.jpg');
+          }
+          if(!fs.existsSync(root)||!fs.lstatSync(root).isDirectory())throw Error('Missing System Status evidence directory');
+          const entries=fs.readdirSync(root,{withFileTypes:true});
+          for(const e of entries){
+            if(!e.isFile()||e.isSymbolicLink()||!required.has(e.name))throw Error('Unexpected System Status artifact: '+e.name);
+            const len=fs.statSync(path.join(root,e.name)).size;
+            if(len===0||len>4*1024*1024)throw Error('Invalid System Status evidence size: '+e.name);
+            if(e.name.endsWith('.jpg')){
+              const bytes=fs.readFileSync(path.join(root,e.name));
+              if(bytes.length<100||bytes[0]!==255||bytes[1]!==216||bytes.at(-2)!==255||bytes.at(-1)!==217)
+                throw Error('Invalid System Status JPEG: '+e.name);
+            }
+          }
+          if(entries.length!==required.size)throw Error('Incomplete System Status evidence: expected '+required.size+', got '+entries.length);
+          for(const filename of required)if(!fs.existsSync(path.join(root,filename)))throw Error('Missing System Status evidence: '+filename);
+          const report=fs.readFileSync(path.join(root,'README.md'),'utf8');
+          for(const name of names){
+            const data=JSON.parse(fs.readFileSync(path.join(root,'status-'+name+'.json'),'utf8'));
+            const [mode,locale]=name.split('-');
+            if(data.head!==head||data.mode!==mode||data.locale!==locale||data.status!=='CAPTURED'
+              ||data.negative_control!=='DETECTED_AND_RESTORED'||data.cases.length!==3)
+              throw Error('Incomplete System Status manifest identity: '+name);
+            for(const c of data.cases){
+              if(c.status!=='PASS'||![1280,390,320].includes(c.width)||c.initial?.document_scroll_width>c.width
+                ||c.initial?.header_count!==5||c.initial?.data_cell_counts?.some(n=>n!==5)
+                ||c.long_values?.document_scroll_width>c.width)
+                throw Error('System Status scenario failed: '+name+' at '+c.width);
+              if(c.width<760&&!(Math.abs(c.keyboard?.scroll_left)>2&&Math.abs(c.pointer?.scroll_left)>2
+                &&Math.abs(c.touch?.scroll_left)>2))throw Error('System Status input accessibility failure: '+name);
+              if(!required.has(c.screenshot)||!report.includes(']('+c.screenshot+')'))
+                throw Error('Unresolved System Status screenshot: '+name);
+              if(c.width===320&&(!(c.negative?.document_width>320)
+                ||!required.has(c.negative_screenshot)||!required.has(c.stress_screenshot)
+                ||!report.includes(']('+c.negative_screenshot+')')||!report.includes(']('+c.stress_screenshot+')')))
+                throw Error('Missing negative or stress evidence: '+name);
+            }
+          }
+          console.log('SYSTEM_STATUS_EVIDENCE_GATE PASS: 4 manifests, 12 viewports, 20 JPEGs and README');
+          WU008_STATUS_EVIDENCE_JS
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1112,7 +1172,9 @@ jobs:
           git checkout --orphan "${publication_branch}"
           mkdir -p admin-ui-evidence
           cp -a "$source_dir/." admin-ui-evidence/
-          git add -- admin-ui-evidence
+          mkdir -p system-status-scroll-evidence
+          cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
