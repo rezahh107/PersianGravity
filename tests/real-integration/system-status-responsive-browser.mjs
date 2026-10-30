@@ -81,6 +81,16 @@ try {
       item.screenshot='status-after-'+fileKey+'-'+width+'.jpg';
       await page.screenshot({path:path.join(dir,item.screenshot),fullPage:true,type:'jpeg',quality:85});
       if(width<760){
+        const lastColumn=await page.locator(region).evaluate(el=>{
+          el.scrollLeft=getComputedStyle(el).direction==='rtl'?-el.scrollWidth:el.scrollWidth;
+          const bounds=el.getBoundingClientRect();
+          const last=el.querySelector('thead th:last-child')?.getBoundingClientRect();
+          const reachable=!!last && last.left>=bounds.left-2 && last.right<=bounds.right+2;
+          el.scrollLeft=0;
+          return {reachable,last_left:last?.left,last_right:last?.right};
+        });
+        assert(lastColumn.reachable,'Last diagnostics column cannot be reached within scroll region');
+        item.last_column=lastColumn;
         await page.locator(region).scrollIntoViewIfNeeded();
         await page.keyboard.press('Tab'); // Establish keyboard modality before region focus.
         await page.locator(region).focus();
@@ -124,6 +134,9 @@ try {
         if(!first||!reason)throw Error('Diagnostic identifier/reason markup unavailable');
         first.textContent='gravityflow.compatibility.very_long_technical_identifier_'.repeat(6);
         reason.textContent='LONG_REASON_IDENTIFIER_with_representative_status_details_'.repeat(6);
+        const summary=row.querySelectorAll('td')[2]?.firstChild;
+        if(summary?.nodeType===Node.TEXT_NODE)
+          summary.textContent='Representative compatibility warning: source version and callback mismatch. '.repeat(5);
       });
       const stressed=await page.evaluate(getMeasurements);
       assert(stressed.document_scroll_width<=width,'Long identifiers escaped table region');
