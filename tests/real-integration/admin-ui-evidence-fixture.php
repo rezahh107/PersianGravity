@@ -16,7 +16,7 @@ $id = 'wu008_ui_long_label';
 if ( null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
 	throw new RuntimeException( 'Synthetic fixture already exists; refusing to overwrite data.' );
 }
-$long = str_repeat( 'آزمایش نمایش متن طولانی و نام انگلیسی LongLabel_12345 / ', 5 );
+$long = trim( str_repeat( 'آزمایش نمایش متن طولانی و نام انگلیسی LongLabel_12345 / ', 5 ) );
 $fixture = array(
 	'id' => $id,
 	'label' => $long,
