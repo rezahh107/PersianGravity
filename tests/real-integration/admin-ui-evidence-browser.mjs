@@ -154,9 +154,15 @@ try {
             assert(resultUrl.searchParams.get('pgr_module_notice') === 'confirm' &&
               resultUrl.searchParams.get('pgr_confirm_module') === 'iranian_currency',
               'Real first-stage UNKNOWN disable confirmation not reached');
-            assert(await page.locator('article.pgr-module-card').filter({hasText:'iranian_currency'})
-              .locator('input[name="confirm"][value="1"]').count() === 1,
-              'Second-stage confirmation form absent');
+            const decision=page.locator('.pgr-module-decision');
+            assert(await decision.count()===1 && await decision.getByRole('button',{name:'Confirm disable'}).count()===1 &&
+              await decision.getByRole('link',{name:'Cancel and return'}).count()===1,
+              'Single top-level UNKNOWN confirmation with Cancel is absent');
+            assert(await decision.locator('input[name="confirm"][value="1"]').count()===1 &&
+              await decision.locator('input[name="confirm_token"]').inputValue()!=='',
+              'Server-backed second-stage confirmation ticket absent');
+            assert(await page.locator('article.pgr-module-card').filter({hasText:'iranian_currency'}).count()===0,
+              'Target module duplicated in grid during decision');
             // Deliberately NEVER submit the confirmation.
           }
           assert(await page.locator(selector).count() >= minCount,
