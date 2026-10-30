@@ -8,7 +8,7 @@ $root  = getenv( 'WU008_WP_PATH' );
 $dir   = getenv( 'WU008_ARTIFACT_DIR' );
 $phase = getenv( 'PGR_DECISION_FIXTURE_PHASE' );
 if ( ! $root || ! $dir || realpath( ABSPATH ) !== realpath( $root ) ||
-	! in_array( $phase, array( 'setup', 'cleanup' ), true ) || ! class_exists( 'GFAPI' ) ) {
+	! in_array( $phase, array( 'setup', 'release', 'cleanup' ), true ) || ! class_exists( 'GFAPI' ) ) {
 	throw new RuntimeException( 'Refusing module-decision fixture outside disposable licensed WU008 runtime.' );
 }
 $file = $dir . '/module-decision-fixture-private.json';
@@ -51,6 +51,13 @@ if ( 'setup' === $phase ) {
 		if ( is_wp_error( $result ) ) {
 			throw new RuntimeException( 'Failed to clean up disposable GF form.' );
 		}
+	}
+	if ( 'release' === $phase ) {
+		if ( PGR_Module_Usage::UNUSED !== PGR_Module_Usage::inspect( 'national_id' )['status'] ) {
+			throw new RuntimeException( 'Disposed USED fixture does not lead to UNUSED.' );
+		}
+		echo 'WU008_DECISION_FIXTURE_UNUSED';
+		return;
 	}
 	foreach ( $data['original_states'] as $id => $enabled ) {
 		PGR_Module_Registry::set_enabled( $id, $enabled );
