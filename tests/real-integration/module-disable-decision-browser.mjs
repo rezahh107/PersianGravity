@@ -139,7 +139,11 @@ try {
         check(await decision.count()===0 && await card(page,'iranian_currency').count()===1,'Cancel did not restore normal grid');
         check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0','Cancel changed currency state');
         await capture(page,record,'cancel',width);
-        record.checks.push('cancel_no_change');
+        await page.goto(url.href,{waitUntil:'domcontentloaded'});
+        check(await page.locator('.pgr-module-decision').count()===0,
+          'Cancel failed to revoke the original confirmation ticket');
+        await view(page);
+        record.checks.push('cancel_no_change','cancel_revoked_token');
         // A saved USED form must block even a crafted confirmed POST.
         url=await toggle(page,'national_id','0');
         notice(url,'blocked');
