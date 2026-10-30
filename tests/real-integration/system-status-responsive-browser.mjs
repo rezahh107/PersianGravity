@@ -106,7 +106,22 @@ try {
         await page.locator(region).evaluate(el=>el.scrollLeft=0);
         const bounds=await page.locator(region).boundingBox();
         assert(bounds && bounds.width>0,'Scroll container not visible');
-        await page.mouse.move(bounds.x+bounds.width/2,bounds.y+Math.min(24,bounds.height/2));
+        // The diagnostics region is taller than a mobile viewport: its top can
+        // legitimately be off-screen after scrollIntoViewIfNeeded(). Wheel/touch
+        // must target the actual visible intersection, not bounds.y + 24.
+        const clip={left:Math.max(0,bounds.x),right:Math.min(width,bounds.x+bounds.width),
+          top:Math.max(0,bounds.y),bottom:Math.min(height,bounds.y+bounds.height)};
+        assert(clip.right-clip.left>40 && clip.bottom-clip.top>40,
+          'Scroll region does not intersect the visible viewport');
+        const x=(clip.left+clip.right)/2, y=(clip.top+clip.bottom)/2;
+        const hit=await page.evaluate(({x,y})=>{
+          const target=document.elementFromPoint(x,y);
+          return {inside:!!target?.closest('.pgr-compatibility-status__table-scroll'),
+            node:target?.tagName.toLowerCase()||null};
+        },{x,y});
+        assert(hit.inside,'Pointer target outside visible diagnostics scroll region: '+JSON.stringify({clip,hit}));
+        item.pointer_target={x,y,clip,hit};
+        await page.mouse.move(x,y);
         const intendedDelta=locale==='fa_IR'?-290:290;
         await page.mouse.wheel(intendedDelta,0);
         await page.waitForTimeout(140);
@@ -125,7 +140,7 @@ try {
         item.pointer={scroll_left:pointer.region_scroll_left, delta_x:pointerDelta};
         await page.locator(region).evaluate(el=>el.scrollLeft=0);
         const touch=await context.newCDPSession(page);
-        const x=bounds.x+bounds.width/2, y=bounds.y+Math.min(bounds.height/2,75);
+        // Reuse the same verified in-viewport hit target for real touch input.
         const trySwipe=async(sign)=>{
           await touch.send('Input.dispatchTouchEvent',{type:'touchStart',
             touchPoints:[{x:x-sign*70,y}]});
