@@ -138,6 +138,9 @@ jobs:
           php -l tests/real-integration/setup-runtime.php
           php -l tests/real-integration/admin-ui-evidence-fixture.php
           node --check tests/real-integration/admin-ui-evidence-browser.mjs
+          php -l tests/real-integration/module-disable-decision-fixture.php
+          node --check tests/real-integration/module-disable-decision-browser.mjs
+          node --check tests/real-integration/module-disable-decision-summary.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
           node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
@@ -862,6 +865,29 @@ jobs:
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
+      - name: Verify real consequential module-disable decisions in disposable licensed WordPress
+        shell: bash
+        run: |
+          set -euo pipefail
+          PGR_DECISION_FIXTURE_PHASE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-decision-fixture.php
+          restore_decision_fixture() {
+            PGR_DECISION_FIXTURE_PHASE=cleanup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-decision-fixture.php
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_decision_fixture EXIT
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          PGR_DECISION_LOCALE=fa_IR PGR_DECISION_PHASE=used node tests/real-integration/module-disable-decision-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          PGR_DECISION_LOCALE=en_US PGR_DECISION_PHASE=used node tests/real-integration/module-disable-decision-browser.mjs
+          PGR_DECISION_FIXTURE_PHASE=release php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-decision-fixture.php
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          PGR_DECISION_LOCALE=fa_IR PGR_DECISION_PHASE=unused node tests/real-integration/module-disable-decision-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          PGR_DECISION_LOCALE=en_US PGR_DECISION_PHASE=unused node tests/real-integration/module-disable-decision-browser.mjs
+          restore_decision_fixture
+          trap - EXIT
+          node tests/real-integration/module-disable-decision-summary.mjs
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
@@ -1149,6 +1175,59 @@ jobs:
           console.log('SYSTEM_STATUS_EVIDENCE_GATE PASS: 4 manifests, 12 viewports, 20 JPEGs and README');
           WU008_STATUS_EVIDENCE_JS
 
+      - name: Validate bounded module-disable evidence before token-bearing publication
+        shell: bash
+        env:
+          PGR_DECISION_EVIDENCE_DIR: /tmp/wu008-downloaded-evidence/module-disable-evidence
+          PGR_DECISION_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'PGR_DECISION_EVIDENCE_JS'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const root=process.env.PGR_DECISION_EVIDENCE_DIR, head=process.env.PGR_DECISION_EXPECTED_HEAD;
+          const names=['used-fa_IR','used-en_US','unused-fa_IR','unused-en_US'];
+          const required=new Set(['README.md']);
+          for(const n of names){
+            required.add('decision-'+n+'.json');
+            for(const width of [1280,390,320]){
+              for(const stage of (n.startsWith('used-')?['normal','decision','cancel','confirmed']:['normal','disabled']))
+                required.add('decision-'+n+'-'+width+'-'+stage+'.jpg');
+            }
+          }
+          if(!fs.existsSync(root)||!fs.lstatSync(root).isDirectory())throw Error('Decision evidence missing');
+          const actual=fs.readdirSync(root,{withFileTypes:true});
+          if(actual.length!==required.size)throw Error('Decision evidence incomplete');
+          const sheet=fs.readFileSync(path.join(root,'README.md'),'utf8');
+          for(const entry of actual){
+            if(!entry.isFile()||entry.isSymbolicLink()||!required.has(entry.name))throw Error('Unexpected decision artifact: '+entry.name);
+            const bytes=fs.readFileSync(path.join(root,entry.name));
+            if(bytes.length<100||bytes.length>4*1024*1024)throw Error('Invalid decision artifact size: '+entry.name);
+            if(entry.name.endsWith('.jpg') && !(bytes[0]===255&&bytes[1]===216&&bytes.at(-2)===255&&bytes.at(-1)===217))
+              throw Error('Malformed decision JPEG: '+entry.name);
+            if(entry.name.endsWith('.jpg')&&!sheet.includes(']('+entry.name+')'))
+              throw Error('Unlinked decision screenshot: '+entry.name);
+          }
+          for(const filename of required)if(!fs.existsSync(path.join(root,filename)))throw Error('Missing decision file: '+filename);
+          for(const n of names){
+            const data=JSON.parse(fs.readFileSync(path.join(root,'decision-'+n+'.json'),'utf8'));
+            const [phase,locale]=n.split('-');
+            if(data.exact_head!==head||data.phase!==phase||data.locale!==locale||data.status!=='CAPTURED'||data.cases.length!==3)
+              throw Error('Decision identity/count mismatch: '+n);
+            for(const c of data.cases){
+              if(c.status!=='PASS'||![1280,390,320].includes(c.width)||c.normal?.document_scroll_width>c.width)
+                throw Error('Decision viewport failed: '+n);
+              const expected=phase==='used'?4:2;
+              if(c.images?.length!==expected||c.images.some(image=>!required.has(image)))
+                throw Error('Decision screenshot count mismatch: '+n);
+              if(phase==='used'&&!['forged_get_rejected','mismatched_get_rejected','cancel_no_change','used_blocked','used_forged_confirm_blocked','unknown_second_post_disabled','currency_restored'].every(t=>c.checks.includes(t)))
+                throw Error('Decision safety scenario incomplete: '+n);
+              if(phase==='unused'&&!c.checks.includes('unused_direct_disabled'))throw Error('UNUSED direct disable not proven: '+n);
+            }
+          }
+          console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 12 scenarios, 36 linked JPEGs');
+          PGR_DECISION_EVIDENCE_JS
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1174,7 +1253,9 @@ jobs:
           cp -a "$source_dir/." admin-ui-evidence/
           mkdir -p system-status-scroll-evidence
           cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence
+          mkdir -p module-disable-evidence
+          cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1184,3 +1265,4 @@ jobs:
           echo "Exact published commit SHA: ${evidence_commit}" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
+          echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
