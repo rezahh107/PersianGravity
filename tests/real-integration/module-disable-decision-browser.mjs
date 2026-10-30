@@ -110,9 +110,9 @@ try {
         const confirmButton=decision.locator('button[type=submit]');
         await confirmButton.focus();
         await page.keyboard.press('Tab');
-        check(await decision.getByRole('link',{name:'Cancel and return'}).evaluate(el=>document.activeElement===el),
+        check(await decision.getByRole('link',{name:cancelLabel}).evaluate(el=>document.activeElement===el),
           'Cancel is not next in keyboard order');
-        const focus=await decision.getByRole('link',{name:'Cancel and return'}).evaluate(el=>({
+        const focus=await decision.getByRole('link',{name:cancelLabel}).evaluate(el=>({
           outline:getComputedStyle(el).outlineStyle,boxShadow:getComputedStyle(el).boxShadow
         }));
         check(focus.outline!=='none'||focus.boxShadow!=='none','No visible cancel focus indicator');
@@ -134,7 +134,7 @@ try {
         await page.goto(url.href,{waitUntil:'domcontentloaded'});
         check(await decision.count()===1,'Valid first-stage ticket no longer displayed');
         await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),
-          decision.getByRole('link',{name:'Cancel and return'}).click()]);
+          decision.getByRole('link',{name:cancelLabel}).click()]);
         check(!new URL(page.url()).searchParams.has('pgr_confirm_module'),'Cancel retained pending query');
         check(await decision.count()===0 && await card(page,'iranian_currency').count()===1,'Cancel did not restore normal grid');
         check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0','Cancel changed currency state');
