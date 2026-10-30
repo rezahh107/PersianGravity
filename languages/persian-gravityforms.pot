@@ -495,9 +495,6 @@ msgstr ""
 msgid "You are not allowed to change PersianGravity modules."
 msgstr ""
 
-#: admin/class-pgr-product-admin.php:361
-msgid "Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk."
-msgstr ""
 
 #: admin/class-pgr-product-admin.php:372
 msgid "Disable"
@@ -533,9 +530,6 @@ msgstr ""
 msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
 msgstr ""
 
-#: admin/class-pgr-product-admin.php:408
-msgid "Current use could not be determined confidently. Review the module card and confirm again to disable it."
-msgstr ""
 
 #: admin/class-pgr-product-admin.php:411
 msgid "The requested module state change was invalid."
