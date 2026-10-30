@@ -110,6 +110,18 @@ final class PGR_Product_Admin {
 			return;
 		}
 
+		// Cancel is a GET link that revokes only ephemeral UI intent; it never
+		// changes persisted module state or trusts a query as usage evidence.
+		$cancel_token = $this->query_key( 'pgr_cancel_confirm' );
+		if ( '' !== $cancel_token ) {
+			$pending = get_transient( $this->disable_confirmation_key() );
+			if ( is_array( $pending ) &&
+				$this->matches_disable_confirmation( $pending, $pending['module_id'] ?? '', $cancel_token ) ) {
+				delete_transient( $this->disable_confirmation_key() );
+			}
+			wp_safe_redirect( admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) );
+			exit;
+		}
 		$lang     = $this->primary_language();
 		$decision = $this->pending_disable_confirmation();
 		?>
@@ -230,7 +242,7 @@ final class PGR_Product_Admin {
 					<?php wp_nonce_field( 'pgr_module_toggle' ); ?>
 					<button type="submit" class="button button-primary"><?php echo esc_html( $copy['confirm'] ); ?></button>
 				</form>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) ); ?>"><?php echo esc_html( $copy['cancel'] ); ?></a>
+				<a class="button" href="<?php echo esc_url( add_query_arg( 'pgr_cancel_confirm', $token, admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) ) ); ?>"><?php echo esc_html( $copy['cancel'] ); ?></a>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::HELP_SLUG . '&lang=' . $lang . '#' . $module['help_topic'] ) ); ?>"><?php esc_html_e( 'Help', 'persian-gravityforms' ); ?></a>
 			</div>
 		</section>
