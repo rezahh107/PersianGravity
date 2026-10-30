@@ -95,7 +95,7 @@ mutation('corrupt manifest JSON',f=>fs.writeFileSync(path.join(f.dir,'manifest-n
 mutation('Head mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json');m.exact_head='f'.repeat(40);save(f,'manifest-normal-en_US.json');},'PR Head mismatch');
 mutation('locale mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json');m.locale='fa_IR';save(f,'manifest-normal-en_US.json');},'locale/mode mismatch');
 mutation('mode mismatch',f=>{const m=f.manifests.get('manifest-normal-en_US.json');m.mode='disabled';save(f,'manifest-normal-en_US.json');},'locale/mode mismatch');
-mutation('unresolved contact sheet link',f=>{const p=path.join(f.dir,'CONTACT_SHEET.md');fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(']('+f.images[0]+')','](missing.jpg)'));},'unresolved/unexpected contact-sheet screenshot link');
+mutation('unresolved contact sheet link',f=>{const p=path.join(f.dir,'CONTACT_SHEET.md');fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(']('+f.images[0]+')','](missing.jpg)'));},'contact sheet thumbnail/link mismatch');
 mutation('swapped contact sheet thumbnail target',f=>{
   const p=path.join(f.dir,'CONTACT_SHEET.md');
   const content=fs.readFileSync(p,'utf8');
