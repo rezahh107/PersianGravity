@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 final class PGR_Product_Admin {
-	const HELP_SLUG = 'persian-gravityforms-help';
+	const HELP_SLUG   = 'persian-gravityforms-help';
 	const CONFIRM_TTL = 300;
 
 	/** @var PGR_Admin */
@@ -134,7 +134,11 @@ final class PGR_Product_Admin {
 				<span class="pgr-badge" data-state="AVAILABLE"><?php echo esc_html( PGR_VERSION ); ?></span>
 			</div>
 			<?php $this->render_notice( $decision ); ?>
-			<?php if ( $decision ) { $this->render_disable_decision( $decision['module'], $decision['token'], $lang ); } ?>
+			<?php
+			if ( $decision ) {
+				$this->render_disable_decision( $decision['module'], $decision['token'], $lang );
+			}
+			?>
 			<div class="pgr-card-grid pgr-module-grid">
 				<?php
 				foreach ( PGR_Module_Registry::all() as $module ) {
@@ -186,7 +190,10 @@ final class PGR_Product_Admin {
 			PGR_Module_Usage::UNKNOWN !== PGR_Module_Usage::inspect( $id )['status'] ) {
 			return null;
 		}
-		return array( 'module' => PGR_Module_Registry::get( $id ), 'token' => $token );
+		return array(
+			'module' => PGR_Module_Registry::get( $id ),
+			'token'  => $token,
+		);
 	}
 
 	/** User-specific ephemeral presentation intent, not a usage-inspection cache. */
@@ -506,7 +513,10 @@ final class PGR_Product_Admin {
 				$token = wp_generate_uuid4();
 				if ( ! set_transient(
 					$this->disable_confirmation_key(),
-					array( 'module_id' => $module_id, 'token' => $token ),
+					array(
+						'module_id' => $module_id,
+						'token'     => $token,
+					),
 					self::CONFIRM_TTL
 				) ) {
 					$this->redirect( array( 'pgr_module_notice' => 'invalid' ) );
@@ -629,11 +639,13 @@ final class PGR_Product_Admin {
 	}
 
 	private function query_key( $key ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only UI selectors, never state authority.
 		// GET selectors are presentation data, never an authority; reject
 		// malformed arrays rather than passing them into sanitize_key().
 		return isset( $_GET[ $key ] ) && is_string( $_GET[ $key ] )
 			? sanitize_key( wp_unslash( $_GET[ $key ] ) )
-			: ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	private function redirect( $args ) {
