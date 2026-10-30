@@ -85,6 +85,7 @@ test('complete four manifests, 60 JPEGs, two controls and VISUAL_FINDING pass',(
 });
 mutation('missing product JPEG',f=>fs.unlinkSync(path.join(f.dir,f.images[0])),'missing required evidence file');
 mutation('missing isolated control JPEG',f=>fs.unlinkSync(path.join(f.dir,'ui-negative-control-fa_IR-320.jpg')),'missing required evidence file');
+mutation('oversized JPEG artifact',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),Buffer.alloc(4*1024*1024+1)), 'empty/oversized evidence file');
 mutation('empty JPEG',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),''),'empty/invalid JPEG');
 mutation('invalid JPEG bytes',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),Buffer.from('INVALID'.repeat(40))),'empty/invalid JPEG');
 mutation('truncated JPEG',f=>fs.writeFileSync(path.join(f.dir,f.images[0]),jpeg.subarray(0,200)),'truncated JPEG EOI');
