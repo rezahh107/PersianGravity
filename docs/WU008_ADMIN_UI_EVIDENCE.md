@@ -25,4 +25,11 @@ Authentication, source/vendor identity, CSS, viewport/locale, missing routes, sc
 
 Only after a successful exact-Head WU008 job, a second job with narrowly scoped write permission publishes approved synthetic screenshots, four JSON manifests and CONTACT_SHEET.md to a fresh evidence/wu008-admin-ui-<run_id> branch. It never checks out or executes tested PR code, treats the downloaded artifact as data, checks extensions, size and symlinks, and never uploads licensed ZIPs or private vendor source. The clickable Markdown contact sheet links to the full screenshots. The evidence-branch link appears in the Actions summary. Failed CI or publication means the required evidence is NOT DELIVERED; expiring workflow artifacts are not a substitute.
 
+
+### Pre-publication completeness gate (PRI-FND-001)
+
+The publisher validates the *downloaded* evidence as untrusted data, **before** creating an evidence branch or reaching `git push`. It does not run downloaded content or check out/execute the tested PR source with its write token. The trusted gate is inline in the publisher step and checks the GitHub-event exact PR Head, four manifest identities, the fixed 20+20+10+10 scenario matrix, 60 unique exact screenshot references, two detected isolated negative controls, a closed 67-file allowlist (no nested directories/symlinks), nonempty structurally valid JPEG marker/segment streams, and all 60 clickable contact-sheet thumbnail/target pairs. It accepts `VISUAL_FINDING` as captured evidence, not as design approval.
+
+`tests/real-integration/admin-ui-evidence-publish-gate.test.mjs` extracts that **same inline gate** from the workflow, feeds an independent synthetic complete fixture plus disposable mutations, and asserts that each incomplete artifact returns a specific diagnostic and does not reach the simulated publication step. WU008 runs these assertions before the licensed runtime setup. JPEG structural validation does not claim exhaustive per-pixel visual fidelity; the authentic browser screenshots remain the source for visual review. A failed gate blocks publication, without invalidating genuinely complete historical captures.
+
 Do not report browser PASS until the exact new run, produced screenshots, negative control and durable branch are actually inspected. No merge, release or deployment is authorized.
