@@ -75,6 +75,10 @@ function metrics() {
     effective_fonts: { body: font(document.body), page: font(wrap), heading: font(wrap?.querySelector('h1')) },
     plugin_style_loaded: [...document.styleSheets].some((sheet) =>
       (sheet.href || '').includes('/assets/css/pgr-admin.css')),
+    module_states: [...document.querySelectorAll('article.pgr-module-card')].map((card) => ({
+      id: card.querySelector('code[dir="ltr"]')?.textContent?.trim() || null,
+      state: card.querySelector('.pgr-badge[data-state]')?.getAttribute('data-state') || null,
+    })),
   };
 }
 const allCases = mode === 'normal'
@@ -167,6 +171,9 @@ try {
             'Effective document direction mismatches locale');
           assert(measured.html_lang.toLowerCase().replace('_','-') ===
             (locale === 'fa_IR' ? 'fa-ir' : 'en-us'), 'WordPress locale mismatch');
+          if (measured.module_states.length === 7) {
+            evidence.observed_module_state = measured.module_states;
+          }
           const gate = evaluateOperationDiagnostics(name, diagnostics, baseline, [origin]);
           assert(gate.ok, formatDiagnosticGateFailure(gate));
           const filename = 'ui-' + mode + '-' + locale + '-' + name + '-' + width + '.jpg';
