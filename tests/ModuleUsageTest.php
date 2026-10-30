@@ -206,6 +206,9 @@ final class ModuleUsageTest extends TestCase {
 	}
 	#[RunInSeparateProcess]
 	public function test_confirmation_get_requires_real_fresh_user_bound_unknown_intent_and_cancel_revokes_it() {
+		if ( ! defined( 'PGR_VERSION' ) ) {
+			define( 'PGR_VERSION', '4.10.0' );
+		}
 		eval( 'class GFAPI { public static $forms = array(); public static function get_forms($active = null, $trash = false) { return self::$forms; } }' );
 		eval( 'class PGR_Admin { const CAPABILITY = "manage_options"; const MENU_SLUG = "persian-gravityforms"; }' );
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
