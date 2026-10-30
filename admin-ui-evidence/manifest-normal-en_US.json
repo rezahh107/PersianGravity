@@ -1,0 +1,1318 @@
+{
+  "schema_version": 1,
+  "evidence_class": "AUTHENTIC_LICENSED_WU008_ADMIN_BROWSER",
+  "exact_head": "1e5d0bb8c4171e1e3e5376a61246f5ec8458c399",
+  "mode": "normal",
+  "locale": "en_US",
+  "expected_direction": "ltr",
+  "runtime": {
+    "wordpress": "6.8.3",
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "playwright": "1.55.0",
+    "chromium": "140.0.7339.16",
+    "device_scale_factor": 1
+  },
+  "cases": [
+    {
+      "name": "overview",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-overview-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-list",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-list-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-new",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-new-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-edit-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-built-in",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-built-in-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-settings-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-system-status-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-module-confirm-1280.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    },
+    {
+      "name": "overview",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-overview-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-list",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-list-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-new",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-new-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-edit-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-built-in",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-built-in-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-settings-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "VISUAL_FINDING",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [
+          {
+            "element": "table",
+            "class_name": "widefat striped",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 31,
+            "right": 791
+          },
+          {
+            "element": "thead",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Reason",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Observed Gravity Flow",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Last observed",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "tbody",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "PGR-GFLOW-CONVERSION-UNAVAILABLE",
+            "left": 354,
+            "right": 524
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "3.1.0",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "3.1.0",
+            "left": 572,
+            "right": 621
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "2026-10-30 21:22:05 UTC",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "2026-10-30 21:22:05 UTC",
+            "left": 679,
+            "right": 777
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Last updatedgravityflow.inbox.last-updated\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": 344,
+            "right": 561
+          }
+        ],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-system-status-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-module-confirm-390.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    },
+    {
+      "name": "overview",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-overview-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-profiles-edit-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "VISUAL_FINDING",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [
+          {
+            "element": "table",
+            "class_name": "widefat striped",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 31,
+            "right": 791
+          },
+          {
+            "element": "thead",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "State",
+            "left": 203,
+            "right": 344
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Reason",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Observed Gravity Flow",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Last observed",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "tbody",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "DEGRADED",
+            "left": 203,
+            "right": 344
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "PGR-GFLOW-CONVERSION-UNAVAILABLE",
+            "left": 354,
+            "right": 524
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "3.1.0",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "3.1.0",
+            "left": 572,
+            "right": 621
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "2026-10-30 21:22:05 UTC",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "2026-10-30 21:22:05 UTC",
+            "left": 679,
+            "right": 777
+          }
+        ],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-en_US-system-status-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-en_US-module-confirm-320.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    }
+  ],
+  "negative_control": {
+    "document_width": 800,
+    "viewport_width": 320,
+    "detected": true,
+    "mode": "ISOLATED_HTML_NOT_PRODUCT",
+    "state": "DETECTED"
+  },
+  "not_proven": [
+    "Screen reader output and full accessibility audit",
+    "Actual save/edit/delete/duplicate profile interactions",
+    "Second-stage module-disable confirmation and live data effects",
+    "Other plugin versions, user roles and production environment"
+  ],
+  "observed_module_state": [
+    {
+      "id": "national_id",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "jalali_date",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "jalali_presentation",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_address",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "digit_normalization",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_currency",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "structured_scanner",
+      "state": "AVAILABLE"
+    }
+  ],
+  "status": "CAPTURED"
+}
