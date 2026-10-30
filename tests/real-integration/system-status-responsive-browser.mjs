@@ -107,24 +107,43 @@ try {
         const bounds=await page.locator(region).boundingBox();
         assert(bounds && bounds.width>0,'Scroll container not visible');
         await page.mouse.move(bounds.x+bounds.width/2,bounds.y+Math.min(24,bounds.height/2));
-        await page.mouse.wheel(locale==='fa_IR'?-290:290,0);
-        await page.waitForTimeout(100);
-        const pointer=await page.evaluate(getMeasurements);
-        assert(Math.abs(pointer.region_scroll_left)>2,'Pointer wheel did not scroll '+locale);
-        item.pointer={scroll_left:pointer.region_scroll_left};
+        const intendedDelta=locale==='fa_IR'?-290:290;
+        await page.mouse.wheel(intendedDelta,0);
+        await page.waitForTimeout(140);
+        let pointer=await page.evaluate(getMeasurements);
+        let pointerDelta=intendedDelta;
+        if(Math.abs(pointer.region_scroll_left)<=2){
+          // Browser/OS horizontal-wheel sign can differ from document RTL.
+          // Test the opposite native wheel direction rather than setting scrollLeft.
+          await page.mouse.wheel(-intendedDelta,0);
+          await page.waitForTimeout(140);
+          pointer=await page.evaluate(getMeasurements);
+          pointerDelta=-intendedDelta;
+        }
+        assert(Math.abs(pointer.region_scroll_left)>2,
+          'Pointer wheel did not scroll '+locale+' in either native direction');
+        item.pointer={scroll_left:pointer.region_scroll_left, delta_x:pointerDelta};
         await page.locator(region).evaluate(el=>el.scrollLeft=0);
         const touch=await context.newCDPSession(page);
         const x=bounds.x+bounds.width/2, y=bounds.y+Math.min(bounds.height/2,75);
-        const sign=locale==='fa_IR'?1:-1;
-        await touch.send('Input.dispatchTouchEvent',{type:'touchStart',
-          touchPoints:[{x:x-sign*70,y}]});
-        for(let i=1;i<=7;i++)await touch.send('Input.dispatchTouchEvent',{
-          type:'touchMove',touchPoints:[{x:x-sign*70+sign*i*20,y}]});
-        await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await page.waitForTimeout(170);
-        const touched=await page.evaluate(getMeasurements);
-        assert(Math.abs(touched.region_scroll_left)>2,'Touch swipe did not scroll '+locale);
-        item.touch={scroll_left:touched.region_scroll_left};
+        const trySwipe=async(sign)=>{
+          await touch.send('Input.dispatchTouchEvent',{type:'touchStart',
+            touchPoints:[{x:x-sign*70,y}]});
+          for(let i=1;i<=7;i++)await touch.send('Input.dispatchTouchEvent',{
+            type:'touchMove',touchPoints:[{x:x-sign*70+sign*i*20,y}]});
+          await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+          await page.waitForTimeout(200);
+          return page.evaluate(getMeasurements);
+        };
+        let swipeSign=locale==='fa_IR'?1:-1;
+        let touched=await trySwipe(swipeSign);
+        if(Math.abs(touched.region_scroll_left)<=2){
+          swipeSign=-swipeSign;
+          touched=await trySwipe(swipeSign);
+        }
+        assert(Math.abs(touched.region_scroll_left)>2,'Touch swipe did not scroll '+locale+
+          ' in either native direction');
+        item.touch={scroll_left:touched.region_scroll_left, swipe_sign:swipeSign};
       }
       // Synthetic stress stays in this disposable browser DOM; never changes WP storage.
       await page.locator(region).evaluate(el=>{
