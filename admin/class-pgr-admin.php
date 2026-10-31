@@ -379,7 +379,7 @@ final class PGR_Admin {
 			? wp_unslash( $_POST['confirmed_profile_label'] )
 			: '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
-		$profile         = PGR_Scanner_Profile_Registry::get( $profile_id );
+		$profile = PGR_Scanner_Profile_Registry::get( $profile_id );
 		if ( null === $profile || ! empty( $profile['read_only'] ) || $profile['label'] !== $confirmed_label ) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
 		}
