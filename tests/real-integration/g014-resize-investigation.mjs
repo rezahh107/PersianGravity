@@ -132,10 +132,10 @@ async function prepare(page,surface){
       before[0],{timeout:12000});
   }
 }
-async function attempt(page,column,dx){
-  const ret={column,deltaX:dx,stages:{},status:'INCOMPLETE'};
+async function attempt(page,column,dx,start='center'){
+  const ret={column,deltaX:dx,startMethod:start,stages:{},status:'INCOMPLETE'};
   const handle=page.locator(scope+' .ag-header-cell[col-id="'+column+'"] .ag-header-cell-resize').first();
-  if(column==='id'&&await handle.count()===0){
+  if(column==='id'&&(await handle.count()===0||await handle.isHidden())){
     // Vendor intentionally suppresses ID resize. Absence of the native
     // handle is a valid locked-column negative control, not probe failure.
     ret.stages.before=await inspect(page,column);
@@ -152,7 +152,20 @@ async function attempt(page,column,dx){
   ret.stages.before=await inspect(page,column);
   const b=await handle.boundingBox();
   if(!b)throw Error('Missing real resize handle bounding box');
-  const x=b.x+b.width/2,y=b.y+b.height/2;
+  let x=b.x+b.width/2,y=b.y+b.height/2;
+  if(start==='hit-testable'){
+    const actual=await page.evaluate(col=>{
+      const h=document.querySelector('[data-js="gflow-inbox"] .ag-header-cell[col-id="'+col+'"] .ag-header-cell-resize');
+      const r=h.getBoundingClientRect();
+      for(let xx=r.left+0.5;xx<r.right;xx+=0.5){
+        const hit=document.elementFromPoint(xx,r.top+r.height/2);
+        if(hit===h||hit?.closest('.ag-header-cell-resize')===h)return xx;
+      }
+      return null;
+    },column);
+    if(actual===null)throw Error('No point within actual resize handle passes hit-test');
+    x=actual;
+  }
   ret.intendedPointer={start:{x,y},end:{x:x+dx,y}};
   await page.mouse.move(x,y);
   ret.stages.hover=await inspect(page,column);
@@ -185,7 +198,10 @@ try{
   const cases=[
     {surface:'frontend',column:'created_by',dx:55,tag:'original'},
     {surface:'frontend',column:'created_by',dx:-55,tag:'opposite'},
+    {surface:'frontend',column:'created_by',dx:55,start:'hit-testable',tag:'native-hit-positive'},
+    {surface:'frontend',column:'created_by',dx:-55,start:'hit-testable',tag:'native-hit-opposite'},
     {surface:'frontend',column:'workflow_step',dx:55,tag:'resizable-control'},
+    {surface:'frontend',column:'workflow_step',dx:55,start:'hit-testable',tag:'other-resizable-hit'},
     {surface:'frontend',column:'id',dx:55,tag:'locked-negative'},
     {surface:'admin',column:'created_by',dx:55,tag:'admin-comparison'},
   ];
@@ -195,7 +211,7 @@ try{
     report.cases.push(item);
     try{
       await prepare(page,spec.surface);
-      const result=await attempt(page,spec.column,spec.dx);
+      const result=await attempt(page,spec.column,spec.dx,spec.start);
       Object.assign(item,result);
     }catch(e){item.status='ERROR';item.error=String(e?.stack||e);}
     finally{await page.close();}
