@@ -1,0 +1,415 @@
+{
+  "exact_head": "1ee1bc141ec8a9cd098bd80e0d7925208770d8b9",
+  "locale": "fa_IR",
+  "phase": "unused",
+  "status": "CAPTURED",
+  "runtime": {
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "chromium": "140.0.7339.16",
+    "wordpress": "6.8.3"
+  },
+  "cases": [
+    {
+      "width": 1280,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-unused-fa_IR-1280-normal.jpg",
+        "decision-unused-fa_IR-1280-disabled.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 1280,
+        "width": 1280,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 222.484375,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 782,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-unused-fa_IR-782-normal.jpg",
+        "decision-unused-fa_IR-782-disabled.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 782,
+        "width": 782,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 782,
+        "document_scroll_width": 782,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 270.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 768,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-unused-fa_IR-768-normal.jpg",
+        "decision-unused-fa_IR-768-disabled.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 768,
+        "width": 768,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 768,
+        "document_scroll_width": 768,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 270.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "status": "PASS",
+      "images": [
+        "decision-unused-fa_IR-390-normal.jpg",
+        "decision-unused-fa_IR-390-disabled.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 390,
+        "width": 390,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 375.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "status": "PASS",
+      "images": [
+        "decision-unused-fa_IR-320-normal.jpg",
+        "decision-unused-fa_IR-320-disabled.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 320,
+        "width": 320,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 375.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    }
+  ],
+  "limits": [
+    "Automated focus and layout probes are not screen-reader or human usability acceptance"
+  ]
+}
