@@ -1399,7 +1399,7 @@ jobs:
           assert(report.state==='QUALIFICATION_COMPLETE'&&report.cases?.length===8,
             'incomplete runtime cases');
           const cases=Object.fromEntries(report.cases.map(c=>[c.case,c]));
-          assert(Object.keys(cases).length===4&&names.every(x=>cases[x]?.state==='OBSERVED'),
+          assert(Object.keys(cases).length===names.length&&names.every(x=>cases[x]?.state==='OBSERVED'),
             'missing/duplicate observed case');
           assert(cases.unchanged.response?.notice==='deleted'&&!cases.unchanged.after_post.exists,
             'unchanged control missing');
