@@ -10,7 +10,7 @@ $dir    = getenv( 'WU008_ARTIFACT_DIR' );
 $action = getenv( 'WU008_INCAR_ACTION' );
 $case   = getenv( 'WU008_INCAR_CASE' );
 $cases  = array( 'unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b', 'identical_content' );
-$steps  = array( 'create_a', 'delete_a', 'recreate_b', 'inspect', 'cleanup' );
+$steps  = array( 'create_a', 'delete_a', 'recreate_b', 'edit_a', 'inspect', 'cleanup' );
 if (
 	! $root || ! $dir || realpath( ABSPATH ) !== realpath( $root ) ||
 	! in_array( $case, $cases, true ) || ! in_array( $action, $steps, true ) ||
@@ -116,6 +116,16 @@ if ( 'create_a' === $action ) {
 	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b );
 	if ( ! $result['success'] ) {
 		throw new RuntimeException( 'Registry refused valid B creation: ' . wp_json_encode( $result['errors'] ) );
+	}
+	$assert_definition( $b );
+} elseif ( 'edit_a' === $action ) {
+	if ( ! in_array( $case, array( 'enabled_only', 'output_label_only' ), true ) ) {
+		throw new RuntimeException( 'Unexpected in-place mutation scenario.' );
+	}
+	$assert_definition( $a );
+	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b, $id );
+	if ( ! $result['success'] ) {
+		throw new RuntimeException( 'Registry refused valid in-place metadata change: ' . wp_json_encode( $result['errors'] ) );
 	}
 	$assert_definition( $b );
 } elseif ( 'cleanup' === $action ) {
