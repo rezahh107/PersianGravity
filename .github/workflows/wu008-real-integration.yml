@@ -942,6 +942,16 @@ jobs:
               }
             }
           '
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $o = get_option("vazir_font_options");
+            $data = array(
+              "version" => VAZIR_FONT_VERSION,
+              "active" => in_array("vazir-font-wp/vazir-font-wp.php", (array)get_option("active_plugins"), true),
+              "options" => $o,
+            );
+            file_put_contents(getenv("WU008_ARTIFACT_DIR")."/vazir-coexistence-evidence/vazir-settings.json",
+              wp_json_encode($data, JSON_PRETTY_PRINT));
+          '
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR fa_IR
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
@@ -1312,7 +1322,7 @@ jobs:
             !fs.lstatSync(dir).isDirectory()||fs.lstatSync(dir).isSymbolicLink())
             throw Error('G013 publisher: missing exact Head or safe evidence root');
           const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
-          const required=new Set(['README.md','comparison.json','official-release.json']);
+          const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
           for(const p of profiles){
             required.add(p+'.json');
             for(const width of [1280,390])for(const screen of ['overview','gravity-form'])
@@ -1326,6 +1336,10 @@ jobs:
           if(release.status!=='PASS'||release.version!=='1.5.0'||
             release.zip_sha256!=='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5')
             throw Error('G013 publisher: official Vazir identity mismatch');
+          const settings=read('vazir-settings.json');
+          if(settings.version!=='1.5.0'||settings.active!==true||
+            !['enable_frontend','enable_admin','enable_gravity_forms'].every(k=>settings.options?.[k]===true))
+            throw Error('G013 publisher: real plugin settings not verified');
           const compare=read('comparison.json');
           if(compare.status!=='PASS'||compare.exact_head!==head||compare.profiles.length!==4||
             compare.comparisons?.length!==24)throw Error('G013 publisher: incomplete comparison');
