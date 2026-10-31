@@ -108,15 +108,15 @@ final class PGR_Gravity_Flow_Inbox_RTL {
 		}
 
 		try {
-			$flow  = \\Gravity_Flow::get_instance();
-			$model = $flow->container()->get( \\Gravity_Flow\\Gravity_Flow\\Inbox\\Inbox_Service_Provider::TASK_MODEL );
+			$flow  = \Gravity_Flow::get_instance();
+			$model = $flow->container()->get( \Gravity_Flow\Gravity_Flow\Inbox\Inbox_Service_Provider::TASK_MODEL );
 			if ( ! is_object( $model ) || ! is_callable( array( $model, 'get_unique_grid_id_from_args' ) ) ) {
 				return false;
 			}
 
 			$produced = $model->get_unique_grid_id_from_args( $options['searchArgs'] );
 			return is_string( $produced ) && hash_equals( $produced, $grid_id );
-		} catch ( \\Throwable $error ) {
+		} catch ( \Throwable $error ) {
 			// Missing/ambiguous producer state must leave the host Grid untouched.
 			return false;
 		}
