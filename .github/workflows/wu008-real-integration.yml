@@ -1278,7 +1278,7 @@ jobs:
           const fs=require('node:fs'),path=require('node:path');
           const base='/tmp/wu008-downloaded-evidence';
           const dir=path.join(base,'scanner-delete-evidence');
-          const expectedHead=process.env.WU008_EVIDENCE_EXPECTED_HEAD;
+          const expectedHead=process.env.PGR_DECISION_EXPECTED_HEAD;
           function ok(value,message){if(!value)throw Error('SCANNER_DELETE_PUBLICATION_GATE: '+message);}
           ok(/^[a-f0-9]{40}$/.test(expectedHead||''),'missing exact PR Head');
           const expected=new Set(['README.md']);
