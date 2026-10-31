@@ -145,9 +145,18 @@ try {
     const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1});
     const page=await context.newPage();
     const record={width,height,status:'FAILED',images:[],checks:[]};
+    let originalG011=null;
     try {
       await login(page);
       await view(page);
+      const original=await inventoryAudit(page);
+      assertInventory(original,'original WU008 inventory');
+      originalG011=original.states.find(x=>x.id==='jalali_presentation')?.state==='AVAILABLE';
+      record.original_g011_enabled=originalG011;
+      if(originalG011){
+        setDisposableG011(false);
+        await view(page);
+      }
       if (phase==='used' && width===1280) {
         // Prove the temporary MU guard really commits the WordPress admin
         // header early on this server. A legitimate Cancel must redirect
@@ -380,7 +389,21 @@ try {
       }
       record.status='PASS';
     }catch(e){failed=true;record.error=String(e.stack||e);}
-    finally{report.cases.push(record);await context.close();}
+    finally{
+      if(originalG011!==null){
+        try{
+          // Never leave the licensed WU008 host's original G011 state changed.
+          setDisposableG011(originalG011);
+          record.original_g011_restored=true;
+        }catch(error){
+          failed=true;
+          record.status='FAILED';
+          record.error=(record.error||'')+'; G011 original state restoration failed: '+String(error);
+        }
+      }
+      report.cases.push(record);
+      await context.close();
+    }
   }
 }finally{
   report.status=failed?'INCOMPLETE':'CAPTURED';
