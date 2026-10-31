@@ -90,7 +90,7 @@ const allCases = mode === 'normal'
       ['profiles-built-in', url(profile, '&action=edit&profile=sayad_v01'), '.pgr-output-summary', 1],
       ['settings', url('persian-gravityforms-settings'), 'form', 1],
       ['system-status', url('persian-gravityforms-system-status'), '.pgr-card-grid', 1],
-      ['module-confirm', url(overview), '.pgr-warning-note[role="alert"]', 1],
+      ['module-confirm', url(overview), '.pgr-module-decision .notice-warning[role="alert"]', 1],
     ]
   : [
       ['overview-disabled', url(overview), 'article.pgr-module-card', 7],
@@ -154,9 +154,15 @@ try {
             assert(resultUrl.searchParams.get('pgr_module_notice') === 'confirm' &&
               resultUrl.searchParams.get('pgr_confirm_module') === 'iranian_currency',
               'Real first-stage UNKNOWN disable confirmation not reached');
-            assert(await page.locator('article.pgr-module-card').filter({hasText:'iranian_currency'})
-              .locator('input[name="confirm"][value="1"]').count() === 1,
-              'Second-stage confirmation form absent');
+            const decision=page.locator('.pgr-module-decision');
+            assert(await decision.count()===1 && await decision.getByRole('button',{name:locale==='fa_IR'?'تأیید غیرفعال‌سازی':'Confirm disable'}).count()===1 &&
+              await decision.getByRole('link',{name:locale==='fa_IR'?'لغو و بازگشت':'Cancel and return'}).count()===1,
+              'Single top-level UNKNOWN confirmation with Cancel is absent');
+            assert(await decision.locator('input[name="confirm"][value="1"]').count()===1 &&
+              await decision.locator('input[name="confirm_token"]').inputValue()!=='',
+              'Server-backed second-stage confirmation ticket absent');
+            assert(await page.locator('article.pgr-module-card').filter({hasText:'iranian_currency'}).count()===0,
+              'Target module duplicated in grid during decision');
             // Deliberately NEVER submit the confirmation.
           }
           assert(await page.locator(selector).count() >= minCount,

@@ -495,9 +495,6 @@ msgstr ""
 msgid "You are not allowed to change PersianGravity modules."
 msgstr ""
 
-#: admin/class-pgr-product-admin.php:361
-msgid "Current use cannot be determined confidently. Disabling may affect existing forms. Confirm only if you accept that risk."
-msgstr ""
 
 #: admin/class-pgr-product-admin.php:372
 msgid "Disable"
@@ -533,9 +530,6 @@ msgstr ""
 msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
 msgstr ""
 
-#: admin/class-pgr-product-admin.php:408
-msgid "Current use could not be determined confidently. Review the module card and confirm again to disable it."
-msgstr ""
 
 #: admin/class-pgr-product-admin.php:411
 msgid "The requested module state change was invalid."
@@ -745,4 +739,28 @@ msgstr ""
 #: persian-gravityforms.php:161
 #, php-format
 msgid "Persian Gravity Forms requires Gravity Forms %s or newer."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm module disable"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Safe non-use could not be established. Disabling this module could affect existing forms or functionality."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "No module state has changed yet. Confirm only if you accept the possible consequences."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm disable"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Cancel and return"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "This disable confirmation is no longer valid. Start a new request from the module card."
 msgstr ""
