@@ -95,7 +95,9 @@ try {
     assert((await decision.locator('code[dir="ltr"]').textContent()).trim() === subject.id,
       'Immutable ID missing or incorrect');
     const warning = (await page.locator('#pgr-profile-delete-warning').textContent()).toLowerCase();
-    assert(warning.includes('mapping') && warning.includes('unavailable'), 'Mappings consequence not explained');
+    assert(locale === 'fa_IR' ? (warning.includes('نگاشت') && warning.includes('قابل استفاده')) :
+      (warning.includes('mapping') && warning.includes('unavailable')),
+      'Localized mappings consequence not explained');
     assert(await page.locator('a:has-text("Create Profile")').count() === 0, 'Create competes with Delete');
     assert(await decision.locator('form input[name="action"][value="pgr_scanner_profile_delete"]').count() === 1,
       'Dedicated confirm form missing');
