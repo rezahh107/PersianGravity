@@ -17,19 +17,50 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
   const report={fixture:gridData};
 
   const firstBefore=await rowIds();
+  // The native vendor marks ID sortable, but AG Grid version-specific CSS class
+  // names are not a sorting contract. Assert raw Entry ID order and actual rows.
+  const rawIds=await page.evaluate(()=>{
+    const host=document.querySelector('[data-js="gflow-inbox"]');
+    return window.gflow_config?.grids?.[host?.dataset.gridId]?.grid_options?.rowData
+      ?.map(entry=>Number(entry.id))||[];
+  });
+  if(rawIds.some(id=>!Number.isSafeInteger(id))||new Set(rawIds).size!==rawIds.length)
+    throw Error('Native sort fixture IDs must be unique integers');
+  const expectedOrders={
+    ascending:[...rawIds].sort((a,b)=>a-b).slice(0,gridData.pageSize),
+    descending:[...rawIds].sort((a,b)=>b-a).slice(0,gridData.pageSize),
+  };
+  const expectOrder=async (allowed,label)=>{
+    const sorted=Object.fromEntries(
+      Object.entries(expectedOrders).filter(([key])=>allowed.includes(key)));
+    try {
+      await page.waitForFunction(orders=>{
+        const nodes=[...document.querySelectorAll(
+          '[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')];
+        const actual=nodes.map(el=>({id:Number(el.getAttribute('row-id')),top:el.getBoundingClientRect().top}))
+          .filter(v=>Number.isSafeInteger(v.id)&&Number.isFinite(v.top))
+          .sort((a,b)=>a.top-b.top).map(v=>v.id);
+        return Object.values(orders).some(expected=>
+          JSON.stringify(actual)===JSON.stringify(expected));
+      },sorted,{timeout:12000,polling:200});
+    }catch(e) {
+      throw Error('Native sort '+label+' did not match expected row order: '+
+        JSON.stringify({actual:await rowIds(),expected:sorted,error:String(e)}));
+    }
+    const actual=await rowIds();
+    const direction=Object.keys(sorted).find(key=>
+      JSON.stringify(sorted[key])===JSON.stringify(actual));
+    if(!direction)throw Error('Native sort result changed after readiness');
+    return {direction,ids:actual};
+  };
   await header('id').click();
-  await page.waitForFunction(()=>!!document.querySelector(
-    '[data-js="gflow-inbox"] .ag-header-cell[col-id="id"].ag-header-cell-sorted-asc,'
-    +'[data-js="gflow-inbox"] .ag-header-cell[col-id="id"].ag-header-cell-sorted-desc'
-  ),null,{timeout:10000});
-  const sortFirst=await rowIds();
+  const firstSort=await expectOrder(['ascending','descending'],'first');
   await header('id').click();
-  await page.waitForFunction(()=>document.querySelector(
-    '[data-js="gflow-inbox"] .ag-header-cell[col-id="id"]')?.getAttribute('aria-sort')==='descending',
-    null,{timeout:10000}).catch(()=>{}); // Compare actual row order below, not aria implementation detail.
-  const sortSecond=await rowIds();
-  if(JSON.stringify(sortFirst)===JSON.stringify(sortSecond))throw Error('Native sort did not reverse visible row identity');
-  report.sort={before:firstBefore,first:sortFirst,second:sortSecond};
+  const secondSort=await expectOrder(
+    [firstSort.direction==='ascending'?'descending':'ascending'],'reverse');
+  report.sort={before:firstBefore,first:firstSort,second:secondSort};
+  if(JSON.stringify(firstSort.ids)===JSON.stringify(secondSort.ids))
+    throw Error('Native sort did not reverse visible row identity');
 
   const search=page.locator('[data-js="gflow-inbox-search"]').first();
   await search.waitFor({timeout:10000});
