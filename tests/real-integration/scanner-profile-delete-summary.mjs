@@ -81,13 +81,15 @@ for (const locale of ['fa_IR','en_US']) {
     if (!c || c.state !== 'PASS' || c.js_enabled !== (width !== 320) ||
         !c.checks.includes('destructive_get_no_mutation') ||
         !c.checks.includes('keyboard_order_and_visible_focus') ||
-        !c.checks.includes('built_in_non_deletable') || !c.checks.includes('no_horizontal_overflow')) {
+        !c.checks.includes('built_in_non_deletable') || !c.checks.includes('snapshot_nonce_bound') ||
+        !c.checks.includes('no_horizontal_overflow')) {
       throw Error('Missing responsive or negative-control proof for ' + locale + ' ' + width);
     }
     verifiedVisual(c,locale,width);
     if (width === 320 && !['wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
       'built_in_post_rejected','anonymous_post_rejected','real_post_deleted',
-      'repeat_post_refused','stale_get_refused','no_js_navigation_and_form'].every(x=>c.checks.includes(x))) {
+      'repeat_post_refused','stale_get_refused','wrong_snapshot_nonce_rejected',
+      'missing_snapshot_rejected','no_js_navigation_and_form'].every(x=>c.checks.includes(x))) {
       throw Error('Incomplete destructive security proof for ' + locale);
     }
     expected.push(...['list','confirmation','cancel','missing','built-in',...(width===320?['deleted','stale']:[])]
