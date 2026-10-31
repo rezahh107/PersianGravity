@@ -271,8 +271,8 @@ final class ModuleUsageTest extends TestCase {
 		$GLOBALS['pgr_test_transients']['pgr_disable_confirm_7'] = array( 'module_id' => 'iranian_currency', 'token' => $token );
 		$_GET = array( 'pgr_cancel_confirm' => $token );
 		try {
-			$handler->render_overview_page();
-			$this->fail( 'Cancel must safely redirect' );
+			$handler->handle_overview_cancel();
+			$this->fail( 'Pre-header Cancel must safely redirect' );
 		} catch ( RuntimeException $exception ) {
 			$this->assertStringContainsString( 'admin.php?page=persian-gravityforms', $exception->getMessage() );
 		}
