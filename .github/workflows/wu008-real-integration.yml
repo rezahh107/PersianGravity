@@ -1360,10 +1360,11 @@ jobs:
               ok(c?.state==='PASS'&&c.js_enabled===(width!==320),'unverified viewport: '+locale+'/'+width);
               visualGate(c,locale,width);
               ok(['destructive_get_no_mutation','keyboard_order_and_visible_focus','no_horizontal_overflow',
-                'built_in_non_deletable'].every(x=>c.checks.includes(x)), 'incomplete safety checks');
+                'built_in_non_deletable','snapshot_nonce_bound'].every(x=>c.checks.includes(x)), 'incomplete safety checks');
               if(width===320)ok(['wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
                 'built_in_post_rejected','anonymous_post_rejected','real_post_deleted','repeat_post_refused',
-                'stale_get_refused','no_js_navigation_and_form'].every(x=>c.checks.includes(x)),
+                'stale_get_refused','wrong_snapshot_nonce_rejected','missing_snapshot_rejected',
+                'no_js_navigation_and_form'].every(x=>c.checks.includes(x)),
                 'destructive controls unverified');
               for(const stage of ['list','confirmation','cancel','missing','built-in',...(width===320?['deleted','stale']:[])]){
                 const n=locale+'-'+width+'-'+stage+'.jpg';
