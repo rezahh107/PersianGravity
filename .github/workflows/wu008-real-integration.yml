@@ -929,6 +929,8 @@ jobs:
             '
           }
           trap restore_g014 EXIT
+          php -l tests/real-integration/g014-populated-inbox-fixture.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g014-populated-inbox-fixture.php
           for site in fa_IR en_US; do
             for user in fa_IR en_US; do
               if [ "$site" = "fa_IR" ]; then
