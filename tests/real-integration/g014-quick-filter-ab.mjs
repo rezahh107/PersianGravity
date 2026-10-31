@@ -103,6 +103,11 @@ try {
             nativeDisplayedCount: typeof api?.getDisplayedRowCount === 'function'
               ? api.getDisplayedRowCount() : null,
             nativeFilteredIds: typeof api?.forEachNodeAfterFilterAndSort === 'function' ? filtered : null,
+            paginationRowSummary: host?.querySelector('.ag-paging-row-summary-panel')?.textContent?.trim() ?? null,
+            paginationPageSummary: host?.querySelector('.ag-paging-page-summary-panel')?.textContent?.trim() ?? null,
+            nativeNoRowsOverlay: !!host?.querySelector('.ag-overlay-no-rows-center'),
+            nativeFirstLastPaginationValues: [...host?.querySelectorAll('.ag-paging-row-summary-panel .ag-paging-number') || []]
+              .map(n => n.textContent.trim()),
             paginationPage: typeof api?.paginationGetCurrentPage === 'function'
               ? api.paginationGetCurrentPage() : null,
             paginationPages: typeof api?.paginationGetTotalPages === 'function'
