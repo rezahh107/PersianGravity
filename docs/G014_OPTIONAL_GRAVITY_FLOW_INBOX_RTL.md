@@ -10,9 +10,19 @@ The switch is under PersianGravity → Settings:
 
 - fa_IR label: «اصلاح راست‌به‌چپ جدول‌های Gravity Flow».
 - **OFF by default** for upgrades and fresh sites. OFF does not register the filter and does **not** set `enableRtl=false`, or modify previously persisted Grid state.
-- ON: for authentic `GRAVITY_FLOW_PLUGIN_BASENAME=gravityflow/gravityflow.php`, exact `GRAVITY_FLOW_VERSION=3.1.0` and bounded `inbox`/`inbox_*` shared-config grids, supply missing `enableRtl` from WordPress's active request locale (`is_rtl()`), before AG Grid initializes.
+- ON: for authentic `GRAVITY_FLOW_PLUGIN_BASENAME=gravityflow/gravityflow.php`, exact `GRAVITY_FLOW_VERSION=3.1.0` and producer-verified Admin/Frontend Inbox Grid identities (default, shortcode and block) with the exact native Grid config structure, supply missing `enableRtl` from WordPress's active request locale (`is_rtl()`), before AG Grid initializes.
 - Any already-present explicit `enableRtl` (true/false/other) stays vendor-/other-integration-owned. Do not silently overwrite. Source-equivalent version drift, absent identity, malformed config and unrelated grids stay native/unchanged.
 - Source module catalog remains exactly seven modules; this integration is a separate explicit opt-in setting in existing `pgr_settings`, not a font module, a GPP presentation component or a new custom database.
+
+## Producer-grounded repair boundary
+
+The Owner-supplied Gravity Flow 3.1.0 source archive (SHA-256 `ac0573b75831380417a21a455176e25eb746d718bbbd0bb70d6da6f48cba5404`) establishes this native path:
+
+- `includes/inbox/models/class-task.php`, `get_unique_grid_id_from_args()` (lines 627–660), constructs `assignee_inbox_{default|shortcode|block}_{admin|page ID}_{adler32 hash}`. Admin derives the current user; frontend derives assignee and page. The two observed frontend identities are `user_id_1_inbox_shortcode_15_4de0e646` and `user_id_1_inbox_shortcode_15_4ef4e6b3`.
+- `includes/inbox/class-inbox-service-provider.php`, `get_config_for_grids()` (lines 223–260), supplies `searchArgs`, `columnDefs`, `rowData`, pagination settings and `current_user_token`. The Inbox producer registers the shared-config population callback at priority 10 (lines 152–168).
+- PersianGravity's opt-in callback runs at priority **11**, after the actual producer, and verifies the **exact Grid identity from that producer's public Task method** against the generated config's own `searchArgs`. A validated native Inbox structure is also mandatory. Unsupported or ambiguous structures stay native. No naming guess, broad substring recognition or hardcoded user/form/shortcode ID is used.
+
+This is source-backed eligibility, **not** evidence of successful rendering or coexistence. Real exact-Head WU008 runs must prove both execution ordering and each admitted runtime surface.
 
 ## Verification and compatibility
 
