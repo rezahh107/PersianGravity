@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 import { settingsNavigationUrl, classifyInboxReadiness } from './g014-browser-contract.mjs';
+import { exerciseNativeInboxInteractions } from './g014-inbox-interactions.mjs';
 
 const [mode, siteLocale, userLocale] = process.argv.slice(2);
 if (!['off','on'].includes(mode) || !['fa_IR','en_US'].includes(siteLocale) ||
@@ -145,7 +146,12 @@ for(const width of [1280,390]){
         throw Error('New browser error/network failure in '+spec.name);
       const name=key+'-'+spec.name+'-'+width+'.jpg';
       await page.screenshot({path:path.join(dir,name),type:'jpeg',quality:74,fullPage:true});
-      item.image=name;item.status='PASS';
+      item.image=name;
+      // One bounded fully populated native interaction suite per OFF/ON mode.
+      // All 32 cases still independently qualify initial direction/readiness.
+      if(width===1280&&spec.name==='frontend'&&siteLocale==='fa_IR'&&userLocale==='fa_IR')
+        item.interactions=await exerciseNativeInboxInteractions(page);
+      item.status='PASS';
     }catch(e){item.status='FAIL';item.reason=String(e);item.errors=errors.slice(e0);item.network=network.slice(n0);throw e}
   }
   await context.close();
