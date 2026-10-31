@@ -145,6 +145,8 @@ jobs:
           php -l tests/real-integration/scanner-profile-delete-fixture.php
           node --check tests/real-integration/scanner-profile-delete-browser.mjs
           node --check tests/real-integration/scanner-profile-delete-summary.mjs
+          php -l tests/real-integration/scanner-profile-incarnation-fixture.php
+          node --check tests/real-integration/scanner-profile-incarnation-browser.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
           node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
@@ -885,6 +887,17 @@ jobs:
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           test -s "$WU008_ARTIFACT_DIR/scanner-delete-evidence/README.md"
 
+      - name: Qualify stale Scanner nonce after independent same-ID recreation (test-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No production changes: execute the real existing Registry/handler in the disposable WU008 installation.
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          node tests/real-integration/scanner-profile-incarnation-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/scanner-incarnation-evidence/report.json"
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
         run: |
@@ -1370,6 +1383,69 @@ jobs:
           console.log('SCANNER_DELETE_PUBLICATION_GATE PASS: complete source-bound 39-file evidence, six Chromium computed-style/contrast/focus proofs');
           PGR_SCANNER_DELETE_EVIDENCE_GATE
 
+          node - <<'PGR_INCAR_QUALIFICATION_EVIDENCE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-incarnation-evidence';
+          const head=process.env.PGR_DECISION_EXPECTED_HEAD;
+          const assert=(v,s)=>{if(!v)throw Error('INCAR_PUBLICATION_GATE: '+s);};
+          const report=JSON.parse(fs.readFileSync(path.join(dir,'report.json'),'utf8'));
+          const names=['unchanged','missing','changed_label','same_label'];
+          assert(report.evidence_class==='AUTHENTIC_WORDPRESS_GFAPI_SCANNER_INCAR_QUALIFICATION',
+            'wrong evidence class');
+          assert(report.qualification_head===head &&
+            report.reviewed_production_head==='11e2c5974d37878ec6f2398aa99d5dc147629e11',
+            'missing exact qualification and reviewed production heads');
+          assert(report.state==='QUALIFICATION_COMPLETE'&&report.cases?.length===4,
+            'incomplete runtime cases');
+          const cases=Object.fromEntries(report.cases.map(c=>[c.case,c]));
+          assert(Object.keys(cases).length===4&&names.every(x=>cases[x]?.state==='OBSERVED'),
+            'missing/duplicate observed case');
+          assert(cases.unchanged.response?.notice==='deleted'&&!cases.unchanged.after_post.exists,
+            'unchanged control missing');
+          assert(cases.missing.response?.notice==='delete_error'&&!cases.missing.after_post.exists,
+            'missing profile control missing');
+          assert(cases.changed_label.response?.notice==='delete_error'&&cases.changed_label.after_post.exists&&
+            cases.changed_label.after_post.label==='Beta'&&
+            cases.changed_label.after_post.keys?.join(',')==='replacement',
+            'changed-label control missing');
+          assert(['deleted','delete_error'].includes(cases.same_label.response?.notice),
+            'same label not genuinely exercised');
+          assert(cases.same_label.before_stale_post.exists===true&&
+            cases.same_label.before_stale_post.label==='Alpha'&&
+            cases.same_label.before_stale_post.keys?.join(',')==='replacement'&&
+            cases.same_label.before_stale_post.trim===false,
+            'different real executable incarnation missing');
+          assert(cases.same_label.b_deleted_by_A_confirmation===!cases.same_label.after_post.exists,
+            'inconsistent same-label deletion observation');
+          assert(report.finding===(cases.same_label.b_deleted_by_A_confirmation?
+            'CONFIRMED_FINDING':'NO_MATERIAL_ISSUE'),'false finding classification');
+          const expected=new Set(['README.md','report.json']);
+          const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          for(const name of names) {
+            const c=cases[name];
+            assert(c.nonce_present===true&&c.original_nonce_still_verified===true&&
+              c.after_post.gfapi_mapping_unchanged===true,
+              'real WordPress nonce or unchanged GF form not observed: '+name);
+            assert(c.images?.length===(name==='changed_label'||name==='same_label'?3:2),
+              'screenshot count mismatch: '+name);
+            for(const filename of c.images) {
+              assert(filename.startsWith(name+'-')&&filename.endsWith('.jpg')&&!expected.has(filename),
+                'unexpected screenshot filename: '+filename);
+              expected.add(filename);
+              assert(readme.includes(']('+filename+')'),'unlinked screenshot: '+filename);
+              const data=fs.readFileSync(path.join(dir,filename));
+              assert(data.length>1000&&data[0]===255&&data[1]===216&&data.at(-2)===255&&data.at(-1)===217,
+                'not authentic JPEG: '+filename);
+            }
+          }
+          const files=fs.readdirSync(dir,{withFileTypes:true});
+          assert(files.length===expected.size&&files.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
+            'unverified/missing incarnation evidence files');
+          assert(readme.includes(head)&&readme.includes(report.finding),'summary not source bound');
+          console.log('SCANNER_INCAR_PUBLICATION_GATE QUALIFIED: '+report.finding+
+            ' cases=4 images=10 exactHead='+head);
+          PGR_INCAR_QUALIFICATION_EVIDENCE_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1399,7 +1475,9 @@ jobs:
           cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
           mkdir -p scanner-delete-evidence
           cp -a "$source_dir/../scanner-delete-evidence/." scanner-delete-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence
+          mkdir -p scanner-incarnation-evidence
+          cp -a "$source_dir/../scanner-incarnation-evidence/." scanner-incarnation-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1411,3 +1489,4 @@ jobs:
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
