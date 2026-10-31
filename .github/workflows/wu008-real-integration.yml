@@ -141,6 +141,7 @@ jobs:
           node --check tests/real-integration/admin-ui-evidence-browser.mjs
           node --check tests/real-integration/vazir-release-verify.mjs
           node --check tests/real-integration/vazir-coexistence-browser.mjs
+          node --check tests/real-integration/g013-rtl-admin-diagnostic.mjs
           node --check tests/real-integration/vazir-evidence-check.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
           node --test tests/real-integration/vazir-evidence-check.test.mjs
@@ -911,6 +912,25 @@ jobs:
             php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH" >/dev/null
           }
           trap cleanup_vazir EXIT
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          # PRI-FND-005: verification-only; original G013 assertion below stays unchanged.
+          rtl_dir="$WU008_ARTIFACT_DIR/g013-rtl-verification"
+          mkdir -p "$rtl_dir"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $u=get_user_by("login","runtime_admin");
+            if (!$u) throw new RuntimeException("Missing authentic WU008 browser user");
+            echo wp_json_encode(array("get_locale"=>get_locale(),"get_user_locale"=>get_user_locale($u),
+              "is_rtl"=>is_rtl(),"user_id_present"=>true));
+          ' > "$rtl_dir/wp-locale-fa_IR.json"
+          node tests/real-integration/g013-rtl-admin-diagnostic.mjs fa_IR
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $u=get_user_by("login","runtime_admin");
+            if (!$u) throw new RuntimeException("Missing authentic WU008 browser user");
+            echo wp_json_encode(array("get_locale"=>get_locale(),"get_user_locale"=>get_user_locale($u),
+              "is_rtl"=>is_rtl(),"user_id_present"=>true));
+          ' > "$rtl_dir/wp-locale-en_US.json"
+          node tests/real-integration/g013-rtl-admin-diagnostic.mjs en_US
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           node tests/real-integration/vazir-coexistence-browser.mjs BASELINE fa_IR
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
