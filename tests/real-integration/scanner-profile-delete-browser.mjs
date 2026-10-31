@@ -62,7 +62,7 @@ async function noOverflow(page, width) {
 }
 
 function rgb(css) {
-  const channels = css.match(/^rgba?\\(\\s*(\\d+)\\s*[, ]+\\s*(\\d+)\\s*[, ]+\\s*(\\d+)/);
+  const channels = css.match(/^rgba?\(\s*(\d+)\s*[, ]+\s*(\d+)\s*[, ]+\s*(\d+)/);
   assert(channels !== null, 'Unrecognized computed CSS color: ' + css);
   return channels.slice(1,4).map(Number);
 }
