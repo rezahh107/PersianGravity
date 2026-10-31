@@ -814,3 +814,22 @@ msgstr "لغو و بازگشت"
 #: admin/class-pgr-product-admin.php
 msgid "This disable confirmation is no longer valid. Start a new request from the module card."
 msgstr "این درخواست تأیید دیگر معتبر نیست. از کارت ماژول، درخواست جدیدی آغاز کنید."
+
+#: admin/class-pgr-admin.php
+msgid "Gravity Flow Inbox layout"
+msgstr "چیدمان صندوق Gravity Flow"
+
+
+#: admin/class-pgr-admin.php
+msgid "Enable true RTL for Gravity Flow Inbox"
+msgstr "اصلاح راست‌به‌چپ جدول‌های Gravity Flow"
+
+
+#: admin/class-pgr-admin.php
+msgid "Enable native RTL in the admitted Gravity Flow Inbox grid. Default: off."
+msgstr "فعال‌سازی جهت راست‌به‌چپ واقعی برای موتور جدول Inbox؛ پیش‌فرض خاموش است."
+
+
+#: admin/class-pgr-admin.php
+msgid "Qualified for Gravity Flow 3.1.0 only. Disabled: no direction override. Explicit settings from other integrations are preserved."
+msgstr "فقط برای Gravity Flow 3.1.0 آزمایش‌شده؛ هنگام خاموش‌بودن هیچ تنظیم جهتی تغییر نمی‌کند. مقدار RTL معتبر افزونه‌های دیگر حفظ می‌شود."
