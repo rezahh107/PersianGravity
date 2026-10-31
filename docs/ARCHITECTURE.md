@@ -201,6 +201,8 @@ Overview renders bilingual module metadata, text state, nonce-protected POST con
 
 All module writes require `manage_options`, POST, nonce, a source allowlist, sanitization, and `wp_safe_redirect`.
 
+Scanner Profile deletion is distinct from module disable: the list links to a read-only GET confirmation for exactly one validated custom profile. The decision displays the current label and immutable ID, the unmodified-form-mapping consequence, and a Cancel link. The only deletion POST uses the existing `admin_post_pgr_scanner_profile_delete` handler, `manage_options`, a nonce bound to the immutable profile ID, exact ID validation, a re-read of the current Registry profile, a displayed-label equality check, and the Registry's built-in/nonexistence guard. No form-usage census, alternate store, or form-metadata rewrite is introduced. Missing or built-in GET requests expose no confirmation POST.
+
 ## Help and i18n
 
 `PGR_Help_Catalog` is static code-owned version-controlled content. It contains Persian and English topics and is not stored in options or fetched remotely. Help language is restricted to `fa` or `en`. `WP_Screen::add_help_tab()` supplies concise contextual help links for PersianGravity admin screens.

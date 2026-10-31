@@ -97,11 +97,6 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: admin/class-pgr-admin.php:135
-#: admin/class-pgr-product-admin.php:98
-msgid "Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?"
-msgstr ""
-
 #: admin/class-pgr-admin.php:157
 msgid "National ID defaults"
 msgstr ""
@@ -287,10 +282,6 @@ msgstr ""
 
 #: admin/class-pgr-admin.php:455
 msgid "Delete"
-msgstr ""
-
-#: admin/class-pgr-admin.php:462
-msgid "Deleting a custom profile does not rewrite existing form mappings. Existing Scanner fields may then report the profile as unavailable."
 msgstr ""
 
 #: admin/class-pgr-admin.php:497
@@ -495,7 +486,6 @@ msgstr ""
 msgid "You are not allowed to change PersianGravity modules."
 msgstr ""
 
-
 #: admin/class-pgr-product-admin.php:372
 msgid "Disable"
 msgstr ""
@@ -529,7 +519,6 @@ msgstr ""
 #, php-format
 msgid "%1$s is used by %2$d form(s) and cannot be disabled safely."
 msgstr ""
-
 
 #: admin/class-pgr-product-admin.php:411
 msgid "The requested module state change was invalid."
@@ -764,3 +753,37 @@ msgstr ""
 #: admin/class-pgr-product-admin.php
 msgid "This disable confirmation is no longer valid. Start a new request from the module card."
 msgstr ""
+
+
+#: admin/class-pgr-admin.php
+msgid "Confirm Scanner Profile deletion"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Delete this custom profile?"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Deleting this custom profile does not rewrite existing form mappings. Structured Scanner fields referencing it may become unavailable."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Confirm delete"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Cancel without deleting"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Scanner Profile deletion unavailable"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "This profile is missing or cannot be deleted. No changes were made."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Back to Scanner Profiles"
+msgstr ""
+

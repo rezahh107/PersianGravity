@@ -866,6 +866,22 @@ jobs:
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
+      - name: Verify Scanner Profile deletion decisions against real registry and mapped GF form
+        shell: bash
+        run: |
+          set -euo pipefail
+          WU008_DELETE_PHASE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          WU008_DELETE_LOCALE=fa_IR node tests/real-integration/scanner-profile-delete-browser.mjs
+          WU008_DELETE_PHASE=verify WU008_DELETE_LOCALE=fa_IR php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_DELETE_LOCALE=en_US node tests/real-integration/scanner-profile-delete-browser.mjs
+          WU008_DELETE_PHASE=verify WU008_DELETE_LOCALE=en_US php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          node tests/real-integration/scanner-profile-delete-summary.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          test -s "$WU008_ARTIFACT_DIR/scanner-delete-evidence/README.md"
+
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
         run: |
@@ -1258,6 +1274,53 @@ jobs:
           }
           console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 20 scenarios, 72 linked JPEGs');
           PGR_DECISION_EVIDENCE_JS
+          node - <<'PGR_SCANNER_DELETE_EVIDENCE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const base='/tmp/wu008-downloaded-evidence';
+          const dir=path.join(base,'scanner-delete-evidence');
+          const expectedHead=process.env.PGR_DECISION_EXPECTED_HEAD;
+          function ok(value,message){if(!value)throw Error('SCANNER_DELETE_PUBLICATION_GATE: '+message);}
+          ok(/^[a-f0-9]{40}$/.test(expectedHead||''),'missing exact PR Head');
+          const expected=new Set(['README.md']);
+          const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          for(const locale of ['fa_IR','en_US']){
+            expected.add(locale+'-report.json');
+            expected.add(locale+'-persistence.json');
+            const report=JSON.parse(fs.readFileSync(path.join(dir,locale+'-report.json'),'utf8'));
+            const persistence=JSON.parse(fs.readFileSync(path.join(dir,locale+'-persistence.json'),'utf8'));
+            ok(report.exact_head===expectedHead&&report.locale===locale&&report.state==='PASS',
+              'report source/state mismatch: '+locale);
+            ok(persistence.locale===locale&&persistence.deleted_profile_absent===true&&
+              persistence.built_in_preserved===true&&persistence.form_mapping_unchanged===true,
+              'server persistence unproven: '+locale);
+            ok(report.cases?.length===3,'missing locale viewports: '+locale);
+            let images=[];
+            for(const width of [1280,390,320]){
+              const c=report.cases.find(x=>x.width===width);
+              ok(c?.state==='PASS'&&c.js_enabled===(width!==320),'unverified viewport: '+locale+'/'+width);
+              ok(['destructive_get_no_mutation','keyboard_order_and_visible_focus','no_horizontal_overflow',
+                'built_in_non_deletable'].every(x=>c.checks.includes(x)), 'incomplete safety checks');
+              if(width===320)ok(['wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
+                'built_in_post_rejected','anonymous_post_rejected','real_post_deleted','repeat_post_refused',
+                'stale_get_refused','no_js_navigation_and_form'].every(x=>c.checks.includes(x)),
+                'destructive controls unverified');
+              for(const stage of ['list','confirmation','cancel','missing','built-in',...(width===320?['deleted','stale']:[])]){
+                const n=locale+'-'+width+'-'+stage+'.jpg';
+                images.push(n);expected.add(n);
+                ok(readme.includes(']('+n+')'),'missing permanent screenshot link: '+n);
+                const bytes=fs.readFileSync(path.join(dir,n));
+                ok(bytes.length>1000&&bytes[0]===255&&bytes[1]===216&&
+                  bytes[bytes.length-2]===255&&bytes[bytes.length-1]===217,'bad JPEG: '+n);
+              }
+            }
+            ok(JSON.stringify(report.screenshots)===JSON.stringify(images),'image manifest mismatch '+locale);
+          }
+          const actual=fs.readdirSync(dir,{withFileTypes:true});
+          ok(actual.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
+            'unexpected files or links in scanner evidence');
+          ok(actual.length===expected.size,'missing scanner evidence files');
+          console.log('SCANNER_DELETE_PUBLICATION_GATE PASS: complete source-bound 39-file evidence');
+          PGR_SCANNER_DELETE_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links
         shell: bash
@@ -1286,7 +1349,9 @@ jobs:
           cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
           mkdir -p module-disable-evidence
           cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence
+          mkdir -p scanner-delete-evidence
+          cp -a "$source_dir/../scanner-delete-evidence/." scanner-delete-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1297,3 +1362,4 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
