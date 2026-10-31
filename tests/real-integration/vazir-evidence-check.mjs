@@ -7,7 +7,7 @@ const required=new Set(['README.md','comparison.json','official-release.json','v
 for(const profile of ['baseline','with-vazir']) for(const locale of ['fa_IR','en_US']) {
   const key=profile+'-'+locale;
   required.add(key+'.json');
-  for(const width of [1280,390])for(const page of ['overview','gravity-form'])
+  for(const width of [1280,390])for(const page of ['overview','gravity-form','gravityview','gravityperks'])
     required.add(key+'-'+page+'-'+width+'.jpg');
 }
 const fail=msg=>{throw Error('G013_EVIDENCE_REJECTED: '+msg);};
@@ -43,7 +43,7 @@ function inspect(){
     const d=readJson(key+'.json');
     if(d.schema!=='g013-vazir-coexistence-v1'||d.exact_head!==head||
        d.profile!==(profile==='baseline'?'BASELINE':'WITH_VAZIR')||
-       d.locale!==locale||d.status!=='PASS'||d.pages?.length!==12)
+       d.locale!==locale||d.status!=='PASS'||d.pages?.length!==18)
       fail('profile identity/real matrix '+key);
     if(profile==='with-vazir'&&
        (d.vazir_version!=='1.5.0'||
@@ -52,15 +52,15 @@ function inspect(){
     const pairs=new Set();
     for(const p of d.pages){
       const id=p.name+'-'+p.width;
-      if(pairs.has(id)||!['overview','settings','scanner','system-status','gravity-form','gravity-flow'].includes(p.name)
+      if(pairs.has(id)||!['overview','settings','scanner','system-status','gravity-form','gravity-flow','flow-frontend','gravityview','gravityperks'].includes(p.name)
         ||![1280,390].includes(p.width)||p.document_width<1||!p.body?.family)
         fail('invalid browser case '+key+' '+id);
       pairs.add(id);
       if(p.image && (!required.has(p.image)||!sheet.includes(']('+p.image+')')))
         fail('unreferenced capture '+p.image);
     }
-    if(pairs.size!==12)fail('duplicate/incomplete case '+key);
-    for(const width of [1280,390])for(const page of ['overview','gravity-form']){
+    if(pairs.size!==18)fail('duplicate/incomplete case '+key);
+    for(const width of [1280,390])for(const page of ['overview','gravity-form','gravityview','gravityperks']){
       const file=key+'-'+page+'-'+width+'.jpg';
       if(!sheet.includes(']('+file+')'))fail('missing image link '+file);
     }
@@ -70,7 +70,7 @@ function inspect(){
 }
 if(process.argv[3]==='check'){
   inspect();
-  console.log('G013_EVIDENCE_GATE_PASS exact Head '+head+'; four profiles, 48 browser cases, 16 screenshots');
+  console.log('G013_EVIDENCE_GATE_PASS exact Head '+head+'; four profiles, 72 browser cases, 32 screenshots');
 }else if(process.argv[3]==='compare'){
   const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
   const docs=profiles.map(p=>readJson(p+'.json'));
@@ -103,7 +103,7 @@ if(process.argv[3]==='check'){
     'Exact PersianGravity Head: '+head,'Vazir release: v1.5.0 (official SHA-256 '+output.vazir_sha256+')',
     'Four authenticated real WordPress/Chromium profiles: BASELINE and WITH_VAZIR, fa_IR/en_US.','',
     'Profile screenshots (1280px and 390px):',''];
-  for(const p of profiles)for(const width of [1280,390])for(const name of ['overview','gravity-form']){
+  for(const p of profiles)for(const width of [1280,390])for(const name of ['overview','gravity-form','gravityview','gravityperks']){
     const img=p+'-'+name+'-'+width+'.jpg';
     lines.push('- ['+img+']('+img+')');
   }
@@ -112,5 +112,5 @@ if(process.argv[3]==='check'){
     'Settings/activated plugin state was verified in the disposable runner; no live Owner site was read.');
   fs.writeFileSync(path.join(dir,'README.md'),lines.join('\n')+'\n');
   inspect();
-  console.log('G013_COMPARISON_PASS profiles=4 real_cases=48');
+  console.log('G013_COMPARISON_PASS profiles=4 real_cases=72');
 }else fail('unknown operation; use compare or check');
