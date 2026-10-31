@@ -224,21 +224,13 @@ final class PGR_Product_Admin {
 	private function render_disable_decision( $module, $token, $lang ) {
 		$primary   = 'fa' === $lang ? 'fa' : 'en';
 		$secondary = 'fa' === $primary ? 'en' : 'fa';
-		$copy      = 'fa' === $lang
-			? array(
-				'title'   => 'تأیید غیرفعال‌سازی ماژول',
-				'risk'    => 'مشخص نشده است که این ماژول در فرم‌ها یا قابلیت‌های موجود استفاده نمی‌شود. غیرفعال‌سازی آن ممکن است بر عملکرد موجود اثر بگذارد.',
-				'pending' => 'هنوز وضعیت ماژول تغییر نکرده است. فقط در صورت پذیرش این احتمال، تأیید کنید.',
-				'confirm' => 'تأیید غیرفعال‌سازی',
-				'cancel'  => 'لغو و بازگشت',
-			)
-			: array(
-				'title'   => 'Confirm module disable',
-				'risk'    => 'Safe non-use could not be established. Disabling this module could affect existing forms or functionality.',
-				'pending' => 'No module state has changed yet. Confirm only if you accept the possible consequences.',
-				'confirm' => 'Confirm disable',
-				'cancel'  => 'Cancel and return',
-			);
+		$copy      = array(
+			'title'   => __( 'Confirm module disable', 'persian-gravityforms' ),
+			'risk'    => __( 'Safe non-use could not be established. Disabling this module could affect existing forms or functionality.', 'persian-gravityforms' ),
+			'pending' => __( 'No module state has changed yet. Confirm only if you accept the possible consequences.', 'persian-gravityforms' ),
+			'confirm' => __( 'Confirm disable', 'persian-gravityforms' ),
+			'cancel'  => __( 'Cancel and return', 'persian-gravityforms' ),
+		);
 		?>
 		<section class="pgr-panel pgr-module-decision" aria-labelledby="pgr-module-decision-title">
 			<h2 id="pgr-module-decision-title"><?php echo esc_html( $copy['title'] ); ?></h2>
@@ -619,9 +611,7 @@ final class PGR_Product_Admin {
 			$message = sprintf( __( '%1$s is used by %2$d form(s) and cannot be disabled safely.', 'persian-gravityforms' ), $label, $count );
 		} elseif ( 'confirm' === $notice && ! $decision ) {
 			$class   = 'notice-warning';
-			$message = 'fa' === $this->primary_language()
-				? 'این درخواست تأیید دیگر معتبر نیست. از کارت ماژول، درخواست جدیدی آغاز کنید.'
-				: 'This disable confirmation is no longer valid. Start a new request from the module card.';
+			$message = __( 'This disable confirmation is no longer valid. Start a new request from the module card.', 'persian-gravityforms' );
 		} elseif ( 'invalid' === $notice ) {
 			$class   = 'notice-error';
 			$message = __( 'The requested module state change was invalid.', 'persian-gravityforms' );
