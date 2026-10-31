@@ -740,3 +740,27 @@ msgstr ""
 #, php-format
 msgid "Persian Gravity Forms requires Gravity Forms %s or newer."
 msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm module disable"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Safe non-use could not be established. Disabling this module could affect existing forms or functionality."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "No module state has changed yet. Confirm only if you accept the possible consequences."
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm disable"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "Cancel and return"
+msgstr ""
+
+#: admin/class-pgr-product-admin.php
+msgid "This disable confirmation is no longer valid. Start a new request from the module card."
+msgstr ""
