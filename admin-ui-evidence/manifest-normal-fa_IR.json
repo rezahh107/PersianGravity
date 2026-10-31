@@ -1,0 +1,1318 @@
+{
+  "schema_version": 1,
+  "evidence_class": "AUTHENTIC_LICENSED_WU008_ADMIN_BROWSER",
+  "exact_head": "f95e89ba1a50a16ec383234ca86abc758f09ba41",
+  "mode": "normal",
+  "locale": "fa_IR",
+  "expected_direction": "rtl",
+  "runtime": {
+    "wordpress": "6.8.3",
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "playwright": "1.55.0",
+    "chromium": "140.0.7339.16",
+    "device_scale_factor": 1
+  },
+  "cases": [
+    {
+      "name": "overview",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-overview-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-list",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-list-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-new",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-new-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-edit-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-built-in",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-built-in-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-settings-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-system-status-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-module-confirm-1280.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    },
+    {
+      "name": "overview",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-overview-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-list",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-list-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-new",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-new-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-edit-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-built-in",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-built-in-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-settings-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "VISUAL_FINDING",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [
+          {
+            "element": "table",
+            "class_name": "widefat striped",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -401,
+            "right": 359
+          },
+          {
+            "element": "thead",
+            "class_name": "",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -400,
+            "right": 358
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -400,
+            "right": 358
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "دلیل",
+            "left": -161,
+            "right": 49
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "نسخه مشاهده‌شده Gravity Flow",
+            "left": -289,
+            "right": -161
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "آخرین مشاهده",
+            "left": -400,
+            "right": -289
+          },
+          {
+            "element": "tbody",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": -400,
+            "right": 358
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": -400,
+            "right": 358
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": -161,
+            "right": 49
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "PGR-GFLOW-CONVERSION-UNAVAILABLE",
+            "left": -130,
+            "right": 39
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "3.1.0",
+            "left": -289,
+            "right": -161
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "3.1.0",
+            "left": -221,
+            "right": -172
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "2026-10-31 18:05:44 UTC",
+            "left": -400,
+            "right": -289
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "2026-10-31 18:05:44 UTC",
+            "left": -382,
+            "right": -299
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Last updatedgravityflow.inbox.last-updated\n\t\t\t\t",
+            "left": -400,
+            "right": 358
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": -161,
+            "right": 49
+          }
+        ],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-system-status-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-module-confirm-390.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    },
+    {
+      "name": "overview",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-overview-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-edit",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-profiles-edit-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "VISUAL_FINDING",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [
+          {
+            "element": "table",
+            "class_name": "widefat striped",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -471,
+            "right": 289
+          },
+          {
+            "element": "thead",
+            "class_name": "",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -470,
+            "right": 288
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "قابلیت\n\t\t\t\t\t\tوضعیت\n\t\t\t\t\t\tدلیل\n\t\t\t\t\t\tنسخه مشاهده‌شده Gra",
+            "left": -470,
+            "right": 288
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "وضعیت",
+            "left": -21,
+            "right": 121
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "دلیل",
+            "left": -231,
+            "right": -21
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "نسخه مشاهده‌شده Gravity Flow",
+            "left": -359,
+            "right": -231
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "آخرین مشاهده",
+            "left": -470,
+            "right": -359
+          },
+          {
+            "element": "tbody",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": -470,
+            "right": 288
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": -470,
+            "right": 288
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "DEGRADED",
+            "left": -21,
+            "right": 121
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": -231,
+            "right": -21
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "PGR-GFLOW-CONVERSION-UNAVAILABLE",
+            "left": -200,
+            "right": -31
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "3.1.0",
+            "left": -359,
+            "right": -231
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "3.1.0",
+            "left": -291,
+            "right": -242
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "2026-10-31 18:05:44 UTC",
+            "left": -470,
+            "right": -359
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "2026-10-31 18:05:44 UTC",
+            "left": -452,
+            "right": -369
+          }
+        ],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-normal-fa_IR-system-status-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "module-confirm",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "fa_IR",
+      "mode": "normal",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "fa-IR",
+        "html_dir": "rtl",
+        "effective_root_direction": "rtl",
+        "effective_fonts": {
+          "body": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "page": {
+            "family": "Tahoma, Arial, sans-serif",
+            "size": "13px",
+            "direction": "rtl"
+          },
+          "heading": {
+            "family": "Arial, sans-serif",
+            "size": "23px",
+            "direction": "rtl"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "screenshot": "ui-normal-fa_IR-module-confirm-320.jpg",
+      "interaction": "FIRST_STAGE_REAL_FORM_POST_ONLY"
+    }
+  ],
+  "negative_control": {
+    "document_width": 800,
+    "viewport_width": 320,
+    "detected": true,
+    "mode": "ISOLATED_HTML_NOT_PRODUCT",
+    "state": "DETECTED"
+  },
+  "not_proven": [
+    "Screen reader output and full accessibility audit",
+    "Actual save/edit/delete/duplicate profile interactions",
+    "Second-stage module-disable confirmation and live data effects",
+    "Other plugin versions, user roles and production environment"
+  ],
+  "observed_module_state": [
+    {
+      "id": "national_id",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "jalali_date",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "jalali_presentation",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_address",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "digit_normalization",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_currency",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "structured_scanner",
+      "state": "AVAILABLE"
+    }
+  ],
+  "status": "CAPTURED"
+}
