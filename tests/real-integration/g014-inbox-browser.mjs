@@ -150,7 +150,7 @@ for(const width of [1280,390]){
       // One bounded fully populated native interaction suite per OFF/ON mode.
       // All 32 cases still independently qualify initial direction/readiness.
       if(width===1280&&spec.name==='frontend'&&siteLocale==='fa_IR'&&userLocale==='fa_IR')
-        item.interactions=await exerciseNativeInboxInteractions(page);
+        item.interactions=await exerciseNativeInboxInteractions(page, m.g008_flow_entries?.find(x=>x.key==='beta')?.expected_due_timestamp);
       item.status='PASS';
     }catch(e){item.status='FAIL';item.reason=String(e);item.errors=errors.slice(e0);item.network=network.slice(n0);throw e}
   }
