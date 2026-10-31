@@ -131,6 +131,14 @@ function pgr_initialize() {
 
 	require_once PGR_PATH . 'includes/class-pgr-core.php';
 	PGR_Core::init();
+
+	// G-014: separate optional host integration; the seven bounded GF modules stay unchanged.
+	$settings = get_option( 'pgr_settings', array() );
+	if ( is_array( $settings ) && isset( $settings['gravity_flow_inbox_rtl'] ) && 1 === $settings['gravity_flow_inbox_rtl'] ) {
+		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-inbox-rtl.php';
+		( new PGR_Gravity_Flow_Inbox_RTL() )->hooks();
+	}
+
 	$initialized = true;
 }
 add_action( 'gform_loaded', 'pgr_initialize', 5 );
