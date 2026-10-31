@@ -126,12 +126,12 @@ final class PGR_Admin {
 			'pgr-admin-profiles',
 			'PGRProfileAdmin',
 			array(
-				'outputKey'     => esc_html__( 'Output key', 'persian-gravityforms' ),
-				'outputLabel'   => esc_html__( 'Output label', 'persian-gravityforms' ),
-				'required'      => esc_html__( 'Required', 'persian-gravityforms' ),
-				'moveUp'        => esc_html__( 'Move up', 'persian-gravityforms' ),
-				'moveDown'      => esc_html__( 'Move down', 'persian-gravityforms' ),
-				'remove'        => esc_html__( 'Remove', 'persian-gravityforms' ),
+				'outputKey'   => esc_html__( 'Output key', 'persian-gravityforms' ),
+				'outputLabel' => esc_html__( 'Output label', 'persian-gravityforms' ),
+				'required'    => esc_html__( 'Required', 'persian-gravityforms' ),
+				'moveUp'      => esc_html__( 'Move up', 'persian-gravityforms' ),
+				'moveDown'    => esc_html__( 'Move down', 'persian-gravityforms' ),
+				'remove'      => esc_html__( 'Remove', 'persian-gravityforms' ),
 			)
 		);
 	}
@@ -365,7 +365,7 @@ final class PGR_Admin {
 			wp_die( esc_html__( 'You are not allowed to manage Scanner Profiles.', 'persian-gravityforms' ) );
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Profile-bound nonce verified below before any registry mutation.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Read POST identity to derive its nonce, then verify before mutation.
 		$profile_id = isset( $_POST['profile_id'] ) && is_string( $_POST['profile_id'] )
 			? wp_unslash( $_POST['profile_id'] )
 			: '';
@@ -374,10 +374,11 @@ final class PGR_Admin {
 		}
 
 		$this->assert_profile_write_access( 'pgr_scanner_profile_delete_' . $profile_id );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by profile-specific assert_profile_write_access() above.
+		// The profile-specific nonce has been verified; only the matched profile may be deleted.
 		$confirmed_label = isset( $_POST['confirmed_profile_label'] ) && is_string( $_POST['confirmed_profile_label'] )
 			? wp_unslash( $_POST['confirmed_profile_label'] )
 			: '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$profile         = PGR_Scanner_Profile_Registry::get( $profile_id );
 		if ( null === $profile || ! empty( $profile['read_only'] ) || $profile['label'] !== $confirmed_label ) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
@@ -559,7 +560,7 @@ final class PGR_Admin {
 					array(
 						'key'      => '',
 						'label'    => '',
-						'required' => true,
+						'required'    => true,
 					),
 				),
 			);
@@ -714,7 +715,7 @@ final class PGR_Admin {
 			$clean_outputs[] = array(
 				'key'      => isset( $output['key'] ) ? sanitize_text_field( $output['key'] ) : '',
 				'label'    => isset( $output['label'] ) ? sanitize_text_field( $output['label'] ) : '',
-				'required' => ! empty( $output['required'] ),
+				'required'    => ! empty( $output['required'] ),
 			);
 		}
 
