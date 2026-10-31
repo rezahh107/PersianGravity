@@ -86,10 +86,19 @@ try {
     assert(await builtin.count() === 1 && await builtin.locator('a[href*="action=delete"]').count() === 0,
       'Built-in gained a deletion control');
     caseInfo.screenshots.push(await shot(page,'list',width));
-    await selected.locator('a[href*="action=delete"]').click();
-    assert(new URL(page.url()).searchParams.get('action') === 'delete', 'Delete selection did not navigate via GET');
+    await Promise.all([
+      page.waitForNavigation({waitUntil:'domcontentloaded'}),
+      selected.locator('a[href*="action=delete"]').click()
+    ]);
+    const currentUrl = new URL(page.url());
+    assert(currentUrl.searchParams.get('action') === 'delete' &&
+      currentUrl.searchParams.get('profile') === subject.id, 'Delete selection did not navigate to the exact ID');
     const decision = page.locator('.pgr-profile-delete-decision');
-    assert(await decision.count() === 1, 'Focused server-rendered decision missing');
+    if (await decision.count() !== 1) {
+      const adminText = (await page.locator('.pgr-admin').allTextContents()).join(' ').slice(0, 700);
+      throw Error('SCANNER_DELETE: Focused server-rendered decision missing; url=' + currentUrl.href +
+        '; admin_text=' + JSON.stringify(adminText));
+    }
     assert(await decision.locator('h2').count() === 1, 'Decision heading missing');
     assert((await decision.textContent()).includes(subject.label), 'Exact display name missing');
     assert((await decision.locator('code[dir="ltr"]').textContent()).trim() === subject.id,
