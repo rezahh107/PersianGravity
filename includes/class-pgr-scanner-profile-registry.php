@@ -280,6 +280,26 @@ final class PGR_Scanner_Profile_Registry {
 	}
 
 	/**
+	 * Fingerprint the complete normalized, validated custom profile snapshot.
+	 *
+	 * Includes display metadata, enabled state, parser settings and all output
+	 * labels/keys/flags. Equal content has equal fingerprints even after a
+	 * delete/recreate; this is not an incarnation or concurrency identifier.
+	 *
+	 * @param mixed $profile Candidate profile.
+	 * @return string SHA-256 hex, or an empty string for invalid input.
+	 */
+	public static function snapshot_fingerprint( $profile ) {
+		$validation = self::validate_profile( $profile );
+		if ( ! $validation['valid'] || isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
+			return '';
+		}
+
+		$canonical = wp_json_encode( $validation['profile'] );
+		return is_string( $canonical ) ? hash( 'sha256', $canonical ) : '';
+	}
+
+	/**
 	 * Normalize the versioned storage envelope.
 	 *
 	 * @param mixed $stored Raw option value.

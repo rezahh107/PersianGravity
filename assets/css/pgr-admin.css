@@ -371,3 +371,82 @@
 		align-items: center;
 	}
 }
+
+/* Scanner Profiles: a single, accessible, server-rendered deletion decision. */
+.pgr-profile-delete-decision {
+	max-width: 740px;
+	border-inline-start: 4px solid #b32d2e;
+}
+
+.pgr-profile-delete-decision h2 {
+	margin-block-start: 0;
+}
+
+.pgr-profile-delete-decision__identity {
+	grid-template-columns: minmax(0, 130px) minmax(0, 1fr);
+}
+
+.pgr-profile-delete-decision__identity dd {
+	min-width: 0;
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.pgr-profile-delete-decision__identity code {
+	direction: ltr;
+	unicode-bidi: isolate;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.pgr-profile-delete-decision__actions {
+	flex-wrap: wrap;
+	margin-block-start: 20px;
+}
+
+.pgr-profile-delete-decision__actions form {
+	margin: 0;
+}
+
+/* Outrank WordPress .wp-core-ui .button without changing other admin buttons. */
+.wp-core-ui .pgr-profile-delete-decision__actions .button.pgr-profile-delete-decision__confirm {
+	background: #b32d2e;
+	border-color: #b32d2e;
+	color: #fff;
+}
+
+.wp-core-ui .pgr-profile-delete-decision__actions .button.pgr-profile-delete-decision__confirm:hover {
+	background: #8c2224;
+	border-color: #8c2224;
+	color: #fff;
+}
+
+.wp-core-ui .pgr-profile-delete-decision__actions .button.pgr-profile-delete-decision__confirm:focus,
+.wp-core-ui .pgr-profile-delete-decision__actions .button.pgr-profile-delete-decision__confirm:focus-visible {
+	background: #8c2224;
+	border-color: #8c2224;
+	color: #fff;
+}
+
+.pgr-profile-delete-decision__actions .button:focus-visible,
+.pgr-profile-card .button-link-delete:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+@media (max-width: 782px) {
+	.pgr-profile-delete-decision__identity {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.pgr-profile-delete-decision__actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.pgr-profile-delete-decision__actions .button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+	}
+}

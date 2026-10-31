@@ -275,6 +275,20 @@ Observed active-documentation drift at baseline:
 
 These observations do not rewrite historical 4.0/4.1 validation claims; they only establish the 4.2 starting state. Earlier detailed validation remains historical evidence in repository history.
 
+### Bounded stale delete confirmation — selected snapshot-lock repair (2026-10-31)
+
+- Confirmed earlier in authentic WU008 qualification: A=`alpha`/`Alpha` deleted, B recreated with identical ID/label but different parser/output, and original A nonce erroneously deleted B. Exact original Head `11e2c5974d37878ec6f2398aa99d5dc147629e11`; immutable evidence under `scanner-incarnation-evidence/` at commit `418a87077d3b72a739dbc40024e024e12e26d62d`.
+- Repair: bind nonce action to ID plus SHA-256 canonical complete validated Registry profile snapshot; reject old POST if new Registry state differs. Fingerprint includes enabled and output display labels, not only executable parser data. No persistent identity or schema added.
+- WU008 regression adds unchanged/missing/changed label/same-ID changed definition/enabled-only/output-label-only/fresh-B confirmation/identical-content recreation controls; the latter intentionally establishes a residual rather than falsely claiming protection.
+- Final Head, CI, authentic runtime outcome and publication link are evidence-dependent and must not be asserted before the actual final run. The Registry read-to-delete interval is not an atomic compare-and-delete.
+
+## Scanner Profile deletion decision — focused correction (2026-10-31)
+
+- Expected user flow: custom profile Delete link uses GET to render a dedicated, translated confirmation with exact label, immutable LTR ID, mapping warning, Confirm delete and Cancel without deleting. Missing and built-in selections produce a non-destructive unavailable view; no competing Create action or browser dialog.
+- POST checks: `manage_options`, nonce bound to the posted immutable profile ID, canonical ID, registry re-read, custom-only eligibility, and unchanged confirmed label before the existing registry deletion method. Destructive GET, wrong-ID nonce, stale label, missing/invalid nonce, built-in and replay must be refused.
+- Automated checks introduced: `tests/ScannerProfileDeleteDecisionTest.php` (isolated PHP stubs) and `tests/real-integration/scanner-profile-delete-*.{php,mjs}` (genuine disposable WU008 licensed WordPress, Gravity Forms and Chromium). WU008 plans authentic fa_IR/en_US at 1280/390/320 px, 320 without JS, keyboard focus, cancellation, POST outcomes, actual `GFAPI::get_form()` mapping identity before/after and durable screenshots published only after independent evidence-gate success.
+- **Evidence status at implementation:** Source reviewed and tests authored; authentic new runtime, browser screenshot and CI results require observation of the new PR run. Existing WU008 Overview and System Status checks are preserved. Human comprehension and screen reader behavior are not proved by automated assertions.
+
 ## 4.2 source changes
 
 The 4.2 branch adds:

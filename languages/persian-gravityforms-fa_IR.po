@@ -78,14 +78,6 @@ msgstr "انتقال به پایین"
 msgid "Remove"
 msgstr "حذف"
 
-#: admin/class-pgr-admin.php:135 admin/class-pgr-product-admin.php:98
-msgid ""
-"Deleting this profile may leave existing Structured Scanner fields with an "
-"unavailable profile. Continue?"
-msgstr ""
-"حذف این پروفایل ممکن است باعث شود فیلدهای موجود اسکنر ساختاریافته به "
-"پروفایلی دسترسی نداشته باشند. ادامه می‌دهید؟"
-
 #: admin/class-pgr-admin.php:157
 msgid "National ID defaults"
 msgstr "پیش‌فرض‌های کد ملی"
@@ -284,14 +276,6 @@ msgstr "تکثیر"
 #: admin/class-pgr-admin.php:455
 msgid "Delete"
 msgstr "حذف"
-
-#: admin/class-pgr-admin.php:462
-msgid ""
-"Deleting a custom profile does not rewrite existing form mappings. Existing "
-"Scanner fields may then report the profile as unavailable."
-msgstr ""
-"حذف یک پروفایل سفارشی نگاشت‌های موجود فرم را بازنویسی نمی‌کند. پس از آن ممکن"
-" است فیلدهای اسکنر موجود، پروفایل را در دسترس‌نبودن گزارش کنند."
 
 #: admin/class-pgr-admin.php:497
 msgid "Edit Scanner Profile"
@@ -814,3 +798,37 @@ msgstr "لغو و بازگشت"
 #: admin/class-pgr-product-admin.php
 msgid "This disable confirmation is no longer valid. Start a new request from the module card."
 msgstr "این درخواست تأیید دیگر معتبر نیست. از کارت ماژول، درخواست جدیدی آغاز کنید."
+
+
+#: admin/class-pgr-admin.php
+msgid "Confirm Scanner Profile deletion"
+msgstr "تأیید حذف پروفایل اسکنر"
+
+#: admin/class-pgr-admin.php
+msgid "Delete this custom profile?"
+msgstr "این پروفایل سفارشی حذف شود؟"
+
+#: admin/class-pgr-admin.php
+msgid "Deleting this custom profile does not rewrite existing form mappings. Structured Scanner fields referencing it may become unavailable."
+msgstr "حذف این پروفایل سفارشی، نگاشت‌های موجود در فرم‌ها را بازنویسی نمی‌کند. فیلدهای اسکنر ساختاریافته که به این پروفایل ارجاع می‌دهند ممکن است دیگر قابل استفاده نباشند."
+
+#: admin/class-pgr-admin.php
+msgid "Confirm delete"
+msgstr "تأیید حذف"
+
+#: admin/class-pgr-admin.php
+msgid "Cancel without deleting"
+msgstr "انصراف بدون حذف"
+
+#: admin/class-pgr-admin.php
+msgid "Scanner Profile deletion unavailable"
+msgstr "حذف پروفایل اسکنر امکان‌پذیر نیست"
+
+#: admin/class-pgr-admin.php
+msgid "This profile is missing or cannot be deleted. No changes were made."
+msgstr "این پروفایل پیدا نشد یا امکان حذف آن وجود ندارد. هیچ تغییری انجام نشد."
+
+#: admin/class-pgr-admin.php
+msgid "Back to Scanner Profiles"
+msgstr "بازگشت به پروفایل‌های اسکنر"
+

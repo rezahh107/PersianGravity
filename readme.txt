@@ -76,7 +76,8 @@ Current WU008 exact-package browser evidence now verifies the authentic File Upl
 
 * `pgr_modules` stores schema version 1 and boolean module state only; legacy module states are preserved and `jalali_presentation` defaults false when absent.
 * `pgr_settings` stores plugin settings such as `default_force_english`.
-* `pgr_scanner_profiles` stores Custom Scanner Profiles.
+* `pgr_scanner_profiles` stores Custom Scanner Profiles. Deletion uses a profile-specific GET confirmation with the exact name, ID and possible mapping consequences. The actual delete requires a capability- and profile-bound nonce-verified POST; Cancel does not mutate data. Built-in profiles are not deletable, and saved Gravity Forms mappings are not rewritten.
+* Deletion confirmations are snapshot-bound: a changed validated profile (including enabled state, labels, or parser/output settings) invalidates the old nonce/confirmation. This does not identify identical-content recreations or prevent a concurrent change after the check.
 * Field configuration, `pgr_normalize_digits`, Scanner Profile selection, and Scanner mappings remain Gravity Forms form metadata.
 
 Disabling a module does not delete Entries, form definitions, settings, Profiles, or mappings. G-008 adds no data migration and does not rewrite existing Entry dates.

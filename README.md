@@ -38,7 +38,9 @@ Overview always shows Persian and English product labels/descriptions. Persian i
 
 Disable requests use bounded form-metadata inspection. Detected use blocks disable. When safe non-use cannot be proven, the action requires an explicit second confirmation. The current currency module deliberately uses `UNKNOWN` because site-wide IRR/IRT usage is not reliably enumerable from the documented public Form Object alone. `jalali_presentation` can be referenced by saved G-011 `{pgr_jdate_*}` tags in Gravity Forms form metadata: detected use is `USED` and blocks Disable. Only proven non-use is `UNUSED`; missing or indeterminate metadata follows the existing `UNKNOWN` second-confirmation safeguard. This check does not scan Entries.
 
-Scanner Profiles remain available while Structured Scanner runtime is disabled.
+Scanner Profiles remain available while Structured Scanner runtime is disabled. Choosing **Delete** on a custom profile opens a separate, read-only confirmation view identifying its name and immutable ID. Only the explicit Confirm delete POST removes the profile; Cancel navigates back without changes. Existing Gravity Forms mappings are not rewritten and fields referencing the deleted profile may become unavailable. Built-in profiles are read-only and cannot be deleted.
+
+Scanner deletion confirmation also binds the WordPress nonce to a deterministic SHA-256 fingerprint of the **complete validated profile snapshot**, and the POST compares it with a fresh Registry read. Changes to labels, enabled state, parser or outputs invalidate old confirmations. Identical-content recreation and a concurrent replacement between read and deletion are not distinguished; this is not an incarnation version or atomic compare-and-delete.
 
 ## Persistence
 

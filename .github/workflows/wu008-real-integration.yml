@@ -142,6 +142,11 @@ jobs:
           php -l tests/real-integration/module-disable-decision-fixture.php
           node --check tests/real-integration/module-disable-decision-browser.mjs
           node --check tests/real-integration/module-disable-decision-summary.mjs
+          php -l tests/real-integration/scanner-profile-delete-fixture.php
+          node --check tests/real-integration/scanner-profile-delete-browser.mjs
+          node --check tests/real-integration/scanner-profile-delete-summary.mjs
+          php -l tests/real-integration/scanner-profile-incarnation-fixture.php
+          node --check tests/real-integration/scanner-profile-incarnation-browser.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
           node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
@@ -866,6 +871,33 @@ jobs:
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
+      - name: Verify Scanner Profile deletion appearance and mapping in real WordPress Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          WU008_DELETE_PHASE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          WU008_DELETE_LOCALE=fa_IR node tests/real-integration/scanner-profile-delete-browser.mjs
+          WU008_DELETE_PHASE=verify WU008_DELETE_LOCALE=fa_IR php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_DELETE_LOCALE=en_US node tests/real-integration/scanner-profile-delete-browser.mjs
+          WU008_DELETE_PHASE=verify WU008_DELETE_LOCALE=en_US php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-delete-fixture.php
+          node tests/real-integration/scanner-profile-delete-summary.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          test -s "$WU008_ARTIFACT_DIR/scanner-delete-evidence/README.md"
+
+      - name: Qualify stale Scanner nonce after independent same-ID recreation (test-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No production changes: execute the real existing Registry/handler in the disposable WU008 installation.
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          node tests/real-integration/scanner-profile-incarnation-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/scanner-incarnation-evidence/report.json"
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
         run: |
@@ -1258,6 +1290,174 @@ jobs:
           }
           console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 20 scenarios, 72 linked JPEGs');
           PGR_DECISION_EVIDENCE_JS
+          node - <<'PGR_SCANNER_DELETE_EVIDENCE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const base='/tmp/wu008-downloaded-evidence';
+          const dir=path.join(base,'scanner-delete-evidence');
+          const expectedHead=process.env.PGR_DECISION_EXPECTED_HEAD;
+          function ok(value,message){if(!value)throw Error('SCANNER_DELETE_PUBLICATION_GATE: '+message);}
+          ok(/^[a-f0-9]{40}$/.test(expectedHead||''),'missing exact PR Head');
+          function rgb(css){
+            ok(typeof css==='string'&&/^rgba?\(/.test(css),'missing computed CSS color');
+            const parts=css.match(/\d+/g)?.slice(0,3).map(Number);
+            ok(parts?.length===3,'malformed computed CSS color');return parts;
+          }
+          function luminance(css){
+            const v=rgb(css).map(n=>{const x=n/255;return x<=0.04045?x/12.92:((x+0.055)/1.055)**2.4;});
+            return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2];
+          }
+          function ratio(a,b){
+            const l=Math.max(luminance(a),luminance(b)),d=Math.min(luminance(a),luminance(b));
+            return (l+0.05)/(d+0.05);
+          }
+          function visualGate(c,locale,width){
+            const v=c.visual,scope=locale+'/'+width;
+            ok(c.checks.includes('destructive_visual_default_hover_focus_contrast')&&
+              v?.authority==='chromium-computed-style-wordpress','missing browser computed-style evidence '+scope);
+            for(const phase of ['default','hover','focus']){
+              const confirm=v.confirm?.[phase],cancel=v.cancel?.[phase];
+              ok(confirm&&cancel,'missing '+phase+' styles '+scope);
+              const [r,g,b]=rgb(confirm.background),cancelRGB=rgb(cancel.background);
+              ok(r>=100&&r>g*1.8&&r>b*1.6,'destructive solid-red style absent '+scope+'/'+phase);
+              ok(Math.max(...cancelRGB)-Math.min(...cancelRGB)<=24,'Cancel is not neutral '+scope+'/'+phase);
+              for(const [kind,style] of [['confirm',confirm],['cancel',cancel]]){
+                const actual=ratio(style.foreground,style.background);
+                ok(actual>=4.5,'insufficient text contrast '+scope+'/'+kind+'/'+phase);
+                const reported=v.contrast?.[kind+phase[0].toUpperCase()+phase.slice(1)];
+                ok(typeof reported==='number'&&Math.abs(actual-reported)<0.03,
+                  'unverifiable computed contrast '+scope+'/'+kind+'/'+phase);
+              }
+            }
+            ok(ratio(v.confirm.default.background,v.cancel.default.background)>=3&&
+              ratio(v.confirm.focus.background,v.cancel.focus.background)>=3,
+              'destructive action visually indistinguishable '+scope);
+            ok(ratio(v.confirm.hover.background,v.confirm.default.background)>=1.1,'hover invisible '+scope);
+            ok(typeof v.contrast?.backgrounds==='number'&&
+              Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-
+              v.contrast.backgrounds)<0.03,'invalid background ratio '+scope);
+            for(const kind of ['confirm','cancel']){
+              const focus=v[kind].focus;
+              ok(focus.focusVisible===true&&focus.outline!=='none'&&focus.outlineWidth>=2,
+                'keyboard focus invisible '+scope+'/'+kind);
+            }
+          }
+          const expected=new Set(['README.md']);
+          const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          for(const locale of ['fa_IR','en_US']){
+            expected.add(locale+'-report.json');
+            expected.add(locale+'-persistence.json');
+            const report=JSON.parse(fs.readFileSync(path.join(dir,locale+'-report.json'),'utf8'));
+            const persistence=JSON.parse(fs.readFileSync(path.join(dir,locale+'-persistence.json'),'utf8'));
+            ok(report.exact_head===expectedHead&&report.locale===locale&&report.state==='PASS',
+              'report source/state mismatch: '+locale);
+            ok(persistence.locale===locale&&persistence.deleted_profile_absent===true&&
+              persistence.built_in_preserved===true&&persistence.form_mapping_unchanged===true,
+              'server persistence unproven: '+locale);
+            ok(report.cases?.length===3,'missing locale viewports: '+locale);
+            let images=[];
+            for(const width of [1280,390,320]){
+              const c=report.cases.find(x=>x.width===width);
+              ok(c?.state==='PASS'&&c.js_enabled===(width!==320),'unverified viewport: '+locale+'/'+width);
+              visualGate(c,locale,width);
+              ok(['destructive_get_no_mutation','keyboard_order_and_visible_focus','no_horizontal_overflow',
+                'built_in_non_deletable','snapshot_nonce_bound'].every(x=>c.checks.includes(x)), 'incomplete safety checks');
+              if(width===320)ok(['wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
+                'built_in_post_rejected','anonymous_post_rejected','real_post_deleted','repeat_post_refused',
+                'stale_get_refused','wrong_snapshot_nonce_rejected','missing_snapshot_rejected',
+                'no_js_navigation_and_form'].every(x=>c.checks.includes(x)),
+                'destructive controls unverified');
+              for(const stage of ['list','confirmation','cancel','missing','built-in',...(width===320?['deleted','stale']:[])]){
+                const n=locale+'-'+width+'-'+stage+'.jpg';
+                images.push(n);expected.add(n);
+                ok(readme.includes(']('+n+')'),'missing permanent screenshot link: '+n);
+                const bytes=fs.readFileSync(path.join(dir,n));
+                ok(bytes.length>1000&&bytes[0]===255&&bytes[1]===216&&
+                  bytes[bytes.length-2]===255&&bytes[bytes.length-1]===217,'bad JPEG: '+n);
+              }
+            }
+            ok(JSON.stringify(report.screenshots)===JSON.stringify(images),'image manifest mismatch '+locale);
+          }
+          const actual=fs.readdirSync(dir,{withFileTypes:true});
+          ok(actual.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
+            'unexpected files or links in scanner evidence');
+          ok(actual.length===expected.size,'missing scanner evidence files');
+          console.log('SCANNER_DELETE_PUBLICATION_GATE PASS: complete source-bound 39-file evidence, six Chromium computed-style/contrast/focus proofs');
+          PGR_SCANNER_DELETE_EVIDENCE_GATE
+
+          node - <<'PGR_INCAR_QUALIFICATION_EVIDENCE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-incarnation-evidence';
+          const head=process.env.PGR_DECISION_EXPECTED_HEAD;
+          const assert=(v,s)=>{if(!v)throw Error('INCAR_PUBLICATION_GATE: '+s);};
+          const report=JSON.parse(fs.readFileSync(path.join(dir,'report.json'),'utf8'));
+          const names=['unchanged','missing','changed_label','same_label','enabled_only','output_label_only','fresh_b','identical_content'];
+          assert(report.evidence_class==='AUTHENTIC_WORDPRESS_GFAPI_SCANNER_INCAR_QUALIFICATION',
+            'wrong evidence class');
+          assert(report.qualification_head===head &&
+            report.reviewed_production_head==='11e2c5974d37878ec6f2398aa99d5dc147629e11',
+            'missing exact qualification and reviewed production heads');
+          assert(report.state==='QUALIFICATION_COMPLETE'&&report.cases?.length===8,
+            'incomplete runtime cases');
+          const cases=Object.fromEntries(report.cases.map(c=>[c.case,c]));
+          assert(Object.keys(cases).length===names.length&&names.every(x=>cases[x]?.state==='OBSERVED'),
+            'missing/duplicate observed case');
+          assert(cases.unchanged.response?.notice==='deleted'&&!cases.unchanged.after_post.exists,
+            'unchanged control missing');
+          assert(cases.missing.response?.notice==='delete_error'&&!cases.missing.after_post.exists,
+            'missing profile control missing');
+          assert(cases.changed_label.response?.notice==='delete_error'&&cases.changed_label.after_post.exists&&
+            cases.changed_label.after_post.label==='Beta'&&
+            cases.changed_label.after_post.keys?.join(',')==='replacement',
+            'changed-label control missing');
+          for(const name of ['changed_label','same_label','enabled_only','output_label_only','fresh_b']){
+            assert(cases[name].response?.notice==='delete_error'&&cases[name].after_post.exists===true,
+              'old A confirmation deleted changed validated B: '+name);
+          }
+          assert(cases.same_label.before_stale_post.exists===true &&
+            cases.same_label.before_stale_post.label==='Alpha' &&
+            cases.same_label.before_stale_post.keys?.join(',')==='replacement' &&
+            cases.same_label.before_stale_post.trim===false &&
+            cases.same_label.b_deleted_by_A_confirmation===false,
+            'same-ID/same-label different definition protection not proven');
+          assert(cases.enabled_only.before_stale_post.enabled===false &&
+            cases.enabled_only.before_stale_post.keys?.join(',')==='original',
+            'enabled-only snapshot difference not proven');
+          assert(cases.output_label_only.before_stale_post.outputs?.[0]?.label==='Replacement output label',
+            'output label snapshot difference not proven');
+          assert(cases.fresh_b.fresh_b?.notice==='deleted'&&cases.fresh_b.fresh_b?.deleted===true &&
+            cases.fresh_b.fresh_b?.gfapi_mapping_unchanged===true,
+            'fresh B-specific confirmation not proven');
+          assert(cases.identical_content.response?.notice==='deleted'&&
+            cases.identical_content.before_stale_post.exists===true &&
+            cases.identical_content.after_post.exists===false,
+            'identical-content residual not honestly observed');
+          assert(report.finding==='BOUNDED_SNAPSHOT_REPAIR_VERIFIED','false repair classification');
+          const expected=new Set(['README.md','report.json']);
+          const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          for(const name of names) {
+            const c=cases[name];
+            assert(c.nonce_present===true&&c.original_nonce_still_verified===true&&
+              c.after_post.gfapi_mapping_unchanged===true,
+              'real WordPress nonce or unchanged GF form not observed: '+name);
+            assert(c.images?.length===(name==='unchanged'||name==='missing'?2:3),
+              'screenshot count mismatch: '+name);
+            for(const filename of c.images) {
+              assert(filename.startsWith(name+'-')&&filename.endsWith('.jpg')&&!expected.has(filename),
+                'unexpected screenshot filename: '+filename);
+              expected.add(filename);
+              assert(readme.includes(']('+filename+')'),'unlinked screenshot: '+filename);
+              const data=fs.readFileSync(path.join(dir,filename));
+              assert(data.length>1000&&data[0]===255&&data[1]===216&&data.at(-2)===255&&data.at(-1)===217,
+                'not authentic JPEG: '+filename);
+            }
+          }
+          const files=fs.readdirSync(dir,{withFileTypes:true});
+          assert(files.length===expected.size&&files.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
+            'unverified/missing incarnation evidence files');
+          assert(readme.includes(head)&&readme.includes(report.finding),'summary not source bound');
+          console.log('SCANNER_INCAR_PUBLICATION_GATE QUALIFIED: '+report.finding+
+            ' cases=8 images=22 exactHead='+head);
+          PGR_INCAR_QUALIFICATION_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links
         shell: bash
@@ -1286,7 +1486,11 @@ jobs:
           cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
           mkdir -p module-disable-evidence
           cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence
+          mkdir -p scanner-delete-evidence
+          cp -a "$source_dir/../scanner-delete-evidence/." scanner-delete-evidence/
+          mkdir -p scanner-incarnation-evidence
+          cp -a "$source_dir/../scanner-incarnation-evidence/." scanner-incarnation-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1297,3 +1501,5 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"

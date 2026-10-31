@@ -107,22 +107,7 @@
 		renumber( list );
 	}
 
-	function initializeDeleteConfirmation() {
-		document.querySelectorAll( 'form' ).forEach( function ( form ) {
-			const action = form.querySelector( 'input[name="action"][value="pgr_scanner_profile_delete"]' );
-			if ( ! action ) {
-				return;
-			}
-			form.addEventListener( 'submit', function ( event ) {
-				if ( ! window.confirm( text( 'deleteConfirm', 'Delete this Scanner profile?' ) ) ) {
-					event.preventDefault();
-				}
-			} );
-		} );
-	}
-
 	document.addEventListener( 'DOMContentLoaded', function () {
 		document.querySelectorAll( '.pgr-profile-form' ).forEach( initializeOutputEditor );
-		initializeDeleteConfirmation();
 	} );
 } )();

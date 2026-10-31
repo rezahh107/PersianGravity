@@ -126,13 +126,12 @@ final class PGR_Admin {
 			'pgr-admin-profiles',
 			'PGRProfileAdmin',
 			array(
-				'outputKey'     => esc_html__( 'Output key', 'persian-gravityforms' ),
-				'outputLabel'   => esc_html__( 'Output label', 'persian-gravityforms' ),
-				'required'      => esc_html__( 'Required', 'persian-gravityforms' ),
-				'moveUp'        => esc_html__( 'Move up', 'persian-gravityforms' ),
-				'moveDown'      => esc_html__( 'Move down', 'persian-gravityforms' ),
-				'remove'        => esc_html__( 'Remove', 'persian-gravityforms' ),
-				'deleteConfirm' => esc_html__( 'Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?', 'persian-gravityforms' ),
+				'outputKey'   => esc_html__( 'Output key', 'persian-gravityforms' ),
+				'outputLabel' => esc_html__( 'Output label', 'persian-gravityforms' ),
+				'required'    => esc_html__( 'Required', 'persian-gravityforms' ),
+				'moveUp'      => esc_html__( 'Move up', 'persian-gravityforms' ),
+				'moveDown'    => esc_html__( 'Move down', 'persian-gravityforms' ),
+				'remove'      => esc_html__( 'Remove', 'persian-gravityforms' ),
 			)
 		);
 	}
@@ -247,12 +246,22 @@ final class PGR_Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		$action = isset( $_GET['action'] ) && is_string( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
-		$profile_id = isset( $_GET['profile'] ) ? sanitize_key( wp_unslash( $_GET['profile'] ) ) : '';
+		$profile_id = isset( $_GET['profile'] ) && is_string( $_GET['profile'] ) ? sanitize_key( wp_unslash( $_GET['profile'] ) ) : '';
 
 		if ( 'new' === $action ) {
 			$this->render_profile_form( null );
+			return;
+		}
+
+		if ( 'delete' === $action ) {
+			$profile = '' !== $profile_id ? PGR_Scanner_Profile_Registry::get( $profile_id ) : null;
+			if ( null === $profile || ! empty( $profile['read_only'] ) || '' === PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile ) ) {
+				$this->render_profile_delete_unavailable();
+			} else {
+				$this->render_profile_delete_confirmation( $profile );
+			}
 			return;
 		}
 
@@ -352,10 +361,42 @@ final class PGR_Admin {
 	 * @return void
 	 */
 	public function handle_profile_delete() {
-		$this->assert_profile_write_access( 'pgr_scanner_profile_delete' );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified immediately above by assert_profile_write_access().
-		$profile_id = isset( $_POST['profile_id'] ) ? sanitize_key( wp_unslash( $_POST['profile_id'] ) ) : '';
-		$deleted    = PGR_Scanner_Profile_Registry::delete_custom_profile( $profile_id );
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_die( esc_html__( 'You are not allowed to manage Scanner Profiles.', 'persian-gravityforms' ) );
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Read POST identity to derive its nonce, then verify before mutation.
+		$profile_id = isset( $_POST['profile_id'] ) && is_string( $_POST['profile_id'] )
+			? wp_unslash( $_POST['profile_id'] )
+			: '';
+		if ( '' === $profile_id || sanitize_key( $profile_id ) !== $profile_id ) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
+		}
+
+		$fingerprint = isset( $_POST['confirmed_profile_fingerprint'] ) && is_string( $_POST['confirmed_profile_fingerprint'] )
+			? wp_unslash( $_POST['confirmed_profile_fingerprint'] )
+			: '';
+		if ( 1 !== preg_match( '/^[a-f0-9]{64}$/', $fingerprint ) ) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
+		}
+
+		$this->assert_profile_write_access( 'pgr_scanner_profile_delete_' . $profile_id . '_' . $fingerprint );
+		// The nonce is bound to the exact selected ID and complete validated snapshot.
+		$confirmed_label = isset( $_POST['confirmed_profile_label'] ) && is_string( $_POST['confirmed_profile_label'] )
+			? wp_unslash( $_POST['confirmed_profile_label'] )
+			: '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+		$profile = PGR_Scanner_Profile_Registry::get( $profile_id );
+		if (
+			null === $profile ||
+			! empty( $profile['read_only'] ) ||
+			$profile['label'] !== $confirmed_label ||
+			! hash_equals( $fingerprint, PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile ) )
+		) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
+		}
+
+		$deleted = PGR_Scanner_Profile_Registry::delete_custom_profile( $profile_id );
 		$this->redirect_profiles( array( 'pgr_notice' => $deleted ? 'deleted' : 'delete_error' ) );
 	}
 
@@ -448,18 +489,68 @@ final class PGR_Admin {
 								<button type="submit" class="button button-secondary"><?php esc_html_e( 'Duplicate', 'persian-gravityforms' ); ?></button>
 							</form>
 							<?php if ( empty( $profile['read_only'] ) ) : ?>
-								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-pgr-delete-profile="1">
-									<input type="hidden" name="action" value="pgr_scanner_profile_delete" />
-									<input type="hidden" name="profile_id" value="<?php echo esc_attr( $profile['id'] ); ?>" />
-									<?php wp_nonce_field( 'pgr_scanner_profile_delete' ); ?>
-									<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Delete', 'persian-gravityforms' ); ?></button>
-								</form>
+								<a class="button button-link-delete" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PROFILES_SLUG . '&action=delete&profile=' . rawurlencode( $profile['id'] ) ) ); ?>"><?php esc_html_e( 'Delete', 'persian-gravityforms' ); ?></a>
 							<?php endif; ?>
 						</div>
 					</article>
 				<?php endforeach; ?>
 			</div>
-			<p class="pgr-warning-note"><?php esc_html_e( 'Deleting a custom profile does not rewrite existing form mappings. Existing Scanner fields may then report the profile as unavailable.', 'persian-gravityforms' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render one read-only, profile-specific decision before any deletion POST.
+	 *
+	 * @param array<string,mixed> $profile Validated custom profile from the registry.
+	 * @return void
+	 */
+	private function render_profile_delete_confirmation( $profile ) {
+		$back_url    = admin_url( 'admin.php?page=' . self::PROFILES_SLUG );
+		$fingerprint = PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile );
+		if ( '' === $fingerprint ) {
+			$this->render_profile_delete_unavailable();
+			return;
+		}
+		?>
+		<div class="wrap pgr-admin">
+			<h1><?php esc_html_e( 'Confirm Scanner Profile deletion', 'persian-gravityforms' ); ?></h1>
+			<section class="pgr-panel pgr-profile-delete-decision" aria-labelledby="pgr-profile-delete-title">
+				<h2 id="pgr-profile-delete-title"><?php esc_html_e( 'Delete this custom profile?', 'persian-gravityforms' ); ?></h2>
+				<dl class="pgr-definition-list pgr-profile-delete-decision__identity">
+					<dt><?php esc_html_e( 'Display name', 'persian-gravityforms' ); ?></dt>
+					<dd><?php echo esc_html( $profile['label'] ); ?></dd>
+					<dt><?php esc_html_e( 'Profile ID', 'persian-gravityforms' ); ?></dt>
+					<dd><code dir="ltr"><?php echo esc_html( $profile['id'] ); ?></code></dd>
+				</dl>
+				<p class="pgr-warning-note" id="pgr-profile-delete-warning"><?php esc_html_e( 'Deleting this custom profile does not rewrite existing form mappings. Structured Scanner fields referencing it may become unavailable.', 'persian-gravityforms' ); ?></p>
+				<div class="pgr-actions pgr-profile-delete-decision__actions">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pgr_scanner_profile_delete" />
+						<input type="hidden" name="profile_id" value="<?php echo esc_attr( $profile['id'] ); ?>" />
+						<input type="hidden" name="confirmed_profile_label" value="<?php echo esc_attr( $profile['label'] ); ?>" />
+						<input type="hidden" name="confirmed_profile_fingerprint" value="<?php echo esc_attr( $fingerprint ); ?>" />
+						<?php wp_nonce_field( 'pgr_scanner_profile_delete_' . $profile['id'] . '_' . $fingerprint ); ?>
+						<button type="submit" class="button pgr-profile-delete-decision__confirm" aria-describedby="pgr-profile-delete-warning"><?php esc_html_e( 'Confirm delete', 'persian-gravityforms' ); ?></button>
+					</form>
+					<a class="button button-secondary" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel without deleting', 'persian-gravityforms' ); ?></a>
+				</div>
+			</section>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Explain stale, missing, and built-in delete requests without exposing a POST.
+	 *
+	 * @return void
+	 */
+	private function render_profile_delete_unavailable() {
+		?>
+		<div class="wrap pgr-admin">
+			<h1><?php esc_html_e( 'Scanner Profile deletion unavailable', 'persian-gravityforms' ); ?></h1>
+			<div class="notice notice-error inline"><p><?php esc_html_e( 'This profile is missing or cannot be deleted. No changes were made.', 'persian-gravityforms' ); ?></p></div>
+			<a class="button button-secondary" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PROFILES_SLUG ) ); ?>"><?php esc_html_e( 'Back to Scanner Profiles', 'persian-gravityforms' ); ?></a>
 		</div>
 		<?php
 	}
