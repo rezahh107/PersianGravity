@@ -1319,8 +1319,9 @@ jobs:
               ratio(v.confirm.focus.background,v.cancel.focus.background)>=3,
               'destructive action visually indistinguishable '+scope);
             ok(ratio(v.confirm.hover.background,v.confirm.default.background)>=1.1,'hover invisible '+scope);
-            ok(Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-
-              v.contrast?.backgrounds)<0.03,'invalid background ratio '+scope);
+            ok(typeof v.contrast?.backgrounds==='number'&&
+              Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-
+              v.contrast.backgrounds)<0.03,'invalid background ratio '+scope);
             for(const kind of ['confirm','cancel']){
               const focus=v[kind].focus;
               ok(focus.focusVisible===true&&focus.outline!=='none'&&focus.outlineWidth>=2,
