@@ -1446,7 +1446,7 @@ jobs:
             for(const w of widths)for(const name of screens)required.add(key+'-'+name+'-'+w+'.jpg');
           }
           const actual=fs.readdirSync(dir,{withFileTypes:true}),sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
-          const links=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/g)].map(x=>x[1]);
+          const links=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/gi)].map(x=>x[1]);
           ok(actual.length===required.size&&links.length===32&&new Set(links).size===32,'file/link coverage');
           for(const entry of actual){
             ok(required.has(entry.name)&&entry.isFile()&&!entry.isSymbolicLink(),'unsafe artifact '+entry.name);

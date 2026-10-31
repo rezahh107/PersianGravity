@@ -137,7 +137,7 @@ function validateFiles(dir,sheet) {
   }
   const entries=fs.readdirSync(dir,{withFileTypes:true});
   expect(entries.length===required.size,'missing/extra files');
-  const linked=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/g)].map(x=>x[1]);
+  const linked=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/gi)].map(x=>x[1]);
   expect(linked.length===32 && new Set(linked).size===32,'missing/duplicate screenshot links');
   for(const entry of entries) {
     expect(required.has(entry.name) && entry.isFile() && !entry.isSymbolicLink(),
