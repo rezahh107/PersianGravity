@@ -66,7 +66,10 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		$this->assertStringContainsString( '<code dir="ltr">alpha</code>', $decision );
 		$this->assertStringContainsString( 'does not rewrite existing form mappings', $decision );
 		$this->assertStringContainsString( 'may become unavailable', $decision );
-		$this->assertStringContainsString( 'nonce-pgr_scanner_profile_delete_alpha', $decision );
+		$fingerprint_a = PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
+		$this->assertMatchesRegularExpression( '/^[a-f0-9]{64}$/', $fingerprint_a );
+		$this->assertStringContainsString( 'name="confirmed_profile_fingerprint" value="' . $fingerprint_a . '"', $decision );
+		$this->assertStringContainsString( 'nonce-pgr_scanner_profile_delete_alpha_' . $fingerprint_a, $decision );
 		$this->assertStringContainsString( 'Confirm delete', $decision );
 		$this->assertStringContainsString( 'Cancel without deleting', $decision );
 		$this->assertStringNotContainsString( 'Create Profile', $decision );
@@ -88,13 +91,15 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		$this->assertSame( 2, count( PGR_Scanner_Profile_Registry::custom_profiles() ) );
 
 		$valid = array(
-			'profile_id'             => 'alpha',
-			'confirmed_profile_label' => $alpha,
-			'_wpnonce'              => 'nonce-pgr_scanner_profile_delete_alpha',
+			'profile_id'                   => 'alpha',
+			'confirmed_profile_label'       => $alpha,
+			'confirmed_profile_fingerprint' => $fingerprint_a,
+			'_wpnonce'                      => 'nonce-pgr_scanner_profile_delete_alpha_' . $fingerprint_a,
 		);
 		foreach ( array(
 			array_replace( $valid, array( 'profile_id' => 'beta' ) ),
 			array_replace( $valid, array( '_wpnonce' => '' ) ),
+			array_replace( $valid, array( 'confirmed_profile_fingerprint' => str_repeat( '0', 64 ) ) ),
 		) as $invalid ) {
 			$_POST = $invalid;
 			try {
@@ -107,7 +112,8 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		foreach ( array(
 			array_replace( $valid, array( 'confirmed_profile_label' => 'stale label' ) ),
 			array_replace( $valid, array( 'profile_id' => array( 'alpha' ) ) ),
-			array( 'profile_id' => 'sayad_v01', 'confirmed_profile_label' => 'Built-in', '_wpnonce' => 'nonce-pgr_scanner_profile_delete_sayad_v01' ),
+			array_replace( $valid, array( 'confirmed_profile_fingerprint' => '' ) ),
+			array( 'profile_id' => 'sayad_v01', 'confirmed_profile_label' => 'Built-in', 'confirmed_profile_fingerprint' => $fingerprint_a, '_wpnonce' => 'nonce-pgr_scanner_profile_delete_sayad_v01_' . $fingerprint_a ),
 		) as $invalid ) {
 			$_POST = $invalid;
 			try {
@@ -119,6 +125,52 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		}
 		$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
 		$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'beta' ) );
+
+		// Non-executable metadata is still part of the user-confirmed snapshot.
+		foreach ( array( 'enabled', 'output_label', 'required' ) as $change ) {
+			$changed = $make( 'alpha', $alpha );
+			if ( 'enabled' === $change ) {
+				$changed['enabled'] = false;
+			} elseif ( 'output_label' === $change ) {
+				$changed['outputs'][0]['label'] = 'Changed output label';
+			} else {
+				// Required belongs to the executable contract and cannot be edited.
+				$changed['label'] = 'Different profile label';
+			}
+			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $changed, 'alpha' )['success'] );
+			$this->assertNotSame( $fingerprint_a, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) );
+			$_POST = $valid;
+			try {
+				$admin->handle_profile_delete();
+				$this->fail( 'Previously confirmed state must not delete modified profile.' );
+			} catch ( RuntimeException $e ) {
+				$this->assertStringContainsString( 'pgr_notice=delete_error', $e->getMessage() );
+			}
+			$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
+			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $make( 'alpha', $alpha ), 'alpha' )['success'] );
+			$this->assertSame( $fingerprint_a, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) );
+		}
+
+		// An old confirmation cannot delete a differently defined new incarnation.
+		$this->assertTrue( PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha' ) );
+		$new_incarnation = $make( 'alpha', $alpha );
+		$new_incarnation['outputs'][0]['key'] = 'replacement';
+		$new_incarnation['parser']['trim'] = false;
+		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $new_incarnation )['success'] );
+		$fingerprint_b = PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
+		$this->assertNotSame( $fingerprint_a, $fingerprint_b );
+		$_POST = $valid;
+		try {
+			$admin->handle_profile_delete();
+			$this->fail( 'Old A nonce must not delete new B.' );
+		} catch ( RuntimeException $e ) {
+			$this->assertStringContainsString( 'pgr_notice=delete_error', $e->getMessage() );
+		}
+		$this->assertSame( array( 'replacement' ), PGR_Scanner_Profile_Registry::output_keys( 'alpha' ) );
+
+		// A genuinely fresh B-specific confirmation may still delete B.
+		$valid['confirmed_profile_fingerprint'] = $fingerprint_b;
+		$valid['_wpnonce'] = 'nonce-pgr_scanner_profile_delete_alpha_' . $fingerprint_b;
 		$_POST = $valid;
 		try {
 			$admin->handle_profile_delete();
