@@ -189,7 +189,7 @@ final class PGR_Admin {
 	public function sanitize_settings( $input ) {
 		$input = is_array( $input ) ? $input : array();
 		return array(
-			'default_force_english' => empty( $input['default_force_english'] ) ? 0 : 1,
+			'default_force_english'  => empty( $input['default_force_english'] ) ? 0 : 1,
 			'gravity_flow_inbox_rtl' => isset( $input['gravity_flow_inbox_rtl'] ) && '1' === (string) $input['gravity_flow_inbox_rtl'] ? 1 : 0,
 		);
 	}
