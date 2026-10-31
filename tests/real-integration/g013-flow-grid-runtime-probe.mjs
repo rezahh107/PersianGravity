@@ -88,10 +88,60 @@ try{
           const stable=first.ready&&second.ready&&
             ['rowCount','headerCount','emptyCount','loadingCount','enableRtl','className'].every(k=>first[k]===second[k]);
           record.first=first;record.stable=stable;record.final=second;
+
+          // Reversible physical horizontal scrollbar probe; restore exact original position.
+          record.scrollInteraction=await page.evaluate(async()=>{
+            const bar=document.querySelector('[data-js="gflow-inbox"] .ag-body-horizontal-scroll-viewport');
+            if(!bar)return {present:false};
+            const range=bar.scrollWidth-bar.clientWidth,start=bar.scrollLeft;
+            const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            const test=async target=>{bar.scrollLeft=target;await frame();return bar.scrollLeft;};
+            const positive=await test(Math.max(60,range)),negative=await test(-Math.max(60,range));
+            const restored=await test(start);
+            return {present:true,range,start,positive,negative,restored,
+              moved:range>20&&(Math.abs(positive-start)>10||Math.abs(negative-start)>10),
+              restoredExactly:Math.abs(restored-start)<2,
+              direction:getComputedStyle(bar).direction};
+          });
+          // Explicitly check animated/spinning/loading overlays; headers+rows alone are insufficient.
+          const overlaySnapshot=()=> {
+            const host=document.querySelector('[data-js="gflow-inbox"]');
+            if(!host)return {indicators:[],animations:[]};
+            const visible=e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();
+              return r.width>4&&r.height>4&&s.display!=='none'&&s.visibility!=='hidden'&&
+                Number(s.opacity)>0.05;};
+            const nodes=[...host.querySelectorAll('*')];
+            const described=e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();
+              return {tag:e.tagName.toLowerCase(),className:String(e.className||'').slice(0,160),
+                width:Math.round(r.width),height:Math.round(r.height),
+                animation:s.animationName,role:e.getAttribute('role'),
+                busy:e.getAttribute('aria-busy')};};
+            const indicators=nodes.filter(e=>visible(e)&&(
+              /loading|spinner|progress|busy|overlay-loading|spinner-/i.test(String(e.className||''))||
+              e.getAttribute('aria-busy')==='true'||
+              e.getAttribute('role')==='progressbar')).slice(0,35).map(described);
+            const animations=nodes.filter(e=>visible(e)&&
+              getComputedStyle(e).animationName!=='none').slice(0,25).map(described);
+            return {indicators,animations};
+          };
+          let clearSamples=0;
+          record.overlayChecks=[];
+          for(let attempt=0;attempt<36;attempt++){
+            const overlay=await page.evaluate(overlaySnapshot);
+            if(attempt===0||attempt%6===0||overlay.indicators.length)record.overlayChecks.push({
+              attempt,indicators:overlay.indicators,animations:overlay.animations});
+            clearSamples=overlay.indicators.length===0?clearSamples+1:0;
+            if(clearSamples>=4)break;
+            await page.waitForTimeout(200);
+          }
+          record.spinnerClear=clearSamples>=4;
+          record.overlayBeforeScreenshot=await page.evaluate(overlaySnapshot);
+
           const headers=page.locator('.ag-header-cell:visible');
           if(await headers.count()){
             await headers.first().focus();
-            record.keyboard={focusFirst:await headers.first().evaluate(e=>e===document.activeElement)};
+            const startCol=await headers.first().getAttribute('col-id');
+            record.keyboard={firstColumnId:startCol,focusFirst:await headers.first().evaluate(e=>e===document.activeElement)};
             await page.keyboard.press('ArrowRight');
             record.keyboard.arrowRight=await page.evaluate(()=>({
               activeInGrid:!!document.activeElement?.closest('[data-js="gflow-inbox"]'),
@@ -100,12 +150,23 @@ try{
             record.keyboard.arrowLeft=await page.evaluate(()=>({
               activeInGrid:!!document.activeElement?.closest('[data-js="gflow-inbox"]'),
               className:String(document.activeElement?.className||'').slice(0,100)}));
+            await headers.first().focus();
+            const forwardKey=expected?'ArrowLeft':'ArrowRight';
+            await page.keyboard.press(forwardKey);
+            record.keyboard.directional=await page.evaluate(({forwardKey,startCol})=>({
+              key:forwardKey,startCol,
+              endCol:document.activeElement?.closest('.ag-header-cell')?.getAttribute('col-id')||null,
+              insideGrid:!!document.activeElement?.closest('[data-js="gflow-inbox"]')
+            }),{forwardKey,startCol});
           }
           record.screenshot='g013-filter-'+surface.name+'-'+locale+'-'+width+'.jpg';
           await page.screenshot({path:path.join(dir,record.screenshot),type:'jpeg',quality:75,fullPage:true});
-          record.status=stable&&second.enableRtl===expected&&
-            (expected?second.agRtl&&!second.agLtr:second.agLtr&&!second.agRtl)?
-            'CONFIG_AND_INITIAL_CLASS_PROVEN':'NOT_PROVEN';
+          const configCorrect=stable&&second.enableRtl===expected&&
+            (expected?second.agRtl&&!second.agLtr:second.agLtr&&!second.agRtl);
+          const physicalScroll=width!==390||record.scrollInteraction?.moved&&record.scrollInteraction?.restoredExactly;
+          record.status=!configCorrect?'CONFIG_NOT_PROVEN':
+            !record.spinnerClear||record.overlayBeforeScreenshot.indicators.length?'LOADING_NOT_RESOLVED':
+            !physicalScroll?'HORIZONTAL_SCROLL_NOT_PROVEN':'GRID_AND_SCROLL_READY';
         } catch(e) {record.status='PROBE_FAILURE';record.error=String(e).slice(0,260);}
         finally{
           record.jsErrors=jsErrors.slice(errorBefore);
