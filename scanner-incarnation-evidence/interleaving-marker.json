@@ -1,0 +1,9 @@
+{
+    "probe": "WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING",
+    "original_was_read": true,
+    "replacement_persisted_before_delete_read": true,
+    "replacement_content_differs": true,
+    "mutation_elapsed_ms": 1.404,
+    "mechanism": "pre_option callback intercepted Registry delete method second get_option read",
+    "actual_parallel_workers": false
+}
