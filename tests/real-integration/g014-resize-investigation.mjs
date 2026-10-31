@@ -135,6 +135,18 @@ async function prepare(page,surface){
 async function attempt(page,column,dx){
   const ret={column,deltaX:dx,stages:{},status:'INCOMPLETE'};
   const handle=page.locator(scope+' .ag-header-cell[col-id="'+column+'"] .ag-header-cell-resize').first();
+  if(column==='id'&&await handle.count()===0){
+    // Vendor intentionally suppresses ID resize. Absence of the native
+    // handle is a valid locked-column negative control, not probe failure.
+    ret.stages.before=await inspect(page,column);
+    ret.stages.stable=ret.stages.before;
+    ret.widths={before:ret.stages.before.header?.width,stable:ret.stages.before.header?.width};
+    ret.negativeControl='no-resize-handle';
+    ret.eventTrace=[];
+    ret.mutationTrace=[];
+    ret.status='OBSERVED';
+    return ret;
+  }
   await handle.waitFor({timeout:10000});
   await arm(page);
   ret.stages.before=await inspect(page,column);
