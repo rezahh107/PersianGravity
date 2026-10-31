@@ -74,6 +74,17 @@ try {
     try {
       await login(page);
       await view(page);
+      if (phase==='used' && width===1280) {
+        // Prove the temporary MU guard really commits the WordPress admin
+        // header early on this server. A legitimate Cancel must redirect
+        // before this guard can run.
+        const probe=await page.goto(home+'&pgr_wu008_probe_flush=1',{waitUntil:'domcontentloaded'});
+        check(probe?.status()===200 &&
+          await page.locator('#pgr-wu008-header-flush-probe').count()===1,
+          'Forced early admin header flush instrumentation not active');
+        record.checks.push('early_header_flush_probe_active');
+        await view(page);
+      }
       check(await page.locator('.pgr-module-decision').count()===0,'Normal Overview displays a decision');
       check(await page.locator('.pgr-module-card').count()===7,'Normal module grid lost a module');
       check(await card(page,'iranian_currency').count()===1,'Currency missing from normal grid');
@@ -133,9 +144,20 @@ try {
         // Revisit genuine link, then exercise a non-mutating cancel.
         await page.goto(url.href,{waitUntil:'domcontentloaded'});
         check(await decision.count()===1,'Valid first-stage ticket no longer displayed');
-        await Promise.all([page.waitForNavigation({waitUntil:'domcontentloaded'}),
-          decision.getByRole('link',{name:cancelLabel}).click()]);
+        const cancelHref=await decision.getByRole('link',{name:cancelLabel}).getAttribute('href');
+        check(cancelHref && cancelHref.includes('pgr_cancel_confirm='),'Preserved Cancel GET URL missing token');
+        const [cancelResponse]=await Promise.all([
+          page.waitForResponse(response=>response.url().includes('pgr_cancel_confirm=')),
+          page.waitForNavigation({waitUntil:'domcontentloaded'}),
+          decision.getByRole('link',{name:cancelLabel}).click()
+        ]);
+        check(cancelResponse.status()===302,
+          'Cancel did not return HTTP 302 before WordPress admin header flush: '+cancelResponse.status());
+        const location=cancelResponse.headers()['location'];
+        check(location && new URL(location,cancelResponse.url()).href===home,
+          'Cancel Location must be exact clean Overview, got '+String(location));
         check(!new URL(page.url()).searchParams.has('pgr_confirm_module'),'Cancel retained pending query');
+        record.checks.push('cancel_http302_clean_location_before_header_flush');
         check(await decision.count()===0 && await card(page,'iranian_currency').count()===1,'Cancel did not restore normal grid');
         check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0','Cancel changed currency state');
         await capture(page,record,'cancel',width);
