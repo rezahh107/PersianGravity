@@ -175,6 +175,11 @@ try {
     assert(await decision.locator('a.button').count() === 1, 'Cancel navigation missing');
     const focused = actionForm.locator('button[type="submit"]');
     const cancel = decision.locator('a.button');
+    // The pointer may land on Confirm after clicking the list card's Delete link.
+    // Clear hover before measuring the actual default state in every locale/viewport.
+    await page.mouse.move(0, 0);
+    await page.waitForTimeout(200);
+    assert(!(await focused.evaluate(el => el.matches(':hover'))), 'Confirm unexpectedly hovered at default baseline');
     const confirmDefault = await computedButton(focused);
     const cancelDefault = await computedButton(cancel);
     // These are real Chromium computed styles with WordPress core CSS loaded, not source-only assertions.
@@ -188,7 +193,7 @@ try {
     const confirmHover = await computedButton(focused);
     const hoverRatio = assertDestructiveButton(confirmHover, 'Confirm/hover');
     assert(contrast(confirmDefault.background,confirmHover.background) >= 1.1,
-      'Confirm hover fails to produce a visible state change');
+      'Confirm hover fails to produce a visible state change: ' + JSON.stringify({confirmDefault,confirmHover}));
     await cancel.hover();
     await page.waitForTimeout(200);
     const cancelHover = await computedButton(cancel);
