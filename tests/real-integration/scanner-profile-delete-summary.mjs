@@ -53,12 +53,15 @@ function verifiedVisual(c,locale,width) {
     }
   }
   for (const [phase, key] of [['default','Default'],['hover','Hover'],['focus','Focus']]) {
-    if (Math.abs(ratio(v.confirm[phase].foreground,v.confirm[phase].background)-v.contrast?.['confirm'+key])>0.03 ||
-        Math.abs(ratio(v.cancel[phase].foreground,v.cancel[phase].background)-v.contrast?.['cancel'+key])>0.03) {
+    if (typeof v.contrast?.['confirm'+key]!=='number' ||
+        typeof v.contrast?.['cancel'+key]!=='number' ||
+        Math.abs(ratio(v.confirm[phase].foreground,v.confirm[phase].background)-v.contrast['confirm'+key])>0.03 ||
+        Math.abs(ratio(v.cancel[phase].foreground,v.cancel[phase].background)-v.contrast['cancel'+key])>0.03) {
       invalid('contrast report does not match computed colors: '+phase);
     }
   }
-  if (Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-v.contrast?.backgrounds)>0.03) {
+  if (typeof v.contrast?.backgrounds!=='number' ||
+      Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-v.contrast.backgrounds)>0.03) {
     invalid('background comparison does not match computed colors');
   }
 }
