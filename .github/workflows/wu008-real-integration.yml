@@ -172,6 +172,10 @@ jobs:
           node --check tests/real-integration/g008-gravityview-reconcile.mjs
           node --check tests/real-integration/g008-gravityview-production-browser.mjs
           node --check tests/real-integration/g008-gravityview-production-reconcile.mjs
+          node --check tests/real-integration/g014-browser-contract.mjs
+          node --check tests/real-integration/g014-browser-contract.test.mjs
+          node --check tests/real-integration/g014-inbox-browser.mjs
+          node --test tests/real-integration/g014-browser-contract.test.mjs
           node --check tests/real-integration/g009-browser.mjs
           node --check tests/real-integration/g009-perks-source-probe.mjs
           node --check tests/real-integration/g008-flow-inbox-browser.mjs
