@@ -20,6 +20,16 @@ const report={exact_head:head,locale:lang,phase,status:'INCOMPLETE',
 const key=phase+'-'+lang;
 const confirmLabel=lang==='fa_IR'?'تأیید غیرفعال‌سازی':'Confirm disable';
 const cancelLabel=lang==='fa_IR'?'لغو و بازگشت':'Cancel and return';
+const decisionTitle=lang==='fa_IR'?'تأیید غیرفعال‌سازی ماژول':'Confirm module disable';
+const decisionRisk=lang==='fa_IR'
+  ?'مشخص نشده است که این ماژول در فرم‌ها یا قابلیت‌های موجود استفاده نمی‌شود. غیرفعال‌سازی آن ممکن است بر عملکرد موجود اثر بگذارد.'
+  :'Safe non-use could not be established. Disabling this module could affect existing forms or functionality.';
+const decisionPending=lang==='fa_IR'
+  ?'هنوز وضعیت ماژول تغییر نکرده است. فقط در صورت پذیرش این احتمال، تأیید کنید.'
+  :'No module state has changed yet. Confirm only if you accept the possible consequences.';
+const invalidConfirmationNotice=lang==='fa_IR'
+  ?'این درخواست تأیید دیگر معتبر نیست. از کارت ماژول، درخواست جدیدی آغاز کنید.'
+  :'This disable confirmation is no longer valid. Start a new request from the module card.';
 const home=new URL('admin.php?page=persian-gravityforms',runtime.admin_url).href;
 const submit='form[action$="admin-post.php"]';
 function check(ok,msg){if(!ok)throw Error('MODULE_DECISION: '+msg);}
@@ -112,7 +122,10 @@ try {
         for(const name of ['Iranian Rial / Toman','ریال و تومان ایران','IRR','IRT']){
           check(body.includes(name),'Missing bilingual identity or description '+name);
         }
-        check(body.includes(lang==='fa_IR'?'هنوز وضعیت ماژول تغییر نکرده است':'No module state has changed yet'),'Missing explicit no-change statement');
+        check(await decision.locator('h2').innerText()===decisionTitle,'Translated decision heading changed');
+        check(body.includes(decisionRisk),'Translated decision risk warning missing or changed');
+        check(body.includes(decisionPending),'Translated no-state-change warning missing or changed');
+        record.checks.push('gettext_decision_heading_risk_pending_actions');
         check((await page.locator('.pgr-module-decision').boundingBox()).y <
           (await page.locator('.pgr-module-grid').boundingBox()).y,'Decision appears below module grid');
         const layout=await measure(page);
@@ -139,8 +152,10 @@ try {
           check(forged?.ok(),'Forged GET request failed to reach Overview');
           check(await page.locator('.pgr-module-decision').count()===0,'Forged/mismatched GET produced actionable decision');
           check(await page.locator('input[name="confirm"][value="1"]').count()===0,'Forged GET exposed a confirmed POST');
+          check((await page.locator('.notice-warning').first().innerText()).includes(invalidConfirmationNotice),
+            'Invalid-confirmation notice is not correctly localized');
         }
-        record.checks.push('forged_get_rejected','mismatched_get_rejected');
+        record.checks.push('forged_get_rejected','mismatched_get_rejected','gettext_invalid_confirmation_notice');
         // Revisit genuine link, then exercise a non-mutating cancel.
         await page.goto(url.href,{waitUntil:'domcontentloaded'});
         check(await decision.count()===1,'Valid first-stage ticket no longer displayed');
