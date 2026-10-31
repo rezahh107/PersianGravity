@@ -1,0 +1,94 @@
+{
+  "exact_head": "298e5f7eda194f6af0c3da7a9f7438c291bf4641",
+  "locale": "en_US",
+  "phase": "unused",
+  "status": "CAPTURED",
+  "runtime": {
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "chromium": "140.0.7339.16",
+    "wordpress": "6.8.3"
+  },
+  "cases": [
+    {
+      "width": 1280,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-unused-en_US-1280-normal.jpg",
+        "decision-unused-en_US-1280-disabled.jpg"
+      ],
+      "checks": [
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "normal": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 222.484375,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "status": "PASS",
+      "images": [
+        "decision-unused-en_US-390-normal.jpg",
+        "decision-unused-en_US-390-disabled.jpg"
+      ],
+      "checks": [
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "normal": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 351.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      }
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "status": "PASS",
+      "images": [
+        "decision-unused-en_US-320-normal.jpg",
+        "decision-unused-en_US-320-disabled.jpg"
+      ],
+      "checks": [
+        "unused_direct_disabled",
+        "national_id_restored"
+      ],
+      "normal": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 396.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      }
+    }
+  ],
+  "limits": [
+    "Automated focus and layout probes are not screen-reader or human usability acceptance"
+  ]
+}
