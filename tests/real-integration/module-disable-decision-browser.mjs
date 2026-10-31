@@ -152,8 +152,9 @@ try {
           check(forged?.ok(),'Forged GET request failed to reach Overview');
           check(await page.locator('.pgr-module-decision').count()===0,'Forged/mismatched GET produced actionable decision');
           check(await page.locator('input[name="confirm"][value="1"]').count()===0,'Forged GET exposed a confirmed POST');
-          check((await page.locator('.notice-warning').first().innerText()).includes(invalidConfirmationNotice),
-            'Invalid-confirmation notice is not correctly localized');
+          const ownNotices=await page.locator('.wrap.pgr-admin > .notice.notice-warning').allInnerTexts();
+          check(ownNotices.length===1 && ownNotices[0].includes(invalidConfirmationNotice),
+            'Own-plugin invalid-confirmation notice is not correctly localized: '+JSON.stringify(ownNotices));
         }
         record.checks.push('forged_get_rejected','mismatched_get_rejected','gettext_invalid_confirmation_notice');
         // Revisit genuine link, then exercise a non-mutating cancel.
