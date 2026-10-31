@@ -95,12 +95,12 @@ final class PGR_Product_Admin {
 			'pgr-admin-profiles',
 			'PGRProfileAdmin',
 			array(
-				'outputKey'     => __( 'Output key', 'persian-gravityforms' ),
-				'outputLabel'   => __( 'Output label', 'persian-gravityforms' ),
-				'required'      => __( 'Required', 'persian-gravityforms' ),
-				'moveUp'        => __( 'Move up', 'persian-gravityforms' ),
-				'moveDown'      => __( 'Move down', 'persian-gravityforms' ),
-				'remove'        => __( 'Remove', 'persian-gravityforms' ),
+				'outputKey'   => __( 'Output key', 'persian-gravityforms' ),
+				'outputLabel' => __( 'Output label', 'persian-gravityforms' ),
+				'required'    => __( 'Required', 'persian-gravityforms' ),
+				'moveUp'      => __( 'Move up', 'persian-gravityforms' ),
+				'moveDown'    => __( 'Move down', 'persian-gravityforms' ),
+				'remove'      => __( 'Remove', 'persian-gravityforms' ),
 			)
 		);
 	}
