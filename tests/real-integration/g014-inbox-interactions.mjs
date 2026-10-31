@@ -9,6 +9,13 @@ export function requireG014RawDueTimestamp(rawDueFilter) {
   return target;
 }
 
+// Gravity Flow 3.1.0's genuine Inbox Quick Filter listens to keyup, not input.
+// Playwright fill() does not send keyup; preserve native keyboard semantics.
+export async function enterNativeQuickFilter(search, target) {
+  await search.click();
+  await search.pressSequentially(target);
+}
+
 export async function exerciseNativeInboxInteractions(page, rawDueFilter, expectedEntryId) {
   const scope='[data-js="gflow-inbox"]';
   const header=id=>page.locator(`${scope} .ag-header-cell[col-id="${id}"]`).first();
@@ -77,7 +84,7 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
   // Use the unique raw due-date value from WU008's authentic beta fixture.
   const target=requireG014RawDueTimestamp(rawDueFilter);
   if(!Number.isInteger(Number(expectedEntryId))||Number(expectedEntryId)<1)throw Error('Missing beta fixture Entry ID');
-  await search.fill(target);
+  await enterNativeQuickFilter(search, target);
   await page.waitForFunction(t=>{
     const nodes=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')];
     return nodes.length===1&&Number(nodes[0].getAttribute('row-id'))===Number(t);
