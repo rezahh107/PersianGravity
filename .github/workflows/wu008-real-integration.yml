@@ -143,6 +143,7 @@ jobs:
           node --check tests/real-integration/vazir-coexistence-browser.mjs
           node --check tests/real-integration/vazir-evidence-check.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
+          node --test tests/real-integration/vazir-evidence-check.test.mjs
           php -l tests/real-integration/module-disable-decision-fixture.php
           node --check tests/real-integration/module-disable-decision-browser.mjs
           node --check tests/real-integration/module-disable-decision-summary.mjs
@@ -1315,52 +1316,151 @@ jobs:
         run: |
           set -euo pipefail
           node --input-type=module <<'G013_EVIDENCE_GATE'
+          // G013_EVIDENCE_GATE_BEGIN
           import fs from 'node:fs';
           import path from 'node:path';
-          const dir=process.env.WU008_VAZIR_EVIDENCE, head=process.env.WU008_VAZIR_HEAD;
-          if(!/^[a-f0-9]{40}$/.test(head||'')||!fs.existsSync(dir)||
-            !fs.lstatSync(dir).isDirectory()||fs.lstatSync(dir).isSymbolicLink())
-            throw Error('G013 publisher: missing exact Head or safe evidence root');
+          const dir=process.env.WU008_VAZIR_EVIDENCE,head=process.env.WU008_VAZIR_HEAD;
+          const fail=m=>{throw Error('G013_PUBLISH_REJECTED: '+m);};
+          const ok=(yes,m)=>{if(!yes)fail(m);};
+          const sha='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5';
           const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
-          const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
-          for(const p of profiles){
-            required.add(p+'.json');
-            for(const width of [1280,390])for(const screen of ['overview','gravity-form','gravityview','gravityperks'])
-              required.add(p+'-'+screen+'-'+width+'.jpg');
+          const surfaces=['overview','settings','scanner','system-status','gravity-form','gravity-flow','flow-frontend','gravityview','gravityperks'];
+          const screens=['overview','gravity-form','gravityview','gravityperks'];
+          const widths=[1280,390],json=n=>JSON.parse(fs.readFileSync(path.join(dir,n),'utf8'));
+          const finite=n=>typeof n==='number'&&Number.isFinite(n);
+          const identity=p=>p.name+'@'+p.width;
+          const classification=(b,v,w)=>v>w?(b>w?'PRESENT_IN_BOTH':'WITH_VAZIR_ONLY_OVERFLOW'):
+            b>w?'PREEXISTING_BASELINE_ONLY':'NO_DOCUMENT_OVERFLOW_OBSERVED';
+          ok(/^[a-f0-9]{40}$/.test(head||'')&&dir&&fs.existsSync(dir)&&
+            fs.lstatSync(dir).isDirectory()&&!fs.lstatSync(dir).isSymbolicLink(),'unsafe exact Head/root');
+          const release=json('official-release.json'),settings=json('vazir-settings.json');
+          ok(release.status==='PASS'&&release.version==='1.5.0'&&release.release_tag==='v1.5.0'&&
+            release.entrypoint==='vazir-font-wp/vazir-font-wp.php'&&release.zip_sha256===sha,'release identity');
+          ok(settings.version==='1.5.0'&&settings.active===true&&
+            ['enable_frontend','enable_admin','enable_gravity_forms'].every(k=>settings.options?.[k]===true)&&
+            Array.isArray(settings.options?.font_weights)&&
+            ['300','400','500','700','900'].every(w=>settings.options.font_weights.includes(w)),'settings');
+          const docs=new Map(),expectedKeys=new Set(surfaces.flatMap(p=>widths.map(w=>p+'@'+w)));
+          for(const key of profiles){
+            const d=json(key+'.json'),withFont=key.startsWith('with-vazir'),locale=key.endsWith('fa_IR')?'fa_IR':'en_US';
+            ok(d.schema==='g013-vazir-coexistence-v1'&&d.status==='PASS'&&d.exact_head===head&&
+              d.profile===(withFont?'WITH_VAZIR':'BASELINE')&&d.locale===locale&&
+              (withFont?(d.vazir_version==='1.5.0'&&d.expected_vazir_sha256===sha):
+                (d.vazir_version===null&&d.expected_vazir_sha256===null))&&
+              typeof d.persiangravity_version==='string'&&
+              typeof d.environment?.chromium==='string'&&
+              Array.isArray(d.pages)&&d.pages.length===18,'profile identity '+key);
+            const visited=new Set();
+            for(const p of d.pages){
+              const id=identity(p),screen=screens.includes(p.name)?key+'-'+p.name+'-'+p.width+'.jpg':null;
+              ok(expectedKeys.has(id)&&!visited.has(id)&&p.viewport===p.width&&
+                finite(p.document_width)&&p.document_width>=1&&p.document_width<=200000&&
+                ['rtl','ltr'].includes(p.direction)&&
+                typeof p.body?.family==='string'&&p.body.family.length>0&&
+                ['rtl','ltr'].includes(p.body.direction)&&finite(p.body.width)&&finite(p.body.height)&&
+                p.body.width>=0&&p.body.height>=0&&
+                Array.isArray(p.font_network)&&Array.isArray(p.page_errors)&&Array.isArray(p.faces)&&
+                p.font_network.every(x=>(x.status==='FAILED'||Number.isInteger(x.status)&&x.status>=100&&x.status<=599)&&
+                  typeof x.url==='string'&&/^[a-z0-9_.-]+\.woff2$/i.test(x.url))&&
+                p.page_errors.every(x=>typeof x==='string'&&x.length<=170)&&
+                p.faces.every(x=>typeof x.family==='string'&&typeof x.weight==='string'&&
+                  ['unloaded','loading','loaded','error'].includes(x.status))&&
+                (p.image||null)===screen,'invalid case '+key+'/'+id);
+              if(!withFont)ok(!p.faces.some(x=>/vazirmatn/i.test(x.family)&&x.status==='loaded')&&
+                !p.font_network.some(x=>x.status===200)&&
+                ![p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family)),
+                'contaminated BASELINE '+key+'/'+id);
+              visited.add(id);
+            }
+            ok(visited.size===18,'missing cases '+key);
+            if(withFont&&locale==='fa_IR')for(const w of widths){
+              const list=d.pages.filter(p=>p.width===w);
+              ok(list.some(p=>p.faces.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded'))&&
+                list.some(p=>p.font_network.some(f=>f.status===200))&&
+                list.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(f=>f&&/vazirmatn/i.test(f.family))),
+                'missing required font evidence '+key+'/'+w);
+            }
+            docs.set(key,d);
           }
-          const actual=fs.readdirSync(dir,{withFileTypes:true});
-          if(actual.length!==required.size)throw Error('G013 publisher: missing or extra profile files');
-          const read=(name)=>JSON.parse(fs.readFileSync(path.join(dir,name),'utf8'));
-          const sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
-          const release=read('official-release.json');
-          if(release.status!=='PASS'||release.version!=='1.5.0'||
-            release.zip_sha256!=='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5')
-            throw Error('G013 publisher: official Vazir identity mismatch');
-          const settings=read('vazir-settings.json');
-          if(settings.version!=='1.5.0'||settings.active!==true||
-            !['enable_frontend','enable_admin','enable_gravity_forms'].every(k=>settings.options?.[k]===true))
-            throw Error('G013 publisher: real plugin settings not verified');
-          const compare=read('comparison.json');
-          if(compare.status!=='PASS'||compare.exact_head!==head||compare.profiles.length!==4||
-            compare.comparisons?.length!==36)throw Error('G013 publisher: incomplete comparison');
-          for(const e of actual){
-            if(!required.has(e.name)||!e.isFile()||e.isSymbolicLink())throw Error('G013 publisher: bad file '+e.name);
-            const size=fs.statSync(path.join(dir,e.name)).size;
-            if(size<50||size>4000000)throw Error('G013 publisher: bad size '+e.name);
-            if(e.name.endsWith('.jpg')){
-              const b=fs.readFileSync(path.join(dir,e.name));
-              if(b[0]!==255||b[1]!==216||b.at(-2)!==255||b.at(-1)!==217||
-                !sheet.includes(']('+e.name+')'))throw Error('G013 publisher: bad/unlinked JPEG '+e.name);
+          ok(new Set([...docs.values()].map(d=>d.persiangravity_version)).size===1,'runtime drift');
+          const report=json('comparison.json');
+          ok(report.schema==='g013-vazir-compare-v1'&&report.status==='PASS'&&report.exact_head===head&&
+            report.vazir_version==='1.5.0'&&report.vazir_sha256===sha&&
+            JSON.stringify(report.profiles)===JSON.stringify(profiles)&&
+            Array.isArray(report.comparisons)&&report.comparisons.length===36,'comparison identity');
+          const comparisons=new Map();
+          for(const c of report.comparisons){
+            ok(['fa_IR','en_US'].includes(c.locale)&&surfaces.includes(c.page)&&widths.includes(c.width),
+              'unknown comparison');
+            const k=c.locale+'@'+c.page+'@'+c.width;
+            ok(!comparisons.has(k),'duplicate comparison '+k);comparisons.set(k,c);
+          }
+          for(const locale of ['fa_IR','en_US']){
+            const b=docs.get('baseline-'+locale),v=docs.get('with-vazir-'+locale);
+            const mapped=new Map(v.pages.map(p=>[identity(p),p]));
+            for(const p of b.pages){
+              const paired=mapped.get(identity(p)),k=locale+'@'+p.name+'@'+p.width;
+              ok(paired&&comparisons.has(k),'missing pair '+k);
+              const expected={locale,page:p.name,width:p.width,
+                baseline_document_width:p.document_width,with_vazir_document_width:paired.document_width,
+                baseline_family:p.body.family,with_vazir_family:paired.body.family,
+                classification:classification(p.document_width,paired.document_width,p.width)};
+              ok(JSON.stringify(comparisons.get(k))===JSON.stringify(expected),
+                'fabricated/inconsistent paired result '+k);
             }
           }
-          for(const p of profiles){
-            const d=read(p+'.json');
-            if(d.status!=='PASS'||d.exact_head!==head||d.pages?.length!==18||
-              d.profile!==(p.startsWith('baseline')?'BASELINE':'WITH_VAZIR')||
-              d.locale!==p.substring(p.indexOf('-')+1))
-              throw Error('G013 publisher: wrong profile identity '+p);
+          function jpegDimensions(bytes,name) {
+            ok(bytes.length>=100 && bytes[0]===255 && bytes[1]===216, 'corrupt JPEG SOI '+name);
+            let pos=2,frame=null,scan=false,ended=false;
+            while(pos<bytes.length) {
+              ok(bytes[pos]===255, 'corrupt JPEG marker '+name);
+              while(bytes[pos]===255)pos++;
+              const marker=bytes[pos++];
+              if(marker===0xd9){ended=true;break;}
+              if(marker===0x01 || marker>=0xd0&&marker<=0xd7)continue;
+              ok(pos+2<=bytes.length,'truncated JPEG segment '+name);
+              const length=bytes.readUInt16BE(pos);
+              ok(length>=2 && pos+length<=bytes.length,'bad JPEG segment '+name);
+              if([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+                ok(length>=8 && !frame,'bad JPEG frame '+name);
+                frame={height:bytes.readUInt16BE(pos+3),width:bytes.readUInt16BE(pos+5)};
+                ok(frame.height>0 && frame.width>0,'empty JPEG frame '+name);
+              }
+              pos+=length;
+              if(marker===0xda) {
+                scan=true;
+                while(pos<bytes.length-1){
+                  if(bytes[pos]!==255){pos++;continue;}
+                  const next=bytes[pos+1];
+                  if(next===0 || next>=0xd0&&next<=0xd7){pos+=2;continue;}
+                  if(next===255){pos++;continue;}
+                  break;
+                }
+              }
+            }
+            ok(frame && scan && ended && pos===bytes.length,'incomplete/corrupt JPEG '+name);
+            return frame;
           }
-          console.log('G013_PUBLISH_GATE_PASS exact-Head, 4 real profiles, 36 compared pages, 32 JPEG');
+          const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
+          for(const key of profiles){required.add(key+'.json');
+            for(const w of widths)for(const name of screens)required.add(key+'-'+name+'-'+w+'.jpg');
+          }
+          const actual=fs.readdirSync(dir,{withFileTypes:true}),sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          const links=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/g)].map(x=>x[1]);
+          ok(actual.length===required.size&&links.length===32&&new Set(links).size===32,'file/link coverage');
+          for(const entry of actual){
+            ok(required.has(entry.name)&&entry.isFile()&&!entry.isSymbolicLink(),'unsafe artifact '+entry.name);
+            const data=fs.readFileSync(path.join(dir,entry.name));
+            ok(data.length>=50&&data.length<=4000000,'file size '+entry.name);
+            if(entry.name.endsWith('.jpg')){
+              ok(links.includes(entry.name),'unlinked JPEG '+entry.name);
+              const dimensions=jpegDimensions(data,entry.name);
+              const viewport=Number(entry.name.match(/-(1280|390)\.jpg$/)?.[1]);
+              ok(dimensions.width>=viewport&&dimensions.height>0,'JPEG geometry '+entry.name);
+            }
+          }
+          console.log('G013_PUBLISH_GATE_PASS exact Head, 72 cases, 36 recomputed comparisons, 32 JPEGs');
+          // G013_EVIDENCE_GATE_END
           G013_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links

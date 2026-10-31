@@ -1,3 +1,4 @@
+import { observePageEvents } from './vazir-page-events.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
@@ -53,17 +54,6 @@ try {
   for (const width of [1280,390]) {
     const context = await browser.newContext({viewport:{width,height:width===1280?900:844},deviceScaleFactor:1});
     const page = await context.newPage();
-    const errors = [];
-    const fontRequests = [];
-    page.on('pageerror', e => errors.push(String(e).slice(0,170)));
-    page.on('requestfailed', req => {
-      if (/vazirmatn.*\.woff2/i.test(req.url())) fontRequests.push({status:'FAILED',url:'vazirmatn.woff2'});
-    });
-    page.on('response', res => {
-      if (/\/vazir-font-wp\/.*\.woff2(?:\?|$)/i.test(res.url())) {
-        fontRequests.push({status:res.status(),url:res.url().split('/').pop().split('?')[0]});
-      }
-    });
     const response = await page.goto(manifest.login_url,{waitUntil:'domcontentloaded'});
     if (!response?.ok()) throw Error('Real WordPress login page inaccessible');
     await page.locator('#user_login').fill('runtime_admin');
@@ -71,6 +61,7 @@ try {
     await Promise.all([page.waitForURL(u=>!u.pathname.includes('wp-login.php')),
       page.locator('#wp-submit').click()]);
     for (const spec of pages) {
+      const events=observePageEvents(page);
       const call = await page.goto(spec.url,{waitUntil:'domcontentloaded'});
       if (!call?.ok()) throw Error('Authenticated page unavailable: ' + spec.name + ' ' + call?.status());
       await page.locator(spec.selector).first().waitFor({state:'attached',timeout:12000});
@@ -123,36 +114,66 @@ try {
         const faces=Array.from(document.fonts).filter(x=>/vazirmatn/i.test(x.family))
           .map(x=>({family:x.family,weight:x.weight,status:x.status}));
         const el=document.documentElement;
-        return {direction:getComputedStyle(el).direction,viewport:innerWidth,
+        const visibleInbox=['[data-js="gflow-inbox"]','.gravityflow-inbox','.ag-root-wrapper',
+          '.wrap','#wpbody-content'].map(selector=>{
+          const node=document.querySelector(selector);
+          if(!node)return null;
+          const rect=node.getBoundingClientRect();
+          if(!rect.width||!rect.height)return null;
+          const s=getComputedStyle(node);
+          return {selector,direction:s.direction,css_direction:s.direction,
+            rect:{x:Math.round(rect.x),y:Math.round(rect.y),
+              width:Math.round(rect.width),height:Math.round(rect.height)},
+            scroll_width:node.scrollWidth,client_width:node.clientWidth};
+        }).filter(Boolean);
+        const rtl_diagnostic={
+          html:{lang:el.lang,dir_attr:el.getAttribute('dir'),computed:getComputedStyle(el).direction},
+          body:{dir_attr:document.body?.getAttribute('dir'),computed:getComputedStyle(document.body).direction},
+          visible_inbox:visibleInbox,
+          loaded_stylesheets:[...document.styleSheets].map(sheet=>sheet.href)
+            .filter(href=>typeof href==='string' && /gravity|persian|vazir|wp-admin/i.test(href))
+            .map(href=>{try{return new URL(href).pathname.split('/').slice(-4).join('/');}catch{return 'unknown';}}),
+          viewport:{width:innerWidth,height:innerHeight},
+          document_width:el.scrollWidth,body_width:document.body?.scrollWidth||0,
+        };
+        return {rtl_diagnostic,direction:getComputedStyle(el).direction,viewport:innerWidth,
           document_width:el.scrollWidth,body:css('body'),headline:css('h1'),
           label:css('.gfield_label, .pgr-panel h2, .pgr-module-card h3'),
           input:css('input:not([type=hidden]), textarea, select'),
           button:css('button, input[type=submit]'),icon:css('.dashicons, .dashicons-before'),
           faces,active_control:document.activeElement?.tagName||null};
       });
+      const observed = {name:spec.name,width, ...data,interaction,
+        ...events.snapshot()};
+      // Preserve the authentic failing assertion, but leave sufficient page-
+      // specific evidence to determine whether document and visible UI differ.
       if (locale==='fa_IR' && data.direction!=='rtl' && spec.name!=='gravity-form') {
+        const filename='rtl-diagnostic-'+prefix+'-'+spec.name+'-'+width+'.jpg';
+        await page.screenshot({path:path.join(root,filename),type:'jpeg',quality:76,fullPage:true});
+        observed.rtl_diagnostic.screenshot=filename;
+        result.pages.push(observed);
+        console.error('G013_RTL_DIAGNOSTIC '+JSON.stringify({profile,locale,surface:spec.name,width,diagnostic:observed.rtl_diagnostic}));
         throw Error('Expected authentic RTL for ' + spec.name);
       }
-      const observed = {name:spec.name,width, ...data,interaction};
       if (['overview','gravity-form','gravityview','gravityperks'].includes(spec.name)) {
         const image=prefix + '-' + spec.name + '-' + width + '.jpg';
         await page.screenshot({path:path.join(root,image),type:'jpeg',quality:76,fullPage:true});
         observed.image=image;
       }
       result.pages.push(observed);
+      events.stop();
     }
-    result.pages[result.pages.length-1].font_network=fontRequests;
-    result.pages[result.pages.length-1].page_errors=errors;
     await context.close();
   }
-  const loaded=result.pages.some(p=>p.faces?.some(x=>x.status==='loaded'));
-  const delivered=result.pages.some(p=>p.font_network?.some(x=>x.status===200));
-  const fontUsed=result.pages.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(x=>x && /vazirmatn/i.test(x.family)));
-  if (profile==='WITH_VAZIR' && locale==='fa_IR' && (!loaded || !delivered || !fontUsed)) {
-    throw Error('Real Vazirmatn network, FontFace or computed typography was not observed');
-  }
-  if (profile==='BASELINE' && (loaded || delivered || fontUsed)) {
-    throw Error('BASELINE is contaminated by Vazir typography');
+  for (const width of [1280,390]) {
+    const cases=result.pages.filter(p=>p.width===width);
+    const loaded=cases.some(p=>p.faces?.some(x=>/vazirmatn/i.test(x.family) && x.status==='loaded'));
+    const delivered=cases.some(p=>p.font_network?.some(x=>x.status===200));
+    const fontUsed=cases.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(x=>x && /vazirmatn/i.test(x.family)));
+    if (profile==='WITH_VAZIR' && locale==='fa_IR' && (!loaded || !delivered || !fontUsed))
+      throw Error('Required independent real Vazirmatn observation missing at '+width);
+    if (profile==='BASELINE' && (loaded || delivered || fontUsed))
+      throw Error('BASELINE contaminated at '+width);
   }
   if (result.pages.length!==18) throw Error('Incomplete actual browser case matrix');
   result.status='PASS';
