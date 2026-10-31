@@ -143,6 +143,8 @@ jobs:
           node --check tests/real-integration/vazir-coexistence-browser.mjs
           node --check tests/real-integration/g013-rtl-admin-diagnostic.mjs
           node --check tests/real-integration/g013-flow-source-contract.mjs
+          node --check tests/real-integration/g013-flow-grid-runtime-probe.mjs
+          php -l tests/real-integration/g013-grid-rtl-probe.mu.php
           node --check tests/real-integration/vazir-evidence-check.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
           node --test tests/real-integration/vazir-evidence-check.test.mjs
@@ -899,6 +901,27 @@ jobs:
           restore_decision_fixture
           trap - EXIT
           node tests/real-integration/module-disable-decision-summary.mjs
+
+      - name: G013 disposable supported shared-config filter before Grid initialization
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          plugin="$WU008_WP_PATH/wp-content/mu-plugins/g013-grid-rtl-probe.php"
+          mkdir -p "$(dirname "$plugin")"
+          cp tests/real-integration/g013-grid-rtl-probe.mu.php "$plugin"
+          cleanup_grid_filter() {
+            rm -f "$plugin"
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH" >/dev/null 2>&1 || true
+          }
+          trap cleanup_grid_filter EXIT
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          node tests/real-integration/g013-flow-grid-runtime-probe.mjs fa_IR
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          node tests/real-integration/g013-flow-grid-runtime-probe.mjs en_US
+          cleanup_grid_filter
+          trap - EXIT
+          test ! -e "$plugin"
 
       - name: G013 verify and compare real released Vazir after unchanged WU008 BASELINE
         shell: bash
