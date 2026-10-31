@@ -125,10 +125,10 @@ expectReject('bad Vazir settings',f=>{
   const d=read(f,'vazir-settings.json');d.options.enable_admin=false;
   write(f,'vazir-settings.json',d);
 });
-expectReject('corrupt JPEG segment',f=>{
+expectReject('corrupt JPEG missing EOI boundary',f=>{
   const filename=PROFILES[0]+'-overview-1280.jpg';
   const b=fs.readFileSync(path.join(f.dir,filename));
-  fs.writeFileSync(path.join(f.dir,filename),Buffer.concat([b.subarray(0,20),b.subarray(30)]));
+  fs.writeFileSync(path.join(f.dir,filename),b.subarray(0,b.length-2));
 });
 expectReject('desktop success cannot substitute for absent mobile font',f=>{
   const key='with-vazir-fa_IR',d=read(f,key+'.json');
