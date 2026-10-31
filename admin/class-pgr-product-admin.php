@@ -101,7 +101,6 @@ final class PGR_Product_Admin {
 				'moveUp'        => __( 'Move up', 'persian-gravityforms' ),
 				'moveDown'      => __( 'Move down', 'persian-gravityforms' ),
 				'remove'        => __( 'Remove', 'persian-gravityforms' ),
-				'deleteConfirm' => __( 'Deleting this profile may leave existing Structured Scanner fields with an unavailable profile. Continue?', 'persian-gravityforms' ),
 			)
 		);
 	}
