@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { settingsNavigationUrl, classifyInboxReadiness } from './g014-browser-contract.mjs';
-import { requireG014RawDueTimestamp } from './g014-inbox-interactions.mjs';
+import { requireG014RawDueTimestamp, enterNativeQuickFilter } from './g014-inbox-interactions.mjs';
 
 test('historical URL object is rejected; corrected same-origin navigation is a string', () => {
   const adminUrl = 'http://127.0.0.1:8080/wp-admin/';
@@ -74,4 +74,14 @@ test('G014 production raw-due-date validator rejects malformed and non-ASCII evi
       'Expected fail-closed for '+String(value),
     );
   }
+});
+
+test('G014 production Quick Filter driver sends native keyboard events in order', async () => {
+  const observed = [];
+  const search = {
+    async click() { observed.push('click'); },
+    async pressSequentially(value) { observed.push(['pressSequentially', value]); },
+  };
+  await enterNativeQuickFilter(search, '1900275300');
+  assert.deepEqual(observed, ['click', ['pressSequentially', '1900275300']]);
 });
