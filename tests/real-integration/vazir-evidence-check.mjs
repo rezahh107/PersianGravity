@@ -3,7 +3,7 @@ import path from 'node:path';
 const dir=process.argv[2];
 const head=process.env.WU008_PGR_SHA || process.env.WU008_EVIDENCE_EXPECTED_HEAD;
 if (!dir || !head || !/^[0-9a-f]{40}$/.test(head)) throw Error('G013 exact Head and evidence path required');
-const required=new Set(['README.md','comparison.json']);
+const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
 for(const profile of ['baseline','with-vazir']) for(const locale of ['fa_IR','en_US']) {
   const key=profile+'-'+locale;
   required.add(key+'.json');
@@ -27,6 +27,14 @@ function inspect(){
     }
   }
   const sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+  const release=readJson('official-release.json');
+  const settings=readJson('vazir-settings.json');
+  if(release.status!=='PASS'||release.version!=='1.5.0'||
+     release.zip_sha256!=='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5')
+    fail('verified release provenance');
+  if(settings.version!=='1.5.0'||settings.active!==true||
+     !['enable_frontend','enable_admin','enable_gravity_forms'].every(key=>settings.options?.[key]===true))
+    fail('authentic Vazir settings');
   const report=readJson('comparison.json');
   if(report.schema!=='g013-vazir-compare-v1'||report.exact_head!==head||
       report.status!=='PASS'||report.profiles?.length!==4)fail('comparison identity');
