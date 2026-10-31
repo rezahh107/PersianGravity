@@ -1,5 +1,14 @@
 // Bounded browser-only acceptance of native Gravity Flow/AG Grid interaction
 // and saved-state ownership. Requires the separate, authentically populated fixture.
+// This is the same validation boundary used by the real G014 interaction runner.
+export function requireG014RawDueTimestamp(rawDueFilter) {
+  const target=typeof rawDueFilter==='number'&&Number.isSafeInteger(rawDueFilter)
+    ? String(rawDueFilter) : rawDueFilter;
+  if(typeof target!=='string'||!/^[0-9]{10}$/.test(target))
+    throw Error('Missing verified raw due-date filter fixture');
+  return target;
+}
+
 export async function exerciseNativeInboxInteractions(page, rawDueFilter, expectedEntryId) {
   const scope='[data-js="gflow-inbox"]';
   const header=id=>page.locator(`${scope} .ag-header-cell[col-id="${id}"]`).first();
@@ -66,8 +75,7 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
   await search.waitFor({timeout:10000});
   // Search a real native row ID; no synthetic text renderer or extra bindings.
   // Use the unique raw due-date value from WU008's authentic beta fixture.
-  const target=String(rawDueFilter);
-  if(!/^\\d{10}$/.test(target))throw Error('Missing verified raw due-date filter fixture');
+  const target=requireG014RawDueTimestamp(rawDueFilter);
   if(!Number.isInteger(Number(expectedEntryId))||Number(expectedEntryId)<1)throw Error('Missing beta fixture Entry ID');
   await search.fill(target);
   await page.waitForFunction(t=>{
