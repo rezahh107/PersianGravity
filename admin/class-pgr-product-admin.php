@@ -38,18 +38,20 @@ final class PGR_Product_Admin {
 
 	/** Register the canonical product menu. */
 	public function add_menu() {
-		$this->remember(
-			add_menu_page(
-				__( 'Persian Gravity', 'persian-gravityforms' ),
-				__( 'Persian Gravity', 'persian-gravityforms' ),
-				PGR_Admin::CAPABILITY,
-				PGR_Admin::MENU_SLUG,
-				array( $this, 'render_overview_page' ),
-				'dashicons-forms',
-				58
-			),
-			'module-manager'
+		$overview_hook = add_menu_page(
+			__( 'Persian Gravity', 'persian-gravityforms' ),
+			__( 'Persian Gravity', 'persian-gravityforms' ),
+			PGR_Admin::CAPABILITY,
+			PGR_Admin::MENU_SLUG,
+			array( $this, 'render_overview_page' ),
+			'dashicons-forms',
+			58
 		);
+		$this->remember( $overview_hook, 'module-manager' );
+		if ( is_string( $overview_hook ) && '' !== $overview_hook ) {
+			// WordPress runs this screen-specific load hook before admin-header.php.
+			add_action( 'load-' . $overview_hook, array( $this, 'handle_overview_cancel' ) );
+		}
 
 		$pages = array(
 			array( 'Overview', PGR_Admin::MENU_SLUG, 'render_overview_page', 'module-manager' ),
@@ -104,24 +106,34 @@ final class PGR_Product_Admin {
 		);
 	}
 
+	/**
+	 * Handle the non-mutating Cancel link before WordPress sends the admin header.
+	 * Only the canonical Overview page's load-{page_hook} calls this callback.
+	 */
+	public function handle_overview_cancel() {
+		if ( ! current_user_can( PGR_Admin::CAPABILITY ) ) {
+			return;
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- A GET Cancel can only revoke the current user's matching ephemeral intent.
+		$cancel_token = $this->query_key( 'pgr_cancel_confirm' );
+		if ( '' === $cancel_token ) {
+			return;
+		}
+		$pending = get_transient( $this->disable_confirmation_key() );
+		if ( is_array( $pending ) &&
+			$this->matches_disable_confirmation( $pending, $pending['module_id'] ?? '', $cancel_token ) ) {
+			delete_transient( $this->disable_confirmation_key() );
+		}
+		wp_safe_redirect( admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) );
+		exit;
+	}
+
 	/** Render Overview / Module Manager. */
 	public function render_overview_page() {
 		if ( ! current_user_can( PGR_Admin::CAPABILITY ) ) {
 			return;
 		}
 
-		// Cancel is a GET link that revokes only ephemeral UI intent; it never
-		// changes persisted module state or trusts a query as usage evidence.
-		$cancel_token = $this->query_key( 'pgr_cancel_confirm' );
-		if ( '' !== $cancel_token ) {
-			$pending = get_transient( $this->disable_confirmation_key() );
-			if ( is_array( $pending ) &&
-				$this->matches_disable_confirmation( $pending, $pending['module_id'] ?? '', $cancel_token ) ) {
-				delete_transient( $this->disable_confirmation_key() );
-			}
-			wp_safe_redirect( admin_url( 'admin.php?page=' . PGR_Admin::MENU_SLUG ) );
-			exit;
-		}
 		$lang     = $this->primary_language();
 		$decision = $this->pending_disable_confirmation();
 		?>
