@@ -764,3 +764,7 @@ msgstr ""
 #: admin/class-pgr-product-admin.php
 msgid "This disable confirmation is no longer valid. Start a new request from the module card."
 msgstr ""
+\n#: admin/class-pgr-admin.php\nmsgid "Gravity Flow Inbox layout"\nmsgstr ""\n
+\n#: admin/class-pgr-admin.php\nmsgid "Enable true RTL for Gravity Flow Inbox"\nmsgstr ""\n
+\n#: admin/class-pgr-admin.php\nmsgid "Enable native RTL in the admitted Gravity Flow Inbox grid. Default: off."\nmsgstr ""\n
+\n#: admin/class-pgr-admin.php\nmsgid "Qualified for Gravity Flow 3.1.0 only. Disabled: no direction override. Explicit settings from other integrations are preserved."\nmsgstr ""\n
