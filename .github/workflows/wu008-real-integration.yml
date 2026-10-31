@@ -142,6 +142,9 @@ jobs:
           php -l tests/real-integration/module-disable-decision-fixture.php
           node --check tests/real-integration/module-disable-decision-browser.mjs
           node --check tests/real-integration/module-disable-decision-summary.mjs
+          php -l tests/real-integration/scanner-profile-delete-fixture.php
+          node --check tests/real-integration/scanner-profile-delete-browser.mjs
+          node --check tests/real-integration/scanner-profile-delete-summary.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
           node --check tests/real-integration/admin-ui-evidence-contact-sheet.mjs
