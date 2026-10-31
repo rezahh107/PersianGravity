@@ -246,15 +246,14 @@ final class PGR_Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		$action = isset( $_GET['action'] ) && is_string( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
-		$profile_id = isset( $_GET['profile'] ) ? sanitize_key( wp_unslash( $_GET['profile'] ) ) : '';
+		$profile_id = isset( $_GET['profile'] ) && is_string( $_GET['profile'] ) ? sanitize_key( wp_unslash( $_GET['profile'] ) ) : '';
 
 		if ( 'new' === $action ) {
 			$this->render_profile_form( null );
 			return;
 		}
-
 
 		if ( 'delete' === $action ) {
 			$profile = '' !== $profile_id ? PGR_Scanner_Profile_Registry::get( $profile_id ) : null;
@@ -367,14 +366,18 @@ final class PGR_Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Profile-bound nonce verified below before any registry mutation.
-		$profile_id = isset( $_POST['profile_id'] ) && is_string( $_POST['profile_id'] ) ? wp_unslash( $_POST['profile_id'] ) : '';
+		$profile_id = isset( $_POST['profile_id'] ) && is_string( $_POST['profile_id'] )
+			? wp_unslash( $_POST['profile_id'] )
+			: '';
 		if ( '' === $profile_id || sanitize_key( $profile_id ) !== $profile_id ) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
 		}
 
 		$this->assert_profile_write_access( 'pgr_scanner_profile_delete_' . $profile_id );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by profile-specific assert_profile_write_access() above.
-		$confirmed_label = isset( $_POST['confirmed_profile_label'] ) && is_string( $_POST['confirmed_profile_label'] ) ? wp_unslash( $_POST['confirmed_profile_label'] ) : '';
+		$confirmed_label = isset( $_POST['confirmed_profile_label'] ) && is_string( $_POST['confirmed_profile_label'] )
+			? wp_unslash( $_POST['confirmed_profile_label'] )
+			: '';
 		$profile         = PGR_Scanner_Profile_Registry::get( $profile_id );
 		if ( null === $profile || ! empty( $profile['read_only'] ) || $profile['label'] !== $confirmed_label ) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
