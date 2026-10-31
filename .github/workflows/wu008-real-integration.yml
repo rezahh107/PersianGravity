@@ -139,6 +139,10 @@ jobs:
           php -l tests/real-integration/admin-ui-evidence-fixture.php
           php -l tests/real-integration/module-disable-cancel-early-flush.php
           node --check tests/real-integration/admin-ui-evidence-browser.mjs
+          node --check tests/real-integration/vazir-release-verify.mjs
+          node --check tests/real-integration/vazir-coexistence-browser.mjs
+          node --check tests/real-integration/vazir-evidence-check.mjs
+          node --test tests/real-integration/vazir-release-verify.test.mjs
           php -l tests/real-integration/module-disable-decision-fixture.php
           node --check tests/real-integration/module-disable-decision-browser.mjs
           node --check tests/real-integration/module-disable-decision-summary.mjs
@@ -891,6 +895,68 @@ jobs:
           trap - EXIT
           node tests/real-integration/module-disable-decision-summary.mjs
 
+      - name: G013 verify and compare real released Vazir after unchanged WU008 BASELINE
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(php "$WU008_WP_CLI" plugin is-active vazir-font-wp --path="$WU008_WP_PATH" >/dev/null 2>&1; echo $?)" = 1
+          evidence_dir="$WU008_ARTIFACT_DIR/vazir-coexistence-evidence"
+          mkdir -p "$evidence_dir"
+          cleanup_vazir() {
+            php "$WU008_WP_CLI" plugin deactivate vazir-font-wp --path="$WU008_WP_PATH" >/dev/null 2>&1 || true
+            rm -rf "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
+            php "$WU008_WP_CLI" option delete vazir_font_options --path="$WU008_WP_PATH" >/dev/null 2>&1 || true
+            php "$WU008_WP_CLI" option delete vazir_font_db_version --path="$WU008_WP_PATH" >/dev/null 2>&1 || true
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH" >/dev/null
+          }
+          trap cleanup_vazir EXIT
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          node tests/real-integration/vazir-coexistence-browser.mjs BASELINE fa_IR
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          node tests/real-integration/vazir-coexistence-browser.mjs BASELINE en_US
+
+          # Official immutable v1.5.0 artifacts: not a development checkout or mock stylesheet.
+          base=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
+          for name in vazir-font-wp-1.5.0.zip vazir-font-wp-1.5.0.zip.sha256 release-manifest.json; do
+            curl --fail --location --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 180               -o "$WU008_PACKAGE_DIR/$name" "$base/$name"
+          done
+          node tests/real-integration/vazir-release-verify.mjs "$WU008_PACKAGE_DIR"             > "$evidence_dir/official-release.json"
+          test -s "$evidence_dir/official-release.json"
+          unzip -q "$WU008_PACKAGE_DIR/vazir-font-wp-1.5.0.zip"             -d "$WU008_WP_PATH/wp-content/plugins"
+          php "$WU008_WP_CLI" plugin activate vazir-font-wp --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" plugin get vazir-font-wp --field=version --path="$WU008_WP_PATH")" = 1.5.0
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            if (!defined("VAZIR_FONT_VERSION") || VAZIR_FONT_VERSION !== "1.5.0" ||
+                !is_plugin_active("vazir-font-wp/vazir-font-wp.php")) {
+              throw new RuntimeException("Real Vazir plugin activation/version not established");
+            }
+            $options = get_option("vazir_font_options");
+            foreach (array("enable_frontend","enable_admin","enable_gravity_forms") as $key) {
+              if (!is_array($options) || ($options[$key] ?? null) !== true) {
+                throw new RuntimeException("Real Vazir default setting mismatch: ".$key);
+              }
+            }
+            foreach (array("300","400","500","700","900") as $weight) {
+              if (!in_array($weight,$options["font_weights"],true)) {
+                throw new RuntimeException("Missing actual configured Vazir font weight");
+              }
+            }
+          '
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR fa_IR
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR en_US
+          WU008_PGR_SHA="$WU008_PGR_SHA" node tests/real-integration/vazir-evidence-check.mjs             "$evidence_dir" compare
+          # Do not carry the test plugin into baseline state or into a product ZIP.
+          cleanup_vazir
+          trap - EXIT
+          test ! -e "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = fa_IR
+          if unzip -Z1 "dist/$WU008_PGR_ZIP_NAME" | grep -Ei '(vazir-font-wp|vazirmatn.*\.woff2)' ; then
+            echo 'Unapproved Vazir production-package contamination' >&2
+            exit 1
+          fi
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
@@ -1231,6 +1297,58 @@ jobs:
           console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 12 scenarios, 36 linked JPEGs');
           PGR_DECISION_EVIDENCE_JS
 
+      - name: Independently validate G013 profile-specific evidence as untrusted DATA
+        shell: bash
+        env:
+          WU008_VAZIR_EVIDENCE: /tmp/wu008-downloaded-evidence/vazir-coexistence-evidence
+          WU008_VAZIR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'G013_EVIDENCE_GATE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir=process.env.WU008_VAZIR_EVIDENCE, head=process.env.WU008_VAZIR_HEAD;
+          if(!/^[a-f0-9]{40}$/.test(head||'')||!fs.existsSync(dir)||
+            !fs.lstatSync(dir).isDirectory()||fs.lstatSync(dir).isSymbolicLink())
+            throw Error('G013 publisher: missing exact Head or safe evidence root');
+          const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
+          const required=new Set(['README.md','comparison.json','official-release.json']);
+          for(const p of profiles){
+            required.add(p+'.json');
+            for(const width of [1280,390])for(const screen of ['overview','gravity-form'])
+              required.add(p+'-'+screen+'-'+width+'.jpg');
+          }
+          const actual=fs.readdirSync(dir,{withFileTypes:true});
+          if(actual.length!==required.size)throw Error('G013 publisher: missing or extra profile files');
+          const read=(name)=>JSON.parse(fs.readFileSync(path.join(dir,name),'utf8'));
+          const sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          const release=read('official-release.json');
+          if(release.status!=='PASS'||release.version!=='1.5.0'||
+            release.zip_sha256!=='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5')
+            throw Error('G013 publisher: official Vazir identity mismatch');
+          const compare=read('comparison.json');
+          if(compare.status!=='PASS'||compare.exact_head!==head||compare.profiles.length!==4||
+            compare.comparisons?.length!==24)throw Error('G013 publisher: incomplete comparison');
+          for(const e of actual){
+            if(!required.has(e.name)||!e.isFile()||e.isSymbolicLink())throw Error('G013 publisher: bad file '+e.name);
+            const size=fs.statSync(path.join(dir,e.name)).size;
+            if(size<50||size>4000000)throw Error('G013 publisher: bad size '+e.name);
+            if(e.name.endsWith('.jpg')){
+              const b=fs.readFileSync(path.join(dir,e.name));
+              if(b[0]!==255||b[1]!==216||b.at(-2)!==255||b.at(-1)!==217||
+                !sheet.includes(']('+e.name+')'))throw Error('G013 publisher: bad/unlinked JPEG '+e.name);
+            }
+          }
+          for(const p of profiles){
+            const d=read(p+'.json');
+            if(d.status!=='PASS'||d.exact_head!==head||d.pages?.length!==12||
+              d.profile!==(p.startsWith('baseline')?'BASELINE':'WITH_VAZIR')||
+              d.locale!==p.substring(p.indexOf('-')+1))
+              throw Error('G013 publisher: wrong profile identity '+p);
+          }
+          console.log('G013_PUBLISH_GATE_PASS exact-Head, 4 real profiles, 24 compared pages, 16 JPEG');
+          G013_EVIDENCE_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1258,7 +1376,9 @@ jobs:
           cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
           mkdir -p module-disable-evidence
           cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence
+          mkdir -p vazir-coexistence-evidence
+          cp -a "$source_dir/../vazir-coexistence-evidence/." vazir-coexistence-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence vazir-coexistence-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1269,3 +1389,4 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Vazir coexistence evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/vazir-coexistence-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
