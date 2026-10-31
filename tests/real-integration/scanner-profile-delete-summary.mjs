@@ -12,8 +12,8 @@ const docs = ['# WU008 — Authenticated Scanner Profile deletion decision', '',
   'and unchanged pre-existing Gravity Forms mapping metadata are separately verified via GFAPI.', ''];
 
 function rgb(css) {
-  if (typeof css !== 'string' || !/^rgba?\\(/.test(css)) throw Error('Missing computed CSS color');
-  const channels = css.match(/\\d+/g)?.slice(0,3).map(Number);
+  if (typeof css !== 'string' || !/^rgba?\(/.test(css)) throw Error('Missing computed CSS color');
+  const channels = css.match(/\d+/g)?.slice(0,3).map(Number);
   if (channels?.length !== 3) throw Error('Malformed computed CSS color: ' + css);
   return channels;
 }
