@@ -927,7 +927,7 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get vazir-font-wp --field=version --path="$WU008_WP_PATH")" = 1.5.0
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
             if (!defined("VAZIR_FONT_VERSION") || VAZIR_FONT_VERSION !== "1.5.0" ||
-                !is_plugin_active("vazir-font-wp/vazir-font-wp.php")) {
+                !in_array("vazir-font-wp/vazir-font-wp.php", (array)get_option("active_plugins"), true)) {
               throw new RuntimeException("Real Vazir plugin activation/version not established");
             }
             $options = get_option("vazir_font_options");
