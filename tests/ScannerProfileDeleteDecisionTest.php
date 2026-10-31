@@ -127,14 +127,14 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'beta' ) );
 
 		// Non-executable metadata is still part of the user-confirmed snapshot.
-		foreach ( array( 'enabled', 'output_label', 'required' ) as $change ) {
+		foreach ( array( 'enabled', 'output_label', 'profile_label' ) as $change ) {
 			$changed = $make( 'alpha', $alpha );
 			if ( 'enabled' === $change ) {
 				$changed['enabled'] = false;
 			} elseif ( 'output_label' === $change ) {
 				$changed['outputs'][0]['label'] = 'Changed output label';
 			} else {
-				// Required belongs to the executable contract and cannot be edited.
+				// Display label changes also invalidate the previously confirmed snapshot.
 				$changed['label'] = 'Different profile label';
 			}
 			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $changed, 'alpha' )['success'] );
