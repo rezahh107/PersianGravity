@@ -63,9 +63,11 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
     '[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')?.getAttribute('row-id'))===id,
     pageBefore[0],{timeout:12000});
 
-  const widths=async()=>header('id').evaluate(n=>Math.round(n.getBoundingClientRect().width));
+  // Vendor Task::column_config_map() locks id (nonresizable/unmovable);
+  // exercise two explicitly resizable/movable native columns instead.
+  const widths=async()=>header('created_by').evaluate(n=>Math.round(n.getBoundingClientRect().width));
   const beforeWidth=await widths();
-  const resize=header('id').locator('.ag-header-cell-resize').first();
+  const resize=header('created_by').locator('.ag-header-cell-resize').first();
   await resize.waitFor({timeout:10000});
   const rect=await resize.boundingBox();
   if(!rect)throw Error('Native column resize handle has no layout');
@@ -81,7 +83,7 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
     nodes.map(el=>({id:el.getAttribute('col-id'),x:el.getBoundingClientRect().left}))
       .filter(v=>Number.isFinite(v.x)).sort((a,b)=>a.x-b.x).map(v=>v.id));
   const beforeOrder=await visualColumnOrder();
-  await header('id').dragTo(header('created_by'),{force:true});
+  await header('created_by').dragTo(header('workflow_step'),{force:true});
   const afterOrder=await visualColumnOrder();
   if(JSON.stringify(beforeOrder)===JSON.stringify(afterOrder))throw Error('Native header drag did not reorder columns');
   report.drag={before:beforeOrder,after:afterOrder};
