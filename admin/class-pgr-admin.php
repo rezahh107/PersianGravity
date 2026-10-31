@@ -560,7 +560,7 @@ final class PGR_Admin {
 					array(
 						'key'      => '',
 						'label'    => '',
-						'required'    => true,
+						'required' => true,
 					),
 				),
 			);
@@ -715,7 +715,7 @@ final class PGR_Admin {
 			$clean_outputs[] = array(
 				'key'      => isset( $output['key'] ) ? sanitize_text_field( $output['key'] ) : '',
 				'label'    => isset( $output['label'] ) ? sanitize_text_field( $output['label'] ) : '',
-				'required'    => ! empty( $output['required'] ),
+				'required' => ! empty( $output['required'] ),
 			);
 		}
 
