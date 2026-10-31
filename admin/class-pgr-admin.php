@@ -167,13 +167,13 @@ final class PGR_Admin {
 		);
 		add_settings_section(
 			'pgr_gravity_flow_inbox',
-			is_rtl() ? 'Gravity Flow — تنظیم جهت صندوق کارها' : __( 'Gravity Flow Inbox layout', 'persian-gravityforms' ),
+			esc_html__( 'Gravity Flow Inbox layout', 'persian-gravityforms' ),
 			'__return_false',
 			self::SETTINGS_SLUG
 		);
 		add_settings_field(
 			'gravity_flow_inbox_rtl',
-			is_rtl() ? 'اصلاح راست‌به‌چپ جدول‌های Gravity Flow' : __( 'Enable true RTL for Gravity Flow Inbox', 'persian-gravityforms' ),
+			esc_html__( 'Enable true RTL for Gravity Flow Inbox', 'persian-gravityforms' ),
 			array( $this, 'render_gravity_flow_inbox_rtl' ),
 			self::SETTINGS_SLUG,
 			'pgr_gravity_flow_inbox'
@@ -222,18 +222,14 @@ final class PGR_Admin {
 			<input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[gravity_flow_inbox_rtl]" value="1" <?php checked( $enabled ); ?> />
 			<?php
 			echo esc_html(
-				is_rtl()
-					? 'فعال‌سازی جهت راست‌به‌چپ واقعی برای موتور جدول Inbox؛ پیش‌فرض خاموش است.'
-					: __( 'Enable native RTL in the admitted Gravity Flow Inbox grid. Default: off.', 'persian-gravityforms' )
+				__( 'Enable native RTL in the admitted Gravity Flow Inbox grid. Default: off.', 'persian-gravityforms' )
 			);
 			?>
 		</label>
 		<p class="description">
 			<?php
 			echo esc_html(
-				is_rtl()
-					? 'فقط برای Gravity Flow 3.1.0 آزمایش‌شده؛ هنگام خاموش‌بودن هیچ تنظیم جهتی تغییر نمی‌کند. مقدار RTL معتبرِ افزونه‌های دیگر حفظ می‌شود.'
-					: __( 'Qualified for Gravity Flow 3.1.0 only. Disabled: no direction override. Explicit settings from other integrations are preserved.', 'persian-gravityforms' )
+				__( 'Qualified for Gravity Flow 3.1.0 only. Disabled: no direction override. Explicit settings from other integrations are preserved.', 'persian-gravityforms' )
 			);
 			?>
 		</p>
