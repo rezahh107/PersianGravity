@@ -151,7 +151,7 @@ final class PGR_Product_Admin {
 				$this->render_disable_decision( $decision['module'], $decision['token'], $lang );
 			}
 			?>
-			<div class="pgr-card-grid pgr-module-grid">
+			<div class="pgr-module-grid pgr-module-list" role="list">
 				<?php
 				foreach ( PGR_Module_Registry::all() as $module ) {
 					if ( ! $decision || $decision['module']['id'] !== $module['id'] ) {
@@ -555,29 +555,31 @@ final class PGR_Product_Admin {
 		$primary   = 'fa' === $lang ? 'fa' : 'en';
 		$secondary = 'fa' === $primary ? 'en' : 'fa';
 		?>
-		<article class="pgr-card pgr-module-card">
-			<div class="pgr-module-card__heading">
-				<div>
-					<h2 dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'label_' . $primary ] ); ?></h2>
+		<article class="pgr-card pgr-module-card" role="listitem">
+			<div class="pgr-module-card__details">
+				<div class="pgr-module-card__heading">
+					<h2 id="pgr-module-name-<?php echo esc_attr( $id ); ?>" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'label_' . $primary ] ); ?></h2>
 					<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'label_' . $secondary ] ); ?></p>
 				</div>
-				<span class="pgr-badge" data-state="<?php echo $enabled ? 'AVAILABLE' : 'DISABLED'; ?>"><?php echo esc_html( $enabled ? __( 'Enabled', 'persian-gravityforms' ) : __( 'Disabled', 'persian-gravityforms' ) ); ?></span>
+				<p dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $primary ] ); ?></p>
+				<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $secondary ] ); ?></p>
+				<code dir="ltr"><?php echo esc_html( $id ); ?></code>
+				<?php if ( 'jalali_presentation' === $id ) { ?>
+					<p class="pgr-module-card__feature" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( 'fa' === $primary ? 'تگ‌های اختصاصی جلالی برای تأییدیه، اعلان و Query String؛ مثال آماده و فهرست کامل در Help همین ماژول.' : 'Explicit Jalali Merge Tags for confirmations, notifications and qualified query strings; full copyable guide in this module’s Help.' ); ?> <code dir="ltr">{pgr_jdate_created_date}</code></p>
+				<?php } ?>
 			</div>
-			<p dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $primary ] ); ?></p>
-			<p class="pgr-module-card__secondary" dir="<?php echo 'fa' === $secondary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( $module[ 'description_' . $secondary ] ); ?></p>
-			<code dir="ltr"><?php echo esc_html( $id ); ?></code>
-			<?php if ( 'jalali_presentation' === $id ) { ?>
-				<p class="pgr-module-card__feature" dir="<?php echo 'fa' === $primary ? 'rtl' : 'ltr'; ?>"><?php echo esc_html( 'fa' === $primary ? 'تگ‌های اختصاصی جلالی برای تأییدیه، اعلان و Query String؛ مثال آماده و فهرست کامل در Help همین ماژول.' : 'Explicit Jalali Merge Tags for confirmations, notifications and qualified query strings; full copyable guide in this module’s Help.' ); ?> <code dir="ltr">{pgr_jdate_created_date}</code></p>
-			<?php } ?>
-			<div class="pgr-actions">
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="pgr_module_toggle">
-					<input type="hidden" name="module_id" value="<?php echo esc_attr( $id ); ?>">
-					<input type="hidden" name="enable" value="<?php echo $enabled ? '0' : '1'; ?>">
-					<?php wp_nonce_field( 'pgr_module_toggle' ); ?>
-					<button type="submit" class="button"><?php echo esc_html( $enabled ? __( 'Disable', 'persian-gravityforms' ) : __( 'Enable', 'persian-gravityforms' ) ); ?></button>
-				</form>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::HELP_SLUG . '&lang=' . $lang . '#' . $module['help_topic'] ) ); ?>"><?php esc_html_e( 'Help', 'persian-gravityforms' ); ?></a>
+			<div class="pgr-module-card__controls">
+				<span class="pgr-badge" data-state="<?php echo $enabled ? 'AVAILABLE' : 'DISABLED'; ?>"><?php echo esc_html( $enabled ? __( 'Enabled', 'persian-gravityforms' ) : __( 'Disabled', 'persian-gravityforms' ) ); ?></span>
+				<div class="pgr-actions">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pgr_module_toggle">
+						<input type="hidden" name="module_id" value="<?php echo esc_attr( $id ); ?>">
+						<input type="hidden" name="enable" value="<?php echo $enabled ? '0' : '1'; ?>">
+						<?php wp_nonce_field( 'pgr_module_toggle' ); ?>
+						<button id="pgr-module-toggle-<?php echo esc_attr( $id ); ?>" type="submit" class="button" aria-labelledby="pgr-module-toggle-<?php echo esc_attr( $id ); ?> pgr-module-name-<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $enabled ? __( 'Disable', 'persian-gravityforms' ) : __( 'Enable', 'persian-gravityforms' ) ); ?></button>
+					</form>
+					<a id="pgr-module-help-<?php echo esc_attr( $id ); ?>" class="button" aria-labelledby="pgr-module-help-<?php echo esc_attr( $id ); ?> pgr-module-name-<?php echo esc_attr( $id ); ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::HELP_SLUG . '&lang=' . $lang . '#' . $module['help_topic'] ) ); ?>"><?php esc_html_e( 'Help', 'persian-gravityforms' ); ?></a>
+				</div>
 			</div>
 		</article>
 		<?php
