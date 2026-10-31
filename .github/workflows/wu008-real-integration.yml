@@ -17,6 +17,9 @@ on:
       - 'includes/class-pgr-gf-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gf-explicit-jalali-merge-tags.php'
       - 'includes/class-pgr-gravity-flow-inbox-jalali-presentation-adapter.php'
+      - 'includes/class-pgr-gravity-flow-inbox-rtl.php'
+      - 'admin/class-pgr-admin.php'
+      - 'persian-gravityforms.php'
       - 'includes/class-pgr-gravity-flow-status-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-jalali-presentation-adapter.php'
       - 'includes/class-pgr-gravity-flow-entry-detail-persian-digits-presentation-adapter.php'
@@ -890,6 +893,92 @@ jobs:
           restore_decision_fixture
           trap - EXIT
           node tests/real-integration/module-disable-decision-summary.mjs
+
+      - name: G014 qualify independent optional real RTL without changing WU008 baseline publisher
+        shell: bash
+        env:
+          G014_EVIDENCE_DIR: /tmp/g014-flow-rtl-evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$G014_EVIDENCE_DIR"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $user = get_user_by("login", "runtime_admin");
+            if (!$user) { throw new RuntimeException("Missing disposable test user"); }
+            $snapshot = array(
+              "has_pgr" => false !== get_option("pgr_settings", false),
+              "pgr" => get_option("pgr_settings", false),
+              "lang" => get_option("WPLANG", false),
+              "user" => get_user_meta($user->ID, "locale", true),
+            );
+            file_put_contents("/tmp/g014-original-state.json", wp_json_encode($snapshot));
+          '
+          restore_g014() {
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $v = json_decode(file_get_contents("/tmp/g014-original-state.json"), true, 512, JSON_THROW_ON_ERROR);
+              $user = get_user_by("login","runtime_admin");
+              if ($v["has_pgr"]) { update_option("pgr_settings", $v["pgr"]); }
+              else { delete_option("pgr_settings"); }
+              if ($v["lang"] === false) { delete_option("WPLANG"); }
+              else { update_option("WPLANG", $v["lang"]); }
+              if ($v["user"] === "") { delete_user_meta($user->ID, "locale"); }
+              else { update_user_meta($user->ID, "locale", $v["user"]); }
+            '
+          }
+          trap restore_g014 EXIT
+          for site in fa_IR en_US; do
+            for user in fa_IR en_US; do
+              if [ "$site" = "fa_IR" ]; then
+                php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+              else
+                php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH" || true
+              fi
+              php "$WU008_WP_CLI" user meta update runtime_admin locale "$user" --path="$WU008_WP_PATH"
+              for mode in off on; do
+                G014_MODE="$mode" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+                  $s = get_option("pgr_settings", array());
+                  if (!is_array($s)) { throw new RuntimeException("Malformed settings source"); }
+                  $s["gravity_flow_inbox_rtl"] = getenv("G014_MODE") === "on" ? 1 : 0;
+                  update_option("pgr_settings", $s);
+                '
+                node tests/real-integration/g014-inbox-browser.mjs "$mode" "$site" "$user"
+              done
+            done
+          done
+          node --input-type=module <<'G014_GATE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir=process.env.G014_EVIDENCE_DIR, head=process.env.WU008_PGR_SHA;
+          const expected=new Set();
+          for(const site of ['fa_IR','en_US']) for(const user of ['fa_IR','en_US']) for(const mode of ['off','on']){
+            const k=[mode,site,user].join('-');
+            expected.add(k+'.json');
+            for(const name of ['admin','frontend'])for(const width of [1280,390])
+              expected.add(k+'-'+name+'-'+width+'.jpg');
+            const x=JSON.parse(fs.readFileSync(path.join(dir,k+'.json'),'utf8'));
+            if(x.status!=='PASS'||x.pgr_head!==head||x.flow_version!=='3.1.0'||x.results.length!==4||
+              x.results.some(v=>v.status!=='PASS'))throw Error('Incomplete actual RTL profile '+k);
+          }
+          const files=fs.readdirSync(dir,{withFileTypes:true});
+          if(files.length!==expected.size||files.some(x=>!x.isFile()||!expected.has(x.name)))
+            throw Error('G014 evidence matrix missing or extra files');
+          for(const entry of files)if(entry.name.endsWith('.jpg')){
+            const b=fs.readFileSync(path.join(dir,entry.name));
+            if(b.length<100||b[0]!==255||b[1]!==216||b.at(-2)!==255||b.at(-1)!==217)
+              throw Error('G014 damaged JPEG '+entry.name);
+          }
+          console.log('G014_REAL_WU008_PASS 8 profiles, 32 actual browser cases, 32 JPEGs');
+          G014_GATE
+          restore_g014
+          trap - EXIT
+
+      - name: Preserve separate G014 runtime screenshots (not part of original publisher allowlist)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g014-rtl-profiles-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/g014-flow-rtl-evidence
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
