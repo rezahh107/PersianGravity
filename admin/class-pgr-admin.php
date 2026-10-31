@@ -257,7 +257,7 @@ final class PGR_Admin {
 
 		if ( 'delete' === $action ) {
 			$profile = '' !== $profile_id ? PGR_Scanner_Profile_Registry::get( $profile_id ) : null;
-			if ( null === $profile || ! empty( $profile['read_only'] ) ) {
+			if ( null === $profile || ! empty( $profile['read_only'] ) || '' === PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile ) ) {
 				$this->render_profile_delete_unavailable();
 			} else {
 				$this->render_profile_delete_confirmation( $profile );
@@ -373,14 +373,26 @@ final class PGR_Admin {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
 		}
 
-		$this->assert_profile_write_access( 'pgr_scanner_profile_delete_' . $profile_id );
-		// The profile-specific nonce has been verified; only the matched profile may be deleted.
+		$fingerprint = isset( $_POST['confirmed_profile_fingerprint'] ) && is_string( $_POST['confirmed_profile_fingerprint'] )
+			? wp_unslash( $_POST['confirmed_profile_fingerprint'] )
+			: '';
+		if ( 1 !== preg_match( '/^[a-f0-9]{64}$/', $fingerprint ) ) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
+		}
+
+		$this->assert_profile_write_access( 'pgr_scanner_profile_delete_' . $profile_id . '_' . $fingerprint );
+		// The nonce is bound to the exact selected ID and complete validated snapshot.
 		$confirmed_label = isset( $_POST['confirmed_profile_label'] ) && is_string( $_POST['confirmed_profile_label'] )
 			? wp_unslash( $_POST['confirmed_profile_label'] )
 			: '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$profile = PGR_Scanner_Profile_Registry::get( $profile_id );
-		if ( null === $profile || ! empty( $profile['read_only'] ) || $profile['label'] !== $confirmed_label ) {
+		if (
+			null === $profile ||
+			! empty( $profile['read_only'] ) ||
+			$profile['label'] !== $confirmed_label ||
+			! hash_equals( $fingerprint, PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile ) )
+		) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
 		}
 
@@ -494,7 +506,12 @@ final class PGR_Admin {
 	 * @return void
 	 */
 	private function render_profile_delete_confirmation( $profile ) {
-		$back_url = admin_url( 'admin.php?page=' . self::PROFILES_SLUG );
+		$back_url    = admin_url( 'admin.php?page=' . self::PROFILES_SLUG );
+		$fingerprint = PGR_Scanner_Profile_Registry::snapshot_fingerprint( $profile );
+		if ( '' === $fingerprint ) {
+			$this->render_profile_delete_unavailable();
+			return;
+		}
 		?>
 		<div class="wrap pgr-admin">
 			<h1><?php esc_html_e( 'Confirm Scanner Profile deletion', 'persian-gravityforms' ); ?></h1>
@@ -512,7 +529,8 @@ final class PGR_Admin {
 						<input type="hidden" name="action" value="pgr_scanner_profile_delete" />
 						<input type="hidden" name="profile_id" value="<?php echo esc_attr( $profile['id'] ); ?>" />
 						<input type="hidden" name="confirmed_profile_label" value="<?php echo esc_attr( $profile['label'] ); ?>" />
-						<?php wp_nonce_field( 'pgr_scanner_profile_delete_' . $profile['id'] ); ?>
+						<input type="hidden" name="confirmed_profile_fingerprint" value="<?php echo esc_attr( $fingerprint ); ?>" />
+						<?php wp_nonce_field( 'pgr_scanner_profile_delete_' . $profile['id'] . '_' . $fingerprint ); ?>
 						<button type="submit" class="button pgr-profile-delete-decision__confirm" aria-describedby="pgr-profile-delete-warning"><?php esc_html_e( 'Confirm delete', 'persian-gravityforms' ); ?></button>
 					</form>
 					<a class="button button-secondary" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel without deleting', 'persian-gravityforms' ); ?></a>
