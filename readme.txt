@@ -173,3 +173,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 == Consequential module disable ==
 
 When current use cannot be determined, the Module Manager displays a bilingual confirmation panel near the top. It names the module, explains possible effects and confirms no change has occurred. Explicit Confirm disable and Cancel and return actions replace the old separated notices/forms. A short-lived, user-scoped decision ticket is required for the second POST; WordPress capability/nonce checks and fresh USED/UNUSED/UNKNOWN inspection remain authoritative. Cancel changes no module state.
+
+
+== Module inventory layout (unreleased draft) ==
+
+Overview uses responsive rows with each module's bilingual names/descriptions, state, ID, one existing Enable/Disable POST action, and Help link grouped together. A valid UNKNOWN decision remains the sole separate top-of-page action for its target; six other rows remain accessible. G-011's explicit Jalali example stays available. Module defaults, safety logic, confirmation tickets and server behavior are unchanged. This UI is not yet Owner-accepted or released.
