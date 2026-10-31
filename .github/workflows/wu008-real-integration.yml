@@ -1158,10 +1158,10 @@ jobs:
             const data=JSON.parse(fs.readFileSync(path.join(root,'status-'+name+'.json'),'utf8'));
             const [mode,locale]=name.split('-');
             if(data.head!==head||data.mode!==mode||data.locale!==locale||data.status!=='CAPTURED'
-              ||data.negative_control!=='DETECTED_AND_RESTORED'||data.cases.length!==3)
+              ||data.negative_control!=='DETECTED_AND_RESTORED'||data.cases.length!==5)
               throw Error('Incomplete System Status manifest identity: '+name);
             for(const c of data.cases){
-              if(c.status!=='PASS'||![1280,390,320].includes(c.width)||c.initial?.document_scroll_width>c.width
+              if(c.status!=='PASS'||![1280,782,768,390,320].includes(c.width)||c.initial?.document_scroll_width>c.width
                 ||c.initial?.header_count!==5||c.initial?.data_cell_counts?.some(n=>n!==5)
                 ||c.long_values?.document_scroll_width>c.width)
                 throw Error('System Status scenario failed: '+name+' at '+c.width);
@@ -1193,8 +1193,11 @@ jobs:
           const required=new Set(['README.md']);
           for(const n of names){
             required.add('decision-'+n+'.json');
-            for(const width of [1280,390,320]){
-              for(const stage of (n.startsWith('used-')?['normal','decision','cancel','confirmed']:['normal','disabled']))
+            for(const width of [1280,782,768,390,320]){
+              const stages=n.startsWith('used-')?
+                ['normal','all-enabled',...(width===320?['long']:[]),'decision','cancel','confirmed']:
+                ['normal','disabled'];
+              for(const stage of stages
                 required.add('decision-'+n+'-'+width+'-'+stage+'.jpg');
             }
           }
@@ -1220,15 +1223,18 @@ jobs:
             for(const c of data.cases){
               if(c.status!=='PASS'||![1280,390,320].includes(c.width)||c.normal?.document_scroll_width>c.width)
                 throw Error('Decision viewport failed: '+n);
-              const expected=phase==='used'?4:2;
+              const expected=phase==='used'?(c.width===320?6:5):2;
               if(c.images?.length!==expected||c.images.some(image=>!required.has(image)))
                 throw Error('Decision screenshot count mismatch: '+n);
-              if(phase==='used'&&!['forged_get_rejected','mismatched_get_rejected','cancel_no_change','used_blocked','used_forged_confirm_blocked','unknown_second_post_disabled','currency_restored'].every(t=>c.checks.includes(t)))
+              if(phase==='used'&&!['all_enabled_inventory','decision_seven_total_distinct_module_identities','forged_get_rejected','mismatched_get_rejected','cancel_no_change','used_blocked','used_forged_confirm_blocked','unknown_second_post_disabled','currency_restored'].every(t=>c.checks.includes(t)))
                 throw Error('Decision safety scenario incomplete: '+n);
+              if(!c.checks.includes('seven_bilingual_module_rows'))throw Error('Inventory semantics absent: '+n);
+              if(phase==='used'&&c.width===320&&!c.checks.includes('long_content_no_overflow'))throw Error('Long content missing: '+n);
+              if(phase==='used'&&c.width===1280&&!['negative_missing_action_detected','negative_duplicate_decision_detected'].every(x=>c.checks.includes(x)))throw Error('Mutation controls missing: '+n);
               if(phase==='unused'&&!c.checks.includes('unused_direct_disabled'))throw Error('UNUSED direct disable not proven: '+n);
             }
           }
-          console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 12 scenarios, 36 linked JPEGs');
+          console.log('MODULE_DISABLE_EVIDENCE_GATE PASS: 4 reports, 20 scenarios, 72 linked JPEGs');
           PGR_DECISION_EVIDENCE_JS
 
       - name: Publish verified evidence with exact commit links

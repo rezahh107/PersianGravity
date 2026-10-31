@@ -12,13 +12,13 @@ const lines=[
 '',
 'Before: [historical authenticated WU008 Overview confirmation](https://github.com/rezahh107/PersianGravity/blob/9cadb44938566eb3719484abe6a46a137e6b5d0c/admin-ui-evidence/ui-normal-fa_IR-module-confirm-390.jpg) — old warning at top and confirmation inside the lower module card.',
 '',
-'After: genuine logged-in WordPress screenshots and server responses. All module toggles and the disposable GF form were restored. Browser-only crafted requests are explicitly negative controls.',
+'After: genuine logged-in WordPress screenshots and server responses, with responsive 1280/782/768/390/320px inventory captures including real all-enabled states and 320px long-content stress. All module toggles and the disposable GF form were restored. Browser-only crafted requests are explicitly negative controls.',
 '',
 '| Locale | Server fixture | Width | Outcomes | Screenshots |',
 '|---|---|---:|---|---|',
 ];
 for(const report of reports){
-  if(report.status!=='CAPTURED'||report.exact_head!==head||report.cases.length!==3)
+  if(report.status!=='CAPTURED'||report.exact_head!==head||report.cases.length!==5)
     throw Error('Incomplete module-disable evidence report: '+report.locale+' '+report.phase);
   for(const c of report.cases){
     if(c.status!=='PASS')throw Error('Failed module-disable case '+report.locale+' '+c.width);
@@ -32,4 +32,4 @@ lines.push('',
 '**Limits:** this is automated browser and actual server evidence, not a human usability study, full screen-reader audit, or deployment approval. The before captures are from the independently verified historical Head; the after captures are from the exact commit above.',
 '');
 fs.writeFileSync(path.join(dir,'README.md'),lines.join('\n'));
-console.log('MODULE_DISABLE_DECISION_EVIDENCE: four reports, twelve cases, linked screenshots');
+console.log('MODULE_DISABLE_DECISION_EVIDENCE: four reports, twenty cases, linked screenshots');
