@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { settingsNavigationUrl, classifyInboxReadiness } from './g014-browser-contract.mjs';
 
 const [mode, siteLocale, userLocale] = process.argv.slice(2);
 if (!['off','on'].includes(mode) || !['fa_IR','en_US'].includes(siteLocale) ||
@@ -38,7 +39,7 @@ for(const width of [1280,390]){
   await Promise.all([page.waitForURL(u=>!u.pathname.includes('wp-login.php')),
     page.locator('#wp-submit').click()]);
   // Verify the actual Settings page reflects persistent state, not only CLI intent.
-  const settings=await page.goto(new URL('admin.php?page=persian-gravityforms-settings',m.admin_url),{waitUntil:'domcontentloaded'});
+  const settings=await page.goto(settingsNavigationUrl(m.admin_url),{waitUntil:'domcontentloaded'});
   if(!settings?.ok())throw Error('PersianGravity Settings page failed');
   const toggle=page.locator('input[name="pgr_settings[gravity_flow_inbox_rtl]"]').first();
   if(!(await toggle.count())||(await toggle.isChecked())!==(mode==='on'))
@@ -54,17 +55,27 @@ for(const width of [1280,390]){
       await page.locator('[data-js="gflow-inbox"]').first().waitFor({timeout:18000});
       const measure=()=> {
         const host=document.querySelector('[data-js="gflow-inbox"]');
-        const root=host?.querySelector('.ag-root-wrapper,.ag-root');
+        const parent=host?.closest('.gflow-inbox');
+        const root=host?.querySelector('.ag-root-wrapper');
         const visible=x=>{if(!x)return false;const s=getComputedStyle(x),r=x.getBoundingClientRect();
           return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'};
+        const gridId=host?.dataset.gridId||null;
+        const opts=gridId?window.gflow_config?.grids?.[gridId]?.grid_options:null;
         const headers=[...host?.querySelectorAll('.ag-header-cell')||[]].filter(visible);
         const rows=[...host?.querySelectorAll('.ag-center-cols-container .ag-row')||[]].filter(visible);
-        const overlays=[...host?.querySelectorAll('.ag-overlay-loading-center,.ag-overlay-loading-wrapper,.spinner.is-active,[aria-busy="true"]')||[]].filter(visible);
-        const gridId=host?.dataset.gridId||'inbox_default';
-        const opts=window.gflow_config?.grids?.[gridId]?.grid_options;
+        const loadingNodes=[...parent?.querySelectorAll(
+          '.ag-overlay-loading-center,.ag-overlay-loading-wrapper,.spinner.is-active,[aria-busy="true"],[data-js="gflow-inbox-loader"]'
+        )||[]].filter(visible);
+        const errorNodes=[...parent?.querySelectorAll('.ag-overlay-error,[role="alert"].ag-error')||[]].filter(visible);
+        const emptyNodes=[...host?.querySelectorAll('.ag-overlay-no-rows-center,.ag-overlay-no-rows-wrapper')||[]].filter(visible);
         const bar=host?.querySelector('.ag-body-horizontal-scroll-viewport');
         const r=root?.getBoundingClientRect(),h=headers[0]?.getBoundingClientRect();
-        return {ready:!!root&&visible(root)&&headers.length>0&&rows.length>0&&overlays.length===0,
+        return {
+          hostVisible:visible(host),rootVisible:visible(root),
+          hasConfig:!!opts,configIdentityMatches:!!gridId&&parent?.dataset.gridId===gridId,
+          hasRootMode:!!root&&(root.classList.contains('ag-rtl')!==root.classList.contains('ag-ltr')),
+          loadingActive:loadingNodes.length>0,errorOverlay:errorNodes.length>0,
+          emptyOverlay:emptyNodes.length>0,
           html_lang:document.documentElement.lang,html_direction:getComputedStyle(document.documentElement).direction,
           inbox_direction:host?getComputedStyle(host).direction:null,
           grid_class:root?.className||null,grid_id:gridId,
@@ -72,24 +83,37 @@ for(const width of [1280,390]){
           grid_ltr:root?.classList.contains('ag-ltr')===true,
           has_option:opts?Object.prototype.hasOwnProperty.call(opts,'enableRtl'):false,
           enableRtl:opts?.enableRtl??null,rows:rows.length,headers:headers.length,
+          configRows:Array.isArray(opts?.rowData)?opts.rowData.length:-1,
+          columnDefs:Array.isArray(opts?.columnDefs)?opts.columnDefs.length:0,
           first_header_left:h?Math.round(h.left-r.left):null,
           first_header_right:h?Math.round(r.right-h.right):null,
           scroll_range:bar?bar.scrollWidth-bar.clientWidth:0,
-          scroll_left:bar?.scrollLeft??null,doc_width:document.documentElement.scrollWidth};
+          scroll_left:bar?.scrollLeft??null,doc_width:document.documentElement.scrollWidth
+        };
       };
-      await page.waitForFunction(measure,null,{timeout:35000,polling:250});
-      const first=await page.evaluate(measure);
-      await page.waitForTimeout(360);
-      const last=await page.evaluate(measure);
-      item.first=first;item.final=last;
+      // Poll an actual boolean readiness result; never await a truthy snapshot object.
+      // Operational empty is valid in general, but this fixture requires real rows.
+      let last, readiness;
+      for(let attempt=0;attempt<140;attempt++){
+        last=await page.evaluate(measure);
+        readiness=classifyInboxReadiness(last,{requireRows:true});
+        if(readiness.ready)break;
+        if(readiness.state==='error')throw Error('Native Grid error: '+JSON.stringify(last));
+        await page.waitForTimeout(250);
+      }
+      item.first=last;item.readiness=readiness;
+      if(!readiness?.ready)throw Error('Inbox Grid not ready: '+JSON.stringify({readiness,last}));
+      item.final=await page.evaluate(measure);
       const effectiveRtl=spec.effective==='fa_IR';
-      if(!last.ready||first.rows!==last.rows||first.headers!==last.headers)
-        throw Error('Inbox grid unstable after ready');
+      const finalState=classifyInboxReadiness(item.final,{requireRows:true});
+      if(!finalState.ready)
+        throw Error('Inbox Grid lost readiness: '+JSON.stringify({finalState,final:item.final}));
+      const final=item.final;
       if(mode==='off'){
-        if(last.has_option||last.grid_rtl)throw Error('Disabled mode changed native grid state');
+        if(final.has_option||final.grid_rtl)throw Error('Disabled mode changed native grid state');
       }else{
-        if(!last.has_option||last.enableRtl!==effectiveRtl||
-          last.grid_rtl!==effectiveRtl||last.grid_ltr===effectiveRtl)
+        if(!final.has_option||final.enableRtl!==effectiveRtl||
+          final.grid_rtl!==effectiveRtl||final.grid_ltr===effectiveRtl)
           throw Error('Wrong AG Grid initial RTL mode for effective request locale');
       }
       item.scroll=await page.evaluate(async rtl=>{
@@ -122,7 +146,7 @@ for(const width of [1280,390]){
       const name=key+'-'+spec.name+'-'+width+'.jpg';
       await page.screenshot({path:path.join(dir,name),type:'jpeg',quality:74,fullPage:true});
       item.image=name;item.status='PASS';
-    }catch(e){item.status='FAIL';item.reason=String(e);throw e}
+    }catch(e){item.status='FAIL';item.reason=String(e);item.errors=errors.slice(e0);item.network=network.slice(n0);throw e}
   }
   await context.close();
 }
