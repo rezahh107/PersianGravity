@@ -20,7 +20,7 @@ final class PGR_Gravity_Flow_Inbox_RTL {
 	 * @return bool
 	 */
 	public static function is_enabled() {
-		$settings = get_option( PGR_Admin::OPTION, array() );
+		$settings = get_option( 'pgr_settings', array() );
 		return is_array( $settings ) && isset( $settings['gravity_flow_inbox_rtl'] )
 			&& 1 === $settings['gravity_flow_inbox_rtl'];
 	}
