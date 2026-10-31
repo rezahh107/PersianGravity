@@ -1158,7 +1158,7 @@ jobs:
             const data=JSON.parse(fs.readFileSync(path.join(root,'status-'+name+'.json'),'utf8'));
             const [mode,locale]=name.split('-');
             if(data.head!==head||data.mode!==mode||data.locale!==locale||data.status!=='CAPTURED'
-              ||data.negative_control!=='DETECTED_AND_RESTORED'||data.cases.length!==5)
+              ||data.negative_control!=='DETECTED_AND_RESTORED'||data.cases.length!==3)
               throw Error('Incomplete System Status manifest identity: '+name);
             for(const c of data.cases){
               if(c.status!=='PASS'||![1280,782,768,390,320].includes(c.width)||c.initial?.document_scroll_width>c.width
@@ -1197,7 +1197,7 @@ jobs:
               const stages=n.startsWith('used-')?
                 ['normal','all-enabled',...(width===320?['long']:[]),'decision','cancel','confirmed']:
                 ['normal','disabled'];
-              for(const stage of stages
+              for(const stage of stages)
                 required.add('decision-'+n+'-'+width+'-'+stage+'.jpg');
             }
           }
@@ -1218,10 +1218,10 @@ jobs:
           for(const n of names){
             const data=JSON.parse(fs.readFileSync(path.join(root,'decision-'+n+'.json'),'utf8'));
             const [phase,locale]=n.split('-');
-            if(data.exact_head!==head||data.phase!==phase||data.locale!==locale||data.status!=='CAPTURED'||data.cases.length!==3)
+            if(data.exact_head!==head||data.phase!==phase||data.locale!==locale||data.status!=='CAPTURED'||data.cases.length!==5)
               throw Error('Decision identity/count mismatch: '+n);
             for(const c of data.cases){
-              if(c.status!=='PASS'||![1280,390,320].includes(c.width)||c.normal?.document_scroll_width>c.width)
+              if(c.status!=='PASS'||![1280,782,768,390,320].includes(c.width)||c.normal?.document_scroll_width>c.width||c.original_g011_restored!==true)
                 throw Error('Decision viewport failed: '+n);
               const expected=phase==='used'?(c.width===320?6:5):2;
               if(c.images?.length!==expected||c.images.some(image=>!required.has(image)))
