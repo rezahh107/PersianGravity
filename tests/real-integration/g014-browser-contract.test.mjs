@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { settingsNavigationUrl, classifyInboxReadiness } from './g014-browser-contract.mjs';
+import { requireG014RawDueTimestamp } from './g014-inbox-interactions.mjs';
 
 test('historical URL object is rejected; corrected same-origin navigation is a string', () => {
   const adminUrl = 'http://127.0.0.1:8080/wp-admin/';
@@ -50,4 +51,27 @@ test('empty operational Inbox is ready, while a populated-fixture gate rejects i
   assert.equal(classifyInboxReadiness({ ...empty, emptyOverlay: false }).ready, false);
   assert.equal(classifyInboxReadiness({ ...empty, loadingActive: true }).ready, false);
   assert.equal(classifyInboxReadiness(null).ready, false);
+});
+
+test('G014 production raw-due-date validator accepts the authentic beta fixture', () => {
+  // The exact original fixture value from g008-flow-inbox-setup-runtime.php.
+  assert.equal(requireG014RawDueTimestamp(1900275300), '1900275300');
+  assert.equal(requireG014RawDueTimestamp('1900275300'), '1900275300');
+  assert.equal(requireG014RawDueTimestamp('0000000000'), '0000000000');
+});
+
+test('G014 production raw-due-date validator rejects malformed and non-ASCII evidence', () => {
+  const invalid = [
+    undefined, null, false, true, {}, ['1900275300'], 1900275300.5,
+    '', '123456789', '12345678901', '123456789a', 'a123456789',
+    '190027530 ', ' 190027530', '190-275300', '۱۹۰۰۲۷۵۳۰۰',
+    '١٩٠٠٢٧٥٣٠٠', '1e+9', '\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d',
+  ];
+  for (const value of invalid) {
+    assert.throws(
+      () => requireG014RawDueTimestamp(value),
+      /Missing verified raw due-date filter fixture/,
+      'Expected fail-closed for '+String(value),
+    );
+  }
 });
