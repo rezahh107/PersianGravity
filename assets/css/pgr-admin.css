@@ -275,3 +275,99 @@
 		width: 100%;
 	}
 }
+
+/* Overview-only module inventory: one continuous reading column, with actions
+ * visually and programmatically owned by their individual module row. */
+.pgr-module-list {
+	margin-block-start: 20px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.pgr-module-list .pgr-module-card {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 180px;
+	align-items: start;
+	gap: 24px;
+	margin: 0;
+	padding: 20px 22px;
+	border: 0;
+	border-block-start: 1px solid #dcdcde;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+}
+
+.pgr-module-list .pgr-module-card:first-child {
+	border-block-start: 0;
+}
+
+.pgr-module-list .pgr-module-card__details {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.pgr-module-list .pgr-module-card__heading {
+	display: block;
+}
+
+.pgr-module-list .pgr-module-card__heading h2 {
+	margin: 0;
+	font-size: 16px;
+	line-height: 1.5;
+}
+
+.pgr-module-list .pgr-module-card__heading p {
+	margin: 2px 0 0;
+}
+
+.pgr-module-list .pgr-module-card__details > p {
+	margin-block: 10px 0;
+	line-height: 1.55;
+}
+
+.pgr-module-list .pgr-module-card__details > code {
+	display: inline-block;
+	max-width: 100%;
+	margin-block-start: 12px;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.pgr-module-list .pgr-module-card__controls {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	min-width: 0;
+}
+
+.pgr-module-list .pgr-module-card__controls .pgr-actions {
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+}
+
+.pgr-module-list .pgr-module-card__controls .pgr-actions form {
+	margin: 0;
+}
+
+.pgr-module-list .pgr-module-card__controls .button:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+@media (max-width: 782px) {
+	.pgr-module-list .pgr-module-card {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
+		padding: 16px;
+	}
+
+	.pgr-module-list .pgr-module-card__controls {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+}

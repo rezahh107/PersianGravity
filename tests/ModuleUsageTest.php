@@ -241,7 +241,10 @@ final class ModuleUsageTest extends TestCase {
 		$handler->render_overview_page();
 		$html = ob_get_clean();
 		$this->assertSame( 1, substr_count( $html, 'class="pgr-panel pgr-module-decision"' ) );
-		$this->assertSame( 6, substr_count( $html, '<article class="pgr-card pgr-module-card">' ) );
+		$this->assertSame( 6, substr_count( $html, '<article class="pgr-card pgr-module-card" role="listitem">' ) );
+		$this->assertSame( 1, substr_count( $html, 'class="pgr-module-grid pgr-module-list" role="list"' ) );
+		$this->assertStringNotContainsString( 'id="pgr-module-toggle-iranian_currency"', $html );
+		$this->assertStringContainsString( 'aria-labelledby="pgr-module-toggle-national_id pgr-module-name-national_id"', $html );
 		$this->assertSame( 1, substr_count( $html, 'name="confirm" value="1"' ) );
 		$this->assertStringContainsString( 'Confirm disable', $html );
 		$this->assertStringContainsString( 'Cancel and return', $html );
@@ -282,7 +285,7 @@ final class ModuleUsageTest extends TestCase {
 		ob_start();
 		$handler->render_overview_page();
 		$html = ob_get_clean();
-		$this->assertSame( 7, substr_count( $html, '<article class="pgr-card pgr-module-card">' ) );
+		$this->assertSame( 7, substr_count( $html, '<article class="pgr-card pgr-module-card" role="listitem">' ) );
 		$this->assertStringNotContainsString( 'class="pgr-panel pgr-module-decision"', $html );
 	}
 

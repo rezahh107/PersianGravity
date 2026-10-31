@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const root = process.env.WU008_ARTIFACT_DIR;
@@ -74,16 +75,88 @@ async function toggle(page,id,action){
   return new URL(page.url());
 }
 function notice(url,type){check(url.searchParams.get('pgr_module_notice')===type,'Expected notice '+type+', got '+url.search);}
+// Structural regression oracle for authentic rendered WordPress rows.
+const expectedIds=['national_id','jalali_date','jalali_presentation','iranian_address',
+  'digit_normalization','iranian_currency','structured_scanner'];
+async function inventoryAudit(page,target=null){
+  return page.evaluate(({expectedIds,target})=>{
+    const errors=[],ids=[];
+    const rows=[...document.querySelectorAll('.pgr-module-list > article.pgr-module-card')];
+    if(document.querySelectorAll('.pgr-module-grid.pgr-module-list[role=list]').length!==1)errors.push('list_missing');
+    for(const row of rows){
+      const d=row.querySelector('.pgr-module-card__details'),c=row.querySelector('.pgr-module-card__controls');
+      const h=d?.querySelector('.pgr-module-card__heading h2'),second=d?.querySelector('.pgr-module-card__heading .pgr-module-card__secondary');
+      const desc=d?.querySelector(':scope > p:not(.pgr-module-card__secondary):not(.pgr-module-card__feature)');
+      const desc2=d?.querySelector(':scope > p.pgr-module-card__secondary');
+      const id=d?.querySelector(':scope > code[dir=ltr]')?.textContent?.trim();
+      ids.push(id);
+      if(!h?.textContent?.trim()||!second?.textContent?.trim()||!desc?.textContent?.trim()||!desc2?.textContent?.trim())
+        errors.push('bilingual_content_missing:'+id);
+      const forms=[...(c?.querySelectorAll('form[action$="admin-post.php"]')||[])],
+        form=forms[0],button=form?.querySelector('button[type=submit]'),
+        help=c?.querySelector('a.button[href*="persian-gravityforms-help"]'),
+        state=c?.querySelector('.pgr-badge[data-state]')?.dataset.state,
+        action=form?.querySelector('input[name=enable]')?.value;
+      if(forms.length!==1||!button||!help||form?.querySelector('input[name=module_id]')?.value!==id)
+        errors.push('missing_or_wrong_action:'+id);
+      if(!['AVAILABLE','DISABLED'].includes(state)||(state==='AVAILABLE'?action!=='0':action!=='1'))
+        errors.push('state_action_mismatch:'+id);
+      for(const element of [button,help]){
+        const refs=(element?.getAttribute('aria-labelledby')||'').trim().split(/\s+/);
+        if(!element?.id||!h?.id||!refs.includes(element.id)||!refs.includes(h.id)||
+          !refs.every(v=>document.getElementById(v)))
+          errors.push('missing_associated_accessible_label:'+id);
+      }
+      if(id==='jalali_presentation'&&(!d.textContent.includes('{pgr_jdate_created_date}')||
+        !help.href.includes('#jalali-presentation')))errors.push('g011_example_help_lost');
+      const rr=row.getBoundingClientRect(),rc=c?.getBoundingClientRect();
+      if(!rc||rc.left<rr.left-1||rc.right>rr.right+1||rc.top<rr.top-1||rc.bottom>rr.bottom+1)
+        errors.push('action_outside_row:'+id);
+    }
+    if(JSON.stringify(ids)!==JSON.stringify(expectedIds.filter(id=>id!==target)))
+      errors.push('incorrect_inventory_order_or_module_identity');
+    const decisions=[...document.querySelectorAll('.pgr-module-decision')];
+    if(decisions.length!==(target?1:0))errors.push('duplicate_or_missing_decision');
+    if(target && (decisions[0]?.querySelector('input[name=module_id]')?.value!==target||
+      decisions[0]?.querySelectorAll('input[name=confirm][value="1"]').length!==1||
+      decisions[0]?.querySelectorAll('.notice-warning[role=alert]').length!==1))
+      errors.push('wrong_target_or_decision_form');
+    if(rows.length+decisions.length!==7)errors.push('lost_or_duplicated_module_identity');
+    if(document.documentElement.scrollWidth>innerWidth)errors.push('horizontal_document_overflow');
+    return {errors,ids,rows:rows.length,decisions:decisions.length,
+      scrollWidth:document.documentElement.scrollWidth,width:innerWidth,
+      states:rows.map(row=>({id:row.querySelector('code[dir=ltr]')?.textContent?.trim(),
+        state:row.querySelector('.pgr-badge')?.dataset.state}))};
+  },{expectedIds,target});
+}
+function assertInventory(result,context){check(result.errors.length===0,context+': '+result.errors.join(', '));}
+function setDisposableG011(enabled){
+  check(process.env.WU008_WP_PATH==='/tmp/wu008-wordpress'&&process.env.WU008_WP_CLI==='/tmp/wp-cli.phar',
+    'Refusing state change outside pinned disposable WU008');
+  const v=enabled?'true':'false';
+  execFileSync('php',[process.env.WU008_WP_CLI,'--path='+process.env.WU008_WP_PATH,
+    'eval','PGR_Module_Registry::set_enabled("jalali_presentation",'+v+'); if(PGR_Module_Registry::is_enabled("jalali_presentation")!=='+v+') throw new RuntimeException("G011 state not set");'],
+    {timeout:20000,stdio:'pipe'});
+}
 let failed=false;
 try {
-  for(const width of [1280,390,320]){
-    const height=width===1280?900:width===390?844:700;
+  for(const width of [1280,782,768,390,320]){
+    const height=width>=768?900:width===390?844:700;
     const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1});
     const page=await context.newPage();
     const record={width,height,status:'FAILED',images:[],checks:[]};
+    let originalG011=null;
     try {
       await login(page);
       await view(page);
+      const original=await inventoryAudit(page);
+      assertInventory(original,'original WU008 inventory');
+      originalG011=original.states.find(x=>x.id==='jalali_presentation')?.state==='AVAILABLE';
+      record.original_g011_enabled=originalG011;
+      if(originalG011){
+        setDisposableG011(false);
+        await view(page);
+      }
       if (phase==='used' && width===1280) {
         // Prove the temporary MU guard really commits the WordPress admin
         // header early on this server. A legitimate Cancel must redirect
@@ -99,11 +172,63 @@ try {
       check(await page.locator('.pgr-module-card').count()===7,'Normal module grid lost a module');
       check(await card(page,'iranian_currency').count()===1,'Currency missing from normal grid');
       check(await card(page,'national_id').count()===1,'National ID missing from normal grid');
+      const normalInventory=await inventoryAudit(page);
+      assertInventory(normalInventory,'normal');
+      check(normalInventory.states.filter(x=>x.state==='DISABLED').map(x=>x.id).join(',')==='jalali_presentation',
+        'Expected default six-enabled/one-disabled WordPress state');
+      record.normal_inventory=normalInventory;
+      record.checks.push('seven_bilingual_module_rows');
       const intro=await measure(page);
       check(intro.document_scroll_width<=width,'Normal Overview horizontal overflow');
       record.normal=intro;
       await capture(page,record,'normal',width);
+      // Verify focus navigation of a real row, not just a CSS selector or snapshot.
+      const firstRow=page.locator('.pgr-module-list > article.pgr-module-card').first();
+      await firstRow.locator('button[type=submit]').focus();
+      await page.keyboard.press('Tab');
+      const rowFocus=await firstRow.locator('a.button').evaluate(el=>({
+        focused:document.activeElement===el,
+        outline:getComputedStyle(el).outlineStyle,
+        boxShadow:getComputedStyle(el).boxShadow
+      }));
+      check(rowFocus.focused,'Module toggle is not followed by its own Help in tab order');
+      check(rowFocus.outline!=='none'||rowFocus.boxShadow!=='none',
+        'Module Help has no visible keyboard focus');
+      record.row_focus=rowFocus;
+      record.checks.push('module_row_keyboard_focus_order');
       if(phase==='used'){
+        // Verify actual WordPress all-enabled inventory, then always restore the G011 opt-in default.
+        try{
+          setDisposableG011(true);
+          await view(page);
+          const allEnabled=await inventoryAudit(page);
+          assertInventory(allEnabled,'all enabled');
+          check(allEnabled.states.every(x=>x.state==='AVAILABLE'),'All-enabled registry mismatch');
+          await capture(page,record,'all-enabled',width);
+          record.checks.push('all_enabled_inventory');
+        }finally{
+          setDisposableG011(false);
+          await view(page);
+          assertInventory(await inventoryAudit(page),'default restored');
+        }
+        if(width===320){
+          await page.evaluate(()=>{
+            const d=document.querySelector('.pgr-module-card__details');
+            d.querySelector('h2').textContent+='کلمه‌بلند'.repeat(100);
+            d.querySelector(':scope > p:not(.pgr-module-card__secondary):not(.pgr-module-card__feature)').textContent+='UnbrokenTranslatedLongContent'.repeat(70);
+          });
+          assertInventory(await inventoryAudit(page),'long translated content');
+          await capture(page,record,'long',width);
+          record.checks.push('long_content_no_overflow');
+          await view(page);
+        }
+        if(width===1280){
+          await page.locator('.pgr-module-card__controls button[type=submit]').first().evaluate(node=>node.remove());
+          check((await inventoryAudit(page)).errors.some(x=>x.startsWith('missing_or_wrong_action')),
+            'Negative control did not detect a missing module action');
+          await view(page);
+          record.checks.push('negative_missing_action_detected');
+        }
         // A real server-side first POST is required to create the pending ticket.
         let url=await toggle(page,'iranian_currency','0');
         notice(url,'confirm');
@@ -116,6 +241,18 @@ try {
         check(await decision.getByRole('link',{name:cancelLabel}).count()===1,'Cancel missing');
         check(await page.locator('.pgr-module-card').count()===6,'Decision module duplicated in grid');
         check(await card(page,'iranian_currency').count()===0,'Target module duplicated');
+        const decisionInventory=await inventoryAudit(page,'iranian_currency');
+        assertInventory(decisionInventory,'one decision plus six module rows');
+        record.decision_inventory=decisionInventory;
+        record.checks.push('decision_seven_total_distinct_module_identities');
+        if(width===1280){
+          await decision.evaluate(node=>node.parentElement.append(node.cloneNode(true)));
+          check((await inventoryAudit(page,'iranian_currency')).errors.includes('duplicate_or_missing_decision'),
+            'Negative control failed to catch duplicate decision');
+          await page.goto(url.href,{waitUntil:'domcontentloaded'});
+          assertInventory(await inventoryAudit(page,'iranian_currency'),'restored decision');
+          record.checks.push('negative_duplicate_decision_detected');
+        }
         check(await page.locator('.pgr-warning-note').count()===0,'Competing old warning retained');
         check(await decision.locator('.notice-warning').count()===1,'Missing or duplicated risk notice');
         const body=await decision.innerText();
@@ -153,6 +290,7 @@ try {
           check(await page.locator('.pgr-module-decision').count()===0,'Forged/mismatched GET produced actionable decision');
           check(await page.locator('input[name="confirm"][value="1"]').count()===0,'Forged GET exposed a confirmed POST');
           check(await page.locator('.pgr-module-grid').count()===1,'Forged GET left the Overview page');
+          assertInventory(await inventoryAudit(page),'invalid decision shows all seven modules');
           const warnings=await page.locator('.notice.notice-warning').allInnerTexts();
           const ownNotices=warnings.filter(text=>text.includes(invalidConfirmationNotice));
           check(ownNotices.length===1,
@@ -180,6 +318,7 @@ try {
         record.checks.push('cancel_http302_clean_location_before_header_flush');
         check(await decision.count()===0 && await card(page,'iranian_currency').count()===1,'Cancel did not restore normal grid');
         check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0','Cancel changed currency state');
+        assertInventory(await inventoryAudit(page),'cancel restored complete inventory');
         await capture(page,record,'cancel',width);
         await page.goto(url.href,{waitUntil:'domcontentloaded'});
         check(await page.locator('.pgr-module-decision').count()===0,
@@ -229,6 +368,7 @@ try {
           'Actual UNKNOWN confirmation did not disable currency');
         check((await page.locator('.notice-success').first().innerText()).includes('Iranian Rial / Toman'),
           'Success notice does not identify affected module');
+        assertInventory(await inventoryAudit(page),'confirmed state inventory');
         await capture(page,record,'confirmed',width);
         await toggle(page,'iranian_currency','1');
         check(await card(page,'iranian_currency').locator('input[name="enable"]').inputValue()==='0','Currency not restored');
@@ -254,6 +394,7 @@ try {
         check(await page.locator('.pgr-module-decision').count()===0,'UNUSED incorrectly requires second stage');
         check(await card(page,'national_id').locator('input[name="enable"]').inputValue()==='1',
           'UNUSED direct disable failed');
+        assertInventory(await inventoryAudit(page),'UNUSED direct disabled inventory');
         await capture(page,record,'disabled',width);
         await toggle(page,'national_id','1');
         check(await card(page,'national_id').locator('input[name="enable"]').inputValue()==='0',
@@ -262,7 +403,21 @@ try {
       }
       record.status='PASS';
     }catch(e){failed=true;record.error=String(e.stack||e);}
-    finally{report.cases.push(record);await context.close();}
+    finally{
+      if(originalG011!==null){
+        try{
+          // Never leave the licensed WU008 host's original G011 state changed.
+          setDisposableG011(originalG011);
+          record.original_g011_restored=true;
+        }catch(error){
+          failed=true;
+          record.status='FAILED';
+          record.error=(record.error||'')+'; G011 original state restoration failed: '+String(error);
+        }
+      }
+      report.cases.push(record);
+      await context.close();
+    }
   }
 }finally{
   report.status=failed?'INCOMPLETE':'CAPTURED';
