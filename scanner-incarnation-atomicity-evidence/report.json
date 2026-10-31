@@ -1,6 +1,6 @@
 {
   "evidence_class": "SCANNER_INCARNATION_SOURCE_AND_HISTORICAL_RUNTIME_QUALIFICATION_ONLY",
-  "status": "AWAITING_EXACT_NEW_HEAD_WU008",
+  "status": "EXACT_NEW_HEAD_WU008_QUALIFICATION_VERIFIED_AND_PUBLISHED",
   "canonical_main_verified_sha": "c7c5377e93f5f4f704acc797dc67ea8554b5dfd7",
   "qualification_pr": 104,
   "submitted_qualification_head": "f1503c2e060e349708bb645bf12d2f2e4b4b6212",
@@ -32,10 +32,11 @@
   ],
   "new_interleaving_proposed": {
     "mechanism": "test-only MU pre_option hook at Registry second get_option read invokes genuine Registry delete A and create B",
-    "actual_execution": "NOT_VERIFIED",
+    "actual_execution": "VERIFIED: authentic disposable WordPress admin-post and Registry, controlled single-request hook",
     "two_worker_concurrency": "NOT_PROVEN",
     "persistent_cache_consistency": "NOT_PROVEN",
-    "latency_ms": "NOT_MEASURED"
+    "latency_ms": 1.404,
+    "result": "Old A confirmation deleted changed B created at delete read boundary"
   },
   "authorization": "OWNER_DECISION_REQUIRED_FOR_VERSIONED_STORAGE_AND_ATOMIC_WRITE",
   "production_repair": "NOT_IMPLEMENTED",
@@ -43,6 +44,26 @@
   "urls": {
     "historic_report": "https://github.com/rezahh107/PersianGravity/blob/eab6ba4e8fa0a282fa399034d4f4700304d5aefd/scanner-incarnation-evidence/report.json",
     "draft_pr": "https://github.com/rezahh107/PersianGravity/pull/104",
-    "wu008_run": "https://github.com/rezahh107/PersianGravity/actions/runs/41234928792"
+    "wu008_run": "https://github.com/rezahh107/PersianGravity/actions/runs/41234928792",
+    "published_runtime_report": "https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/report.json",
+    "published_runtime_screenshots": "https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/README.md"
+  },
+  "exact_head_runtime": {
+    "source_sha": "f1503c2e060e349708bb645bf12d2f2e4b4b6212",
+    "wu008_run_id": 41234928792,
+    "wu008_conclusion": "success",
+    "evidence_publication_conclusion": "success",
+    "evidence_commit_sha": "9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2",
+    "cases": 8,
+    "original_case_screenshots": 22,
+    "interleaving_screenshots": 2,
+    "total_scanner_incarnation_screenshots": 24,
+    "interleaving_notice": "deleted",
+    "b_replacement_deleted_by_old_a": true,
+    "gfapi_mapping_unchanged": true,
+    "mutation_elapsed_ms": 1.404,
+    "true_parallel_workers": "NOT_PROVEN",
+    "published_report_url": "https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/report.json",
+    "published_readme_url": "https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/README.md"
   }
 }
