@@ -86,13 +86,26 @@ try {
     item.images.push(initial);
 
     let beforePost=created;
-    if (scenario!=='unchanged') {
+    const isMetadataEdit=['enabled_only','output_label_only'].includes(scenario);
+    if (scenario!=='unchanged' && !isMetadataEdit) {
       const deletion=invoke('delete_a',scenario);
       assert(!deletion.exists && deletion.gfapi_mapping_unchanged, 'independent legitimate delete A failed');
       item.steps.push('independent_canonical_registry_delete_A');
       beforePost=deletion;
     }
-    if (scenario!=='unchanged' && scenario!=='missing') {
+    if (isMetadataEdit) {
+      const edited=invoke('edit_a',scenario);
+      assert(edited.exists && edited.label==='Alpha' && edited.gfapi_mapping_unchanged,
+        'In-place Registry edit was not persisted');
+      beforePost=edited;
+      item.steps.push('canonical_registry_in_place_validated_metadata_edit');
+      const editedShot=scenario+'-recreated-B-before-old-POST.jpg';
+      response=await page.goto(decisionUrl,{waitUntil:'domcontentloaded'});
+      assert(response?.ok() && await page.locator('.pgr-profile-delete-decision').count()===1,
+        'Current edited profile GET confirmation missing');
+      await page.screenshot({path:path.join(out,editedShot),type:'jpeg',quality:80,fullPage:true});
+      item.images.push(editedShot);
+    } else if (scenario!=='unchanged' && scenario!=='missing') {
       const recreated=invoke('recreate_b',scenario);
       const expectedLabel=scenario==='changed_label'?'Beta':'Alpha';
       assert(recreated.exists && recreated.label===expectedLabel && recreated.gfapi_mapping_unchanged,
@@ -118,6 +131,14 @@ try {
       assert(await page.locator('.pgr-profile-delete-decision').count()===1,'B real decision missing');
       await page.screenshot({path:path.join(out,recreatedShot),type:'jpeg',quality:80,fullPage:true});
       item.images.push(recreatedShot);
+    }
+    if (scenario==='enabled_only') {
+      assert(beforePost.enabled===false && beforePost.trim===true &&
+        beforePost.keys.join(',')==='original', 'Enabled-only edit was not isolated');
+    }
+    if (scenario==='output_label_only') {
+      assert(beforePost.enabled===true && beforePost.outputs?.[0]?.label==='Replacement output label' &&
+        beforePost.keys.join(',')==='original', 'Output-label-only edit was not isolated');
     }
     item.before_stale_post=beforePost;
     // The exact POST form data obtained from A is submitted after independent Registry mutation.
