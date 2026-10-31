@@ -135,10 +135,14 @@ try {
     assert(await page.locator('.pgr-profile-delete-decision').count() === 1, 'Destructive GET deleted the profile');
     caseInfo.checks.push('destructive_get_no_mutation');
     // Cancel performs ordinary GET and must not submit or delete.
-    await page.locator('.pgr-profile-delete-decision a.button').click();
+    await Promise.all([
+      page.waitForNavigation({waitUntil:'domcontentloaded'}),
+      page.locator('.pgr-profile-delete-decision a.button').click()
+    ]);
     assert(new URL(page.url()).searchParams.get('action') !== 'delete', 'Cancel did not exit the decision');
-    assert(await page.locator('article.pgr-profile-card').filter({hasText: subject.id}).count() === 1,
-      'Cancel changed persisted profile');
+    assert(await page.locator('article.pgr-profile-card').filter({
+      has: page.locator('code[dir="ltr"]', {hasText: subject.id})
+    }).count() === 1, 'Cancel did not return to the selected persisted profile');
     caseInfo.screenshots.push(await shot(page,'cancel',width));
     caseInfo.checks.push('cancel_without_deleting');
     await open(page, listUrl + '&action=delete&profile=missing_wu008');
