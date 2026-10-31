@@ -903,6 +903,7 @@ jobs:
         shell: bash
         env:
           G014_EVIDENCE_DIR: /tmp/g014-flow-rtl-evidence
+          G014_AB_EVIDENCE_DIR: /tmp/g014-filter-ab-evidence
         run: |
           set -euo pipefail
           mkdir -p "$G014_EVIDENCE_DIR"
@@ -932,6 +933,58 @@ jobs:
           trap restore_g014 EXIT
           php -l tests/real-integration/g014-populated-inbox-fixture.php
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g014-populated-inbox-fixture.php
+          # Independent runtime A/B gate: unchanged production driver remains fill() here.
+          # Capture authentic 36-row behavior before approving any input-driver change.
+          mkdir -p "$G014_AB_EVIDENCE_DIR"
+          node --check tests/real-integration/g014-quick-filter-ab.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" user meta update runtime_admin locale fa_IR --path="$WU008_WP_PATH"
+          for mode in off on; do
+            G014_MODE="$mode" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $s = get_option("pgr_settings", array());
+              if (!is_array($s)) { throw new RuntimeException("Malformed G014 settings"); }
+              $s["gravity_flow_inbox_rtl"] = getenv("G014_MODE") === "on" ? 1 : 0;
+              update_option("pgr_settings", $s);
+            '
+            node tests/real-integration/g014-quick-filter-ab.mjs "$mode"
+          done
+          node --input-type=module <<'G014_AB_GATE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir = process.env.G014_AB_EVIDENCE_DIR;
+          const expectedId = 27;
+          for (const mode of ['off', 'on']) {
+            const report = JSON.parse(fs.readFileSync(path.join(dir, 'ab-' + mode + '.json'), 'utf8'));
+            if (report.exact_head !== process.env.WU008_PGR_SHA || report.flow_version !== '3.1.0' ||
+                report.trials.length !== 4 || report.trials.some(t => t.status !== 'OBSERVED'))
+              throw Error('Incomplete or foreign native G014 A/B evidence: ' + mode);
+            const find = (method, query) => report.trials.find(t => t.method === method && t.query === query);
+            const valid = '1900275300', invalid = 'G014-NONEXISTENT-QUERY-984321';
+            const filled = find('fill', valid), sequential = find('sequential', valid);
+            const filledBad = find('fill', invalid), sequentialBad = find('sequential', invalid);
+            const observations = [filled, sequential, filledBad, sequentialBad];
+            const gridId = filled.before?.gridId;
+            if (!gridId || observations.some(t => t.before.gridId !== gridId || t.after.gridId !== gridId ||
+                t.before.configuredRowCount !== 36 || t.before.rawBeta?.length !== 1 ||
+                Number(t.before.rawBeta[0].due_date) !== 1900275300 ||
+                t.before.rtl !== (mode === 'on') || t.before.nativeApiAvailable !== true ||
+                t.before.nativeDisplayedCount !== 36))
+              throw Error('Native 36-row Grid/data identity cannot be compared: ' + mode);
+            const filtered = t => t.after.nativeFilteredIds;
+            if (filled.after.events.some(e => e.type === 'keyup') ||
+                filledBad.after.events.some(e => e.type === 'keyup') ||
+                filtered(filled)?.length !== 36 || filtered(filledBad)?.length !== 36)
+              throw Error('fill() control contradicted native keyup hypothesis: ' + mode);
+            if (sequential.after.events.filter(e => e.type === 'keyup').length !== 10 ||
+                JSON.stringify(filtered(sequential)) !== JSON.stringify([expectedId]) ||
+                sequential.after.visibleCount !== 1 ||
+                filtered(sequentialBad)?.length !== 0 ||
+                sequentialBad.after.events.filter(e => e.type === 'keyup').length < 1)
+              throw Error('pressSequentially() failed independent genuine Grid filters: ' + mode);
+            console.log('G014_NATIVE_AB_GATE_PASS ' + mode + ' grid=' + gridId +
+              ' fill=unfiltered, sequential=[27], negative=empty');
+          }
+          G014_AB_GATE
           for site in fa_IR en_US; do
             for user in fa_IR en_US; do
               if [ "$site" = "fa_IR" ]; then
@@ -977,6 +1030,15 @@ jobs:
           G014_GATE
           restore_g014
           trap - EXIT
+
+      - name: Preserve independent native G014 Quick Filter A/B evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g014-native-input-ab-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/g014-filter-ab-evidence
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Preserve separate G014 runtime screenshots (not part of original publisher allowlist)
         if: always()
