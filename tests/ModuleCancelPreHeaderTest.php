@@ -13,6 +13,7 @@ final class ModuleCancelPreHeaderTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-usage.php';
 		require_once dirname( __DIR__ ) . '/admin/class-pgr-product-admin.php';
 
+		function get_current_screen() { return null; }
 		function add_menu_page( $title, $menu, $capability, $slug, $callback, $icon, $position ) {
 			return 'toplevel_page_' . $slug;
 		}
@@ -105,6 +106,7 @@ final class ModuleCancelPreHeaderTest extends TestCase {
 		eval( 'class PGR_Admin { const CAPABILITY = "manage_options"; const MENU_SLUG = "persian-gravityforms"; const PROFILES_SLUG = "pgr-scanner-profiles"; const SETTINGS_SLUG = "pgr-settings"; const STATUS_SLUG = "pgr-system-status"; }' );
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-module-registry.php';
 		require_once dirname( __DIR__ ) . '/admin/class-pgr-product-admin.php';
+		function get_current_screen() { return null; }
 		function add_menu_page( $title, $menu, $capability, $slug, $callback, $icon, $position ) { return 'toplevel_page_' . $slug; }
 		function add_submenu_page( $parent, $title, $menu, $capability, $slug, $callback ) { return $slug === $parent ? 'toplevel_page_' . $parent : 'other_' . $slug; }
 		function get_current_user_id() { return (int) $GLOBALS['pgr_cancel_test_user']; }
