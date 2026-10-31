@@ -1282,8 +1282,8 @@ jobs:
           function ok(value,message){if(!value)throw Error('SCANNER_DELETE_PUBLICATION_GATE: '+message);}
           ok(/^[a-f0-9]{40}$/.test(expectedHead||''),'missing exact PR Head');
           function rgb(css){
-            ok(typeof css==='string'&&/^rgba?\\(/.test(css),'missing computed CSS color');
-            const parts=css.match(/\\d+/g)?.slice(0,3).map(Number);
+            ok(typeof css==='string'&&/^rgba?\(/.test(css),'missing computed CSS color');
+            const parts=css.match(/\d+/g)?.slice(0,3).map(Number);
             ok(parts?.length===3,'malformed computed CSS color');return parts;
           }
           function luminance(css){
