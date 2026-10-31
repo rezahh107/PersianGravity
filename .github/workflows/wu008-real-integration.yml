@@ -866,7 +866,7 @@ jobs:
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
-      - name: Verify Scanner Profile deletion decisions against real registry and mapped GF form
+      - name: Verify Scanner Profile deletion appearance and mapping in real WordPress Chromium
         shell: bash
         run: |
           set -euo pipefail
@@ -1281,6 +1281,49 @@ jobs:
           const expectedHead=process.env.PGR_DECISION_EXPECTED_HEAD;
           function ok(value,message){if(!value)throw Error('SCANNER_DELETE_PUBLICATION_GATE: '+message);}
           ok(/^[a-f0-9]{40}$/.test(expectedHead||''),'missing exact PR Head');
+          function rgb(css){
+            ok(typeof css==='string'&&/^rgba?\\(/.test(css),'missing computed CSS color');
+            const parts=css.match(/\\d+/g)?.slice(0,3).map(Number);
+            ok(parts?.length===3,'malformed computed CSS color');return parts;
+          }
+          function luminance(css){
+            const v=rgb(css).map(n=>{const x=n/255;return x<=0.04045?x/12.92:((x+0.055)/1.055)**2.4;});
+            return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2];
+          }
+          function ratio(a,b){
+            const l=Math.max(luminance(a),luminance(b)),d=Math.min(luminance(a),luminance(b));
+            return (l+0.05)/(d+0.05);
+          }
+          function visualGate(c,locale,width){
+            const v=c.visual,scope=locale+'/'+width;
+            ok(c.checks.includes('destructive_visual_default_hover_focus_contrast')&&
+              v?.authority==='chromium-computed-style-wordpress','missing browser computed-style evidence '+scope);
+            for(const phase of ['default','hover','focus']){
+              const confirm=v.confirm?.[phase],cancel=v.cancel?.[phase];
+              ok(confirm&&cancel,'missing '+phase+' styles '+scope);
+              const [r,g,b]=rgb(confirm.background),cancelRGB=rgb(cancel.background);
+              ok(r>=100&&r>g*1.8&&r>b*1.6,'destructive solid-red style absent '+scope+'/'+phase);
+              ok(Math.max(...cancelRGB)-Math.min(...cancelRGB)<=24,'Cancel is not neutral '+scope+'/'+phase);
+              for(const [kind,style] of [['confirm',confirm],['cancel',cancel]]){
+                const actual=ratio(style.foreground,style.background);
+                ok(actual>=4.5,'insufficient text contrast '+scope+'/'+kind+'/'+phase);
+                const reported=v.contrast?.[kind+phase[0].toUpperCase()+phase.slice(1)];
+                ok(typeof reported==='number'&&Math.abs(actual-reported)<0.03,
+                  'unverifiable computed contrast '+scope+'/'+kind+'/'+phase);
+              }
+            }
+            ok(ratio(v.confirm.default.background,v.cancel.default.background)>=3&&
+              ratio(v.confirm.focus.background,v.cancel.focus.background)>=3,
+              'destructive action visually indistinguishable '+scope);
+            ok(ratio(v.confirm.hover.background,v.confirm.default.background)>=1.1,'hover invisible '+scope);
+            ok(Math.abs(ratio(v.confirm.default.background,v.cancel.default.background)-
+              v.contrast?.backgrounds)<0.03,'invalid background ratio '+scope);
+            for(const kind of ['confirm','cancel']){
+              const focus=v[kind].focus;
+              ok(focus.focusVisible===true&&focus.outline!=='none'&&focus.outlineWidth>=2,
+                'keyboard focus invisible '+scope+'/'+kind);
+            }
+          }
           const expected=new Set(['README.md']);
           const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
           for(const locale of ['fa_IR','en_US']){
@@ -1298,6 +1341,7 @@ jobs:
             for(const width of [1280,390,320]){
               const c=report.cases.find(x=>x.width===width);
               ok(c?.state==='PASS'&&c.js_enabled===(width!==320),'unverified viewport: '+locale+'/'+width);
+              visualGate(c,locale,width);
               ok(['destructive_get_no_mutation','keyboard_order_and_visible_focus','no_horizontal_overflow',
                 'built_in_non_deletable'].every(x=>c.checks.includes(x)), 'incomplete safety checks');
               if(width===320)ok(['wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
@@ -1319,7 +1363,7 @@ jobs:
           ok(actual.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
             'unexpected files or links in scanner evidence');
           ok(actual.length===expected.size,'missing scanner evidence files');
-          console.log('SCANNER_DELETE_PUBLICATION_GATE PASS: complete source-bound 39-file evidence');
+          console.log('SCANNER_DELETE_PUBLICATION_GATE PASS: complete source-bound 39-file evidence, six Chromium computed-style/contrast/focus proofs');
           PGR_SCANNER_DELETE_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links
