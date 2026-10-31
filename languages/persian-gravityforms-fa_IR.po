@@ -790,3 +790,27 @@ msgstr "Persian Gravity Forms به Gravity Forms نسخه %s یا جدیدتر �
 
 #~ msgid "Save"
 #~ msgstr "ذخیره"
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm module disable"
+msgstr "تأیید غیرفعال‌سازی ماژول"
+
+#: admin/class-pgr-product-admin.php
+msgid "Safe non-use could not be established. Disabling this module could affect existing forms or functionality."
+msgstr "مشخص نشده است که این ماژول در فرم‌ها یا قابلیت‌های موجود استفاده نمی‌شود. غیرفعال‌سازی آن ممکن است بر عملکرد موجود اثر بگذارد."
+
+#: admin/class-pgr-product-admin.php
+msgid "No module state has changed yet. Confirm only if you accept the possible consequences."
+msgstr "هنوز وضعیت ماژول تغییر نکرده است. فقط در صورت پذیرش این احتمال، تأیید کنید."
+
+#: admin/class-pgr-product-admin.php
+msgid "Confirm disable"
+msgstr "تأیید غیرفعال‌سازی"
+
+#: admin/class-pgr-product-admin.php
+msgid "Cancel and return"
+msgstr "لغو و بازگشت"
+
+#: admin/class-pgr-product-admin.php
+msgid "This disable confirmation is no longer valid. Start a new request from the module card."
+msgstr "این درخواست تأیید دیگر معتبر نیست. از کارت ماژول، درخواست جدیدی آغاز کنید."
