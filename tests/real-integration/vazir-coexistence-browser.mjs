@@ -21,7 +21,9 @@ fs.mkdirSync(root, {recursive:true});
 const normalized = profile.toLowerCase().replace('_','-');
 const prefix = normalized + '-' + locale;
 const origin = new URL(manifest.admin_url).origin;
-for (const value of [manifest.page_url,manifest.login_url,manifest.gravityflow_inbox_url]) {
+for (const value of [manifest.page_url,manifest.login_url,manifest.gravityflow_inbox_url,
+  manifest.gravityflow_frontend_inbox_url, manifest.gravityperks_frontend_url, manifest.g008_gravityview?.page_url]) {
+  if(!value)throw Error('Missing existing authenticated Gravity fixture URL');
   if (new URL(value).origin !== origin) throw Error('Untrusted WU008 application origin');
 }
 const adminPage = (slug) => new URL('admin.php?page=' + slug, manifest.admin_url).href;
@@ -32,6 +34,9 @@ const pages = [
   {name:'system-status',url:adminPage('persian-gravityforms-system-status'),selector:'.pgr-compatibility-status'},
   {name:'gravity-form',url:manifest.page_url,selector:'.gform_wrapper'},
   {name:'gravity-flow',url:manifest.gravityflow_inbox_url,selector:'body'},
+  {name:'flow-frontend',url:manifest.gravityflow_frontend_inbox_url,selector:'body'},
+  {name:'gravityview',url:manifest.g008_gravityview.page_url,selector:'body'},
+  {name:'gravityperks',url:manifest.gravityperks_frontend_url,selector:'body'},
 ];
 const browser = await chromium.launch({headless:true});
 const result = {schema:'g013-vazir-coexistence-v1',exact_head:process.env.WU008_PGR_SHA,
@@ -69,6 +74,42 @@ try {
       const call = await page.goto(spec.url,{waitUntil:'domcontentloaded'});
       if (!call?.ok()) throw Error('Authenticated page unavailable: ' + spec.name + ' ' + call?.status());
       await page.locator(spec.selector).first().waitFor({state:'attached',timeout:12000});
+      // Existing exact-vendor fixtures are already created by earlier WU008 steps.
+      // Exercise their actual dynamic controls rather than asserting static CSS only.
+      let interaction=null;
+      if(spec.name==='gravityview'){
+        const tokens=manifest.g008_gravityview.entries.map(x=>x.token);
+        await page.waitForFunction(
+          expected=>expected.every(token=>document.body?.innerText.includes(token)),
+          tokens,{timeout:20000});
+        interaction={type:'authentic-gravityview',tokens_seen:tokens.length};
+      }
+      if(spec.name==='gravityperks'){
+        const formId=Number(manifest.gravityperks_form_id);
+        const fileId=Number(manifest.gravityperks_file_upload_field_id);
+        const selectId=Number(manifest.gravityperks_advanced_select_field_id);
+        if(![formId,fileId,selectId].every(Number.isInteger))throw Error('Missing genuine GP add-on fixture');
+        const fileRoot='#field_'+formId+'_'+fileId;
+        const selectRoot='#field_'+formId+'_'+selectId;
+        await page.locator(fileRoot+' .gpfup__droparea').waitFor({timeout:15000});
+        await page.locator(selectRoot+' .ts-wrapper').waitFor({timeout:15000});
+        const input=page.locator(fileRoot+' input[type=file]').first();
+        await input.setInputFiles({name:'vazir-probe.txt',mimeType:'text/plain',
+          buffer:Buffer.from('G013 disposable WU008 coexistence fixture')});
+        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({timeout:15000});
+        const search=page.locator(selectRoot+' .ts-control input').first();
+        await search.focus();
+        await search.fill('');
+        await search.pressSequentially('Beta');
+        await page.locator(selectRoot+' .ts-dropdown .option:visible').first().waitFor({timeout:10000});
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Enter');
+        const selected=await page.locator('#input_'+formId+'_'+selectId).inputValue();
+        if(!selected)throw Error('Advanced Select interaction did not synchronize native value');
+        interaction={type:'authentic-file-upload-and-tom-select',
+          file_preview:true,selected_value: selected ? 'NONEMPTY' : 'EMPTY',
+          focus_verified:await page.locator(selectRoot+' .ts-control').count()>0};
+      }
       const data = await page.evaluate(async () => {
         await document.fonts.ready;
         const css = (sel) => {
@@ -92,8 +133,8 @@ try {
       if (locale==='fa_IR' && data.direction!=='rtl' && spec.name!=='gravity-form') {
         throw Error('Expected authentic RTL for ' + spec.name);
       }
-      const observed = {name:spec.name,width, ...data};
-      if (spec.name==='overview' || spec.name==='gravity-form') {
+      const observed = {name:spec.name,width, ...data,interaction};
+      if (['overview','gravity-form','gravityview','gravityperks'].includes(spec.name)) {
         const image=prefix + '-' + spec.name + '-' + width + '.jpg';
         await page.screenshot({path:path.join(root,image),type:'jpeg',quality:76,fullPage:true});
         observed.image=image;
@@ -113,7 +154,7 @@ try {
   if (profile==='BASELINE' && (loaded || delivered || fontUsed)) {
     throw Error('BASELINE is contaminated by Vazir typography');
   }
-  if (result.pages.length!==12) throw Error('Incomplete actual browser case matrix');
+  if (result.pages.length!==18) throw Error('Incomplete actual browser case matrix');
   result.status='PASS';
   console.log('G013_PROFILE_PASS '+profile+' '+locale);
 } catch(error) {
