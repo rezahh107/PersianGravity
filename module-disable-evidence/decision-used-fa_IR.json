@@ -1,0 +1,162 @@
+{
+  "exact_head": "13aa838254ccafb3bd3182e8a1c34d006971f35e",
+  "locale": "fa_IR",
+  "phase": "used",
+  "status": "CAPTURED",
+  "runtime": {
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "chromium": "140.0.7339.16",
+    "wordpress": "6.8.3"
+  },
+  "cases": [
+    {
+      "width": 1280,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-used-fa_IR-1280-normal.jpg",
+        "decision-used-fa_IR-1280-decision.jpg",
+        "decision-used-fa_IR-1280-cancel.jpg",
+        "decision-used-fa_IR-1280-confirmed.jpg"
+      ],
+      "checks": [
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "invalid_nonce_rejected",
+        "unknown_second_post_disabled",
+        "currency_restored",
+        "unauthorized_post_rejected"
+      ],
+      "normal": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 222.484375,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "decision": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "rtl",
+        "decision_top": 218.484375,
+        "grid_top": 588.875,
+        "decision_width": 1078,
+        "action_width": 1033,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "status": "PASS",
+      "images": [
+        "decision-used-fa_IR-390-normal.jpg",
+        "decision-used-fa_IR-390-decision.jpg",
+        "decision-used-fa_IR-390-cancel.jpg",
+        "decision-used-fa_IR-390-confirmed.jpg"
+      ],
+      "checks": [
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "normal": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 375.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "decision": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "rtl",
+        "decision_top": 371.890625,
+        "grid_top": 973.78125,
+        "decision_width": 368,
+        "action_width": 323,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      }
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "status": "PASS",
+      "images": [
+        "decision-used-fa_IR-320-normal.jpg",
+        "decision-used-fa_IR-320-decision.jpg",
+        "decision-used-fa_IR-320-cancel.jpg",
+        "decision-used-fa_IR-320-confirmed.jpg"
+      ],
+      "checks": [
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "normal": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "rtl",
+        "decision_top": null,
+        "grid_top": 375.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "decision": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "rtl",
+        "decision_top": 371.890625,
+        "grid_top": 1012.78125,
+        "decision_width": 298,
+        "action_width": 253,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      }
+    }
+  ],
+  "limits": [
+    "Automated focus and layout probes are not screen-reader or human usability acceptance"
+  ]
+}
