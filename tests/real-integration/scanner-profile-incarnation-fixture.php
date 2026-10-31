@@ -9,7 +9,7 @@ $root   = getenv( 'WU008_WP_PATH' );
 $dir    = getenv( 'WU008_ARTIFACT_DIR' );
 $action = getenv( 'WU008_INCAR_ACTION' );
 $case   = getenv( 'WU008_INCAR_CASE' );
-$cases  = array( 'unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b' );
+$cases  = array( 'unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b', 'identical_content' );
 $steps  = array( 'create_a', 'delete_a', 'recreate_b', 'inspect', 'cleanup' );
 if (
 	! $root || ! $dir || realpath( ABSPATH ) !== realpath( $root ) ||
@@ -35,6 +35,8 @@ $b['label']                      = 'changed_label' === $case ? 'Beta' : 'Alpha';
 if ( 'enabled_only' === $case ) {
 	$b               = $a;
 	$b['enabled']     = false;
+} elseif ( 'identical_content' === $case ) {
+	$b = $a;
 } elseif ( 'output_label_only' === $case ) {
 	$b                        = $a;
 	$b['outputs'][0]['label'] = 'Replacement output label';
