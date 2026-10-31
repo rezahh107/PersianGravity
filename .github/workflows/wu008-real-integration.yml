@@ -137,6 +137,7 @@ jobs:
           php -l tools/compatibility/gravityflow-package.php
           php -l tests/real-integration/setup-runtime.php
           php -l tests/real-integration/admin-ui-evidence-fixture.php
+          php -l tests/real-integration/module-disable-cancel-early-flush.php
           node --check tests/real-integration/admin-ui-evidence-browser.mjs
           php -l tests/real-integration/module-disable-decision-fixture.php
           node --check tests/real-integration/module-disable-decision-browser.mjs
@@ -870,7 +871,9 @@ jobs:
         run: |
           set -euo pipefail
           PGR_DECISION_FIXTURE_PHASE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-decision-fixture.php
+          PGR_CANCEL_FLUSH_PHASE=install php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-cancel-early-flush.php
           restore_decision_fixture() {
+            PGR_CANCEL_FLUSH_PHASE=remove php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-cancel-early-flush.php
             PGR_DECISION_FIXTURE_PHASE=cleanup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/module-disable-decision-fixture.php
             php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
           }
