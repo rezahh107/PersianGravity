@@ -275,6 +275,13 @@ Observed active-documentation drift at baseline:
 
 These observations do not rewrite historical 4.0/4.1 validation claims; they only establish the 4.2 starting state. Earlier detailed validation remains historical evidence in repository history.
 
+### Bounded stale delete confirmation — selected snapshot-lock repair (2026-10-31)
+
+- Confirmed earlier in authentic WU008 qualification: A=`alpha`/`Alpha` deleted, B recreated with identical ID/label but different parser/output, and original A nonce erroneously deleted B. Exact original Head `11e2c5974d37878ec6f2398aa99d5dc147629e11`; immutable evidence under `scanner-incarnation-evidence/` at commit `418a87077d3b72a739dbc40024e024e12e26d62d`.
+- Repair: bind nonce action to ID plus SHA-256 canonical complete validated Registry profile snapshot; reject old POST if new Registry state differs. Fingerprint includes enabled and output display labels, not only executable parser data. No persistent identity or schema added.
+- WU008 regression adds unchanged/missing/changed label/same-ID changed definition/enabled-only/output-label-only/fresh-B confirmation/identical-content recreation controls; the latter intentionally establishes a residual rather than falsely claiming protection.
+- Final Head, CI, authentic runtime outcome and publication link are evidence-dependent and must not be asserted before the actual final run. The Registry read-to-delete interval is not an atomic compare-and-delete.
+
 ## Scanner Profile deletion decision — focused correction (2026-10-31)
 
 - Expected user flow: custom profile Delete link uses GET to render a dedicated, translated confirmation with exact label, immutable LTR ID, mapping warning, Confirm delete and Cancel without deleting. Missing and built-in selections produce a non-destructive unavailable view; no competing Create action or browser dialog.
