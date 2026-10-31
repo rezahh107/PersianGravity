@@ -182,6 +182,20 @@ try {
       check(intro.document_scroll_width<=width,'Normal Overview horizontal overflow');
       record.normal=intro;
       await capture(page,record,'normal',width);
+      // Verify focus navigation of a real row, not just a CSS selector or snapshot.
+      const firstRow=page.locator('.pgr-module-list > article.pgr-module-card').first();
+      await firstRow.locator('button[type=submit]').focus();
+      await page.keyboard.press('Tab');
+      const rowFocus=await firstRow.locator('a.button').evaluate(el=>({
+        focused:document.activeElement===el,
+        outline:getComputedStyle(el).outlineStyle,
+        boxShadow:getComputedStyle(el).boxShadow
+      }));
+      check(rowFocus.focused,'Module toggle is not followed by its own Help in tab order');
+      check(rowFocus.outline!=='none'||rowFocus.boxShadow!=='none',
+        'Module Help has no visible keyboard focus');
+      record.row_focus=rowFocus;
+      record.checks.push('module_row_keyboard_focus_order');
       if(phase==='used'){
         // Verify actual WordPress all-enabled inventory, then always restore the G011 opt-in default.
         try{

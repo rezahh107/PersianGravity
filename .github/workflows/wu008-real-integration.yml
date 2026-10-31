@@ -1229,6 +1229,7 @@ jobs:
               if(phase==='used'&&!['all_enabled_inventory','decision_seven_total_distinct_module_identities','forged_get_rejected','mismatched_get_rejected','cancel_no_change','used_blocked','used_forged_confirm_blocked','unknown_second_post_disabled','currency_restored'].every(t=>c.checks.includes(t)))
                 throw Error('Decision safety scenario incomplete: '+n);
               if(!c.checks.includes('seven_bilingual_module_rows'))throw Error('Inventory semantics absent: '+n);
+              if(!c.checks.includes('module_row_keyboard_focus_order'))throw Error('Module keyboard focus unverified: '+n);
               if(phase==='used'&&c.width===320&&!c.checks.includes('long_content_no_overflow'))throw Error('Long content missing: '+n);
               if(phase==='used'&&c.width===1280&&!['negative_missing_action_detected','negative_duplicate_decision_detected'].every(x=>c.checks.includes(x)))throw Error('Mutation controls missing: '+n);
               if(phase==='unused'&&!c.checks.includes('unused_direct_disabled'))throw Error('UNUSED direct disable not proven: '+n);
