@@ -1,0 +1,48 @@
+{
+  "evidence_class": "SCANNER_INCARNATION_SOURCE_AND_HISTORICAL_RUNTIME_QUALIFICATION_ONLY",
+  "status": "AWAITING_EXACT_NEW_HEAD_WU008",
+  "canonical_main_verified_sha": "c7c5377e93f5f4f704acc797dc67ea8554b5dfd7",
+  "qualification_pr": 104,
+  "submitted_qualification_head": "f1503c2e060e349708bb645bf12d2f2e4b4b6212",
+  "historic_genuine_wu008_evidence_commit": "eab6ba4e8fa0a282fa399034d4f4700304d5aefd",
+  "historic_genuine_wu008_qualification_head": "c0c36ee7dab609b04fe585ba775052e2e7159040",
+  "historic_runtime": {
+    "wordpress": "6.8.3",
+    "php": "8.2.35",
+    "gravityforms": "3.1.1.1",
+    "persiangravity": "4.10.0"
+  },
+  "measured_historic_cases": 8,
+  "measured_historic_screenshots": 22,
+  "historic_outcomes": {
+    "unchanged": "A deleted on fresh A confirmation",
+    "missing": "old A confirmation rejected",
+    "changed_label": "recreated different B survives",
+    "same_label": "same label but changed parser/outputs B survives",
+    "enabled_only": "in-place change survives stale POST",
+    "output_label_only": "in-place output-label change survives stale POST",
+    "fresh_b": "old A rejected and fresh B confirmation deleted B",
+    "identical_content": "DEFECT: old A confirmation deleted identical-content B"
+  },
+  "source_observations": [
+    "Schema v1 normalizes away undeclared incarnation metadata",
+    "Fingerprint only SHA-256 of normalized content",
+    "Admin validates snapshot, then Registry deletes using ID-only second option read",
+    "Registry writes whole non-autoloaded option with update_option; persistence result ignored"
+  ],
+  "new_interleaving_proposed": {
+    "mechanism": "test-only MU pre_option hook at Registry second get_option read invokes genuine Registry delete A and create B",
+    "actual_execution": "NOT_VERIFIED",
+    "two_worker_concurrency": "NOT_PROVEN",
+    "persistent_cache_consistency": "NOT_PROVEN",
+    "latency_ms": "NOT_MEASURED"
+  },
+  "authorization": "OWNER_DECISION_REQUIRED_FOR_VERSIONED_STORAGE_AND_ATOMIC_WRITE",
+  "production_repair": "NOT_IMPLEMENTED",
+  "ui_or_runtime_changed": false,
+  "urls": {
+    "historic_report": "https://github.com/rezahh107/PersianGravity/blob/eab6ba4e8fa0a282fa399034d4f4700304d5aefd/scanner-incarnation-evidence/report.json",
+    "draft_pr": "https://github.com/rezahh107/PersianGravity/pull/104",
+    "wu008_run": "https://github.com/rezahh107/PersianGravity/actions/runs/41234928792"
+  }
+}
