@@ -1325,7 +1325,7 @@ jobs:
           const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
           for(const p of profiles){
             required.add(p+'.json');
-            for(const width of [1280,390])for(const screen of ['overview','gravity-form'])
+            for(const width of [1280,390])for(const screen of ['overview','gravity-form','gravityview','gravityperks'])
               required.add(p+'-'+screen+'-'+width+'.jpg');
           }
           const actual=fs.readdirSync(dir,{withFileTypes:true});
@@ -1342,7 +1342,7 @@ jobs:
             throw Error('G013 publisher: real plugin settings not verified');
           const compare=read('comparison.json');
           if(compare.status!=='PASS'||compare.exact_head!==head||compare.profiles.length!==4||
-            compare.comparisons?.length!==24)throw Error('G013 publisher: incomplete comparison');
+            compare.comparisons?.length!==36)throw Error('G013 publisher: incomplete comparison');
           for(const e of actual){
             if(!required.has(e.name)||!e.isFile()||e.isSymbolicLink())throw Error('G013 publisher: bad file '+e.name);
             const size=fs.statSync(path.join(dir,e.name)).size;
@@ -1355,12 +1355,12 @@ jobs:
           }
           for(const p of profiles){
             const d=read(p+'.json');
-            if(d.status!=='PASS'||d.exact_head!==head||d.pages?.length!==12||
+            if(d.status!=='PASS'||d.exact_head!==head||d.pages?.length!==18||
               d.profile!==(p.startsWith('baseline')?'BASELINE':'WITH_VAZIR')||
               d.locale!==p.substring(p.indexOf('-')+1))
               throw Error('G013 publisher: wrong profile identity '+p);
           }
-          console.log('G013_PUBLISH_GATE_PASS exact-Head, 4 real profiles, 24 compared pages, 16 JPEG');
+          console.log('G013_PUBLISH_GATE_PASS exact-Head, 4 real profiles, 36 compared pages, 32 JPEG');
           G013_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links
