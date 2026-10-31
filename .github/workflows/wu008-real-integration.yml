@@ -909,6 +909,7 @@ jobs:
         env:
           G014_EVIDENCE_DIR: /tmp/g014-flow-rtl-evidence
           G014_AB_EVIDENCE_DIR: /tmp/g014-filter-ab-evidence
+          G014_RESIZE_PROBE_DIR: /tmp/g014-resize-investigation
         run: |
           set -euo pipefail
           mkdir -p "$G014_EVIDENCE_DIR"
@@ -938,6 +939,22 @@ jobs:
           trap restore_g014 EXIT
           php -l tests/real-integration/g014-populated-inbox-fixture.php
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/g014-populated-inbox-fixture.php
+          # Observation only: native geometry, hit targets, pointer sequence and
+          # resizable/locked columns in both OFF and ON modes. Original G014
+          # interaction runner and all its acceptance assertions remain intact.
+          mkdir -p "$G014_RESIZE_PROBE_DIR"
+          node --check tests/real-integration/g014-resize-investigation.mjs
+          php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          php "$WU008_WP_CLI" user meta update runtime_admin locale fa_IR --path="$WU008_WP_PATH"
+          for mode in off on; do
+            G014_MODE="$mode" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $s = get_option("pgr_settings", array());
+              if (!is_array($s)) { throw new RuntimeException("Malformed G014 setting"); }
+              $s["gravity_flow_inbox_rtl"] = getenv("G014_MODE") === "on" ? 1 : 0;
+              update_option("pgr_settings", $s);
+            '
+            node tests/real-integration/g014-resize-investigation.mjs "$mode"
+          done
           # Independent runtime A/B gate: unchanged production driver remains fill() here.
           # Capture authentic 36-row behavior before approving any input-driver change.
           mkdir -p "$G014_AB_EVIDENCE_DIR"
@@ -1038,6 +1055,15 @@ jobs:
           G014_GATE
           restore_g014
           trap - EXIT
+
+      - name: Preserve independent G014 Resize pointer/geometry observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g014-resize-investigation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/g014-resize-investigation
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Preserve independent native G014 Quick Filter A/B evidence
         if: always()
