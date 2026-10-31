@@ -31,6 +31,16 @@ jobs:
       - name: Validate own-plugin source catalog coverage
         run: composer i18n:source-check
 
+      - name: Temporary G014 exact gettext artifact handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          msgfmt --check --output-file=/tmp/g014-verified.mo languages/persian-gravityforms-fa_IR.po
+          echo 'G014_MO_BASE64_BEGIN'
+          base64 -w0 /tmp/g014-verified.mo
+          echo
+          echo 'G014_MO_BASE64_END'
+
       - name: Validate Persian gettext catalog
         shell: bash
         run: |
