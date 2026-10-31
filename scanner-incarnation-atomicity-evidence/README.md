@@ -3,7 +3,7 @@
 **Classification: qualification-only. No production repair.**  
 Fresh canonical `main` verified as `c7c5377e93f5f4f704acc797dc67ea8554b5dfd7`.  
 Draft qualification PR: [#104](https://github.com/rezahh107/PersianGravity/pull/104), submitted Head `f1503c2e060e349708bb645bf12d2f2e4b4b6212`.  
-[New WU008 run](https://github.com/rezahh107/PersianGravity/actions/runs/41234928792) was **IN_PROGRESS at this checkpoint**; no new WU008 PASS or race observation is claimed.
+[Exact-Head WU008 run](https://github.com/rezahh107/PersianGravity/actions/runs/41234928792) and its **published evidence gate** completed successfully. The independent immutable [new runtime report](https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/report.json) is bound to source Head `f1503c2e060e349708bb645bf12d2f2e4b4b6212` and evidence commit `9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2`.
 
 ## Historical real-runtime negative controls
 
@@ -26,7 +26,7 @@ Read the [immutable genuine WU008 report](https://github.com/rezahh107/PersianGr
 
 At exact reviewed main, the Registry persists version-1 custom profiles in a single non-autoloaded option and normalizes away unknown fields. Its fingerprint equals content, not object incarnation. The admin handler verifies A, then invokes an ID-only Registry delete that re-reads the option; `update_option` has no expected-old-value condition. See [Registry](https://github.com/rezahh107/PersianGravity/blob/c7c5377e93f5f4f704acc797dc67ea8554b5dfd7/includes/class-pgr-scanner-profile-registry.php) and [admin handler](https://github.com/rezahh107/PersianGravity/blob/c7c5377e93f5f4f704acc797dc67ea8554b5dfd7/admin/class-pgr-admin.php).
 
-The PR's new test-only MU hook injects a changed B at the exact second Registry read after handler validation. **This new interleaving test is not yet proven executed**; if WU008 runs and passes the publication gate, look for a separate source-bound run-attempt evidence branch, `interleaving-marker.json`, two JPEGs, and `boundary_interleaving` in that report. This is a deterministic same-request interleaving, not a two-worker transaction.
+The PR's new test-only MU hook injects a changed B at the exact second Registry read after handler validation. **New observed negative control:** The real authenticated WU008 POST, test-only hook, and actual Registry API persisted changed B between the handler check and Registry delete read; the old A confirmation deleted B. The [published marker](https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/interleaving-marker.json) measured `mutation_elapsed_ms=1.404` for the injected mutation only (not the full HTTP operation or two-worker latency). The new evidence contains **8 original scenarios + 1 interleaving scenario, 24 JPEG screenshots**, complete [readable image index](https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/README.md) and unchanged GFAPI mappings. This is a deterministic **same-request** interleaving, **not** a two-worker transaction; concurrent caches remain **NOT_PROVEN**.
 
 ## Approval gate
 
