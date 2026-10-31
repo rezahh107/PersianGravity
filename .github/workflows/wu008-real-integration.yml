@@ -967,18 +967,21 @@ jobs:
             if (!gridId || observations.some(t => t.before.gridId !== gridId || t.after.gridId !== gridId ||
                 t.before.configuredRowCount !== 36 || t.before.rawBeta?.length !== 1 ||
                 Number(t.before.rawBeta[0].due_date) !== 1900275300 ||
-                t.before.rtl !== (mode === 'on') || t.before.nativeApiAvailable !== true ||
-                t.before.nativeDisplayedCount !== 36))
+                t.before.rtl !== (mode === 'on') || t.before.visibleCount !== 20))
               throw Error('Native 36-row Grid/data identity cannot be compared: ' + mode);
-            const filtered = t => t.after.nativeFilteredIds;
+            const observed = t => t.after.visibleRowIds;
+            // Gravity Flow clones gflow_config.grid_options into its internal AG Grid
+            // object; the config object is not an authoritative public API handle.
+            // Assert actual native rendered rows and record native pager/overlay
+            // alongside any API readings available, without inventing an API.
             if (filled.after.events.some(e => e.type === 'keyup') ||
                 filledBad.after.events.some(e => e.type === 'keyup') ||
-                filtered(filled)?.length !== 36 || filtered(filledBad)?.length !== 36)
+                observed(filled).length !== 20 || observed(filledBad).length !== 20)
               throw Error('fill() control contradicted native keyup hypothesis: ' + mode);
             if (sequential.after.events.filter(e => e.type === 'keyup').length !== 10 ||
-                JSON.stringify(filtered(sequential)) !== JSON.stringify([expectedId]) ||
+                JSON.stringify(observed(sequential)) !== JSON.stringify([expectedId]) ||
                 sequential.after.visibleCount !== 1 ||
-                filtered(sequentialBad)?.length !== 0 ||
+                observed(sequentialBad).length !== 0 ||
                 sequentialBad.after.events.filter(e => e.type === 'keyup').length < 1)
               throw Error('pressSequentially() failed independent genuine Grid filters: ' + mode);
             console.log('G014_NATIVE_AB_GATE_PASS ' + mode + ' grid=' + gridId +
