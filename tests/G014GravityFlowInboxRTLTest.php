@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\TestCase;
 
-
 /**
  * Unit double for the public native Task producer seam; actual vendor source
  * is separately exercised in the WU008 licensed integration job.
@@ -67,7 +66,22 @@ final class G014GravityFlowInboxRTLTest extends TestCase {
 			$adapter->hooks();
 			$this->assertSame( $config, $adapter->inbox_grid_config( $config ) );
 		}
-		$this->assertArrayNotHasKey( 'gravityflow
+		$this->assertArrayNotHasKey( 'gravityflow_js_config_shared', $GLOBALS['pgr_test_filters'] );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_unadmitted_vendor_and_wrong_basename_do_not_register() {
+		$this->load_integration();
+		$GLOBALS['pgr_test_options']['pgr_settings'] = array( 'gravity_flow_inbox_rtl' => 1 );
+		define( 'GRAVITY_FLOW_VERSION', '9.9.9' );
+		define( 'GRAVITY_FLOW_PLUGIN_BASENAME', 'other/gravityflow.php' );
+		$adapter = new PGR_Gravity_Flow_Inbox_RTL();
+		$adapter->hooks();
+		$this->assertArrayNotHasKey( 'gravityflow_js_config_shared', $GLOBALS['pgr_test_filters'] );
+		$this->assertSame( array( 'grids' => array() ), $adapter->inbox_grid_config( array( 'grids' => array() ) ) );
+	}
+
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
 	public function test_admitted_flow_uses_native_producer_and_preserves_other_grids() {
