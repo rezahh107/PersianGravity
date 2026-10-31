@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "evidence_class": "AUTHENTIC_LICENSED_WU008_ADMIN_BROWSER",
+  "exact_head": "ba3fb9cd40bbde27466e3f7a082c8bfd909c6972",
+  "mode": "disabled",
+  "locale": "en_US",
+  "expected_direction": "ltr",
+  "runtime": {
+    "wordpress": "6.8.3",
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "playwright": "1.55.0",
+    "chromium": "140.0.7339.16",
+    "device_scale_factor": 1
+  },
+  "cases": [
+    {
+      "name": "overview-disabled",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "DISABLED"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "DISABLED"
+          }
+        ]
+      },
+      "screenshot": "ui-disabled-en_US-overview-disabled-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-disabled-warning",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-profiles-disabled-warning-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings-disabled-notice",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-settings-disabled-notice-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status-disabled",
+      "width": 1280,
+      "height": 900,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-system-status-disabled-1280.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "overview-disabled",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": [
+          {
+            "id": "national_id",
+            "state": "DISABLED"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "DISABLED"
+          }
+        ]
+      },
+      "screenshot": "ui-disabled-en_US-overview-disabled-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-disabled-warning",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-profiles-disabled-warning-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings-disabled-notice",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-settings-disabled-notice-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "system-status-disabled",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "VISUAL_FINDING",
+      "measured": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [
+          {
+            "element": "table",
+            "class_name": "widefat striped",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 31,
+            "right": 791
+          },
+          {
+            "element": "thead",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Capability\n\t\t\t\t\t\tState\n\t\t\t\t\t\tReason\n\t\t\t\t\t\tObserved Grav",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Reason",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Observed Gravity Flow",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "th",
+            "class_name": "",
+            "text": "Last observed",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "tbody",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Date createdgravityflow.inbox.date-created\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": 344,
+            "right": 561
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "PGR-GFLOW-CONVERSION-UNAVAILABLE",
+            "left": 354,
+            "right": 524
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "3.1.0",
+            "left": 561,
+            "right": 669
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "3.1.0",
+            "left": 572,
+            "right": 621
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "2026-10-31 09:56:19 UTC",
+            "left": 669,
+            "right": 790
+          },
+          {
+            "element": "code",
+            "class_name": "pgr-ltr",
+            "text": "2026-10-31 09:56:19 UTC",
+            "left": 679,
+            "right": 777
+          },
+          {
+            "element": "tr",
+            "class_name": "",
+            "text": "Inbox — Last updatedgravityflow.inbox.last-updated\n\t\t\t\t",
+            "left": 32,
+            "right": 790
+          },
+          {
+            "element": "td",
+            "class_name": "",
+            "text": "The bounded Persian presentation conversion could not s",
+            "left": 344,
+            "right": 561
+          }
+        ],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-system-status-disabled-390.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "profiles-disabled-warning",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-profiles-disabled-warning-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    },
+    {
+      "name": "settings-disabled-notice",
+      "width": 320,
+      "height": 700,
+      "dpr": 1,
+      "locale": "en_US",
+      "mode": "disabled",
+      "state": "CAPTURED_NO_DETECTED_OVERFLOW",
+      "measured": {
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "horizontal_overflow": false,
+        "out_of_view_elements": [],
+        "html_lang": "en-US",
+        "html_dir": "",
+        "effective_root_direction": "ltr",
+        "effective_fonts": {
+          "body": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "page": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "13px",
+            "direction": "ltr"
+          },
+          "heading": {
+            "family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen-Sans, Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif",
+            "size": "23px",
+            "direction": "ltr"
+          }
+        },
+        "plugin_style_loaded": true,
+        "module_states": []
+      },
+      "screenshot": "ui-disabled-en_US-settings-disabled-notice-320.jpg",
+      "interaction": "READ_ONLY_NAVIGATION"
+    }
+  ],
+  "negative_control": null,
+  "not_proven": [
+    "Screen reader output and full accessibility audit",
+    "Actual save/edit/delete/duplicate profile interactions",
+    "Second-stage module-disable confirmation and live data effects",
+    "Other plugin versions, user roles and production environment"
+  ],
+  "observed_module_state": [
+    {
+      "id": "national_id",
+      "state": "DISABLED"
+    },
+    {
+      "id": "jalali_date",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "jalali_presentation",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_address",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "digit_normalization",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "iranian_currency",
+      "state": "AVAILABLE"
+    },
+    {
+      "id": "structured_scanner",
+      "state": "DISABLED"
+    }
+  ],
+  "status": "CAPTURED"
+}
