@@ -39,10 +39,6 @@ jobs:
           trap 'rm -f "$tmp_mo"' EXIT
           composer i18n:translation-check
           msgfmt --check --output-file="$tmp_mo" languages/persian-gravityforms-fa_IR.po
-          echo 'PGR_OWN_UI_MO_BUILD_BEGIN'
-          base64 -w0 "$tmp_mo"
-          echo
-          echo 'PGR_OWN_UI_MO_BUILD_END'
           msgcmp languages/persian-gravityforms-fa_IR.po languages/persian-gravityforms.pot
           cmp -s "$tmp_mo" languages/persian-gravityforms-fa_IR.mo
 
