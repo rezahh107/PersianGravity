@@ -16,7 +16,7 @@ if (!root || !wpcli || !dir || !manifest || !password || !/^[0-9a-f]{40}$/.test(
 }
 const runtime = JSON.parse(fs.readFileSync(manifest, 'utf8'));
 if (runtime.persiangravity_source_commit !== sha) throw Error('SCANNER_INCAR: runtime source mismatch');
-const cases = ['unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b'];
+const cases = ['unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b', 'identical_content'];
 const out = path.join(dir, 'scanner-incarnation-evidence');
 fs.mkdirSync(out, {recursive: true});
 const assert = (cond, detail) => {if (!cond) throw Error('SCANNER_INCAR: '+detail);};
@@ -43,7 +43,9 @@ const report = {
     'Disposable WordPress only, not production; no production plugin source changes',
     'WP-CLI uses the canonical Registry API for independent deletion and recreation',
     'No raw session cookies or nonces are stored in evidence',
-    'Runtime observation alone does not establish whether incarnation protection is Owner-approved policy'
+    'Runtime observation alone does not establish whether incarnation protection is Owner-approved policy',
+    'Identical-content recreation is not distinguishable by a deterministic content fingerprint',
+    'A replacement racing between fresh state check and Registry deletion remains unverified'
   ]
 };
 try {
@@ -95,7 +97,11 @@ try {
       const expectedLabel=scenario==='changed_label'?'Beta':'Alpha';
       assert(recreated.exists && recreated.label===expectedLabel && recreated.gfapi_mapping_unchanged,
         'B was not persisted as a valid same-ID replacement');
-      if (scenario==='enabled_only') {
+      if (scenario==='identical_content') {
+        assert(recreated.enabled===true && recreated.trim===true && recreated.normalize===true &&
+          recreated.keys.join(',')==='original' && recreated.outputs?.[0]?.label==='Original',
+          'identical-content recreation test invalid');
+      } else if (scenario==='enabled_only') {
         assert(recreated.enabled===false && recreated.keys.join(',')==='original' &&
           recreated.trim===true, 'enabled-only change did not persist');
       } else if (scenario==='output_label_only') {
@@ -121,10 +127,10 @@ try {
     const notice=location.searchParams.get('pgr_notice');
     const after=invoke('inspect',scenario);
     assert(after.gfapi_mapping_unchanged===true,'real mapped Gravity Forms field changed');
-    const expectedNotice=scenario==='unchanged'?'deleted':'delete_error';
+    const expectedNotice=['unchanged','identical_content'].includes(scenario)?'deleted':'delete_error';
     assert(notice===expectedNotice,
       'Unexpected original nonce POST response: '+scenario+' actual '+notice+' expected '+expectedNotice);
-    const expectedExist=!['unchanged','missing'].includes(scenario);
+    const expectedExist=!['unchanged','missing','identical_content'].includes(scenario);
     assert(after.exists===expectedExist,
       'Unexpected Registry state after old A POST '+scenario+': '+JSON.stringify(after));
     if (expectedExist) {
@@ -159,7 +165,7 @@ try {
     }
     response=await page.goto(listUrl,{waitUntil:'domcontentloaded'});
     assert(response?.ok(),'post-state admin list unavailable');
-    const finalShot=scenario+'-after-old-POST.jpg';
+    const finalShot=scenario==='fresh_b'?'fresh_b-after-new-POST.jpg':scenario+'-after-old-POST.jpg';
     await page.screenshot({path:path.join(out,finalShot),type:'jpeg',quality:80,fullPage:true});
     item.images.push(finalShot);
     const cleaned=invoke('cleanup',scenario);
@@ -179,6 +185,9 @@ try {
   }
   assert(byCase.fresh_b.fresh_b?.deleted === true && byCase.fresh_b.fresh_b?.gfapi_mapping_unchanged === true,
     'fresh B legitimate confirmation was blocked');
+  assert(byCase.identical_content.response.notice==='deleted' &&
+    byCase.identical_content.before_stale_post.exists && !byCase.identical_content.after_post.exists,
+    'identical content limitation was not honestly exercised');
   report.finding='BOUNDED_SNAPSHOT_REPAIR_VERIFIED';
   report.state='QUALIFICATION_COMPLETE';
   const lines=[
