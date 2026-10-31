@@ -165,6 +165,19 @@ final class PGR_Admin {
 			self::SETTINGS_SLUG,
 			'pgr_national_id_defaults'
 		);
+		add_settings_section(
+			'pgr_gravity_flow_inbox',
+			is_rtl() ? 'Gravity Flow — تنظیم جهت صندوق کارها' : __( 'Gravity Flow Inbox layout', 'persian-gravityforms' ),
+			'__return_false',
+			self::SETTINGS_SLUG
+		);
+		add_settings_field(
+			'gravity_flow_inbox_rtl',
+			is_rtl() ? 'اصلاح راست‌به‌چپ جدول‌های Gravity Flow' : __( 'Enable true RTL for Gravity Flow Inbox', 'persian-gravityforms' ),
+			array( $this, 'render_gravity_flow_inbox_rtl' ),
+			self::SETTINGS_SLUG,
+			'pgr_gravity_flow_inbox'
+		);
 	}
 
 	/**
@@ -175,7 +188,10 @@ final class PGR_Admin {
 	 */
 	public function sanitize_settings( $input ) {
 		$input = is_array( $input ) ? $input : array();
-		return array( 'default_force_english' => empty( $input['default_force_english'] ) ? 0 : 1 );
+		return array(
+			'default_force_english' => empty( $input['default_force_english'] ) ? 0 : 1,
+			'gravity_flow_inbox_rtl' => isset( $input['gravity_flow_inbox_rtl'] ) && '1' === (string) $input['gravity_flow_inbox_rtl'] ? 1 : 0,
+		);
 	}
 
 	/**
@@ -190,6 +206,37 @@ final class PGR_Admin {
 			<input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[default_force_english]" value="1" <?php checked( ! empty( $settings['default_force_english'] ) ); ?> />
 			<?php esc_html_e( 'Convert Persian/Arabic digits to ASCII in new National ID fields while the user types. Server-side normalization always remains authoritative.', 'persian-gravityforms' ); ?>
 		</label>
+		<?php
+	}
+
+	/**
+	 * Render the G-014 opt-in without changing existing site behavior.
+	 *
+	 * @return void
+	 */
+	public function render_gravity_flow_inbox_rtl() {
+		$settings = get_option( self::OPTION, array() );
+		$enabled  = is_array( $settings ) && isset( $settings['gravity_flow_inbox_rtl'] ) && 1 === $settings['gravity_flow_inbox_rtl'];
+		?>
+		<label>
+			<input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[gravity_flow_inbox_rtl]" value="1" <?php checked( $enabled ); ?> />
+			<?php
+			echo esc_html(
+				is_rtl()
+					? 'فعال‌سازی جهت راست‌به‌چپ واقعی برای موتور جدول Inbox؛ پیش‌فرض خاموش است.'
+					: __( 'Enable native RTL in the admitted Gravity Flow Inbox grid. Default: off.', 'persian-gravityforms' )
+			);
+			?>
+		</label>
+		<p class="description">
+			<?php
+			echo esc_html(
+				is_rtl()
+					? 'فقط برای Gravity Flow 3.1.0 آزمایش‌شده؛ هنگام خاموش‌بودن هیچ تنظیم جهتی تغییر نمی‌کند. مقدار RTL معتبرِ افزونه‌های دیگر حفظ می‌شود.'
+					: __( 'Qualified for Gravity Flow 3.1.0 only. Disabled: no direction override. Explicit settings from other integrations are preserved.', 'persian-gravityforms' )
+			);
+			?>
+		</p>
 		<?php
 	}
 
