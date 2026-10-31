@@ -60,6 +60,63 @@ async function noOverflow(page, width) {
   assert(measure.direction === (locale === 'fa_IR' ? 'rtl' : 'ltr'), 'Wrong document direction');
   return measure;
 }
+
+function rgb(css) {
+  const channels = css.match(/^rgba?\\(\\s*(\\d+)\\s*[, ]+\\s*(\\d+)\\s*[, ]+\\s*(\\d+)/);
+  assert(channels !== null, 'Unrecognized computed CSS color: ' + css);
+  return channels.slice(1,4).map(Number);
+}
+function luminance(css) {
+  const channels = rgb(css).map(c => {
+    const s = c / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+function contrast(a, b) {
+  const high = Math.max(luminance(a), luminance(b));
+  const low = Math.min(luminance(a), luminance(b));
+  return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+}
+function isDestructiveRed(css) {
+  const [r, g, b] = rgb(css);
+  return r >= 100 && r > g * 1.8 && r > b * 1.6;
+}
+function isNeutral(css) {
+  const channels = rgb(css);
+  return Math.max(...channels) - Math.min(...channels) <= 24;
+}
+async function computedButton(locator) {
+  return locator.evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      background: style.backgroundColor, foreground: style.color, border: style.borderTopColor,
+      outline: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth),
+      focusVisible: el.matches(':focus-visible')
+    };
+  });
+}
+function assertAccessibleButton(style, phase) {
+  const ratio = contrast(style.foreground, style.background);
+  assert(ratio >= 4.5, phase + ' text contrast < 4.5: ' + JSON.stringify({style, ratio}));
+  return ratio;
+}
+function assertDestructiveButton(style, phase) {
+  const ratio = assertAccessibleButton(style, phase);
+  assert(isDestructiveRed(style.background), phase + ' is not filled destructive red (original WordPress blue-on-blue failure): ' +
+    JSON.stringify(style));
+  return ratio;
+}
+function assertNeutralCancel(style, phase) {
+  const ratio = assertAccessibleButton(style, phase);
+  assert(isNeutral(style.background), phase + ' Cancel background is not neutral: ' + JSON.stringify(style));
+  return ratio;
+}
+function assertVisibleFocus(style, phase) {
+  assert(style.focusVisible && style.outline !== 'none' && style.outlineWidth >= 2,
+    phase + ' has no visible keyboard focus outline: ' + JSON.stringify(style));
+}
+
 const seenErrors = [];
 try {
   for (const width of [1280, 390, 320]) {
@@ -117,16 +174,57 @@ try {
     assert(await actionForm.locator('button[type="submit"]').count() === 1, 'Explicit confirm action missing');
     assert(await decision.locator('a.button').count() === 1, 'Cancel navigation missing');
     const focused = actionForm.locator('button[type="submit"]');
+    const cancel = decision.locator('a.button');
+    const confirmDefault = await computedButton(focused);
+    const cancelDefault = await computedButton(cancel);
+    // These are real Chromium computed styles with WordPress core CSS loaded, not source-only assertions.
+    const defaultRatio = assertDestructiveButton(confirmDefault, 'Confirm/default');
+    const cancelRatio = assertNeutralCancel(cancelDefault, 'Cancel/default');
+    const backgroundRatio = contrast(confirmDefault.background, cancelDefault.background);
+    assert(backgroundRatio >= 3, 'Confirm/Cancel backgrounds indistinguishable: ' +
+      JSON.stringify({confirmDefault,cancelDefault,backgroundRatio}));
+    await focused.hover();
+    await page.waitForTimeout(200); // Allow native WordPress hover transition to settle.
+    const confirmHover = await computedButton(focused);
+    const hoverRatio = assertDestructiveButton(confirmHover, 'Confirm/hover');
+    assert(contrast(confirmDefault.background,confirmHover.background) >= 1.1,
+      'Confirm hover fails to produce a visible state change');
+    await cancel.hover();
+    await page.waitForTimeout(200);
+    const cancelHover = await computedButton(cancel);
+    const cancelHoverRatio = assertNeutralCancel(cancelHover, 'Cancel/hover');
+
     await focused.focus();
     await page.keyboard.press('Tab');
-    assert(await decision.locator('a.button').evaluate(el => document.activeElement === el),
+    assert(await cancel.evaluate(el => document.activeElement === el),
       'Cancel is not the next keyboard action');
-    const focusStyle = await decision.locator('a.button').evaluate(el => getComputedStyle(el).outlineStyle);
-    assert(focusStyle !== 'none', 'Cancel keyboard focus not visible');
+    const cancelFocus = await computedButton(cancel);
+    assertVisibleFocus(cancelFocus, 'Cancel/focus');
+    const cancelFocusRatio = assertNeutralCancel(cancelFocus, 'Cancel/focus');
+    await page.keyboard.press('Shift+Tab');
+    assert(await focused.evaluate(el => document.activeElement === el),
+      'Keyboard Shift+Tab did not return to Confirm');
+    const confirmFocus = await computedButton(focused);
+    assertVisibleFocus(confirmFocus, 'Confirm/focus');
+    const focusRatio = assertDestructiveButton(confirmFocus, 'Confirm/focus');
+    assert(contrast(confirmFocus.background,cancelFocus.background) >= 3,
+      'Keyboard-focused destructive action is indistinguishable from Cancel');
+    await page.keyboard.press('Tab');
+    assert(await cancel.evaluate(el => document.activeElement === el),
+      'Cancel did not retain its expected keyboard order');
+    caseInfo.visual = {
+      authority: 'chromium-computed-style-wordpress',
+      confirm: {default: confirmDefault, hover: confirmHover, focus: confirmFocus},
+      cancel: {default: cancelDefault, hover: cancelHover, focus: cancelFocus},
+      contrast: {confirmDefault:defaultRatio, confirmHover:hoverRatio, confirmFocus:focusRatio,
+        cancelDefault:cancelRatio, cancelHover:cancelHoverRatio, cancelFocus:cancelFocusRatio,
+        backgrounds:backgroundRatio}
+    };
     caseInfo.screenshots.push(await shot(page,'confirmation',width));
     caseInfo.measure = await noOverflow(page,width);
     caseInfo.checks.push('exact_name_and_id', 'mapping_warning', 'no_competing_create', 'explicit_actions',
-      'keyboard_order_and_visible_focus', 'server_rendered_get', 'no_horizontal_overflow');
+      'keyboard_order_and_visible_focus', 'destructive_visual_default_hover_focus_contrast',
+       'server_rendered_get', 'no_horizontal_overflow');
     // GET requests may route to the admin_post hook, but must never mutate registry state.
     const forgedGet = await page.request.get(postUrl + '?action=pgr_scanner_profile_delete&profile_id=' +
       encodeURIComponent(subject.id) + '&_wpnonce=' + encodeURIComponent(data._wpnonce));
