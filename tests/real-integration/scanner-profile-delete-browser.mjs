@@ -169,8 +169,9 @@ try {
       'Dedicated confirm form missing');
     const actionForm = decision.locator('form');
     const data = await actionForm.evaluate(form => Object.fromEntries(new FormData(form)));
-    assert(data.profile_id === subject.id && data.confirmed_profile_label === subject.label && !!data._wpnonce,
-      'Wrong profile identity or nonce in POST');
+    assert(data.profile_id === subject.id && data.confirmed_profile_label === subject.label &&
+      /^[a-f0-9]{64}$/.test(data.confirmed_profile_fingerprint || '') && !!data._wpnonce,
+      'Wrong profile identity, complete snapshot fingerprint or nonce in POST');
     assert(await actionForm.locator('button[type="submit"]').count() === 1, 'Explicit confirm action missing');
     assert(await decision.locator('a.button').count() === 1, 'Cancel navigation missing');
     const focused = actionForm.locator('button[type="submit"]');
@@ -229,7 +230,7 @@ try {
     caseInfo.measure = await noOverflow(page,width);
     caseInfo.checks.push('exact_name_and_id', 'mapping_warning', 'no_competing_create', 'explicit_actions',
       'keyboard_order_and_visible_focus', 'destructive_visual_default_hover_focus_contrast',
-       'server_rendered_get', 'no_horizontal_overflow');
+       'snapshot_nonce_bound', 'server_rendered_get', 'no_horizontal_overflow');
     // GET requests may route to the admin_post hook, but must never mutate registry state.
     const forgedGet = await page.request.get(postUrl + '?action=pgr_scanner_profile_delete&profile_id=' +
       encodeURIComponent(subject.id) + '&_wpnonce=' + encodeURIComponent(data._wpnonce));
@@ -263,6 +264,10 @@ try {
       assert(responseWrong.status() === 403, 'Cross-profile nonce forgery was accepted');
       const responseNoNonce = await page.request.post(postUrl, {form:{...data, _wpnonce:''}});
       assert(responseNoNonce.status() === 403, 'Missing nonce accepted');
+      const forgedSnapshot = await page.request.post(postUrl, {form:{...data, confirmed_profile_fingerprint:'0'.repeat(64)}});
+      assert(forgedSnapshot.status() === 403, 'Changing the snapshot with A nonce was accepted');
+      const missingSnapshot = await page.request.post(postUrl, {form:{...data, confirmed_profile_fingerprint:''}});
+      assert(missingSnapshot.url().includes('pgr_notice=delete_error'), 'Missing snapshot was accepted');
       const responseWrongLabel = await page.request.post(postUrl, {form:{...data, confirmed_profile_label:'unexpected label'}});
       assert(responseWrongLabel.url().includes('pgr_notice=delete_error'), 'Wrong visible name accepted');
       const responseBuiltIn = await page.request.post(postUrl, {form:{...data, profile_id:'sayad_v01'}});
@@ -275,7 +280,8 @@ try {
       assert(await page.locator('.pgr-profile-delete-decision').count() === 1,
         'Negative controls changed stored data');
       caseInfo.checks.push('wrong_id_nonce_rejected','missing_nonce_rejected','wrong_label_rejected',
-        'built_in_post_rejected','anonymous_post_rejected','no_js_navigation_and_form');
+        'built_in_post_rejected','anonymous_post_rejected','wrong_snapshot_nonce_rejected',
+        'missing_snapshot_rejected','no_js_navigation_and_form');
       const submitted = await actionForm.count(); // Refresh the form locator after navigation.
       assert(submitted === 1, 'Final confirmation form unavailable');
       await Promise.all([
