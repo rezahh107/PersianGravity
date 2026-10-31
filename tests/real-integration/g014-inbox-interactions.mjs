@@ -1,6 +1,6 @@
 // Bounded browser-only acceptance of native Gravity Flow/AG Grid interaction
 // and saved-state ownership. Requires the separate, authentically populated fixture.
-export async function exerciseNativeInboxInteractions(page, rawDueFilter) {
+export async function exerciseNativeInboxInteractions(page, rawDueFilter, expectedEntryId) {
   const scope='[data-js="gflow-inbox"]';
   const header=id=>page.locator(`${scope} .ag-header-cell[col-id="${id}"]`).first();
   const rowIds=()=>page.locator(`${scope} .ag-center-cols-container .ag-row`).evaluateAll(nodes=>
@@ -37,12 +37,12 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter) {
   // Use the unique raw due-date value from WU008's authentic beta fixture.
   const target=String(rawDueFilter);
   if(!/^\\d{10}$/.test(target))throw Error('Missing verified raw due-date filter fixture');
-  if(!target)throw Error('No deterministic native row to filter');
+  if(!Number.isInteger(Number(expectedEntryId))||Number(expectedEntryId)<1)throw Error('Missing beta fixture Entry ID');
   await search.fill(target);
   await page.waitForFunction(t=>{
     const nodes=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')];
-    return nodes.length===1&&String(nodes[0].getAttribute('row-id'))===t;
-  },target,{timeout:12000});
+    return nodes.length===1&&Number(nodes[0].getAttribute('row-id'))===Number(t);
+  },expectedEntryId,{timeout:12000});
   report.filter={query:target,isolated:await rowIds()};
   await search.fill('');
   await page.waitForFunction(()=>document.querySelectorAll(
