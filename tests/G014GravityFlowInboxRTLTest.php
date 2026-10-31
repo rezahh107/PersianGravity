@@ -154,19 +154,6 @@ final class G014GravityFlowInboxRTLTest extends TestCase {
 		$this->assertFalse( $english['grids']['user_id_1_inbox_default_admin_1a2b3c4d']['grid_options']['enableRtl'] );
 		$this->assertSame( $original, $original );
 	}
-x_previous']['grid_options']['enableRtl'] );
-		foreach ( array( 'inbox_malformed', 'other_grid', 'inboxDefault', 'inbox_extra' ) as $key ) {
-			$this->assertSame( $original['grids'][ $key ], $actual['grids'][ $key ] );
-		}
-		$this->assertSame( $original['other_settings'], $actual['other_settings'] );
-		$this->assertSame( $original, $original );
-
-		$GLOBALS['pgr_test_is_rtl'] = false;
-		$english = $adapter->inbox_grid_config( $original );
-		$this->assertFalse( $english['grids']['inbox_default']['grid_options']['enableRtl'] );
-		$this->assertSame( $original['grids']['inbox_previous'], $english['grids']['inbox_previous'] );
-		$this->assertSame( $actual, $adapter->inbox_grid_config( $actual ) );
-	}
 
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
