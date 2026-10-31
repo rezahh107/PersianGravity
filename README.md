@@ -40,6 +40,8 @@ Disable requests use bounded form-metadata inspection. Detected use blocks disab
 
 Scanner Profiles remain available while Structured Scanner runtime is disabled. Choosing **Delete** on a custom profile opens a separate, read-only confirmation view identifying its name and immutable ID. Only the explicit Confirm delete POST removes the profile; Cancel navigates back without changes. Existing Gravity Forms mappings are not rewritten and fields referencing the deleted profile may become unavailable. Built-in profiles are read-only and cannot be deleted.
 
+Scanner deletion confirmation also binds the WordPress nonce to a deterministic SHA-256 fingerprint of the **complete validated profile snapshot**, and the POST compares it with a fresh Registry read. Changes to labels, enabled state, parser or outputs invalidate old confirmations. Identical-content recreation and a concurrent replacement between read and deletion are not distinguished; this is not an incarnation version or atomic compare-and-delete.
+
 ## Persistence
 
 - `pgr_modules` — schema version plus boolean state for seven bounded modules; source-default merging keeps pre-G-008 states intact and leaves the new presentation module disabled until opt-in.
