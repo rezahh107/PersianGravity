@@ -1,6 +1,11 @@
 name: WU008 Licensed Real Integration
 
 on:
+  # Draft G014 qualification: branch-scoped push trigger enables authentic
+  # licensed runtime when GitHub API commits do not dispatch PR synchronize.
+  # Remove this temporary trigger before merging the Draft PR.
+  push:
+    branches: [feat/g014-optional-gravity-flow-inbox-rtl]
   pull_request:
     branches: [main]
     paths:
