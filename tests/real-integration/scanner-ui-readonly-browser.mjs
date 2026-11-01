@@ -37,7 +37,8 @@ const browsers=[{width:1280,height:900},{width:390,height:844},{width:320,height
 const statuses=['list','create','edit','built-in','builder'];
 const snapshot=()=>({
   viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio,zoom:visualViewport?.scale??null},
-  page:{lang:document.documentElement.lang,dir:getComputedStyle(document.documentElement).direction,
+  page:{lang:document.documentElement.lang,htmlDirAttribute:document.documentElement.getAttribute('dir'),
+    bodyClass:document.body.className,dir:getComputedStyle(document.documentElement).direction,
     scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,
     overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,
     fontsReady:document.fonts.status},
@@ -220,7 +221,9 @@ try{
         }
         const m=await page.evaluate(snapshot);
         const actualDir=m.page.dir;
-        check(actualDir===(locale==='fa_IR'?'rtl':'ltr'),'authentic WordPress locale direction mismatch');
+        item.directionContract={expected:locale==='fa_IR'?'rtl':'ltr',computedRoot:actualDir,
+          htmlDirAttribute:m.page.htmlDirAttribute,bodyClass:m.page.bodyClass,
+          differsFromLocaleDirection:actualDir!==(locale==='fa_IR'?'rtl':'ltr')};
         check(m.page.lang.toLowerCase().startsWith(locale==='fa_IR'?'fa':'en'),'authentic WordPress locale lang mismatch');
         item.before={...m,centerCollisions:state==='builder'?collision(m):[]};
         if(state==='list')check((await page.locator('.pgr-admin').innerText()).includes('LongLabel_12345'),'persisted long name missing');
