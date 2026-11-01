@@ -123,7 +123,8 @@ if ( 'create_a' === $action ) {
 		throw new RuntimeException( 'Unexpected in-place mutation scenario.' );
 	}
 	$assert_definition( $a );
-	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b, $id );
+	$current = PGR_Scanner_Profile_Registry::get( $id );
+	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b, $id, $current['revision'], $current['incarnation_id'] );
 	if ( ! $result['success'] ) {
 		throw new RuntimeException( 'Registry refused valid in-place metadata change: ' . wp_json_encode( $result['errors'] ) );
 	}
