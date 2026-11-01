@@ -246,6 +246,41 @@ try{
           const alt='scanner-ui-'+locale+'-builder-grid-one-column-'+width+'.png';
           await page.screenshot({path:path.join(out,alt),type:'png',fullPage:true});
           item.one_variable.screenshot=alt;
+          // Independent second control: restore grid, then add only the owned
+          // preview stylesheet in browser memory. Never save or enqueue in WP.
+          await page.evaluate(()=>document.querySelectorAll('.pgr-scanner-editor-mapping-row')
+            .forEach(e=>e.style.removeProperty('grid-template-columns')));
+          const restored=await page.evaluate(snapshot);
+          const ownedCss=fs.readFileSync(path.join(root,
+            'wp-content/plugins/persian-gravityforms/assets/css/pgr-structured-scanner.css'),'utf8');
+          const alreadyLoaded=await page.evaluate(()=>[...document.styleSheets]
+            .some(s=>(s.href||'').includes('/assets/css/pgr-structured-scanner.css')));
+          item.preview_stylesheet_control={
+            original_stylesheet_present:alreadyLoaded,
+            installed_css_sha256:hash(Buffer.from(ownedCss)),
+            grid_reset_center_collisions:collision(restored),
+            baseline_center_collisions:collision(m)
+          };
+          check(!alreadyLoaded,'preview CSS already loaded: avoid duplicate-injection interpretation');
+          await page.evaluate(css=>{
+            const style=document.createElement('style');
+            style.id='pgr-testonly-preview-css';
+            style.textContent=css;document.head.append(style);
+          },ownedCss);
+          const withPreviewCss=await page.evaluate(snapshot);
+          item.preview_stylesheet_control.after={
+            ...withPreviewCss,centerCollisions:collision(withPreviewCss)};
+          item.preview_stylesheet_control.center_rect_delta=['center','lead','privacy',
+            'textarea','actions','button','status'].map(k=>{
+              const a=restored.nodes[k]?.[0]?.rect,b=withPreviewCss.nodes[k]?.[0]?.rect;
+              return {key:k,dx:a&&b?Number((b.x-a.x).toFixed(2)):null,
+                dy:a&&b?Number((b.y-a.y).toFixed(2)):null,
+                dw:a&&b?Number((b.w-a.w).toFixed(2)):null,
+                dh:a&&b?Number((b.h-a.h).toFixed(2)):null};
+            });
+          const preview='scanner-ui-'+locale+'-builder-preview-css-control-'+width+'.png';
+          await page.screenshot({path:path.join(out,preview),type:'png',fullPage:true});
+          item.preview_stylesheet_control.screenshot=preview;
         }
         check(errors.length===0,'uncaught browser JS errors: '+errors.join(' / '));
         item.status='CAPTURED_UNREVIEWED';
@@ -266,10 +301,11 @@ if(all){
   const lines=['# Structured Scanner — authentic read-only UI evidence','',
     'WordPress 6.8.3 + Gravity Forms 3.1.1.1 + exact tested plugin package; no mock Form Builder.', '',
     'Production source comparison requires separate isolated pre-PR106 setup; this branch tests current product bytes only.','',
-    '| Locale | State | Width | Original screenshot | Grid one-column control |','|---|---|---:|---|---|'];
+    '| Locale | State | Width | Original screenshot | Grid one-column control | Preview CSS-only control |','|---|---|---:|---|---|---|'];
   for(const x of manifests)for(const c of x.cases){
     lines.push('| '+x.locale+' | '+c.state+' | '+c.width+' | ['+c.screenshot+']('+c.screenshot+') | '+
-       (c.one_variable?'['+c.one_variable.screenshot+']('+c.one_variable.screenshot+')':'—')+' |');
+       (c.one_variable?'['+c.one_variable.screenshot+']('+c.one_variable.screenshot+')':'—')+' | '+
+       (c.preview_stylesheet_control?'['+c.preview_stylesheet_control.screenshot+']('+c.preview_stylesheet_control.screenshot+')':'—')+' |');
   }
   lines.push('','## Measurements',
     'See [fa_IR manifest](manifest-fa_IR.json), [en_US manifest](manifest-en_US.json), and [fixture identity](fixture.json).',
