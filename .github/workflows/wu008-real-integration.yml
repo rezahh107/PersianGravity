@@ -1918,36 +1918,43 @@ jobs:
           console.log('GF_TABS_LIFECYCLE_GATE PASS: exact PR Head, 24 browser comparisons, timeline and geometry/CSS controls');
           PGR_TABS_LIFECYCLE_GATE
 
-      - name: Verify Scanner recovered-save bilingual evidence before publication
+      - name: Verify Scanner saved-form evidence for publication
         shell: bash
         env:
           PGR_SCANNER_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          node <<'PGR_SCANNER_SAVE_EVIDENCE_GATE'
-          const fs = require('node:fs'), path = require('node:path');
-          const folder = '/tmp/wu008-downloaded-evidence/scanner-save-recovery-evidence';
-          const expected = process.env.PGR_SCANNER_EXPECTED_HEAD;
-          for (const locale of ['fa_IR', 'en_US']) {
-            const report = JSON.parse(fs.readFileSync(path.join(folder,'report-' + locale + '.json'),'utf8'));
-            if (report.status !== 'PASS' || report.evidence_class !== 'AUTHENTIC_SCANNER_SAVE_RECOVERY' ||
-                report.head !== expected || report.mode !== 'repaired' || report.locale !== locale)
-              throw Error('Scanner save evidence is not a genuine exact-Head repaired run: ' + locale);
-            const names = report.scenarios.map(x=>x.name);
-            for (const required of ['invalid_create_after','corrected_create_retry','invalid_edit_retention','corrected_edit_retry','stale_edit_conflict'])
-              if (!names.includes(required)) throw Error('Missing Scanner save scenario ' + locale + '/' + required);
-            for (const row of report.scenarios) {
-              if (!row.gf_mapping_unchanged) throw Error('GFAPI mapping changed: ' + row.name);
-              if (['invalid_create_after','invalid_edit_retention','stale_edit_conflict'].includes(row.name) &&
-                  row.registry_before !== row.registry_after)
-                throw Error('Rejected save modified the Registry: ' + row.name);
+          node <<'PGR_SAVE_PUBLICATION_CHECK'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-save-recovery-evidence';
+          for (const locale of ['fa_IR','en_US']) {
+            const report=JSON.parse(fs.readFileSync(path.join(dir,'report-'+locale+'.json'),'utf8'));
+            if(report.status!=='PASS'||report.head!==process.env.PGR_SCANNER_EXPECTED_HEAD||
+               report.evidence_class!=='AUTHENTIC_SCANNER_SAVE_RECOVERY'||report.mode!=='repaired'||report.locale!==locale)
+              throw Error('wrong Scanner browser evidence identity '+locale);
+            for(const name of ['invalid_create_after','corrected_create_retry','invalid_edit_retention','corrected_edit_retry','stale_edit_conflict'])
+              if(!report.scenarios.some(x=>x.name===name)) throw Error('missing scenario '+locale+'/'+name);
+            for(const x of report.scenarios) {
+              if(x.gf_mapping_unchanged!==true) throw Error('GFAPI mapping mutation');
+              if(['invalid_create_after','invalid_edit_retention','stale_edit_conflict'].includes(x.name)&&x.registry_before!==x.registry_after)
+                throw Error('rejected save unexpectedly mutated Registry');
             }
-            if (!Array.isArray(report.screenshots) || report.screenshots.length !== 9)
-              throw Error('Missing bilingual real screenshot matrix for ' + locale);
-            const unique = new Set();
-            for (const item of report.screenshots) {
-              const name = item.filename;
-              if (!new RegExp('^' + locale + '-after-(invalid-create|invalid-edit|stale-edit)-(1280|390|320)\\.png        shell: bash
+            if(!Array.isArray(report.screenshots)||report.screenshots.length!==9) throw Error('missing PNG matrix');
+            const seen=new Set();
+            for(const x of report.screenshots) {
+              const match=x.filename.match(/^(fa_IR|en_US)-after-(invalid-create|invalid-edit|stale-edit)-(1280|390|320)[.]png$/);
+              if(!match||match[1]!==locale||seen.has(x.filename)||x.width!==Number(match[3])||
+                 x.direction!==(locale==='fa_IR'?'rtl':'ltr')) throw Error('wrong screenshot metadata');
+              seen.add(x.filename);
+              const png=fs.readFileSync(path.join(dir,x.filename));
+              if(png.length<500||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a') throw Error('bad PNG bytes');
+            }
+            console.log('SCANNER_SAVE_PUBLICATION_GATE PASS '+locale);
+          }
+          PGR_SAVE_PUBLICATION_CHECK
+
+      - name: Publish verified evidence with exact commit links
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -2000,79 +2007,7 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner PR106 original-resolution UI/contact sheets: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-ui-readonly-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Scanner failed-save recovery screenshots and read-back: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/scanner-save-recovery-evidence" >> "$GITHUB_STEP_SUMMARY"
-          echo "Scanner tabs lifecycle diagnostic: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-tabs-lifecycle-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Actual two-PHP-worker MariaDB CAS report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-cas-worker-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
-          echo "Raw-backup recovery and wpdb failure report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-registry-recovery-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
-          echo "Real cross-worker Redis object-cache coherence report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-redis-cas-worker-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
-).test(name) ||
-                  unique.has(name) || item.width !== Number(name.match(/-(1280|390|320)\\.png$/)[1]) ||
-                  item.direction !== (locale === 'fa_IR' ? 'rtl' : 'ltr'))
-                throw Error('Incorrect screenshot identity/direction: ' + name);
-              unique.add(name);
-              const bytes = fs.readFileSync(path.join(folder,name));
-              if (bytes.length < 500 || bytes.subarray(0,8).toString('hex') !== '89504e470d0a1a0a')
-                throw Error('Invalid PNG: ' + name);
-            }
-            console.log('SCANNER_SAVE_EVIDENCE_GATE PASS: ' + locale + ' exact-Head, five saved/rejected scenarios, 9 PNG, GFAPI invariant');
-          }
-          PGR_SCANNER_SAVE_EVIDENCE_GATE
-
-      - name: Publish verified evidence with exact commit links
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          source_dir=/tmp/wu008-downloaded-evidence/admin-ui-evidence
-          mkdir -p /tmp/wu008-evidence-repo
-          cd /tmp/wu008-evidence-repo
-          git init -q
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          publication_branch="evidence/wu008-admin-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          # Never replace an existing run-attempt branch, including reruns of a
-          # publisher job. The non-force push also fails closed on remote races.
-          if git ls-remote --exit-code --heads origin "refs/heads/${publication_branch}" > /dev/null; then
-            echo "Evidence branch already exists; refusing to overwrite: ${publication_branch}" >&2
-            exit 1
-          fi
-          git checkout --orphan "${publication_branch}"
-          mkdir -p admin-ui-evidence
-          cp -a "$source_dir/." admin-ui-evidence/
-          mkdir -p system-status-scroll-evidence
-          cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
-          mkdir -p module-disable-evidence
-          cp -a "$source_dir/../module-disable-evidence/." module-disable-evidence/
-          mkdir -p scanner-delete-evidence
-          cp -a "$source_dir/../scanner-delete-evidence/." scanner-delete-evidence/
-          mkdir -p scanner-incarnation-evidence
-          cp -a "$source_dir/../scanner-incarnation-evidence/." scanner-incarnation-evidence/
-          # Publish only minimal verified JSON, never synchronization markers or raw backups.
-          mkdir -p scanner-cas-worker-evidence scanner-registry-recovery-evidence
-          cp -a "$source_dir/../scanner-cas-worker-evidence/report.json" scanner-cas-worker-evidence/
-          cp -a "$source_dir/../scanner-registry-recovery-evidence/report.json" scanner-registry-recovery-evidence/
-          mkdir -p scanner-redis-cas-worker-evidence
-          cp -a "$source_dir/../scanner-redis-cas-worker-evidence/report.json" scanner-redis-cas-worker-evidence/
-          mkdir -p scanner-ui-readonly-evidence
-          cp -a "$source_dir/../scanner-ui-readonly-evidence/." scanner-ui-readonly-evidence/
-          mkdir -p scanner-tabs-lifecycle-evidence
-          cp -a "$source_dir/../scanner-tabs-lifecycle-evidence/." scanner-tabs-lifecycle-evidence/
-          git add -- scanner-tabs-lifecycle-evidence scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
-          git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
-          evidence_commit="$(git rev-parse HEAD)"
-          git push origin "HEAD:refs/heads/${publication_branch}"
-          remote_commit="$(git ls-remote origin "refs/heads/${publication_branch}" | cut -f1)"
-          test "${remote_commit}" = "${evidence_commit}"
-          echo "Run-attempt branch (mutable reference): ${publication_branch}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Exact published commit SHA: ${evidence_commit}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
-          echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
-          echo "Scanner PR106 original-resolution UI/contact sheets: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-ui-readonly-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner save recovery screenshots: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/scanner-save-recovery-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner tabs lifecycle diagnostic: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-tabs-lifecycle-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
