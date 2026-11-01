@@ -832,3 +832,19 @@ msgstr "این پروفایل پیدا نشد یا امکان حذف آن وجو
 msgid "Back to Scanner Profiles"
 msgstr "بازگشت به پروفایل‌های اسکنر"
 
+
+#: admin/class-pgr-admin.php
+msgid "This edit is out of date or its identity is missing. Your changes are retained here, but cannot be saved until you open the latest profile and reapply them. Newer saved data was not overwritten."
+msgstr "این ویرایش قدیمی است یا شناسهٔ نسخهٔ آن موجود نیست. تغییرات شما در همین فرم باقی مانده‌اند، اما برای ذخیرهٔ ایمن باید آخرین نسخهٔ پروفایل را باز کنید و تغییرات را دوباره اعمال کنید. اطلاعات جدیدتر بازنویسی نشده است."
+
+#: admin/class-pgr-admin.php
+msgid "The profile could not be written. Your entries remain here. Check for newer changes or a storage error before trying again; no overwrite was accepted."
+msgstr "پروفایل ذخیره نشد. اطلاعات واردشده همچنان در این فرم باقی مانده‌اند. پیش از تلاش دوباره، تغییرات جدیدتر یا خطای ذخیره‌سازی را بررسی کنید؛ هیچ بازنویسی‌ای انجام نشده است."
+
+#: admin/class-pgr-admin.php
+msgid "Scanner Profile storage is not ready for changes. Your entries remain here. Ask an administrator to check Registry migration or storage before retrying."
+msgstr "محل ذخیرهٔ پروفایل‌های اسکنر برای تغییر آماده نیست. اطلاعات شما در همین فرم باقی مانده‌اند. پیش از تلاش دوباره، از مدیر بخواهید وضعیت انتقال نسخهٔ رجیستری یا ذخیره‌سازی را بررسی کند."
+
+#: admin/class-pgr-admin.php
+msgid "The profile was not saved. Your entries remain editable below. Check the ID, labels, parser settings and outputs, then correct them and try again."
+msgstr "پروفایل ذخیره نشد. اطلاعات واردشده در فرم زیر قابل ویرایش باقی مانده‌اند. شناسه، عنوان‌ها، تنظیمات تجزیه‌گر و خروجی‌ها را بررسی و اصلاح کنید و دوباره تلاش کنید."
