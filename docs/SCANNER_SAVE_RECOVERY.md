@@ -25,7 +25,14 @@ submitted fields are escaped for output and no new transient, URL payload,
 database copy, or client-side storage is introduced.
 
 Failed edits retain the exact original `existing_id`, `revision`, and
-`incarnation_id`. Retry **cannot automatically rebase a stale edit**: the
+`incarnation_id`. The immutable displayed `profile[id]` is explicitly restored
+from the original `existing_id`, **not** from an injected mismatched submitted
+ID, while submitted editable fields remain intact. Registry v2 still rejects
+the mismatched first request; a corrected retry remains an Edit and cannot
+rebind to the injected ID. The new WU008 negative test manipulates the readonly
+ID on an authenticated Edit, checks the recovered hidden identity and CAS
+fields and absence of unexpected writes, then submits a corrected safe retry.
+Retry **cannot automatically rebase a stale edit**: the
 Registry v2 compare-and-swap gate must reject edits that no longer match
 the committed incarnation/revision. The user must compare against the latest
 stored version and manually reapply changes.
