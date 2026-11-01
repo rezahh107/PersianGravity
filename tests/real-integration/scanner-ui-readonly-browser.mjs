@@ -205,7 +205,22 @@ try{
           const id=fixture.scanner_field_id;
           await page.locator('#field_'+id).waitFor({state:'attached'});
           await page.evaluate(id=>document.querySelector('#gfield_edit_'+id)?.click(),id);
-          await page.locator('#advanced_tab_toggle').click();
+          // Gravity Forms may position the native toggle outside its clipped
+          // responsive sidebar. Record this limitation; use its genuine DOM
+          // click handler only to open settings for observation, not as proof
+          // that a real pointer can reach the offscreen control.
+          try {
+            await page.locator('#advanced_tab_toggle').click({timeout:2500});
+            item.advanced_tab_activation='POINTER_CLICK';
+          } catch(err) {
+            item.advanced_tab_activation='NATIVE_DOM_CLICK_FALLBACK_OFFSCREEN';
+            item.advanced_tab_pointer_issue=String(err.message).slice(0,500);
+            await page.evaluate(()=>{
+              const b=document.querySelector('#advanced_tab_toggle');
+              if(!b)throw Error('Native GF advanced settings tab absent');
+              b.click();
+            });
+          }
           await page.locator('[data-pgr-scanner-mapping]').first().waitFor({state:'visible'});
           check(await page.locator('[data-pgr-scanner-mapping]').count()===7,'seven real mapping controls unavailable');
           const link=page.locator('link[href*="/assets/css/pgr-scanner-editor.css"]').first();
