@@ -49,6 +49,15 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20
+      redis:
+        image: redis:7.4.5@sha256:90e7a336d044f1abc9e9dbc05d65566850896d11453bbd1dd0fb7e5059f0e8fb
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping | grep PONG"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
     env:
       WU008_WP_PATH: /tmp/wu008-wordpress
       WU008_PACKAGE_DIR: /tmp/wu008-packages
@@ -115,7 +124,7 @@ jobs:
         with:
           php-version: '8.2'
           coverage: none
-          extensions: mysqli
+          extensions: mysqli, redis
           tools: composer:2.8.12
         env:
           update: true
@@ -936,6 +945,42 @@ jobs:
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-migration-recovery.php
           test -s "$WU008_ARTIFACT_DIR/scanner-registry-recovery-evidence/report.json"
 
+      - name: Prove Scanner CAS and WordPress option coherence with actual persistent Redis cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Redis backend, PhpRedis, and the Redis Object Cache 2.8.0 plugin
+          # run only in this disposable installation after other UI checks.
+          php -r 'if (!extension_loaded("redis")) { exit(1); }'
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin install redis-cache --version=2.8.0 --activate
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin get redis-cache --field=version)" = "2.8.0"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" redis enable
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            if (!wp_using_ext_object_cache()) { throw new RuntimeException("No real Redis Object Cache drop-in"); }
+            $cache = wp_cache_get("wu008_redis_connectivity", "options");
+            if (!wp_cache_set("wu008_redis_connectivity", "connected", "options", 90)) {
+              throw new RuntimeException("Redis cache is not writable");
+            }
+          '
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            if (!wp_using_ext_object_cache() || "connected" !== wp_cache_get("wu008_redis_connectivity", "options")) {
+              throw new RuntimeException("Object cache not persistent across PHP workers");
+            }
+            wp_cache_delete("wu008_redis_connectivity", "options");
+          '
+          WU008_CAS_EVIDENCE_SUBDIR=scanner-redis-cas-worker-evidence WU008_CAS_ROLE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php
+          WU008_CAS_EVIDENCE_SUBDIR=scanner-redis-cas-worker-evidence WU008_CAS_ROLE=a php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php &
+          cas_a=$!
+          WU008_CAS_EVIDENCE_SUBDIR=scanner-redis-cas-worker-evidence WU008_CAS_ROLE=b php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php &
+          cas_b=$!
+          wait "$cas_b"
+          wait "$cas_a"
+          WU008_CAS_EVIDENCE_SUBDIR=scanner-redis-cas-worker-evidence WU008_CAS_ROLE=verify php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php
+          test -s "$WU008_ARTIFACT_DIR/scanner-redis-cas-worker-evidence/report.json"
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" redis disable
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin delete redis-cache
+          test ! -e "$WU008_WP_PATH/wp-content/object-cache.php"
+
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
         run: |
@@ -1535,7 +1580,9 @@ jobs:
           const head=process.env.PGR_SCANNER_EXPECTED_HEAD;
           const workerDir=path.join(root,'scanner-cas-worker-evidence');
           const recoveryDir=path.join(root,'scanner-registry-recovery-evidence');
+          const redisDir=path.join(root,'scanner-redis-cas-worker-evidence');
           const worker=JSON.parse(fs.readFileSync(path.join(workerDir,'report.json'),'utf8'));
+          const redis=JSON.parse(fs.readFileSync(path.join(redisDir,'report.json'),'utf8'));
           const recovery=JSON.parse(fs.readFileSync(path.join(recoveryDir,'report.json'),'utf8'));
           const check=(ok,why)=>{if(!ok)throw Error('SCANNER_STORAGE_EVIDENCE: '+why);};
           check(worker.evidence_class==='WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS'&&
@@ -1543,6 +1590,14 @@ jobs:
             worker.workers_distinct===true&&worker.worker_a_suspended_during_b_write===true&&
             worker.worker_a_pid>0&&worker.worker_b_pid>0&&worker.worker_a_pid!==worker.worker_b_pid&&
             worker.persistent_object_cache==='NOT_PROVEN','real-worker report missing or invalid');
+          check(redis.exact_head===head&&
+            redis.evidence_class==='WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS'&&
+            redis.old_confirmation==='rejected'&&redis.new_incarnation==='preserved'&&
+            redis.workers_distinct===true&&redis.worker_a_suspended_during_b_write===true&&
+            redis.worker_a_pid>0&&redis.worker_b_pid>0&&redis.worker_a_pid!==redis.worker_b_pid&&
+            redis.persistent_object_cache==='REDIS_2_8_0_CROSS_PROCESS_PROVEN'&&
+            redis.fresh_get_option_reflects_B===true,
+            'persistent Redis cache and real worker evidence not proven');
           const expected=['verified_raw_backup','no_automatic_migration','wrong_backup_hash_rejected',
             'real_wpdb_query_failure_preserved_v1','lossless_v2_migration_gfapi_and_cache_readback',
             'repeated_migration_idempotent','raw_backup_restored_with_post_backup_changes_lost',
@@ -1555,7 +1610,7 @@ jobs:
             recovery.backup_contents_in_artifact===false,
             'recovery evidence lacks exact-Head, all controls, or truthful limitations');
           check(fs.readdirSync(recoveryDir).join(',')==='report.json','recovery artifact contains unapproved files');
-          console.log('SCANNER_STORAGE_EVIDENCE_GATE PASS: MariaDB two-worker CAS and 9 recovery checks; cache and matched-version restore remain NOT_PROVEN');
+          console.log('SCANNER_STORAGE_EVIDENCE_GATE PASS: MariaDB two-worker CAS, real cross-process Redis cache, 9 recovery checks; matched-version restore remains NOT_PROVEN');
           PGR_SCANNER_STORAGE_PUBLICATION_GATE
 
       - name: Publish verified evidence with exact commit links
@@ -1593,7 +1648,9 @@ jobs:
           mkdir -p scanner-cas-worker-evidence scanner-registry-recovery-evidence
           cp -a "$source_dir/../scanner-cas-worker-evidence/report.json" scanner-cas-worker-evidence/
           cp -a "$source_dir/../scanner-registry-recovery-evidence/report.json" scanner-registry-recovery-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence
+          mkdir -p scanner-redis-cas-worker-evidence
+          cp -a "$source_dir/../scanner-redis-cas-worker-evidence/report.json" scanner-redis-cas-worker-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1608,3 +1665,4 @@ jobs:
           echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Actual two-PHP-worker MariaDB CAS report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-cas-worker-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
           echo "Raw-backup recovery and wpdb failure report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-registry-recovery-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "Real cross-worker Redis object-cache coherence report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-redis-cas-worker-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
