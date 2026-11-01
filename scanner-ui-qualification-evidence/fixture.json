@@ -1,0 +1,13 @@
+{
+    "kind": "WU008_DISPOSABLE_FORM_FIXTURE_NOT_SUBMITTED",
+    "source_commit_installed": "01d4aeb3ef261239e183299d2d163e872c0cd4b3",
+    "source_tree": "fad22dbdcbc3da37b7ad33a8d4fc281d2d6221bd",
+    "wordpress": "6.8.3",
+    "gravityforms": "3.1.1.1",
+    "form_id": 2,
+    "scanner_field_id": 4,
+    "native_control_field_id": 1,
+    "profile_id": "sayad_v01",
+    "output_count": 7,
+    "registry_state_mutated_by_fixture": false
+}
