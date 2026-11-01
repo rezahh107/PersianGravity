@@ -1,10 +1,10 @@
 # Scanner Profile deletion — incarnation and atomicity decision (qualification only)
 
-Status: **OWNER DECISION REQUIRED — NO PRODUCTION PATCH**  
+Status: **MANAGER-APPROVED BOUNDED CANDIDATE DIRECTION — NO PRODUCTION PATCH / NO LIVE MIGRATION**  
 Verified merged baseline: `c7c5377e93f5f4f704acc797dc67ea8554b5dfd7` (2026-10-31).
 Current merged main independently rechecked (2026-11-01): `ff3f390511da3ce194815a2c856251ade145b2cc` (merged qualification PR #104; **production Registry/admin behavior unchanged**).  
 Authoritative repository: `rezahh107/PersianGravity`.  
-This document does not authorize a storage migration or UI/business-rule change.
+Owner's 2026-11-01 request delegates the technical-direction decision to Project Manager: versioned migration and guarded storage **may be implemented and tested in a focused, unmerged candidate only**. No live migration, UI/business-rule change, merge, release or deployment is authorized.
 
 ## Observed source facts
 
@@ -70,3 +70,18 @@ The previous results include positive controls for unchanged A deletion, missing
 **Decision requested, unchanged:** authorize explicit canonical incarnation identity/versioned migration with defined v1 handling and rollback, plus a genuinely guarded conflict-detecting Registry write/delete operation, only after authentic disposable WordPress validation. Preserve the approved deletion screen and WordPress security controls without widening the repair.
 
 [Post-merge evidence branch](https://github.com/rezahh107/PersianGravity/tree/evidence/scanner-incarnation-postmerge-20261101/scanner-incarnation-postmerge-evidence) contains the source-SHA-bound readback report and measured negative outcomes. It is not a runtime patch.
+
+
+## 2026-11-01 Manager disposition (supersedes earlier pending-technical-choice wording)
+
+**Decision:** Approve **candidate C** for bounded development/proof: canonical versioned Registry v2 with an immutable unpredictable incarnation identifier per CREATE, a separate edit revision or validated confirmed snapshot, plus conflict-detecting atomic state changes across **create, edit, delete and migration**. Public profile IDs, existing GFAPI mappings, built-ins, confirmation UI, localization, permissions and nonce controls remain unchanged. No parallel sidecar/database unless exact runtime evidence disqualifies the simple existing-option route. This is Owner-delegated technical-direction approval, **not** an Owner acceptance of deployment.
+
+**Legacy handling:** A tested, explicit, idempotent v1→v2 migration is authorized as *candidate implementation*. It must not run merely on plugin activation or read. Existing supported values and mappings must survive, and all old pre-migration confirmation POSTs must fail closed. Do not run a migration on the Owner's real site without a verified pre-migration export/backup, a demonstrated restoration procedure, fresh compatibility evidence and a separate Owner-approved rollout.
+
+**Rollback policy selected:** No automatic/lossless v2→v1 downgrade claim. The current v1 normalizer would erase incarnation identity. Prefer repairing forward in v2; if going back to old code is unavoidable, coordinate restoration of the **matching plugin version and pre-migration Registry backup**. This restores earlier data, not later writes; later updates may be lost and must be explicitly reviewed before such a restore. Never silently open a v2 Registry for mutation under old v1 code. Test failed migration, restart, repeated migration and recovery.
+
+**Atomic write direction:** Prefer a bounded expected-state conditional write against the existing WordPress option, *only if* the real WordPress 6.8.3 + admitted host proves correct serialization, SQL/row counts, options caches and persistent cache invalidation, hooks/filters, conflict errors and cross-worker semantics. A handler-only UUID/fingerprint, extra nonce, advisory lock alone or unconditional `update_option()` cannot close both findings. Executor may select an equivalently verified simpler host-native method. No direct-DB production path is pre-approved without this evidence; abort unsafe writes and report failure instead of asserting success. Run genuine two-PHP-worker/persistent-cache tests in addition to the already proven same-request interleaving.
+
+**Qualification:** A new focused production-candidate PR must preserve and re-run eight positive/negative real Scanner cases plus the two repaired negative findings, failed write, migration/rollback, no-mapping-mutation, fa_IR/en_US, 1280/390/320, focus/keyboard/no-JS, permissions, nonce and no-regression checks. Leave PR open/unmerged until actual evidence and Owner approval. PR #104 remains *diagnostic only*; PR #105 is this documentation checkpoint, not a fix. Existing G-013/G-014 draft work and v4.10.0 release remain separate. Scanner safety **NOT_IMPLEMENTED / NOT_PROVEN**. After safety qualification, continue real list and edit-form UI/UX review; do not declare full Scanner UI/UX complete.
+
+Authority and summary are recorded in Google Drive `GOAL_AUTHORITY/OWNER_DECISIONS_ACTIVE_SCOPE_EXPANSIONS` and `PROJECT_GOAL_SUMMARY_NONAUTHORITATIVE` respectively.
