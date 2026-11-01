@@ -13,7 +13,14 @@ const head=process.env.WU008_PGR_SHA;
 const locale=process.env.WU008_SCANNER_AUDIT_LOCALE;
 const password=process.env.WU008_ADMIN_PASSWORD;
 const root=process.env.WU008_WP_PATH;
-const environment=JSON.parse(fs.readFileSync(process.env.WU008_MANIFEST_PATH,'utf8'));
+const rawEnvironment=JSON.parse(fs.readFileSync(process.env.WU008_MANIFEST_PATH,'utf8'));
+const environment=rawEnvironment.versions?rawEnvironment:{
+  persiangravity_source_commit:rawEnvironment.remediation_sha_installed,
+  versions:{gravityforms:rawEnvironment.gravityforms_version,
+    persiangravity:'4.10.0'},
+  admin_url:new URL('/wp-admin/',rawEnvironment.form_builder_url).href,
+  login_url:rawEnvironment.login_url,
+};
 const fixture=JSON.parse(fs.readFileSync(path.join(out,'fixture.json'),'utf8'));
 const check=(ok,msg)=>{if(!ok) throw Error('SCANNER_UI_QUALIFICATION: '+msg);};
 check(['fa_IR','en_US'].includes(locale),'invalid locale');
