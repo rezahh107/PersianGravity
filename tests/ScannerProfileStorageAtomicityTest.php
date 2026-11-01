@@ -64,7 +64,6 @@ final class ScannerProfileStorageAtomicityTest extends TestCase {
 	public function test_explicit_lossless_v1_migration_is_idempotent_and_preserves_old_data() {
 		$legacy = array( 'schema_version' => 1, 'profiles' => array( PGR_Scanner_Profile_Registry::validate_profile( $this->profile() )['profile'] ) );
 		$GLOBALS['pgr_test_options']['pgr_scanner_profiles'] = $legacy;
-		$this->assertNull( PGR_Scanner_Profile_Registry::pre_migration_backup() === null ? null : 'bad' );
 		$backup = PGR_Scanner_Profile_Registry::pre_migration_backup();
 		$this->assertNotNull( $backup );
 		$this->assertFalse( PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile( 'other' ) )['success'] );
