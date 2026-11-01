@@ -28,20 +28,30 @@ if ( $using_redis && ! wp_using_ext_object_cache() ) {
 }
 $dir = $artifact . '/' . $evidence_dir;
 $id  = 'alpha';
+// The marker is a process barrier, not merely a file-existence test.
+// Publish complete bytes through an atomic rename so worker B can never
+// observe an empty, partially-written PID from worker A.
 $wait_for = static function ( $filename ) {
 	$end = microtime( true ) + 25;
 	while ( microtime( true ) < $end ) {
 		clearstatcache( true, $filename );
 		if ( is_file( $filename ) ) {
-			return file_get_contents( $filename );
+			$value = file_get_contents( $filename );
+			if ( is_string( $value ) && '' !== trim( $value ) ) {
+				return $value;
+			}
 		}
 		usleep( 25000 );
 	}
-	throw new RuntimeException( 'CAS worker barrier timed out: ' . basename( $filename ) );
+	throw new RuntimeException( 'CAS worker barrier missing complete marker: ' . basename( $filename ) );
 };
 $must_write = static function ( $filename, $value ) {
-	if ( false === file_put_contents( $filename, $value, LOCK_EX ) ) {
-		throw new RuntimeException( 'CAS worker cannot write evidence marker.' );
+	$tmp = $filename . '.pending-' . getmypid() . '-' . bin2hex( random_bytes( 4 ) );
+	if ( ! is_string( $value ) || '' === trim( $value ) ||
+		strlen( $value ) !== file_put_contents( $tmp, $value, LOCK_EX ) ||
+		! rename( $tmp, $filename ) ) {
+		@unlink( $tmp );
+		throw new RuntimeException( 'CAS worker cannot atomically publish evidence marker.' );
 	}
 };
 $assert = static function ( $condition, $message ) {
