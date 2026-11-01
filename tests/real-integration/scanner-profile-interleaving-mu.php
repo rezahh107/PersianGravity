@@ -1,9 +1,9 @@
 <?php
 /**
- * WU008-only deterministic check/delete interleaving probe.
+ * WU008-only deterministic pre-CAS interleaving probe.
  *
  * Copy into the DISPOSABLE WordPress mu-plugins directory for one authenticated
- * admin-post. It intentionally reproduces an unsafe result; never ship with the
+ * admin-post. It tests stale-write rejection; never ship with the
  * production plugin and never enable on a real site.
  */
 defined( 'ABSPATH' ) || exit;
@@ -22,7 +22,8 @@ if (
 }
 
 $wu008_probe = null;
-$wu008_probe = static function ( $pre ) use ( &$wu008_probe, $wu008_artifact ) {
+$wu008_probe = static function ( $option, $old, $new ) use ( &$wu008_probe, $wu008_artifact ) {
+	if ( 'pgr_scanner_profiles' !== $option ) { return; }
 	$in_delete = false;
 	foreach ( debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 12 ) as $call ) {
 		if ( 'PGR_Scanner_Profile_Registry' === ( $call['class'] ?? '' ) &&
@@ -34,7 +35,7 @@ $wu008_probe = static function ( $pre ) use ( &$wu008_probe, $wu008_artifact ) {
 	if ( ! $in_delete ) {
 		return $pre;
 	}
-	remove_filter( 'pre_option_pgr_scanner_profiles', $wu008_probe, 10 );
+	remove_action( 'update_option', $wu008_probe, 10 );
 	if ( ! current_user_can( 'manage_options' ) ||
 		! class_exists( 'PGR_Scanner_Profile_Registry' ) ) {
 		throw new RuntimeException( 'WU008 race hook crossed an unauthorized/unloaded boundary.' );
@@ -46,7 +47,7 @@ $wu008_probe = static function ( $pre ) use ( &$wu008_probe, $wu008_artifact ) {
 		throw new RuntimeException( 'WU008 race hook expected genuine A at delete read.' );
 	}
 	$old_fingerprint = PGR_Scanner_Profile_Registry::snapshot_fingerprint( $original );
-	$removed = PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha' );
+	$removed = PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha', $old_fingerprint );
 	$replacement = $original;
 	$replacement['parser']['trim'] = false;
 	$replacement['parser']['normalize_digits'] = false;
@@ -60,13 +61,13 @@ $wu008_probe = static function ( $pre ) use ( &$wu008_probe, $wu008_artifact ) {
 		throw new RuntimeException( 'WU008 real Registry mutation did not persist B.' );
 	}
 	$marker = array(
-		'probe' => 'WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING',
+		'probe' => 'WU008_REGISTRY_PRE_CAS_INTERLEAVING',
 		'original_was_read' => true,
-		'replacement_persisted_before_delete_read' => true,
+		'replacement_persisted_before_cas' => true,
 		'replacement_content_differs' =>
 			$old_fingerprint !== PGR_Scanner_Profile_Registry::snapshot_fingerprint( $current ),
 		'mutation_elapsed_ms' => round( ( microtime( true ) - $start ) * 1000, 3 ),
-		'mechanism' => 'pre_option callback intercepted Registry delete method second get_option read',
+		'mechanism' => 'WordPress update_option pre-write action intercepted guarded Registry CAS after validated A snapshot',
 		'actual_parallel_workers' => false,
 	);
 	$location = rtrim( $wu008_artifact, '/\\' ) . '/scanner-incarnation-evidence/interleaving-marker.json';
@@ -74,7 +75,6 @@ $wu008_probe = static function ( $pre ) use ( &$wu008_probe, $wu008_artifact ) {
 		false === file_put_contents( $location, wp_json_encode( $marker, JSON_PRETTY_PRINT ) ) ) {
 		throw new RuntimeException( 'WU008 interleaving evidence could not be written.' );
 	}
-	// Return false to let the *real* get_option read the newly persisted B.
-	return $pre;
+	// The outer conditional DB update must now reject this stale snapshot.
 };
-add_filter( 'pre_option_pgr_scanner_profiles', $wu008_probe, 10, 1 );
+add_action( 'update_option', $wu008_probe, 10, 3 );
