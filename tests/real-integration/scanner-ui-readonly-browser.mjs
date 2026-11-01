@@ -153,6 +153,27 @@ function delta(a,b) {
   return {mappingOverflowBefore:a.mapping.overflow,mappingOverflowAfter:b.mapping.overflow,
     clippedBefore:a.mapping.clippedChildren.length,clippedAfter:b.mapping.clippedChildren.length,
     centerBefore:a.collisions,centerAfter:b.collisions,centerMovement:movement};
+} 
+// Native user-like selection: do not call GF EditField until its real
+// id-less .sidebar.ui-tabs widget has been initialized by the host.
+async function selectFieldAfterNativeTabsReady(page){
+  await page.waitForLoadState('load');
+  await page.waitForFunction(()=>{
+    const tab=document.querySelector('.sidebar.ui-tabs'),j=window.jQuery;
+    return !!(tab&&j&&j.data(tab,'ui-tabs'));
+  },null,{timeout:15000});
+  const ready=await page.evaluate(()=>!!window.jQuery?.data(
+    document.querySelector('.sidebar.ui-tabs'),'ui-tabs'));
+  if(!ready)throw Error('Native GF tabs were not initialized before field selection');
+  await page.locator('#field_3').hover({timeout:10000});
+  let action='pointer-hover-then-edit-button';
+  try{
+    await page.locator('#gfield_edit_3').click({timeout:4000});
+  }catch{
+    await page.locator('#field_3').click({timeout:10000});
+    action='pointer-field-card-fallback';
+  }
+  return {tabsReadyBeforeClick:ready,action};
 }
 try{
   for(const width of [1280,390,320]){
@@ -185,10 +206,7 @@ try{
             typeof window.PGRScannerEditor.setProfile==='function',null,{timeout:15000});
           record.realGfFormModel=await page.evaluate(()=>({present:typeof window.form==='object',
             scanner:window.form?.fields?.some(f=>f.type==='pgr_structured_scanner')||false}));
-          const clicked=await page.evaluate(()=>{
-            const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
-          });
-          if(!clicked)throw Error('Native GF scanner edit button missing');
+          record.nativeInteraction=await selectFieldAfterNativeTabsReady(page);
           await page.waitForFunction(()=>document.querySelector('#field_3')?.classList.contains('field_selected')===true,null,{timeout:10000});
           await page.evaluate(()=>{
             const tab=document.querySelector('#settings_tab_item');
@@ -356,10 +374,7 @@ try{
         !nativeControl.model.nativeTextarea||nativeControl.model.scanner||
         nativeControl.model.fieldCount<2)
         throw Error('Control is not an independent native-only GF form model');
-      const clicked=await nativePage.evaluate(()=>{
-        const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
-      });
-      if(!clicked)throw Error('Native-only textarea edit control not available');
+      nativeControl.nativeInteraction=await selectFieldAfterNativeTabsReady(nativePage);
       await nativePage.waitForFunction(
         ()=>document.querySelector('#field_3')?.classList.contains('field_selected')===true,
         null,{timeout:10000});
