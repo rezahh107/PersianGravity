@@ -81,7 +81,9 @@ const geom = () => {
   const mappings=all('.pgr-scanner-editor-mapping-row').map(x=>({row:rect(x),
     children:[...x.children].map(y=>rect(y)), grid:rect(x.closest('.pgr-scanner-editor-mappings'))}));
   const grid=rect(specific.mappingGrid);
-  const sidebar=rect(specific.mappingGrid?.closest('#field_settings, #sidebar, .gform-form-editor__sidebar, .gform-form-toolbar__sidebar')||specific.sidebar);
+  // #field_settings is a zero-size jQuery tabs inner container in GF 3.1.1.1.
+  // The real clipping boundary is its visible outer settings sidebar panel.
+  const sidebar=rect(specific.mappingGrid?.closest('#field_settings_container')||specific.settingsPanel||specific.sidebar);
   const clipped=mappings.flatMap((m,i)=>m.children.filter(c=>c && (
     (grid && (c.left<grid.left-1||c.right>grid.right+1))||
     (sidebar && (c.left<sidebar.left-1||c.right>sidebar.right+1))
@@ -130,7 +132,11 @@ const geom = () => {
         focusStatus:anyInkCollision(inkBoxes.status,specific.focus?[rect(specific.focus)]:[])},
       fonts:{status:document.fonts.status,body:getComputedStyle(document.body).fontFamily},
     documentWidths,preview,collisions,
-    mapping:{grid,sidebar,rows:mappings,clippedChildren:clipped,overflow:grid?grid.scrollWidth>grid.clientWidth+1:false,
+    mapping:{grid,sidebar,rows:mappings,clippedChildren:clipped,
+      intrinsicRowWidth:mappings.length?Math.max(...mappings.map(m=>m.row.scrollWidth)):null,
+      containingSidebarWidth:sidebar?.width??null,
+      contentExceedsSidebar:!!(grid&&sidebar&&grid.width>sidebar.width+1),
+      overflow:grid?grid.scrollWidth>grid.clientWidth+1:false,
       minimumColumns:mappings[0]?.row?.gridTemplateColumns||null},
     nativeControl:rect(specific.nativeTextarea),focusables,
     centerComputed:{lead:inherited(specific.lead),capture:inherited(specific.capture),
