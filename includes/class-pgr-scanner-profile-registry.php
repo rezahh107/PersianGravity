@@ -295,7 +295,7 @@ final class PGR_Scanner_Profile_Registry {
 		if ( ! $validation['valid'] || ! is_array( $profile ) ||
 			! isset( $profile['incarnation_id'], $profile['revision'] ) ||
 			! is_string( $profile['incarnation_id'] ) ||
-			1 !== preg_match( '/^[a-f0-9-]{36}$/', $profile['incarnation_id'] ) ||
+			1 !== preg_match( '/^[a-f0-9]{32}$/', $profile['incarnation_id'] ) ||
 			! is_int( $profile['revision'] ) || $profile['revision'] < 1 ||
 			isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
 			return '';
@@ -433,7 +433,7 @@ final class PGR_Scanner_Profile_Registry {
 			'profiles'       => array(),
 		);
 		foreach ( $before['value']['profiles'] as $legacy ) {
-			$legacy['incarnation_id'] = wp_generate_uuid4();
+			$legacy['incarnation_id'] = bin2hex( random_bytes( 16 ) );
 			$legacy['revision']       = 1;
 			$next['profiles'][]       = $legacy;
 		}
@@ -504,7 +504,7 @@ final class PGR_Scanner_Profile_Registry {
 		}
 		$normalized = $check['profile'];
 		if ( '' !== $existing_id && ( ! is_int( $expected_revision ) || $expected_revision < 1 ||
-			! is_string( $expected_incarnation ) || 1 !== preg_match( '/^[a-f0-9-]{36}$/', $expected_incarnation ) ) ) {
+			! is_string( $expected_incarnation ) || 1 !== preg_match( '/^[a-f0-9]{32}$/', $expected_incarnation ) ) ) {
 			return array(
 				'success' => false,
 				'profile' => null,
@@ -571,7 +571,7 @@ final class PGR_Scanner_Profile_Registry {
 			);
 		}
 		if ( '' === $existing_id ) {
-			$normalized['incarnation_id'] = wp_generate_uuid4();
+			$normalized['incarnation_id'] = bin2hex( random_bytes( 16 ) );
 			$normalized['revision']       = 1;
 			$stored['profiles'][]         = $normalized;
 		}
