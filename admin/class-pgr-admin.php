@@ -351,7 +351,14 @@ final class PGR_Admin {
 		$this->assert_profile_write_access( 'pgr_scanner_profile_save' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified immediately above by assert_profile_write_access().
 		$existing_id = isset( $_POST['existing_id'] ) ? sanitize_key( wp_unslash( $_POST['existing_id'] ) ) : '';
-		$result      = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		$revision = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
+			? (int) $_POST['profile_revision'] : null;
+		if ( '' !== $existing_id && ( null === $revision || $revision < 1 ) ) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'save_error' ) );
+			return;
+		}
+		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id, $revision );
 		$this->redirect_profiles( array( 'pgr_notice' => $result['success'] ? 'saved' : 'save_error' ) );
 	}
 
@@ -396,7 +403,7 @@ final class PGR_Admin {
 			$this->redirect_profiles( array( 'pgr_notice' => 'delete_error' ) );
 		}
 
-		$deleted = PGR_Scanner_Profile_Registry::delete_custom_profile( $profile_id );
+		$deleted = PGR_Scanner_Profile_Registry::delete_custom_profile( $profile_id, $fingerprint );
 		$this->redirect_profiles( array( 'pgr_notice' => $deleted ? 'deleted' : 'delete_error' ) );
 	}
 
@@ -591,6 +598,7 @@ final class PGR_Admin {
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="pgr-profile-form">
 				<input type="hidden" name="action" value="pgr_scanner_profile_save" />
 				<input type="hidden" name="existing_id" value="<?php echo esc_attr( $is_edit ? $profile['id'] : '' ); ?>" />
+				<?php if ( $is_edit ) : ?><input type="hidden" name="profile_revision" value="<?php echo esc_attr( isset( $profile['revision'] ) ? (string) $profile['revision'] : '' ); ?>" /><?php endif; ?>
 				<?php wp_nonce_field( 'pgr_scanner_profile_save' ); ?>
 				<section class="pgr-panel">
 					<h2><?php esc_html_e( 'Profile details', 'persian-gravityforms' ); ?></h2>
