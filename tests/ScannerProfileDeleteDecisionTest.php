@@ -58,6 +58,24 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		$this->assertStringNotContainsString( 'name="action" value="pgr_scanner_profile_delete"', $list );
 		$this->assertSame( 2, count( PGR_Scanner_Profile_Registry::custom_profiles() ) );
 
+		// A Create or Edit form must offer a GET-only exit beside its save action.
+		// This link cannot submit the form or mutate the Registry.
+		foreach ( array(
+			array( 'action' => 'new' ),
+			array( 'action' => 'edit', 'profile' => 'alpha' ),
+		) as $route ) {
+			$_GET = $route;
+			ob_start();
+			$admin->render_profiles_page();
+			$form = ob_get_clean();
+			$this->assertStringContainsString( 'class="pgr-actions pgr-profile-form__actions"', $form );
+			$this->assertSame( 1, substr_count( $form, 'class="button button-secondary pgr-profile-form__cancel"' ) );
+			$this->assertStringContainsString( 'href="https://example.test/wp-admin/admin.php?page=persian-gravityforms-scanner-profiles"', $form );
+			$this->assertStringContainsString( 'Back to Scanner Profiles', $form );
+			$this->assertSame( 2, count( PGR_Scanner_Profile_Registry::custom_profiles() ) );
+		}
+		$this->assertStringContainsString( 'name="existing_id" value="alpha"', $form );
+
 		$_GET = array( 'action' => 'delete', 'profile' => 'alpha' );
 		ob_start();
 		$admin->render_profiles_page();
