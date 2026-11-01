@@ -536,6 +536,7 @@ final class PGR_Scanner_Profile_Registry {
 			'schema_version' => self::SCHEMA_VERSION,
 			'profiles'       => array(),
 		);
+
 		$found = false;
 		foreach ( $stored['profiles'] as $index => $saved ) {
 			if ( $saved['id'] !== $normalized['id'] ) {
@@ -565,7 +566,9 @@ final class PGR_Scanner_Profile_Registry {
 			}
 			$normalized['incarnation_id'] = $saved['incarnation_id'];
 			$normalized['revision']       = $saved['revision'] + 1;
-			$stored['profiles'][ $index ]  = $normalized;
+
+			$stored['profiles'][ $index ] = $normalized;
+
 			$found = true;
 			break;
 		}
