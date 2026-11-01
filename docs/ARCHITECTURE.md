@@ -187,6 +187,14 @@ Detection:
 
 Enable never performs a usage scan.
 
+### Scanner Profiles rejected Edit identity (unmerged PR #110 candidate)
+
+`PGR_Product_Admin` owns the active native Scanner Profiles page hook and forwards same-screen POST processing to `PGR_Admin` before WordPress sends the admin header. `profile_save_attempt()` verifies the capability/nonce through its caller and passes the separate sanitized `existing_id`, revision, incarnation and submitted profile to the unchanged Registry v2 writer. Rejection remains request-local; success uses the existing redirect.
+
+In `PGR_Admin::render_profiles_page()`, rebuilding a rejected Edit explicitly restores the **immutable display/form Profile ID** from the original `existing_id`, while keeping the submitted *editable* fields intact and the same revision/incarnation for the retry form. Without this separation, a tampered submitted `profile[id]` can wrongly become the hidden `existing_id` on the next POST even though the original attempt was correctly rejected. No server-side write is authorized by form reconstruction: the unchanged Registry checks immutable ID/contract, revision, incarnation and DB compare-and-swap on every retry. The rejected Edit remains an Edit, not Create. No sessions, transients, side tables, auto-rebase, schema or mapped-GFAPI changes.
+
+The negative browser qualification intentionally changes the readonly ID in an authenticated form, verifies refusal/no mutation/original hidden identity preservation and correct guarded retry. `docs/VALIDATION.md` distinguishes those candidate tests from production rollout, actual SQL outage and complete UI/accessibility acceptance.
+
 ## Admin architecture
 
 `PGR_Product_Admin` owns the 4.2 product shell and reuses `PGR_Admin` for the existing Scanner Profiles implementation and Settings registration. The menu is:
