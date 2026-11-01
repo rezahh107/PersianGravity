@@ -66,7 +66,14 @@ const geom = () => {
     mappingGrid:first('.pgr-scanner-editor-mappings'),
     sidebar:first('#sidebar, #field_settings, .gform-form-toolbar__sidebar, .gform-form-editor__sidebar'),
     nativeTextarea:first('#field_2 textarea, #field_2 .ginput_container_textarea, .ginput_container_textarea textarea'),
+    scannerRoot:first('.pgr-structured-scanner'),
+    settingsTab:first('#settings_tab_item'),
+    settingsPanel:first('#field_settings_container'),
   };
+  const panelState={tabSelected:specific.settingsTab?.getAttribute('aria-selected')==='true',
+    tab:rect(specific.settingsTab),panel:rect(specific.settingsPanel),
+    panelVisible:!!specific.settingsPanel && getComputedStyle(specific.settingsPanel).display!=='none' &&
+      specific.settingsPanel.getBoundingClientRect().width>100};
   const preview={};
   for(const name of ['lead','capture','buttons','status','focus','privacy','header']) preview[name]=rect(specific[name]);
   const centerPairs=[['lead','capture'],['capture','buttons'],['focus','status'],['privacy','capture'],['header','lead']];
@@ -106,11 +113,22 @@ const geom = () => {
     return rules.slice(-65);
   };
   const assetLinks=all('link[rel=stylesheet],script[src]').map(x=>x.href||x.src).filter(Boolean);
+  const inkBoxes=Object.fromEntries(['lead','privacy','status'].map(key=>{
+    const node=specific[key];if(!node)return [key,[]];
+    const range=document.createRange();range.selectNodeContents(node);
+    return [key,[...range.getClientRects()].map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}))];
+  }));
+  const anyInkCollision=(firstBoxes,secondBoxes)=>firstBoxes.some(a=>secondBoxes.some(b=>overlaps(a,b)?.intersects));
+  const scannerBox=rect(specific.scannerRoot);
   const html=document.documentElement;
   return {html:{lang:html.lang,dir:html.dir,effectiveDirection:getComputedStyle(html).direction,
       bodyClass:document.body.className},
     viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio,visualScale:visualViewport?.scale??null,
-      outerWidth,outerHeight},fonts:{status:document.fonts.status,body:getComputedStyle(document.body).fontFamily},
+      outerWidth,outerHeight,scrollX,scrollY},panelState,scanner:{...scannerBox,attributeDirection:specific.scannerRoot?.getAttribute('dir')},
+      inkCollisions:{leadPrivacy:anyInkCollision(inkBoxes.lead,inkBoxes.privacy),
+        privacyCapture:anyInkCollision(inkBoxes.privacy,specific.capture?[rect(specific.capture)]:[]),
+        focusStatus:anyInkCollision(inkBoxes.status,specific.focus?[rect(specific.focus)]:[])},
+      fonts:{status:document.fonts.status,body:getComputedStyle(document.body).fontFamily},
     documentWidths,preview,collisions,
     mapping:{grid,sidebar,rows:mappings,clippedChildren:clipped,overflow:grid?grid.scrollWidth>grid.clientWidth+1:false,
       minimumColumns:mappings[0]?.row?.gridTemplateColumns||null},
@@ -120,11 +138,7 @@ const geom = () => {
     centerCascade:{lead:cascade(specific.lead),capture:cascade(specific.capture),
       buttons:cascade(specific.buttons),status:cascade(specific.status)},
     stylesheets:assetLinks.filter(x=>x.includes('gravityforms')||x.includes('persian-gravityforms')).slice(0,100),
-    textInkBoxes:Object.fromEntries(['lead','privacy','status'].map(key=>{
-      const node=specific[key];if(!node)return [key,[]];
-      const range=document.createRange();range.selectNodeContents(node);
-      return [key,[...range.getClientRects()].map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}))];
-    }))};
+    textInkBoxes:inkBoxes};
 };
 function delta(a,b) {
   const x=a?.preview||{}, y=b?.preview||{}, movement={};
@@ -165,8 +179,17 @@ try{
             const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
           });
           if(!clicked)throw Error('Native GF scanner edit button missing');
+          await page.waitForFunction(()=>document.querySelector('#field_3')?.classList.contains('field_selected')===true,null,{timeout:10000});
+          await page.evaluate(()=>{
+            const tab=document.querySelector('#settings_tab_item');
+            if(tab?.getAttribute('aria-selected')!=='true')tab?.querySelector('a')?.click();
+          });
           await page.waitForFunction(()=>{
-            return document.querySelector('#field_3')?.classList.contains('field_selected')===true;
+            const tab=document.querySelector('#settings_tab_item');
+            const panel=document.querySelector('#field_settings_container');
+            return tab?.getAttribute('aria-selected')==='true' &&
+              panel?.getBoundingClientRect().width>100 &&
+              getComputedStyle(panel).display!=='none';
           },null,{timeout:10000});
           await page.locator('#advanced_tab_toggle').waitFor({state:'visible',timeout:10000});
           await page.evaluate(()=>{const tab=document.querySelector('#advanced_tab_toggle');if(tab?.getAttribute('aria-expanded')!=='true')tab?.click();});
@@ -175,6 +198,13 @@ try{
           await page.locator('[data-pgr-scanner-mapping="qr_version"]').waitFor({state:'visible',timeout:10000});
           if(await page.locator('.pgr-scanner-editor-mapping-row').count()!==7)
             throw Error('Native Scanner seven-row mapping grid not loaded');
+          await page.waitForFunction(()=>{
+            const tab=document.querySelector('#settings_tab_item');
+            const panel=document.querySelector('#field_settings_container');
+            const grid=document.querySelector('.pgr-scanner-editor-mappings');
+            return tab?.getAttribute('aria-selected')==='true' &&
+              panel?.getBoundingClientRect().width>100 && grid?.getBoundingClientRect().width>100;
+          },null,{timeout:10000});
         }else if(state==='list'){
           await page.locator('.pgr-admin').waitFor({state:'attached'});
           if(!(await page.locator('.pgr-admin').innerText()).includes('LongLabel_12345'))throw Error('Existing real WU008 synthetic Registry fixture absent');
@@ -204,17 +234,9 @@ try{
         if(measured.fonts.status!=='loaded')record.diagnostics.push('Fonts not loaded at measurement boundary');
         if(state==='form-builder'&&!record.realGfFormModel?.scanner)throw Error('Real GF Form Builder Scanner model missing');
         record.baseline=measured;
-        record.keyboardFocus=[];
-        for(let k=0;k<10;k++){
-          await page.keyboard.press('Tab');
-          record.keyboardFocus.push(await page.evaluate(()=>{
-            const a=document.activeElement,s=a&&getComputedStyle(a);
-            return {tag:a?.tagName||null,id:a?.id||null,kind:a?.getAttribute('type')||null,
-              focusVisible:a?.matches(':focus-visible')||false,
-              outlineStyle:s?.outlineStyle||null,outlineWidth:s?.outlineWidth||null,
-              boxShadow:s?.boxShadow||null,tabIndex:a?.tabIndex??null};
-          }));
-        }
+        if(state==='form-builder' && (!measured.panelState.panelVisible||!measured.panelState.tabSelected||
+          measured.mapping.rows.length!==7))
+          throw Error('Native Gravity Forms mapping settings were not actually displayed at snapshot boundary');
         const shot=locale+'-'+state+'-'+width+'.png';
         await page.screenshot({path:path.join(out,shot),type:'png',fullPage:true,animations:'disabled'});
         record.screenshot=shot;
@@ -268,6 +290,17 @@ try{
           record.cssAttribution.screenshot=cssShot;report.screenshots.push(cssShot);
           await page.evaluate(()=>document.querySelector('link[data-pgr-read-only-test="1"]')?.remove());
           record.cssAttribution.restored=true;
+        }
+        record.keyboardFocus=[];
+        for(let k=0;k<10;k++){
+          await page.keyboard.press('Tab');
+          record.keyboardFocus.push(await page.evaluate(()=>{
+            const a=document.activeElement,s=a&&getComputedStyle(a);
+            return {tag:a?.tagName||null,id:a?.id||null,kind:a?.getAttribute('type')||null,
+              focusVisible:a?.matches(':focus-visible')||false,
+              outlineStyle:s?.outlineStyle||null,outlineWidth:s?.outlineWidth||null,
+              boxShadow:s?.boxShadow||null,tabIndex:a?.tabIndex??null};
+          }));
         }
         record.pageErrors=failures.splice(0);
       }catch(e){
