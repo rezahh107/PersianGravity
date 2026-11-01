@@ -169,7 +169,7 @@ try{
             await page.locator('#field_3').click({force:true});
           }
           await page.locator('#advanced_tab_toggle').waitFor({state:'visible',timeout:10000});
-          await page.locator('#advanced_tab_toggle').click({timeout:10000});
+          await page.evaluate(()=>{const tab=document.querySelector('#advanced_tab_toggle');if(tab?.getAttribute('aria-expanded')!=='true')tab?.click();});
           await page.locator('#advanced_tab').waitFor({state:'visible',timeout:10000});
           await page.locator('#pgr_scanner_profile').waitFor({state:'visible',timeout:10000});
           await page.locator('[data-pgr-scanner-mapping="qr_version"]').waitFor({state:'visible',timeout:10000});
