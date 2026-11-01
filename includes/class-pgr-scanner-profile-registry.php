@@ -437,15 +437,20 @@ final class PGR_Scanner_Profile_Registry {
 	 *
 	 * @param mixed $profile Candidate profile.
 	 * @param string $existing_id Existing profile ID on edit.
-	 * @param int|null $expected_revision Revision in the opened edit form, when supplied.
+	 * @param int|null $expected_revision Exact revision of opened edit form.
+	 * @param string $expected_incarnation Exact incarnation of opened edit form.
 	 * @return array<string,mixed>
 	 */
-	public static function save_custom_profile( $profile, $existing_id = '', $expected_revision = null ) {
+	public static function save_custom_profile( $profile, $existing_id = '', $expected_revision = null, $expected_incarnation = '' ) {
 		$check = self::validate_profile( $profile, $existing_id );
 		if ( ! $check['valid'] ) {
 			return array( 'success' => false, 'profile' => null, 'errors' => $check['errors'] );
 		}
 		$normalized = $check['profile'];
+		if ( '' !== $existing_id && ( ! is_int( $expected_revision ) || $expected_revision < 1 ||
+			! is_string( $expected_incarnation ) || 1 !== preg_match( '/^[a-f0-9-]{36}$/', $expected_incarnation ) ) ) {
+			return array( 'success' => false, 'profile' => null, 'errors' => array( 'missing_edit_identity' ) );
+		}
 		if ( isset( self::built_in_profiles()[ $normalized['id'] ] ) ) {
 			return array( 'success' => false, 'profile' => null, 'errors' => array( 'built_in_collision' ) );
 		}
@@ -462,7 +467,8 @@ final class PGR_Scanner_Profile_Registry {
 			if ( '' === $existing_id ) {
 				return array( 'success' => false, 'profile' => null, 'errors' => array( 'duplicate_profile_id' ) );
 			}
-			if ( null !== $expected_revision && $saved['revision'] !== $expected_revision ) {
+			if ( $saved['revision'] !== $expected_revision ||
+				! hash_equals( $saved['incarnation_id'], $expected_incarnation ) ) {
 				return array( 'success' => false, 'profile' => null, 'errors' => array( 'edit_conflict' ) );
 			}
 			if ( self::contract_definition( $saved ) !== self::contract_definition( $normalized ) ) {
