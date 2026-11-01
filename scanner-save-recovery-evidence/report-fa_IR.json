@@ -1,0 +1,103 @@
+{
+  "evidence_class": "AUTHENTIC_SCANNER_SAVE_RECOVERY",
+  "head": "b31a5920eb23d42ff7376e7066c467eb7a2456f3",
+  "mode": "repaired",
+  "locale": "fa_IR",
+  "wordpress": "6.8.3",
+  "gravityforms": "3.1.1.1",
+  "scenarios": [
+    {
+      "name": "invalid_create_after",
+      "registry_before": "363174079a07eab6efe0a59888733844bce7050d67512ebd2cf3b9b3b8dc64bb",
+      "registry_after": "363174079a07eab6efe0a59888733844bce7050d67512ebd2cf3b9b3b8dc64bb",
+      "gf_mapping_unchanged": true,
+      "observed": "INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR"
+    },
+    {
+      "name": "corrected_create_retry",
+      "registry_before": "363174079a07eab6efe0a59888733844bce7050d67512ebd2cf3b9b3b8dc64bb",
+      "registry_after": "215125c573366b8755da10cf07ddd5afc2d21335df2ed25fa2b807ec72936eaf",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_SAVED"
+    },
+    {
+      "name": "invalid_edit_retention",
+      "registry_before": "215125c573366b8755da10cf07ddd5afc2d21335df2ed25fa2b807ec72936eaf",
+      "registry_after": "215125c573366b8755da10cf07ddd5afc2d21335df2ed25fa2b807ec72936eaf",
+      "gf_mapping_unchanged": true,
+      "observed": "IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES"
+    },
+    {
+      "name": "corrected_edit_retry",
+      "registry_before": "215125c573366b8755da10cf07ddd5afc2d21335df2ed25fa2b807ec72936eaf",
+      "registry_after": "8ec2f94cd2ed08c5c35ba387a576705daf6d6f9cc03174c11ad0d3978cb2513b",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_EDIT_SAVED"
+    },
+    {
+      "name": "stale_edit_conflict",
+      "registry_before": "134ef9b0141eebc830785fd14d36b4a946faf22db3e12515df3314548faa0f66",
+      "registry_after": "134ef9b0141eebc830785fd14d36b4a946faf22db3e12515df3314548faa0f66",
+      "gf_mapping_unchanged": true,
+      "observed": "REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED"
+    }
+  ],
+  "persisting_registry_data": "DISPOSABLE_WU008_ONLY",
+  "screenshots": [
+    {
+      "filename": "fa_IR-after-invalid-create-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    }
+  ],
+  "status": "PASS"
+}
