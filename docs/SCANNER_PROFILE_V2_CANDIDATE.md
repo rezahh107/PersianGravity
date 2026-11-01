@@ -1,6 +1,6 @@
 # Scanner Profile Registry v2 — candidate safety and migration procedure
 
-**Status:** Unmerged candidate. No production migration, release, deployment or acceptance. Owner authorization is required separately for rollout. Scope: Scanner Profiles only; no changes to G-013, G-014, GPP or Vazir.
+**Status:** Source merged to main via PR #106 (`810ed1eabf956f7073ea7f568fc7d1c24a69b661`, 2026-11-01). No verified production migration, public release, deployment or real-site acceptance. Owner authorization is required separately for rollout. Scope: Scanner Profiles only; no changes to G-013, G-014, GPP or Vazir.
 
 ## Defect and correction
 
