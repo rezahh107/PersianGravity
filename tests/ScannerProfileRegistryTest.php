@@ -8,6 +8,8 @@ final class ScannerProfileRegistryTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-scanner-profile-registry.php';
 		$GLOBALS['pgr_test_options'] = array();
 		$GLOBALS['pgr_test_option_autoload'] = array();
+		$GLOBALS['wpdb'] = new PGR_Test_Scanner_WPDB();
+		$GLOBALS['pgr_test_fail_write'] = false;
 	}
 
 	private function custom_profile( $id = 'custom_v1' ) {
@@ -33,7 +35,7 @@ final class ScannerProfileRegistryTest extends TestCase {
 	public function test_valid_custom_profile_is_persisted_in_versioned_non_autoloaded_option() {
 		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->custom_profile() );
 		$this->assertTrue( $result['success'] );
-		$this->assertSame( 1, $GLOBALS['pgr_test_options']['pgr_scanner_profiles']['schema_version'] );
+		$this->assertSame( 2, $GLOBALS['pgr_test_options']['pgr_scanner_profiles']['schema_version'] );
 		$this->assertCount( 1, $GLOBALS['pgr_test_options']['pgr_scanner_profiles']['profiles'] );
 		$this->assertFalse( $GLOBALS['pgr_test_option_autoload']['pgr_scanner_profiles'] );
 		$this->assertSame( 'custom_v1', PGR_Scanner_Profile_Registry::get( 'custom_v1' )['id'] );
