@@ -60,6 +60,7 @@ const geom = () => {
     capture:first('.pgr-structured-scanner__capture'),
     buttons:first('.pgr-structured-scanner__actions'),
     status:first('.pgr-structured-scanner__status'),
+    focus:first('.pgr-structured-scanner__focus'),
     privacy:first('.pgr-structured-scanner__privacy'),
     header:first('.pgr-structured-scanner__header'),
     mappingGrid:first('.pgr-scanner-editor-mappings'),
@@ -67,8 +68,8 @@ const geom = () => {
     nativeTextarea:first('#field_2 textarea, #field_2 .ginput_container_textarea, .ginput_container_textarea textarea'),
   };
   const preview={};
-  for(const name of ['lead','capture','buttons','status','privacy','header']) preview[name]=rect(specific[name]);
-  const centerPairs=[['lead','capture'],['capture','buttons'],['buttons','status'],['privacy','capture'],['header','lead']];
+  for(const name of ['lead','capture','buttons','status','focus','privacy','header']) preview[name]=rect(specific[name]);
+  const centerPairs=[['lead','capture'],['capture','buttons'],['focus','status'],['privacy','capture'],['header','lead']];
   const collisions=Object.fromEntries(centerPairs.map(([a,b])=>[a+'__'+b,overlaps(preview[a],preview[b])]));
   const mappings=all('.pgr-scanner-editor-mapping-row').map(x=>({row:rect(x),
     children:[...x.children].map(y=>rect(y)), grid:rect(x.closest('.pgr-scanner-editor-mappings'))}));
@@ -118,7 +119,12 @@ const geom = () => {
       buttons:inherited(specific.buttons),status:inherited(specific.status)},
     centerCascade:{lead:cascade(specific.lead),capture:cascade(specific.capture),
       buttons:cascade(specific.buttons),status:cascade(specific.status)},
-    stylesheets:assetLinks.filter(x=>x.includes('gravityforms')||x.includes('persian-gravityforms')).slice(0,100)};
+    stylesheets:assetLinks.filter(x=>x.includes('gravityforms')||x.includes('persian-gravityforms')).slice(0,100),
+    textInkBoxes:Object.fromEntries(['lead','privacy','status'].map(key=>{
+      const node=specific[key];if(!node)return [key,[]];
+      const range=document.createRange();range.selectNodeContents(node);
+      return [key,[...range.getClientRects()].map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}))];
+    }))};
 };
 function delta(a,b) {
   const x=a?.preview||{}, y=b?.preview||{}, movement={};
@@ -170,6 +176,17 @@ try{
             throw Error('Existing persisted fixture not populated in real edit UI');
         }
         await page.evaluate(async()=>{await document.fonts.ready;});
+        if(state==='form-builder'){
+          const cssUrl=await page.evaluate(()=>[...document.querySelectorAll('link[href]')]
+            .map(x=>x.href).find(x=>x.includes('/assets/css/pgr-scanner-editor.css'))||null);
+          if(!cssUrl)throw Error('Installed plugin Scanner editor CSS was not served in actual Form Builder');
+          const cssResponse=await context.request.get(cssUrl);
+          if(!cssResponse.ok())throw Error('Served plugin Scanner CSS request failed: '+cssResponse.status());
+          const hash=crypto.createHash('sha256').update(await cssResponse.body()).digest('hex');
+          record.servedCss={url:cssUrl,sha256:hash,
+            matchesInstalledBytes:hash===fixture.installed_scanner_css_sha256};
+          if(!record.servedCss.matchesInstalledBytes)throw Error('Served Scanner CSS bytes differ from installed verified package');
+        }
         const measured=await page.evaluate(geom);
         record.authentic=(await page.locator('body').getAttribute('class')||'').includes('wp-admin');
         const expectedDir=locale==='fa_IR'?'rtl':'ltr';
@@ -179,6 +196,17 @@ try{
         if(measured.fonts.status!=='loaded')record.diagnostics.push('Fonts not loaded at measurement boundary');
         if(state==='form-builder'&&!record.realGfFormModel?.scanner)throw Error('Real GF Form Builder Scanner model missing');
         record.baseline=measured;
+        record.keyboardFocus=[];
+        for(let k=0;k<10;k++){
+          await page.keyboard.press('Tab');
+          record.keyboardFocus.push(await page.evaluate(()=>{
+            const a=document.activeElement,s=a&&getComputedStyle(a);
+            return {tag:a?.tagName||null,id:a?.id||null,kind:a?.getAttribute('type')||null,
+              focusVisible:a?.matches(':focus-visible')||false,
+              outlineStyle:s?.outlineStyle||null,outlineWidth:s?.outlineWidth||null,
+              boxShadow:s?.boxShadow||null,tabIndex:a?.tabIndex??null};
+          }));
+        }
         const shot=locale+'-'+state+'-'+width+'.png';
         await page.screenshot({path:path.join(out,shot),type:'png',fullPage:true,animations:'disabled'});
         record.screenshot=shot;
