@@ -929,7 +929,13 @@ jobs:
           # original Registry before downstream deletion/CAS/browser fixtures.
           scanner_before_hash="$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo hash("sha256", serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));')"
           scanner_snapshot_b64="$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo base64_encode(serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));')"
+          # Scoped to this test only: reject a synthetic pending profile via a
+          # normal WP pre-update filter; production files are untouched.
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
+          cp tests/real-integration/scanner-save-reject-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
           restore_scanner_save_state() {
+            rm -f "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
             WU008_SCANNER_SNAPSHOT="$scanner_snapshot_b64" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
               $raw = base64_decode(getenv("WU008_SCANNER_SNAPSHOT"), true);
               $original = is_string($raw) ? unserialize($raw, ["allowed_classes" => false]) : null;
@@ -1932,17 +1938,17 @@ jobs:
             if(report.status!=='PASS'||report.head!==process.env.PGR_SCANNER_EXPECTED_HEAD||
                report.evidence_class!=='AUTHENTIC_SCANNER_SAVE_RECOVERY'||report.mode!=='repaired'||report.locale!==locale)
               throw Error('wrong Scanner browser evidence identity '+locale);
-            for(const name of ['invalid_create_after','corrected_create_retry','invalid_edit_retention','corrected_edit_retry','stale_edit_conflict'])
+            for(const name of ['invalid_create_after','corrected_create_retry','invalid_edit_retention','corrected_edit_retry','stale_edit_conflict','controlled_write_failure'])
               if(!report.scenarios.some(x=>x.name===name)) throw Error('missing scenario '+locale+'/'+name);
             for(const x of report.scenarios) {
               if(x.gf_mapping_unchanged!==true) throw Error('GFAPI mapping mutation');
-              if(['invalid_create_after','invalid_edit_retention','stale_edit_conflict'].includes(x.name)&&x.registry_before!==x.registry_after)
+              if(['invalid_create_after','invalid_edit_retention','stale_edit_conflict','controlled_write_failure'].includes(x.name)&&x.registry_before!==x.registry_after)
                 throw Error('rejected save unexpectedly mutated Registry');
             }
-            if(!Array.isArray(report.screenshots)||report.screenshots.length!==9) throw Error('missing PNG matrix');
+            if(!Array.isArray(report.screenshots)||report.screenshots.length!==12) throw Error('missing PNG matrix');
             const seen=new Set();
             for(const x of report.screenshots) {
-              const match=x.filename.match(/^(fa_IR|en_US)-after-(invalid-create|invalid-edit|stale-edit)-(1280|390|320)[.]png$/);
+              const match=x.filename.match(/^(fa_IR|en_US)-after-(invalid-create|invalid-edit|stale-edit|write-failure)-(1280|390|320)[.]png$/);
               if(!match||match[1]!==locale||seen.has(x.filename)||x.width!==Number(match[3])||
                  x.direction!==(locale==='fa_IR'?'rtl':'ltr')) throw Error('wrong screenshot metadata');
               seen.add(x.filename);
