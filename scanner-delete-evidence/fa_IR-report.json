@@ -1,0 +1,348 @@
+{
+  "evidence_class": "AUTHENTIC_LICENSED_WU008_SCANNER_DELETE",
+  "exact_head": "2914f57168e1418767de427822ba3703ca4eee12",
+  "locale": "fa_IR",
+  "wordpress": "6.8.3",
+  "php": "8.2.35",
+  "versions": {
+    "gravityforms": "3.1.1.1",
+    "gravityflow": "3.1.0",
+    "gravityview": "3.3.4",
+    "persiangravity": "4.10.0",
+    "gravityperks": "2.3.16",
+    "gpfileuploadpro": "1.5.13",
+    "gpadvancedselect": "1.1.21"
+  },
+  "chromium": "140.0.7339.16",
+  "profile_id": "wu008_delete_fa",
+  "cases": [
+    {
+      "width": 1280,
+      "js_enabled": true,
+      "checks": [
+        "exact_name_and_id",
+        "mapping_warning",
+        "no_competing_create",
+        "explicit_actions",
+        "keyboard_order_and_visible_focus",
+        "destructive_visual_default_hover_focus_contrast",
+        "snapshot_nonce_bound",
+        "server_rendered_get",
+        "no_horizontal_overflow",
+        "destructive_get_no_mutation",
+        "cancel_without_deleting",
+        "stale_missing_fail_closed",
+        "built_in_non_deletable"
+      ],
+      "screenshots": [
+        "fa_IR-1280-list.jpg",
+        "fa_IR-1280-confirmation.jpg",
+        "fa_IR-1280-cancel.jpg",
+        "fa_IR-1280-missing.jpg",
+        "fa_IR-1280-built-in.jpg"
+      ],
+      "state": "PASS",
+      "visual": {
+        "authority": "chromium-computed-style-wordpress",
+        "confirm": {
+          "default": {
+            "background": "rgb(179, 45, 46)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(179, 45, 46)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "cancel": {
+          "default": {
+            "background": "rgb(246, 247, 247)",
+            "foreground": "rgb(34, 113, 177)",
+            "border": "rgb(34, 113, 177)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "contrast": {
+          "confirmDefault": 6.3,
+          "confirmHover": 8.86,
+          "confirmFocus": 8.86,
+          "cancelDefault": 4.81,
+          "cancelHover": 8.05,
+          "cancelFocus": 8.05,
+          "backgrounds": 5.87
+        }
+      },
+      "measure": {
+        "scroll": 1280,
+        "client": 1280,
+        "direction": "rtl",
+        "css": true
+      }
+    },
+    {
+      "width": 390,
+      "js_enabled": true,
+      "checks": [
+        "exact_name_and_id",
+        "mapping_warning",
+        "no_competing_create",
+        "explicit_actions",
+        "keyboard_order_and_visible_focus",
+        "destructive_visual_default_hover_focus_contrast",
+        "snapshot_nonce_bound",
+        "server_rendered_get",
+        "no_horizontal_overflow",
+        "destructive_get_no_mutation",
+        "cancel_without_deleting",
+        "stale_missing_fail_closed",
+        "built_in_non_deletable"
+      ],
+      "screenshots": [
+        "fa_IR-390-list.jpg",
+        "fa_IR-390-confirmation.jpg",
+        "fa_IR-390-cancel.jpg",
+        "fa_IR-390-missing.jpg",
+        "fa_IR-390-built-in.jpg"
+      ],
+      "state": "PASS",
+      "visual": {
+        "authority": "chromium-computed-style-wordpress",
+        "confirm": {
+          "default": {
+            "background": "rgb(179, 45, 46)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(179, 45, 46)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "cancel": {
+          "default": {
+            "background": "rgb(246, 247, 247)",
+            "foreground": "rgb(34, 113, 177)",
+            "border": "rgb(34, 113, 177)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "contrast": {
+          "confirmDefault": 6.3,
+          "confirmHover": 8.86,
+          "confirmFocus": 8.86,
+          "cancelDefault": 4.81,
+          "cancelHover": 8.05,
+          "cancelFocus": 8.05,
+          "backgrounds": 5.87
+        }
+      },
+      "measure": {
+        "scroll": 390,
+        "client": 390,
+        "direction": "rtl",
+        "css": true
+      }
+    },
+    {
+      "width": 320,
+      "js_enabled": false,
+      "checks": [
+        "exact_name_and_id",
+        "mapping_warning",
+        "no_competing_create",
+        "explicit_actions",
+        "keyboard_order_and_visible_focus",
+        "destructive_visual_default_hover_focus_contrast",
+        "snapshot_nonce_bound",
+        "server_rendered_get",
+        "no_horizontal_overflow",
+        "destructive_get_no_mutation",
+        "cancel_without_deleting",
+        "stale_missing_fail_closed",
+        "built_in_non_deletable",
+        "wrong_id_nonce_rejected",
+        "missing_nonce_rejected",
+        "wrong_label_rejected",
+        "built_in_post_rejected",
+        "anonymous_post_rejected",
+        "wrong_snapshot_nonce_rejected",
+        "missing_snapshot_rejected",
+        "no_js_navigation_and_form",
+        "real_post_deleted",
+        "repeat_post_refused",
+        "stale_get_refused"
+      ],
+      "screenshots": [
+        "fa_IR-320-list.jpg",
+        "fa_IR-320-confirmation.jpg",
+        "fa_IR-320-cancel.jpg",
+        "fa_IR-320-missing.jpg",
+        "fa_IR-320-built-in.jpg",
+        "fa_IR-320-deleted.jpg",
+        "fa_IR-320-stale.jpg"
+      ],
+      "state": "PASS",
+      "visual": {
+        "authority": "chromium-computed-style-wordpress",
+        "confirm": {
+          "default": {
+            "background": "rgb(179, 45, 46)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(179, 45, 46)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(140, 34, 36)",
+            "foreground": "rgb(255, 255, 255)",
+            "border": "rgb(140, 34, 36)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "cancel": {
+          "default": {
+            "background": "rgb(246, 247, 247)",
+            "foreground": "rgb(34, 113, 177)",
+            "border": "rgb(34, 113, 177)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "hover": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "none",
+            "outlineWidth": 0,
+            "focusVisible": false
+          },
+          "focus": {
+            "background": "rgb(240, 240, 241)",
+            "foreground": "rgb(10, 75, 120)",
+            "border": "rgb(10, 75, 120)",
+            "outline": "solid",
+            "outlineWidth": 2,
+            "focusVisible": true
+          }
+        },
+        "contrast": {
+          "confirmDefault": 6.3,
+          "confirmHover": 8.86,
+          "confirmFocus": 8.86,
+          "cancelDefault": 4.81,
+          "cancelHover": 8.05,
+          "cancelFocus": 8.05,
+          "backgrounds": 5.87
+        }
+      },
+      "measure": {
+        "scroll": 320,
+        "client": 320,
+        "direction": "rtl",
+        "css": true
+      }
+    }
+  ],
+  "limitations": [
+    "Browser behavior is not proof of human comprehension or assistive technology narration",
+    "Disposable installed packages and runtime only, not production data or production deployment"
+  ],
+  "state": "PASS",
+  "screenshots": [
+    "fa_IR-1280-list.jpg",
+    "fa_IR-1280-confirmation.jpg",
+    "fa_IR-1280-cancel.jpg",
+    "fa_IR-1280-missing.jpg",
+    "fa_IR-1280-built-in.jpg",
+    "fa_IR-390-list.jpg",
+    "fa_IR-390-confirmation.jpg",
+    "fa_IR-390-cancel.jpg",
+    "fa_IR-390-missing.jpg",
+    "fa_IR-390-built-in.jpg",
+    "fa_IR-320-list.jpg",
+    "fa_IR-320-confirmation.jpg",
+    "fa_IR-320-cancel.jpg",
+    "fa_IR-320-missing.jpg",
+    "fa_IR-320-built-in.jpg",
+    "fa_IR-320-deleted.jpg",
+    "fa_IR-320-stale.jpg"
+  ]
+}
