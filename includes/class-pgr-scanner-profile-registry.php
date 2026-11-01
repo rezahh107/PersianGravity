@@ -415,10 +415,10 @@ final class PGR_Scanner_Profile_Registry {
 		}
 		if ( $before['exists'] && is_array( $before['value'] ) &&
 			( $before['value']['schema_version'] ?? null ) === self::SCHEMA_VERSION ) {
-			return array(
-				'success' => true,
-				'reason'  => 'already_v2',
-			);
+			if ( ! self::valid_v2( $before['value'] ) ) {
+				return array( 'success' => false, 'reason' => 'invalid_v2' );
+			}
+			return array( 'success' => true, 'reason' => 'already_v2' );
 		}
 		if ( ! $before['exists'] || ! is_string( $backup_sha256 ) ||
 			! hash_equals( hash( 'sha256', $before['raw'] ), $backup_sha256 ) ||
