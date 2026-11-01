@@ -351,16 +351,17 @@ final class PGR_Admin {
 		$this->assert_profile_write_access( 'pgr_scanner_profile_save' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified immediately above by assert_profile_write_access().
 		$existing_id = isset( $_POST['existing_id'] ) ? sanitize_key( wp_unslash( $_POST['existing_id'] ) ) : '';
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified by assert_profile_write_access() above.
 		$revision = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
 			? (int) $_POST['profile_revision'] : null;
 		if ( '' !== $existing_id && ( null === $revision || $revision < 1 ) ) {
 			$this->redirect_profiles( array( 'pgr_notice' => 'save_error' ) );
 			return;
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
 		$incarnation = isset( $_POST['profile_incarnation_id'] ) && is_string( $_POST['profile_incarnation_id'] )
 			? wp_unslash( $_POST['profile_incarnation_id'] ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
 		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id, $revision, $incarnation );
 		$this->redirect_profiles( array( 'pgr_notice' => $result['success'] ? 'saved' : 'save_error' ) );
 	}
