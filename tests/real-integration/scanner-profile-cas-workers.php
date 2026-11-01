@@ -181,12 +181,26 @@ if ( $using_redis ) {
 	// WU008 may retain unrelated Scanner profiles from earlier scenarios.
 	// Cache coherence is decided by the *target* incarnation, not a false
 	// single-profile Registry assumption. Old A or missing B must fail.
-	$assert( is_array( $cached ) && ( $cached['schema_version'] ?? null ) === 2 &&
+	$cache_is_fresh = is_array( $cached ) && ( $cached['schema_version'] ?? null ) === 2 &&
 		1 === count( $profile_rows ) &&
 		'replacement' === ( $profile_rows[0]['outputs'][0]['key'] ?? null ) &&
-		$profile_rows[0]['incarnation_id'] === $current['incarnation_id'] &&
-		$profile_rows[0]['revision'] === $current['revision'],
-		'actual Redis-backed get_option returned stale or missing target incarnation after B CAS' );
+		( $profile_rows[0]['incarnation_id'] ?? null ) === $current['incarnation_id'] &&
+		( $profile_rows[0]['revision'] ?? null ) === $current['revision'];
+	$assert(
+		$cache_is_fresh,
+		'Redis-backed option disagrees with current target incarnation: ' . wp_json_encode(
+			array(
+				'cached_schema'           => is_array( $cached ) ? ( $cached['schema_version'] ?? null ) : null,
+				'cached_registry_count'   => is_array( $cached ) && is_array( $cached['profiles'] ?? null ) ? count( $cached['profiles'] ) : null,
+				'cached_target_count'     => count( $profile_rows ),
+				'cached_target_key'       => $profile_rows[0]['outputs'][0]['key'] ?? null,
+				'same_incarnation_as_db'  => isset( $profile_rows[0]['incarnation_id'] ) &&
+					$profile_rows[0]['incarnation_id'] === $current['incarnation_id'],
+				'same_revision_as_db'     => isset( $profile_rows[0]['revision'] ) &&
+					$profile_rows[0]['revision'] === $current['revision'],
+			)
+		)
+	);
 }
 $report = array(
 	'evidence_class' => 'WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS',
