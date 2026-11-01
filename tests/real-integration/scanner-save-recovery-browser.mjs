@@ -7,7 +7,8 @@ const root = process.env.WU008_ARTIFACT_DIR;
 const password = process.env.WU008_ADMIN_PASSWORD;
 const head = process.env.WU008_PGR_SHA;
 const mode = process.env.SCANNER_SAVE_MODE || 'baseline';
-if (!root || !password || !head || !['baseline', 'repaired'].includes(mode)) {
+const locale = process.env.SCANNER_SAVE_LOCALE || 'fa_IR';
+if (!root || !password || !head || !['baseline', 'repaired'].includes(mode) || !['fa_IR', 'en_US'].includes(locale)) {
   throw new Error('Pinned WU008 environment and explicitly selected qualification mode required');
 }
 const fixture = JSON.parse(fs.readFileSync(path.join(root, 'scanner-ui-readonly-evidence', 'fixture.json'), 'utf8'));
@@ -29,9 +30,21 @@ const base = new URL(fixture.admin_url);
 const url = suffix => new URL('admin.php?page=persian-gravityforms-scanner-profiles' + suffix, base).href;
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-const report = { evidence_class: 'AUTHENTIC_SCANNER_SAVE_RECOVERY', head, mode,
+const report = { evidence_class: 'AUTHENTIC_SCANNER_SAVE_RECOVERY', head, mode, locale,
   wordpress: fixture.wordpress, gravityforms: fixture.gravityforms,
   scenarios: [], persisting_registry_data: 'DISPOSABLE_WU008_ONLY' };
+const screenshotStates = [];
+const capture = async name => {
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const filename = `${locale}-${name}-${width}.png`;
+    await page.screenshot({ path: path.join(dir, filename), fullPage: true });
+    screenshotStates.push({filename, width,
+      direction: await page.locator('html').getAttribute('dir'),
+      horizontalOverflow: await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth) });
+  }
+  await page.setViewportSize({width: 1280, height: 900});
+};
 const evidence = (name, before, after, details) => report.scenarios.push({ name, registry_before: before,
   registry_after: after, gf_mapping_unchanged: details.gf_mapping_unchanged, observed: details.observed });
 try {
@@ -41,6 +54,8 @@ try {
   await Promise.all([page.waitForNavigation(), page.locator('#wp-submit').click()]);
   await page.goto(url('&action=new'));
   await page.locator('.pgr-profile-form').waitFor();
+  const observedDir = await page.locator('html').getAttribute('dir');
+  if (observedDir !== (locale === 'fa_IR' ? 'rtl' : 'ltr')) throw Error('Locale/direction mismatch: ' + locale + '/' + observedDir);
   const before = registryHash(), gfBefore = gfHash();
   await page.locator('input[name="profile[id]"]').fill('sayad_v01');
   await page.locator('input[name="profile[label]"]').fill('Unsaved synthetic browser create value');
@@ -51,7 +66,7 @@ try {
     if (!page.url().includes('pgr_notice=save_error') || await page.locator('.pgr-profile-form').count() !== 0) {
       throw new Error('Old failure path did not redirect to list and discard editable POST form as expected');
     }
-    await page.screenshot({ path: path.join(dir, 'before-invalid-create.png'), fullPage: true });
+    await capture('before-invalid-create');
     evidence('invalid_create_before', before, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'REDIRECT_LIST_GENERIC_NOTICE_NO_EDITABLE_POST_VALUES' });
     if (registryHash() !== before || gfHash() !== gfBefore) throw new Error('Failed create changed Registry or GFAPI mapping');
@@ -63,12 +78,14 @@ try {
       throw new Error('Failed Create did not retain original editable submission on same WordPress screen');
     }
     if (registryHash() !== before || gfHash() !== gfBefore) throw new Error('Failed Create changed persisted state');
-    await page.screenshot({ path: path.join(dir, 'after-invalid-create.png'), fullPage: true });
+    await capture('after-invalid-create');
+    const err = await page.locator('#pgr-profile-save-error').innerText();
+    if (locale === 'fa_IR' ? !/[آ-ی]/.test(err) : !err.includes('not saved')) throw Error('Expected translated actionable save error missing');
     evidence('invalid_create_after', before, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR' });
-    await page.locator('input[name="profile[id]"]').fill('wu008_save_recovery');
+    await page.locator('input[name="profile[id]"]').fill('wu008_save_recovery_' + (locale === 'fa_IR' ? 'fa' : 'en'));
     await Promise.all([page.waitForNavigation(), page.locator('.pgr-profile-form input[type="submit"]').click()]);
-    if (!page.url().includes('pgr_notice=saved') || !JSON.parse(current('wu008_save_recovery'))) {
+    if (!page.url().includes('pgr_notice=saved') || !JSON.parse(current('wu008_save_recovery_' + (locale === 'fa_IR' ? 'fa' : 'en')))) {
       throw new Error('Corrected create retry did not persist exactly once');
     }
     evidence('corrected_create_retry', before, registryHash(), {
@@ -85,7 +102,7 @@ try {
         await page.locator('input[name="profile[label]"]').inputValue() !== 'Unsaved synthetic edit label' ||
         await page.locator('input[name="profile[outputs][0][key]"]').inputValue() !== 'changed_immutable_key' ||
         registryHash() !== editBefore) throw new Error('Rejected edit lost values or changed Registry');
-    await page.screenshot({ path: path.join(dir, 'after-invalid-edit.png'), fullPage: true });
+    await capture('after-invalid-edit');
     evidence('invalid_edit_retention', editBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES' });
     await page.locator('input[name="profile[outputs][0][key]"]').fill(originalKey);
@@ -103,13 +120,14 @@ try {
         await page.locator('input[name="profile[label]"]').inputValue() !== 'Stale unsaved client label' ||
         JSON.parse(current('wu008_ui_long_label'))?.label !== 'Newer committed server label' ||
         registryHash() !== newerHash) throw new Error('Stale edit incorrectly overwrote newer Registry state or lost unsaved values');
-    await page.screenshot({ path: path.join(dir, 'after-stale-edit.png'), fullPage: true });
+    await capture('after-stale-edit');
     evidence('stale_edit_conflict', newerHash, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED' });
   }
   if (report.scenarios.some(x => !x.gf_mapping_unchanged)) throw new Error('GFAPI mapping changed');
+  report.screenshots = screenshotStates;
   report.status = 'PASS';
 } finally {
-  fs.writeFileSync(path.join(dir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  fs.writeFileSync(path.join(dir, 'report-' + locale + '.json'), JSON.stringify(report, null, 2) + '\n');
   await browser.close();
 }
