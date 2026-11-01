@@ -1,0 +1,128 @@
+{
+  "evidence_class": "SOURCE_BOUND_POSTMERGE_QUALIFICATION_CHECKPOINT_NOT_A_REPAIR",
+  "reviewed_at": "2026-11-01",
+  "repository": "rezahh107/PersianGravity",
+  "live_main_source_sha": "ff3f390511da3ce194815a2c856251ade145b2cc",
+  "prior_main_source_sha": "c7c5377e93f5f4f704acc797dc67ea8554b5dfd7",
+  "tested_exact_qualification_head": "f1503c2e060e349708bb645bf12d2f2e4b4b6212",
+  "tested_runtime_evidence_commit": "9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2",
+  "wordpress": "6.8.3",
+  "php": "8.2.35",
+  "gravityforms": "3.1.1.1",
+  "existing_ci_run": "https://github.com/rezahh107/PersianGravity/actions/runs/41234928792",
+  "existing_ci_result": "success (inspected existing executed run; not rerun this session)",
+  "inspected_source_blob_sha": {
+    "registry": "448482be6c32d35f4183560dbdefc79a4a5fee2c",
+    "admin": "f7943ef27a7ee5159b72664ddec8ce4128227bcd"
+  },
+  "main_delta_from_prior": [
+    ".github/workflows/wu008-real-integration.yml",
+    "docs/SCANNER_PROFILE_INCARNATION_ATOMICITY_DECISION.md",
+    "tests/real-integration/scanner-profile-incarnation-browser.mjs",
+    "tests/real-integration/scanner-profile-incarnation-fixture.php",
+    "tests/real-integration/scanner-profile-interleaving-mu.php"
+  ],
+  "production_runtime_files_changed_in_main_delta": false,
+  "observed_prior_runtime": {
+    "cases": [
+      {
+        "name": "unchanged",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "deleted",
+        "profile_exists_after_old_post": false,
+        "fresh_b": null
+      },
+      {
+        "name": "missing",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": false,
+        "fresh_b": null
+      },
+      {
+        "name": "changed_label",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": true,
+        "fresh_b": null
+      },
+      {
+        "name": "same_label",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": true,
+        "fresh_b": null
+      },
+      {
+        "name": "enabled_only",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": true,
+        "fresh_b": null
+      },
+      {
+        "name": "output_label_only",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": true,
+        "fresh_b": null
+      },
+      {
+        "name": "fresh_b",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "delete_error",
+        "profile_exists_after_old_post": true,
+        "fresh_b": {
+          "notice": "deleted",
+          "deleted": true,
+          "gfapi_mapping_unchanged": true
+        }
+      },
+      {
+        "name": "identical_content",
+        "state": "OBSERVED",
+        "old_confirmation_notice": "deleted",
+        "profile_exists_after_old_post": false,
+        "fresh_b": null
+      }
+    ],
+    "original_cases_count": 8,
+    "screenshots_count": 24,
+    "deterministic_interleaving": {
+      "state": "OBSERVED_UNSAFE_INTERLEAVING",
+      "notice": "deleted",
+      "old_a_confirmation_deleted_replacement_b": true,
+      "gfapi_mapping_unchanged": true,
+      "marker": {
+        "probe": "WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING",
+        "original_was_read": true,
+        "replacement_persisted_before_delete_read": true,
+        "replacement_content_differs": true,
+        "mutation_elapsed_ms": 1.404,
+        "mechanism": "pre_option callback intercepted Registry delete method second get_option read",
+        "actual_parallel_workers": false
+      },
+      "images": [
+        "interleaved_replace-original-confirmation.jpg",
+        "interleaved_replace-after-old-POST.jpg"
+      ],
+      "true_concurrent_workers": "NOT_PROVEN"
+    },
+    "persisting_GFApi_mapping_unchanged": true
+  },
+  "reproduced_in_this_session": false,
+  "validation_boundary": {
+    "repository_source_and_prior_evidence": "VERIFIED_BY_READBACK",
+    "current_main_source_behavior": "UNCHANGED_REGISTRY_AND_HANDLER_COMPARED_TO_PREVIOUS_EXECUTED_HEAD",
+    "new_main_exact_head_WU008": "NOT_RUN",
+    "two_independent_workers": "NOT_PROVEN",
+    "object_cache_and_external_option_writers": "NOT_PROVEN",
+    "approved_versioned_migration": "NOT_AUTHORIZED",
+    "production_repair": "NOT_IMPLEMENTED",
+    "new_screenshots_after_production_change": "NOT_APPLICABLE_NO_PRODUCTION_CHANGE",
+    "baseline_ui_security": "HISTORICAL_WU008_ONLY_NOT_RERUN"
+  },
+  "qualification_pr": "https://github.com/rezahh107/PersianGravity/pull/104",
+  "existing_evidence": "https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/report.json",
+  "minimum_owner_decision": "Authorize explicit canonical profile incarnation metadata with v1 migration/rollback, and conflict-detecting guarded Registry writes with real WordPress cache/filter and two-worker verification."
+}
