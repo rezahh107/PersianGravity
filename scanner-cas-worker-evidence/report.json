@@ -1,0 +1,12 @@
+{
+    "evidence_class": "WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS",
+    "old_confirmation": "rejected",
+    "new_incarnation": "preserved",
+    "worker_a_pid": 14151,
+    "worker_b_pid": 14152,
+    "workers_distinct": true,
+    "worker_a_suspended_during_b_write": true,
+    "persistent_object_cache": "NOT_PROVEN",
+    "exact_head": "da4001037550e272f3b33f714b586c6ec2eb3712",
+    "fresh_get_option_reflects_B": false
+}
