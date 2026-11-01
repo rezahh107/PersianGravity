@@ -18,7 +18,15 @@ if ( ! $root || ! $artifact || realpath( $root ) !== realpath( ABSPATH ) ||
 	throw new RuntimeException( 'WU008 CAS worker requires an isolated runtime and authorized role.' );
 }
 
-$dir = $artifact . '/scanner-cas-worker-evidence';
+$evidence_dir = getenv( 'WU008_CAS_EVIDENCE_SUBDIR' ) ?: 'scanner-cas-worker-evidence';
+if ( ! in_array( $evidence_dir, array( 'scanner-cas-worker-evidence', 'scanner-redis-cas-worker-evidence' ), true ) ) {
+	throw new RuntimeException( 'WU008 CAS evidence location is not an approved test-only directory.' );
+}
+$using_redis = 'scanner-redis-cas-worker-evidence' === $evidence_dir;
+if ( $using_redis && ! wp_using_ext_object_cache() ) {
+	throw new RuntimeException( 'WU008 Redis case cannot use non-persistent WP cache.' );
+}
+$dir = $artifact . '/' . $evidence_dir;
 $id  = 'alpha';
 $wait_for = static function ( $filename ) {
 	$end = microtime( true ) + 25;
@@ -67,12 +75,21 @@ if ( 'setup' === $role ) {
 	$assert( $result['success'], 'cannot create real A in MariaDB' );
 	$fingerprint = PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( $id ) );
 	$assert( 1 === preg_match( '/^[a-f0-9]{64}$/', $fingerprint ), 'missing unique A snapshot' );
+	if ( $using_redis ) {
+		$assert( wp_cache_set( 'wu008_cross_process_redis', $fingerprint, 'options', 180 ),
+			'cross-process Redis sentinel cannot be saved' );
+		$assert( is_array( get_option( 'pgr_scanner_profiles' ) ), 'get_option cannot read warmed Registry' );
+	}
 	$must_write( $before_file, $fingerprint );
 	return;
 }
 
 $fp = trim( $wait_for( $before_file ) );
 $assert( 1 === preg_match( '/^[a-f0-9]{64}$/', $fp ), 'invalid initial fingerprint' );
+if ( $using_redis ) {
+	$assert( $fp === wp_cache_get( 'wu008_cross_process_redis', 'options' ),
+		'persisted Redis sentinel was not shared between real WP-CLI PHP processes' );
+}
 
 if ( 'a' === $role ) {
 	$hook_seen = false;
@@ -139,6 +156,13 @@ $assert( $a['worker_a_pid'] > 0 && $b_pid > 0 && $a['worker_a_pid'] !== $b_pid &
 $current = PGR_Scanner_Profile_Registry::get( $id );
 $assert( is_array( $current ) && 'replacement' === $current['outputs'][0]['key'] &&
 	$fp !== PGR_Scanner_Profile_Registry::snapshot_fingerprint( $current ), 'replacement not intact in third PHP process' );
+if ( $using_redis ) {
+	$cached = get_option( 'pgr_scanner_profiles' );
+	$assert( is_array( $cached ) && ( $cached['schema_version'] ?? null ) === 2 &&
+		count( $cached['profiles'] ) === 1 &&
+		'replacement' === $cached['profiles'][0]['outputs'][0]['key'],
+		'actual Redis-backed get_option returned stale Registry after B CAS' );
+}
 $report = array(
 	'evidence_class' => 'WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS',
 	'old_confirmation' => 'rejected',
@@ -147,10 +171,13 @@ $report = array(
 	'worker_b_pid' => $b_pid,
 	'workers_distinct' => true,
 	'worker_a_suspended_during_b_write' => true,
-	'persistent_object_cache' => 'NOT_PROVEN',
+	'persistent_object_cache' => $using_redis ? 'REDIS_2_8_0_CROSS_PROCESS_PROVEN' : 'NOT_PROVEN',
+	'exact_head' => getenv( 'WU008_PGR_SHA' ),
+	'fresh_get_option_reflects_B' => $using_redis,
 );
 $must_write( $dir . '/report.json', wp_json_encode( $report, JSON_PRETTY_PRINT ) . "\n" );
 $assert( PGR_Scanner_Profile_Registry::delete_custom_profile(
 	$id,
 	PGR_Scanner_Profile_Registry::snapshot_fingerprint( $current )
 ) && null === PGR_Scanner_Profile_Registry::get( $id ), 'CAS workers cleanup failed' );
+if ( $using_redis ) { wp_cache_delete( 'wu008_cross_process_redis', 'options' ); }
