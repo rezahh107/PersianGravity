@@ -1705,6 +1705,8 @@ jobs:
               x.baseline?.panelState?.tabSelected===true&&
               x.baseline?.panelState?.panelVisible===true&&
               x.baseline?.panelState?.panel?.width>100&&
+              x.baseline?.mapping?.sidebar?.width>100&&
+              x.baseline?.mapping?.containingSidebarWidth>100&&
               x.cssAttribution?.restored===true&&x.cssAttribution?.originallyLoaded===false&&
               x.cssAttribution?.screenshot),'missing real visible Builder/control '+locale);
             const hashes=JSON.parse(fs.readFileSync(path.join(dir,'SHA256-'+locale+'.json'),'utf8'));
