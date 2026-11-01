@@ -89,7 +89,7 @@ final class ScannerProfileStorageAtomicityTest extends TestCase {
 		$prior = PGR_Scanner_Profile_Registry::get( 'alpha' );
 		$edited = $this->profile();
 		$edited['label'] = 'Changed';
-		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $edited, 'alpha', $prior['revision'] )['success'] );
+		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $edited, 'alpha', $prior['revision'], $prior['incarnation_id'] )['success'] );
 		$this->assertFalse( PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile(), 'alpha', $prior['revision'] )['success'] );
 		$now = PGR_Scanner_Profile_Registry::get( 'alpha' );
 		$this->assertSame( $prior['incarnation_id'], $now['incarnation_id'] );
