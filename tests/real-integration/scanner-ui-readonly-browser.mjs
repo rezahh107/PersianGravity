@@ -157,16 +157,24 @@ try{
         await page.locator('#wpadminbar').waitFor({state:'attached'});
         if(state==='form-builder'){
           await page.locator('#field_3').waitFor({state:'attached',timeout:20000});
+          await page.waitForFunction(()=>typeof window.PGRScannerEditor==='object' &&
+            typeof window.PGRScannerEditor.setProfile==='function',null,{timeout:15000});
           record.realGfFormModel=await page.evaluate(()=>({present:typeof window.form==='object',
             scanner:window.form?.fields?.some(f=>f.type==='pgr_structured_scanner')||false}));
           const clicked=await page.evaluate(()=>{
             const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
           });
-          if(!clicked) record.diagnostics.push('Native GF field edit selector unavailable at this width');
-          try{await page.locator('#advanced_tab_toggle').click({timeout:4000});}catch(e){
-            record.diagnostics.push('Native advanced tab click unavailable: '+String(e.message).slice(0,120));}
-          try{await page.locator('#pgr_scanner_profile').waitFor({state:'visible',timeout:4000});}catch(e){
-            record.diagnostics.push('Native scanner mapping settings not visible: '+String(e.message).slice(0,120));}
+          if(!clicked)throw Error('Native GF scanner edit button missing');
+          if(!(await page.locator('#advanced_tab_toggle').isVisible())){
+            await page.locator('#field_3').click({force:true});
+          }
+          await page.locator('#advanced_tab_toggle').waitFor({state:'visible',timeout:10000});
+          await page.locator('#advanced_tab_toggle').click({timeout:10000});
+          await page.locator('#advanced_tab').waitFor({state:'visible',timeout:10000});
+          await page.locator('#pgr_scanner_profile').waitFor({state:'visible',timeout:10000});
+          await page.locator('[data-pgr-scanner-mapping="qr_version"]').waitFor({state:'visible',timeout:10000});
+          if(await page.locator('.pgr-scanner-editor-mapping-row').count()!==7)
+            throw Error('Native Scanner seven-row mapping grid not loaded');
         }else if(state==='list'){
           await page.locator('.pgr-admin').waitFor({state:'attached'});
           if(!(await page.locator('.pgr-admin').innerText()).includes('LongLabel_12345'))throw Error('Existing real WU008 synthetic Registry fixture absent');
@@ -232,6 +240,34 @@ try{
             if(c.old[i])r.style.setProperty('grid-template-columns',c.old[i],c.priority[i]);else r.style.removeProperty('grid-template-columns');
           });},control);
           record.oneVariable.restored=true;
+          const runtimeCssUrl=record.servedCss.url.replace('pgr-scanner-editor.css','pgr-structured-scanner.css');
+          const css=await context.request.get(runtimeCssUrl);
+          if(!css.ok())throw Error('Installed Scanner preview stylesheet unavailable to browser');
+          const runtimeHash=crypto.createHash('sha256').update(await css.body()).digest('hex');
+          if(runtimeHash!==fixture.installed_scanner_runtime_css_sha256)
+            throw Error('Scanner preview stylesheet served bytes differ from installed runtime');
+          record.cssAttribution={
+            independentControl:'only append exact installed preview CSS in browser memory after grid is restored',
+            url:runtimeCssUrl,sha256:runtimeHash,
+            originallyLoaded:measured.stylesheets.some(s=>s.includes('pgr-structured-scanner.css'))
+          };
+          if(record.cssAttribution.originallyLoaded)
+            throw Error('Preview CSS already present; missing-style causal hypothesis invalid');
+          await page.evaluate(url=>new Promise((resolve,reject)=>{
+            const link=document.createElement('link');link.rel='stylesheet';link.href=url;
+            link.dataset.pgrReadOnlyTest='1';
+            link.onload=resolve;link.onerror=()=>reject(Error('Preview CSS browser load failed'));
+            document.head.append(link);
+          }),runtimeCssUrl);
+          await page.evaluate(async()=>{await document.fonts.ready;
+            await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});
+          record.cssAttribution.after=await page.evaluate(geom);
+          record.cssAttribution.delta=delta(measured,record.cssAttribution.after);
+          const cssShot=locale+'-form-builder-'+width+'-preview-css-only.png';
+          await page.screenshot({path:path.join(out,cssShot),type:'png',fullPage:true,animations:'disabled'});
+          record.cssAttribution.screenshot=cssShot;report.screenshots.push(cssShot);
+          await page.evaluate(()=>document.querySelector('link[data-pgr-read-only-test="1"]')?.remove());
+          record.cssAttribution.restored=true;
         }
         record.pageErrors=failures.splice(0);
       }catch(e){
@@ -263,7 +299,8 @@ for(const state of states.map(x=>x[0])){
 contact.push('','## One-variable browser-memory mapping control','');
 for(const w of [1280,390,320]){
   const c=report.cases.find(x=>x.state==='form-builder'&&x.width===w);
-  contact.push('- '+w+'px: '+(c?.oneVariable?.screenshot?'[Single-column PNG]('+c.oneVariable.screenshot+')':'NOT_VERIFIED'));
+  contact.push('- '+w+'px: '+(c?.oneVariable?.screenshot?'[Single-column PNG]('+c.oneVariable.screenshot+')':'NOT_VERIFIED')+
+    '; '+(c?.cssAttribution?.screenshot?'[Preview CSS-only PNG]('+c.cssAttribution.screenshot+')':'Preview CSS NOT_VERIFIED'));
 }
 contact.push('','## Limits','No pre/post PR106 equivalence is claimed without distinct isolated database/byte-matched environments.',
   'Viewport changes and in-browser temporary column override are not persistent changes.',
