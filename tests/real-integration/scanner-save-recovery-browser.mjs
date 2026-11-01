@@ -118,6 +118,8 @@ try {
     await Promise.all([page.waitForNavigation(), page.locator('.pgr-profile-form input[type="submit"]').click()]);
     if (!page.url().includes('pgr_notice=saved') || !JSON.parse(current('wu008_ui_long_label'))?.label.includes('Unsaved synthetic edit label'))
       throw new Error('Corrected edit retry failed');
+    evidence('corrected_edit_retry', editBefore, registryHash(), {
+      gf_mapping_unchanged: gfHash() === gfBefore, observed: 'RETRY_EDIT_SAVED' });
     await page.goto(url('&action=edit&profile=wu008_ui_long_label'));
     await page.locator('.pgr-profile-form').waitFor();
     await page.locator('input[name="profile[label]"]').fill('Stale unsaved client label');
