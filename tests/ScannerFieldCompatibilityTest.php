@@ -45,6 +45,7 @@ final class ScannerFieldCompatibilityTest extends TestCase {
 			'parser' => array( 'type' => 'segments_v1', 'separator' => 'newline', 'trim' => true, 'normalize_digits' => true ),
 			'outputs' => array( array( 'key' => 'customer_id', 'label' => 'Customer ID', 'required' => true ), array( 'key' => 'note', 'label' => 'Note', 'required' => false ) ),
 		);
+		$GLOBALS['wpdb'] = new PGR_Test_Scanner_WPDB();
 		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $profile )['success'] );
 		PGR_Core::enqueue_field_assets( array( 'fields' => array( $scanner ) ), false );
 		$this->assertCount( 1, $GLOBALS['pgr_test_inline_scripts'] );
