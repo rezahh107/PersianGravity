@@ -787,3 +787,19 @@ msgstr ""
 msgid "Back to Scanner Profiles"
 msgstr ""
 
+
+#: admin/class-pgr-admin.php
+msgid "This edit is out of date or its identity is missing. Your changes are retained here, but cannot be saved until you open the latest profile and reapply them. Newer saved data was not overwritten."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "The profile could not be written. Your entries remain here. Check for newer changes or a storage error before trying again; no overwrite was accepted."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Scanner Profile storage is not ready for changes. Your entries remain here. Ask an administrator to check Registry migration or storage before retrying."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "The profile was not saved. Your entries remain editable below. Check the ID, labels, parser settings and outputs, then correct them and try again."
+msgstr ""
