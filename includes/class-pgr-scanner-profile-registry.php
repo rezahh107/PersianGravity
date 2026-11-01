@@ -166,8 +166,8 @@ final class PGR_Scanner_Profile_Registry {
 
 		foreach ( self::active() as $profile ) {
 			$profiles[] = array(
-				'id'      => $profile['id'],
-				'parser'  => $profile['parser'],
+				'id'     => $profile['id'],
+				'parser' => $profile['parser'],
 				'outputs' => array_values(
 					array_map(
 						static function ( $output ) {
@@ -301,11 +301,13 @@ final class PGR_Scanner_Profile_Registry {
 			return '';
 		}
 
-		$canonical = wp_json_encode( array(
+		$canonical = wp_json_encode(
+			array(
 			'profile'        => $validation['profile'],
 			'incarnation_id' => $profile['incarnation_id'],
-			'revision'       => $profile['revision'],
-		) );
+				'revision'       => $profile['revision'],
+			)
+		);
 		return is_string( $canonical ) ? hash( 'sha256', $canonical ) : '';
 	}
 
@@ -319,7 +321,7 @@ final class PGR_Scanner_Profile_Registry {
 	public static function normalize_option( $stored ) {
 		$empty = array(
 			'schema_version' => self::SCHEMA_VERSION,
-			'profiles' => array(),
+			'profiles'       => array(),
 		);
 		if ( ! is_array( $stored ) || ! isset( $stored['schema_version'], $stored['profiles'] ) ||
 			! is_int( $stored['schema_version'] ) || ! is_array( $stored['profiles'] ) ||
@@ -329,7 +331,7 @@ final class PGR_Scanner_Profile_Registry {
 
 		$result = array(
 			'schema_version' => $stored['schema_version'],
-			'profiles' => array(),
+			'profiles'       => array(),
 		);
 		foreach ( $stored['profiles'] as $profile ) {
 			$validation = self::validate_profile( $profile );
@@ -360,37 +362,40 @@ final class PGR_Scanner_Profile_Registry {
 		global $wpdb;
 		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
 			return array(
-				'exists' => false,
-				'raw' => '',
-				'value' => null,
+				'exists'    => false,
+				'raw'       => '',
+				'value'     => null,
 				'available' => false,
 			);
 		}
-		$row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
-			self::OPTION
-		) );
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
+				self::OPTION
+			)
+		);
 		if ( null === $row && ! empty( $wpdb->last_error ) ) {
 			return array(
-				'exists' => false,
-				'raw' => '',
-				'value' => null,
+				'exists'    => false,
+				'raw'       => '',
+				'value'     => null,
 				'available' => false,
 			);
 		}
-		return is_object( $row )
-			? array(
-				'exists' => true,
-				'raw' => $row->option_value,
-				'value' => maybe_unserialize( $row->option_value ),
-				'available' => true,
-			)
-			: array(
-				'exists' => false,
-				'raw' => '',
-				'value' => null,
+		if ( is_object( $row ) ) {
+			return array(
+				'exists'    => true,
+				'raw'       => $row->option_value,
+				'value'     => maybe_unserialize( $row->option_value ),
 				'available' => true,
 			);
+		}
+		return array(
+			'exists'    => false,
+			'raw'       => '',
+			'value'     => null,
+			'available' => true,
+		);
 	}
 
 	/**
@@ -405,14 +410,14 @@ final class PGR_Scanner_Profile_Registry {
 		if ( empty( $before['available'] ) ) {
 			return array(
 				'success' => false,
-				'reason' => 'storage_unavailable',
+				'reason'  => 'storage_unavailable',
 			);
 		}
 		if ( $before['exists'] && is_array( $before['value'] ) &&
 			( $before['value']['schema_version'] ?? null ) === self::SCHEMA_VERSION ) {
 			return array(
 				'success' => true,
-				'reason' => 'already_v2',
+				'reason'  => 'already_v2',
 			);
 		}
 		if ( ! $before['exists'] || ! is_string( $backup_sha256 ) ||
@@ -420,12 +425,12 @@ final class PGR_Scanner_Profile_Registry {
 			! self::valid_legacy( $before['value'] ) ) {
 			return array(
 				'success' => false,
-				'reason' => 'backup_or_legacy_mismatch',
+				'reason'  => 'backup_or_legacy_mismatch',
 			);
 		}
 		$next = array(
 			'schema_version' => self::SCHEMA_VERSION,
-			'profiles' => array(),
+			'profiles'       => array(),
 		);
 		foreach ( $before['value']['profiles'] as $legacy ) {
 			$legacy['incarnation_id'] = wp_generate_uuid4();
@@ -435,11 +440,11 @@ final class PGR_Scanner_Profile_Registry {
 		return self::persist_option( $next, $before )
 			? array(
 				'success' => true,
-				'reason' => 'migrated',
+				'reason'  => 'migrated',
 			)
 			: array(
 				'success' => false,
-				'reason' => 'write_conflict_or_failure',
+				'reason'  => 'write_conflict_or_failure',
 			);
 	}
 
@@ -453,7 +458,7 @@ final class PGR_Scanner_Profile_Registry {
 		$state = self::raw_state();
 		return ! empty( $state['available'] ) && $state['exists'] && self::valid_legacy( $state['value'] )
 			? array(
-				'raw' => $state['raw'],
+				'raw'    => $state['raw'],
 				'sha256' => hash( 'sha256', $state['raw'] ),
 			)
 			: null;
@@ -494,7 +499,7 @@ final class PGR_Scanner_Profile_Registry {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => $check['errors'],
+				'errors'  => $check['errors'],
 			);
 		}
 		$normalized = $check['profile'];
@@ -503,14 +508,14 @@ final class PGR_Scanner_Profile_Registry {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => array( 'missing_edit_identity' ),
+				'errors'  => array( 'missing_edit_identity' ),
 			);
 		}
 		if ( isset( self::built_in_profiles()[ $normalized['id'] ] ) ) {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => array( 'built_in_collision' ),
+				'errors'  => array( 'built_in_collision' ),
 			);
 		}
 		$before = self::raw_state();
@@ -518,12 +523,12 @@ final class PGR_Scanner_Profile_Registry {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => array( 'migration_required_or_invalid_storage' ),
+				'errors'  => array( 'migration_required_or_invalid_storage' ),
 			);
 		}
 		$stored = $before['exists'] ? $before['value'] : array(
 			'schema_version' => self::SCHEMA_VERSION,
-			'profiles' => array(),
+			'profiles'       => array(),
 		);
 		$found = false;
 		foreach ( $stored['profiles'] as $index => $saved ) {
@@ -534,7 +539,7 @@ final class PGR_Scanner_Profile_Registry {
 				return array(
 					'success' => false,
 					'profile' => null,
-					'errors' => array( 'duplicate_profile_id' ),
+					'errors'  => array( 'duplicate_profile_id' ),
 				);
 			}
 			if ( $saved['revision'] !== $expected_revision ||
@@ -542,14 +547,14 @@ final class PGR_Scanner_Profile_Registry {
 				return array(
 					'success' => false,
 					'profile' => null,
-					'errors' => array( 'edit_conflict' ),
+					'errors'  => array( 'edit_conflict' ),
 				);
 			}
 			if ( self::contract_definition( $saved ) !== self::contract_definition( $normalized ) ) {
 				return array(
 					'success' => false,
 					'profile' => null,
-					'errors' => array( 'immutable_contract' ),
+					'errors'  => array( 'immutable_contract' ),
 				);
 			}
 			$normalized['incarnation_id'] = $saved['incarnation_id'];
@@ -562,7 +567,7 @@ final class PGR_Scanner_Profile_Registry {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => array( 'profile_not_found' ),
+				'errors'  => array( 'profile_not_found' ),
 			);
 		}
 		if ( '' === $existing_id ) {
@@ -574,13 +579,13 @@ final class PGR_Scanner_Profile_Registry {
 			return array(
 				'success' => false,
 				'profile' => null,
-				'errors' => array( 'write_conflict_or_failure' ),
+				'errors'  => array( 'write_conflict_or_failure' ),
 			);
 		}
 		return array(
 			'success' => true,
 			'profile' => $normalized,
-			'errors' => array(),
+			'errors'  => array(),
 		);
 	}
 
@@ -626,10 +631,13 @@ final class PGR_Scanner_Profile_Registry {
 			$check = self::validate_profile( $profile );
 			if ( ! $check['valid'] || '' === self::snapshot_fingerprint( $profile ) ||
 				isset( $seen[ $profile['id'] ] ) || isset( self::built_in_profiles()[ $profile['id'] ] ) ||
-				array_merge( $check['profile'], array(
-					'incarnation_id' => $profile['incarnation_id'],
-					'revision' => $profile['revision'],
-				) ) !== $profile ) {
+				array_merge(
+					$check['profile'],
+					array(
+						'incarnation_id' => $profile['incarnation_id'],
+						'revision'       => $profile['revision'],
+					)
+				) !== $profile ) {
 				return false;
 			}
 			$seen[ $profile['id'] ] = true;
@@ -705,20 +713,24 @@ final class PGR_Scanner_Profile_Registry {
 		}
 		$serialized = maybe_serialize( $next );
 		if ( $before['exists'] ) {
-			$written = $wpdb->query( $wpdb->prepare(
-				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND BINARY option_value = BINARY %s",
-				$serialized,
-				self::OPTION,
-				$before['raw']
-			) );
+			$written = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND BINARY option_value = BINARY %s",
+					$serialized,
+					self::OPTION,
+					$before['raw']
+				)
+			);
 		} else {
-			$written = $wpdb->insert( $wpdb->options,
+			$written = $wpdb->insert(
+				$wpdb->options,
 				array(
-					'option_name' => self::OPTION,
+					'option_name'  => self::OPTION,
 					'option_value' => $serialized,
-					'autoload' => 'off',
+					'autoload'     => 'off',
 				),
-				array( '%s', '%s', '%s' ) );
+				array( '%s', '%s', '%s' )
+			);
 		}
 		if ( 1 !== $written ) {
 			return false;
