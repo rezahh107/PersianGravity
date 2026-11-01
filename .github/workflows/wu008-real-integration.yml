@@ -201,6 +201,7 @@ jobs:
           node --check tests/real-integration/g008-timeline-print-reconcile.mjs
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
+          node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
@@ -918,6 +919,34 @@ jobs:
           printf -- '- [fa_IR detailed geometry, cascade, keyboard focusables](geometry-fa_IR.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+
+      - name: Compare real GF tabs initialization against synchronized native pointer clicks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          restore_tabs_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_tabs_locale EXIT
+          SCANNER_UI_LOCALE=fa_IR node tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_UI_LOCALE=en_US node tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          restore_tabs_locale
+          trap - EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $dir = getenv("WU008_ARTIFACT_DIR");
+            $fixture = json_decode(file_get_contents($dir."/scanner-ui-readonly-evidence/fixture.json"),true,512,JSON_THROW_ON_ERROR);
+            $now = hash("sha256",serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));
+            if ($now !== $fixture["registry_snapshot_sha256"]) {
+              throw new RuntimeException("Tabs diagnosis changed Scanner Registry");
+            }
+          '
+          printf '# Native GF Tabs lifecycle comparison\n\n' > "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
+          printf '%s\n' '- [fa_IR exact-head direct/synchronized comparison](tabs-fa_IR.json)' '- [en_US exact-head direct/synchronized comparison](tabs-en_US.json)' >> "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
+          printf '\nNo production edits, Scanner Registry writes or Form submissions. Synchronized clicks are real pointer interactions; readiness timeouts are reported, not masked.\n' >> "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
 
       - name: Verify Scanner Profile deletion appearance and mapping in real WordPress Chromium
         shell: bash
@@ -1793,6 +1822,67 @@ jobs:
           console.log('SCANNER_UI_GATE PASS: authentic matching Head accepted; consistent forged Head REJECTED; 24 native pages, 12 CSS controls, 6 native GF-only tabs probes');
           PGR_SCANNER_UI_GATE
 
+      - name: Require exact-Head native GF tabs lifecycle diagnostic evidence
+        shell: bash
+        env:
+          PGR_TABS_TRUSTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node <<'PGR_TABS_LIFECYCLE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-tabs-lifecycle-evidence';
+          const head=process.env.PGR_TABS_TRUSTED_HEAD;
+          const ok=(v,msg)=>{if(!v)throw Error('TABS_LIFECYCLE_GATE: '+msg);};
+          ok(/^[a-f0-9]{40}$/.test(head),'trusted PR Head missing');
+          const required=['README.md','tabs-fa_IR.json','tabs-en_US.json'];
+          const names=fs.readdirSync(dir).sort();
+          ok(names.join('|')===required.slice().sort().join('|'),'unexpected or missing diagnostic files');
+          for(const name of names) {
+            const st=fs.lstatSync(path.join(dir,name));
+            ok(st.isFile()&&!st.isSymbolicLink()&&st.size>0&&st.size<9000000,'unsafe diagnostic artifact: '+name);
+          }
+          const widths=[1280,390,320], kinds=['scanner','native'],modes=['direct','synchronized'];
+          for(const locale of ['fa_IR','en_US']){
+            const d=JSON.parse(fs.readFileSync(path.join(dir,'tabs-'+locale+'.json'),'utf8'));
+            ok(d.evidence_class==='AUTHENTIC_GF_TABS_LIFECYCLE_DIAGNOSTIC'&&d.exact_head===head&&
+              d.locale===locale&&d.source?.wordpress==='6.8.3'&&d.source?.gravityforms==='3.1.1.1'&&
+              d.form_submissions===0&&d.scanner_registry_mutations===0&&d.cases?.length===12,
+              'head/provenance/scenario mismatch: '+locale);
+            const keys=new Set();
+            for(const c of d.cases) {
+              const key=c.kind+'-'+c.mode+'-'+c.width;
+              ok(widths.includes(c.width)&&kinds.includes(c.kind)&&modes.includes(c.mode)&&
+                !keys.has(key)&&c.status==='OBSERVED'&&c.locale===locale&&
+                c.model?.scanner===(c.kind==='scanner')&&c.model?.nativeTextarea===true,
+                'incomplete or duplicate browser control: '+locale+'/'+key);
+              keys.add(key);
+              ok(Array.isArray(c.events)&&c.events.some(e=>e.name==='before-click')&&
+                c.events.some(e=>e.name==='after-click')&&
+                c.beforeClick?.tabsFunction===true&&c.afterClick?.tabsFunction===true&&
+                c.navigation?.domContentLoadedEnd!==null&&
+                Array.isArray(c.tabsCalls)&&Array.isArray(c.errors)&&
+                c.tabsError===c.errors.some(e=>e.message.includes('cannot call methods on tabs prior to initialization')),
+                'unverified tab timing/error trace: '+locale+'/'+key);
+              if(c.mode==='synchronized')ok(c.comparison?.directTabsError===
+                d.cases.find(x=>x.width===c.width&&x.kind===c.kind&&x.mode==='direct')?.tabsError&&
+                c.comparison?.synchronizedTabsError===c.tabsError&&
+                c.readiness!==undefined&&c.waitedTarget!==undefined,
+                'synchronized control is not paired with direct click: '+locale+'/'+key);
+              if(c.kind==='scanner') {
+                ok(c.geometry?.mappingCount===7&&c.geometry?.inkCollisions&&
+                  c.priorGeometry?.baselineDrift?.comparable===true,
+                  'Scanner UI geometry not comparable: '+locale+'/'+key);
+                if(c.mode==='synchronized')ok(c.css?.matchingInstalledBytes===true&&
+                  c.css?.originallyLoaded===false&&c.css?.restored===true&&
+                  c.css.after?.inkCollisions&&c.css.delta?.comparable===true,
+                  'synchronized preview CSS experiment not source-verified: '+locale+'/'+key);
+              }
+            }
+            ok(keys.size===12,'missing expected direct/synchronized cases: '+locale);
+          }
+          console.log('GF_TABS_LIFECYCLE_GATE PASS: exact PR Head, 24 browser comparisons, timeline and geometry/CSS controls');
+          PGR_TABS_LIFECYCLE_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1832,7 +1922,9 @@ jobs:
           cp -a "$source_dir/../scanner-redis-cas-worker-evidence/report.json" scanner-redis-cas-worker-evidence/
           mkdir -p scanner-ui-readonly-evidence
           cp -a "$source_dir/../scanner-ui-readonly-evidence/." scanner-ui-readonly-evidence/
-          git add -- scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
+          mkdir -p scanner-tabs-lifecycle-evidence
+          cp -a "$source_dir/../scanner-tabs-lifecycle-evidence/." scanner-tabs-lifecycle-evidence/
+          git add -- scanner-tabs-lifecycle-evidence scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1843,6 +1935,7 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner PR106 original-resolution UI/contact sheets: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-ui-readonly-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner tabs lifecycle diagnostic: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-tabs-lifecycle-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
