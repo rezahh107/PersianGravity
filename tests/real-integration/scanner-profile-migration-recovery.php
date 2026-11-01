@@ -40,10 +40,17 @@ $invalidate = static function () use ( $option ) {
 };
 $initial_raw = $read_raw();
 $initial     = null === $initial_raw ? null : maybe_unserialize( $initial_raw );
-$assert( null === $initial || (
-	is_array( $initial ) && ( $initial['schema_version'] ?? null ) === 2 &&
-	isset( $initial['profiles'] ) && array() === $initial['profiles']
-), 'refuse to stage migration over pre-existing nonempty or invalid Scanner data' );
+// Prior WU008 steps may legitimately retain v2 fixtures. Preserve their
+// exact raw bytes, rather than assuming the shared disposable Registry is
+// empty. Reject any legacy/unknown/invalid input before the temporary swap.
+$assert(
+	null === $initial || (
+		is_array( $initial ) &&
+		( $initial['schema_version'] ?? null ) === 2 &&
+		PGR_Scanner_Profile_Registry::normalize_option( $initial ) === $initial
+	),
+	'refuse to stage migration over pre-existing non-v2 or invalid Scanner data'
+);
 $report_dir = $artifact . '/scanner-registry-recovery-evidence';
 $assert( ! file_exists( $report_dir ), 'recovery evidence already exists' );
 $assert( mkdir( $report_dir, 0700 ), 'cannot create recovery evidence directory' );
