@@ -203,7 +203,7 @@ All module writes require `manage_options`, POST, nonce, a source allowlist, san
 
 Scanner Profile deletion remains separate from module disable. The list opens a read-only GET confirmation for exactly one valid custom profile, showing its label, stable public ID, unchanged-form-mapping consequence and Cancel link. Missing or built-in profiles have no destructive confirmation form. The existing `admin_post_pgr_scanner_profile_delete` POST still requires `manage_options`, exact public ID, WordPress nonce bound to ID **and** confirmed fingerprint, displayed-label equality, and the built-in/nonexistence guard. Gravity Forms form usage is not scanned, and deletion does not rewrite GFAPI form metadata.
 
-### Scanner Registry v2 — unmerged candidate, not the released v4.10.0 contract
+### Scanner Registry v2 — merged source, not the released v4.10.0 contract
 
 The only canonical store remains the non-autoloaded WordPress `pgr_scanner_profiles` option. The candidate changes its envelope to `schema_version = 2`, retaining the stable public profile ID and validated parser/output definition. Each new custom profile receives an unpredictable 128-bit hex `incarnation_id` at CREATE and an integer `revision` starting at 1; an accepted edit increments its revision while preserving the incarnation and immutable executable parser/output contract. A stale edit form must present the current incarnation and revision or fail. Built-in `sayad_v01` remains source-owned and cannot be mutated.
 
