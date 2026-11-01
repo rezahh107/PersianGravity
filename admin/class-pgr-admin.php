@@ -358,7 +358,10 @@ final class PGR_Admin {
 			$this->redirect_profiles( array( 'pgr_notice' => 'save_error' ) );
 			return;
 		}
-		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id, $revision );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		$incarnation = isset( $_POST['profile_incarnation_id'] ) && is_string( $_POST['profile_incarnation_id'] )
+			? wp_unslash( $_POST['profile_incarnation_id'] ) : '';
+		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id, $revision, $incarnation );
 		$this->redirect_profiles( array( 'pgr_notice' => $result['success'] ? 'saved' : 'save_error' ) );
 	}
 
@@ -598,7 +601,10 @@ final class PGR_Admin {
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="pgr-profile-form">
 				<input type="hidden" name="action" value="pgr_scanner_profile_save" />
 				<input type="hidden" name="existing_id" value="<?php echo esc_attr( $is_edit ? $profile['id'] : '' ); ?>" />
-				<?php if ( $is_edit ) : ?><input type="hidden" name="profile_revision" value="<?php echo esc_attr( isset( $profile['revision'] ) ? (string) $profile['revision'] : '' ); ?>" /><?php endif; ?>
+				<?php if ( $is_edit ) : ?>
+					<input type="hidden" name="profile_revision" value="<?php echo esc_attr( isset( $profile['revision'] ) ? (string) $profile['revision'] : '' ); ?>" />
+					<input type="hidden" name="profile_incarnation_id" value="<?php echo esc_attr( isset( $profile['incarnation_id'] ) ? $profile['incarnation_id'] : '' ); ?>" />
+				<?php endif; ?>
 				<?php wp_nonce_field( 'pgr_scanner_profile_save' ); ?>
 				<section class="pgr-panel">
 					<h2><?php esc_html_e( 'Profile details', 'persian-gravityforms' ); ?></h2>
