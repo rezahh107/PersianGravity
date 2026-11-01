@@ -1015,6 +1015,26 @@ jobs:
           trap - EXIT
           node tests/real-integration/module-disable-decision-summary.mjs
 
+      - name: Observe authentic Scanner UI and Grid-only control, without UI mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/scanner-ui-readonly-fixture.php
+          node --check tests/real-integration/scanner-ui-readonly-browser.mjs
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          restore_scanner_qualification_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_scanner_qualification_locale EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-ui-readonly-fixture.php
+          WU008_SCANNER_AUDIT_LOCALE=fa_IR node tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_SCANNER_AUDIT_LOCALE=en_US node tests/real-integration/scanner-ui-readonly-browser.mjs
+          restore_scanner_qualification_locale
+          trap - EXIT
+          test -s "$WU008_ARTIFACT_DIR/scanner-ui-qualification-evidence/CONTACT_SHEET.md"
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
@@ -1622,6 +1642,55 @@ jobs:
           console.log('SCANNER_STORAGE_EVIDENCE_GATE PASS: MariaDB two-worker CAS, real cross-process Redis cache, 9 recovery checks; matched-version restore remains NOT_PROVEN');
           PGR_SCANNER_STORAGE_PUBLICATION_GATE
 
+      - name: Validate separate Scanner UI qualification evidence before publication
+        shell: bash
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'SCANNER_UI_PUBLISH_GATE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir='/tmp/wu008-downloaded-evidence/scanner-ui-qualification-evidence';
+          const expected=process.env.EXPECTED;
+          const assert=(v,m)=>{if(!v)throw Error('SCANNER_UI_GATE: '+m);};
+          assert(/^[0-9a-f]{40}$/.test(expected),'bad test SHA');
+          const allowed=new Set(['fixture.json','CONTACT_SHEET.md','manifest-fa_IR.json','manifest-en_US.json']);
+          for(const loc of ['fa_IR','en_US'])for(const w of [1280,390,320]){
+            for(const state of ['list','create','edit','built-in','builder'])
+              allowed.add('scanner-ui-'+loc+'-'+state+'-'+w+'.png');
+            allowed.add('scanner-ui-'+loc+'-builder-grid-one-column-'+w+'.png');
+          }
+          const names=fs.readdirSync(dir);
+          assert(names.length===allowed.size,'wrong evidence file count');
+          for(const name of names){
+            const p=path.join(dir,name),s=fs.lstatSync(p);
+            assert(allowed.has(name)&&s.isFile()&&!s.isSymbolicLink()&&s.size>16&&s.size<8*1024*1024,
+              'unapproved evidence '+name);
+            if(name.endsWith('.png')){
+              const b=fs.readFileSync(p),w=Number(name.match(/-(1280|390|320)\.png$/)[1]);
+              assert(b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) &&
+                b.readUInt32BE(16)>=w && b.readUInt32BE(20)>=700,'invalid original PNG '+name);
+            }
+          }
+          const fixture=JSON.parse(fs.readFileSync(path.join(dir,'fixture.json'),'utf8'));
+          assert(fixture.source_commit_installed===expected,'installed package mismatch');
+          for(const loc of ['fa_IR','en_US']){
+            const m=JSON.parse(fs.readFileSync(path.join(dir,'manifest-'+loc+'.json'),'utf8'));
+            assert(m.exact_test_head===expected&&m.installed_package===expected&&
+              m.no_form_submission===true&&m.no_registry_mutation_by_observer===true&&
+              m.locale===loc&&m.cases?.length===15,'manifest identity or completeness');
+            for(const c of m.cases){
+              assert(c.status==='CAPTURED_UNREVIEWED'&&allowed.has(c.screenshot)&&
+                c.before?.page?.fontsReady==='loaded','unqualified capture');
+              if(c.state==='builder')assert(c.one_variable?.screenshot&&
+                c.plugin_css_proof?.identical===true,'grid control/CSS proof missing');
+            }
+          }
+          assert(fs.readFileSync(path.join(dir,'CONTACT_SHEET.md'),'utf8').includes('Gravity Forms 3.1.1.1'),'sheet missing');
+          console.log('SCANNER_UI_PUBLICATION_GATE PASS');
+          SCANNER_UI_PUBLISH_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1645,6 +1714,8 @@ jobs:
           git checkout --orphan "${publication_branch}"
           mkdir -p admin-ui-evidence
           cp -a "$source_dir/." admin-ui-evidence/
+          mkdir -p scanner-ui-qualification-evidence
+          cp -a "$source_dir/../scanner-ui-qualification-evidence/." scanner-ui-qualification-evidence/
           mkdir -p system-status-scroll-evidence
           cp -a "$source_dir/../system-status-scroll-evidence/." system-status-scroll-evidence/
           mkdir -p module-disable-evidence
@@ -1659,7 +1730,7 @@ jobs:
           cp -a "$source_dir/../scanner-registry-recovery-evidence/report.json" scanner-registry-recovery-evidence/
           mkdir -p scanner-redis-cas-worker-evidence
           cp -a "$source_dir/../scanner-redis-cas-worker-evidence/report.json" scanner-redis-cas-worker-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence scanner-ui-qualification-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
