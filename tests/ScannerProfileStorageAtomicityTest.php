@@ -84,6 +84,55 @@ final class ScannerProfileStorageAtomicityTest extends TestCase {
 		$this->assertCount( 2, $GLOBALS['pgr_test_options']['pgr_scanner_profiles']['profiles'] );
 	}
 
+	public function test_stale_edit_cannot_overwrite_recreated_profile_even_when_revision_is_one() {
+		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile() )['success'] );
+		$old = PGR_Scanner_Profile_Registry::get( 'alpha' );
+		$this->assertTrue( PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha', $this->fingerprint() ) );
+		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile() )['success'] );
+		$new = PGR_Scanner_Profile_Registry::get( 'alpha' );
+		$this->assertSame( 1, $new['revision'] );
+		$this->assertSame( 1, $old['revision'] );
+		$this->assertNotSame( $old['incarnation_id'], $new['incarnation_id'] );
+		$edit = $this->profile();
+		$edit['label'] = 'Wrong stale edit';
+		$this->assertSame(
+			array( 'edit_conflict' ),
+			PGR_Scanner_Profile_Registry::save_custom_profile( $edit, 'alpha', $old['revision'], $old['incarnation_id'] )['errors']
+		);
+		$this->assertSame( 'Alpha', PGR_Scanner_Profile_Registry::get( 'alpha' )['label'] );
+	}
+
+	public function test_migration_write_failure_leaves_v1_recoverable_and_retryable() {
+		$legacy = array(
+			'schema_version' => 1,
+			'profiles' => array( PGR_Scanner_Profile_Registry::validate_profile( $this->profile() )['profile'] ),
+		);
+		$GLOBALS['pgr_test_options']['pgr_scanner_profiles'] = $legacy;
+		$backup = PGR_Scanner_Profile_Registry::pre_migration_backup();
+		$this->assertNotNull( $backup );
+		$GLOBALS['pgr_test_fail_write'] = true;
+		$failed = PGR_Scanner_Profile_Registry::migrate_v1_to_v2( $backup['sha256'] );
+		$this->assertFalse( $failed['success'] );
+		$this->assertSame( $legacy, $GLOBALS['pgr_test_options']['pgr_scanner_profiles'] );
+		$GLOBALS['pgr_test_fail_write'] = false;
+		$this->assertTrue( PGR_Scanner_Profile_Registry::migrate_v1_to_v2( $backup['sha256'] )['success'] );
+		$this->assertSame( 'alpha', PGR_Scanner_Profile_Registry::get( 'alpha' )['id'] );
+	}
+
+	public function test_migration_declines_altered_backup_and_preserves_preexisting_records() {
+		$legacy = array(
+			'schema_version' => 1,
+			'profiles' => array( PGR_Scanner_Profile_Registry::validate_profile( $this->profile() )['profile'] ),
+		);
+		$GLOBALS['pgr_test_options']['pgr_scanner_profiles'] = $legacy;
+		$backup = PGR_Scanner_Profile_Registry::pre_migration_backup();
+		$this->assertNotNull( $backup );
+		$GLOBALS['pgr_test_options']['pgr_scanner_profiles']['profiles'][0]['label'] = 'Newer valid v1 data';
+		$this->assertFalse( PGR_Scanner_Profile_Registry::migrate_v1_to_v2( $backup['sha256'] )['success'] );
+		$this->assertSame( 'Newer valid v1 data', $GLOBALS['pgr_test_options']['pgr_scanner_profiles']['profiles'][0]['label'] );
+	}
+
+
 	public function test_explicit_edit_revision_rejects_stale_form_and_preserves_identity() {
 		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile() )['success'] );
 		$prior = PGR_Scanner_Profile_Registry::get( 'alpha' );
