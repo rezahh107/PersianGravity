@@ -24,6 +24,12 @@ The Module Manager is not decorative. Disabled modules do not register their own
 
 `jalali_date` and `jalali_presentation` are intentionally separate. The first owns true Jalali-domain user data; the second only presents known Gregorian/system dates and cannot be activated by the presence of a `pgr_jalali_date` field.
 
+## Scanner failed-save Edit identity — PR #110 Draft (not released)
+
+Scanner Profiles Create/Edit uses the existing native WordPress screen POST and same-request recovery of rejected saves. After a rejected **Edit**, the retry form derives its immutable profile ID and hidden `existing_id` from the original nonce/capability-checked request identity, **not** from a potentially mismatched submitted `profile[id]`. The original revision and incarnation are retained; submitted editable labels, outputs, and parser choices remain editable. The Registry v2 immutable-ID, immutable-contract, and compare-and-swap (CAS) guards still decide all writes: a rejected Edit never becomes a Create and a stale retry cannot overwrite a newer revision. Successful saves continue to redirect. No session, transient, alternate persistence, automatic rebase, or Registry migration is introduced.
+
+This is an **unmerged PR #110 candidate**, not a `4.10.0` release or live-site validation. The exact-Head WU008 negative test intentionally mismatches `existing_id` and submitted `profile[id]`, checks rejected writes and the recovered identity, then retries a safe Edit; previous Create/Edit, stale/CAS, simulated WordPress filter-rejection and GFAPI mapping scenarios remain in the same suite. A test-only option-filter refusal is not a verified database outage. See [bounded implementation and evidence contract](docs/SCANNER_SAVE_RECOVERY.md) and [validation limits](docs/VALIDATION.md).
+
 ## Admin product surface
 
 `Persian Gravity` contains:
