@@ -1701,7 +1701,10 @@ jobs:
               x.baseline?.fonts?.status==='loaded'&&x.baseline?.viewport?.dpr===1),'wrong locale/native browser/failed capture '+locale);
             check(data.cases.filter(x=>x.state==='form-builder').every(x=>x.realGfFormModel?.scanner===true&&
               x.oneVariable?.mutation&&x.oneVariable?.restored===true&&
-              x.oneVariable?.control?.count===7&&x.baseline?.mapping?.grid?.width>0&&
+              x.oneVariable?.control?.count===7&&x.baseline?.mapping?.grid?.width>100&&
+              x.baseline?.panelState?.tabSelected===true&&
+              x.baseline?.panelState?.panelVisible===true&&
+              x.baseline?.panelState?.panel?.width>100&&
               x.cssAttribution?.restored===true&&x.cssAttribution?.originallyLoaded===false&&
               x.cssAttribution?.screenshot),'missing real visible Builder/control '+locale);
             const hashes=JSON.parse(fs.readFileSync(path.join(dir,'SHA256-'+locale+'.json'),'utf8'));
