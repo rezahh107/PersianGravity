@@ -252,6 +252,12 @@ final class PGR_Admin {
 			$attempt = $this->profile_save_failure;
 			$profile = $attempt['submitted'];
 
+			// An Edit's immutable ID comes from the verified request identity, not
+			// from profile[id], which may have been tampered with on a rejected POST.
+			// Keep all submitted editable fields and the original CAS credentials.
+			if ( '' !== $attempt['existing_id'] ) {
+				$profile['id'] = $attempt['existing_id'];
+			}
 			$profile['revision']       = $attempt['revision'];
 			$profile['incarnation_id'] = $attempt['incarnation'];
 			$this->render_profile_form( $profile, '' !== $attempt['existing_id'] );
