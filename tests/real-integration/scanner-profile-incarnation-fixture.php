@@ -106,7 +106,7 @@ if ( 'create_a' === $action ) {
 	) ) );
 } elseif ( 'delete_a' === $action ) {
 	$assert_definition( $a );
-	if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id ) || null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
+	if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( $id ) ) ) || null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
 		throw new RuntimeException( 'Independent legitimate Registry deletion of A failed.' );
 	}
 } elseif ( 'recreate_b' === $action ) {
