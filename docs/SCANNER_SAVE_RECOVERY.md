@@ -44,6 +44,9 @@ recovered editable form. The repaired mode checks:
 - Valid corrected Create after an invalid Create, preserving input on failure.
 - Invalid Edit with multiple changed fields, corrected Edit retry.
 - Stale revision refusal and preservation of the newer committed Registry value.
+- A disposable must-use WP filter that explicitly rejects a synthetic Registry
+  pre-update; verifies a recoverable write failure, not a simulated database
+  outage or real SQL error.
 - Read-back Registry and GFAPI mapping hashes around rejected writes.
 - `fa_IR` RTL and `en_US` LTR at 1280, 390, and 320 CSS px on error screens.
 
@@ -54,7 +57,7 @@ publication gate verifies bilingual reports, state invariants, and original
 PNG files and places them on a run-attempt-specific evidence branch. Evidence
 from an earlier Head is not valid as acceptance for a later change.
 
-A controlled Registry write failure, live production installation, independent
+An actual MariaDB write outage/failure, live production installation, independent
 screen-reader behavior, and full UX-G01/G02/G03/G04 acceptance remain separate
 claims requiring their own evidence. No release, deployment, merge, or live
 Registry migration is authorized by this Draft PR.
