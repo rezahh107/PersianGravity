@@ -202,6 +202,7 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          node --check tests/real-integration/scanner-save-recovery-browser.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
@@ -919,6 +920,42 @@ jobs:
           printf -- '- [fa_IR detailed geometry, cascade, keyboard focusables](geometry-fa_IR.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+
+      - name: Prove bilingual Scanner failed-save recovery and safe retry in real browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The real browser modifies only disposable WU008 profiles; restore the
+          # original Registry before downstream deletion/CAS/browser fixtures.
+          scanner_before_hash="$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo hash("sha256", serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));')"
+          scanner_snapshot_b64="$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo base64_encode(serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));')"
+          # Scoped to this test only: reject a synthetic pending profile via a
+          # normal WP pre-update filter; production files are untouched.
+          mkdir -p "$WU008_WP_PATH/wp-content/mu-plugins"
+          test ! -e "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
+          cp tests/real-integration/scanner-save-reject-mu.php "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
+          restore_scanner_save_state() {
+            rm -f "$WU008_WP_PATH/wp-content/mu-plugins/wu008-scanner-save-reject.php"
+            WU008_SCANNER_SNAPSHOT="$scanner_snapshot_b64" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+              $raw = base64_decode(getenv("WU008_SCANNER_SNAPSHOT"), true);
+              $original = is_string($raw) ? unserialize($raw, ["allowed_classes" => false]) : null;
+              if (!is_array($original) || ($original !== get_option(PGR_Scanner_Profile_Registry::OPTION) && !update_option(PGR_Scanner_Profile_Registry::OPTION, $original))) {
+                throw new RuntimeException("Disposable Scanner Registry restore failed");
+              }
+            '
+            test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo hash("sha256", serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));')" = "$scanner_before_hash"
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_scanner_save_state EXIT
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          SCANNER_SAVE_MODE=repaired SCANNER_SAVE_LOCALE=fa_IR node tests/real-integration/scanner-save-recovery-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_SAVE_MODE=repaired SCANNER_SAVE_LOCALE=en_US node tests/real-integration/scanner-save-recovery-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report-fa_IR.json"
+          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report-en_US.json"
+          restore_scanner_save_state
+          trap - EXIT
 
       - name: Compare real GF tabs initialization against synchronized native pointer clicks
         shell: bash
@@ -1887,6 +1924,41 @@ jobs:
           console.log('GF_TABS_LIFECYCLE_GATE PASS: exact PR Head, 24 browser comparisons, timeline and geometry/CSS controls');
           PGR_TABS_LIFECYCLE_GATE
 
+      - name: Verify Scanner saved-form evidence for publication
+        shell: bash
+        env:
+          PGR_SCANNER_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node <<'PGR_SAVE_PUBLICATION_CHECK'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-save-recovery-evidence';
+          for (const locale of ['fa_IR','en_US']) {
+            const report=JSON.parse(fs.readFileSync(path.join(dir,'report-'+locale+'.json'),'utf8'));
+            if(report.status!=='PASS'||report.head!==process.env.PGR_SCANNER_EXPECTED_HEAD||
+               report.evidence_class!=='AUTHENTIC_SCANNER_SAVE_RECOVERY'||report.mode!=='repaired'||report.locale!==locale)
+              throw Error('wrong Scanner browser evidence identity '+locale);
+            for(const name of ['invalid_create_after','corrected_create_retry','invalid_edit_retention','corrected_edit_retry','stale_edit_conflict','controlled_write_failure','mismatched_edit_id_retains_original_identity','mismatched_edit_id_corrected_retry'])
+              if(!report.scenarios.some(x=>x.name===name)) throw Error('missing scenario '+locale+'/'+name);
+            for(const x of report.scenarios) {
+              if(x.gf_mapping_unchanged!==true) throw Error('GFAPI mapping mutation');
+              if(['invalid_create_after','invalid_edit_retention','stale_edit_conflict','controlled_write_failure','mismatched_edit_id_retains_original_identity'].includes(x.name)&&x.registry_before!==x.registry_after)
+                throw Error('rejected save unexpectedly mutated Registry');
+            }
+            if(!Array.isArray(report.screenshots)||report.screenshots.length!==15) throw Error('missing PNG matrix');
+            const seen=new Set();
+            for(const x of report.screenshots) {
+              const match=x.filename.match(/^(fa_IR|en_US)-after-(invalid-create|invalid-edit|stale-edit|write-failure|immutable-id-mismatch)-(1280|390|320)[.]png$/);
+              if(!match||match[1]!==locale||seen.has(x.filename)||x.width!==Number(match[3])||
+                 x.direction!==(locale==='fa_IR'?'rtl':'ltr')) throw Error('wrong screenshot metadata');
+              seen.add(x.filename);
+              const png=fs.readFileSync(path.join(dir,x.filename));
+              if(png.length<500||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a') throw Error('bad PNG bytes');
+            }
+            console.log('SCANNER_SAVE_PUBLICATION_GATE PASS '+locale);
+          }
+          PGR_SAVE_PUBLICATION_CHECK
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1928,7 +2000,9 @@ jobs:
           cp -a "$source_dir/../scanner-ui-readonly-evidence/." scanner-ui-readonly-evidence/
           mkdir -p scanner-tabs-lifecycle-evidence
           cp -a "$source_dir/../scanner-tabs-lifecycle-evidence/." scanner-tabs-lifecycle-evidence/
-          git add -- scanner-tabs-lifecycle-evidence scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
+          mkdir -p scanner-save-recovery-evidence
+          cp -a "$source_dir/../scanner-save-recovery-evidence/." scanner-save-recovery-evidence/
+          git add -- scanner-save-recovery-evidence scanner-tabs-lifecycle-evidence scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1939,6 +2013,7 @@ jobs:
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner PR106 original-resolution UI/contact sheets: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-ui-readonly-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner save recovery screenshots: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/scanner-save-recovery-evidence" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner tabs lifecycle diagnostic: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-tabs-lifecycle-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"

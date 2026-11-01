@@ -19,6 +19,9 @@ final class PGR_Admin {
 	/** @var array<int,string> */
 	private $page_hooks = array();
 
+	/** @var array<string,mixed>|null Failed save for this authenticated request only. */
+	private $profile_save_failure = null;
+
 	/**
 	 * Register WordPress admin hooks.
 	 *
@@ -245,6 +248,22 @@ final class PGR_Admin {
 			return;
 		}
 
+		if ( null !== $this->profile_save_failure ) {
+			$attempt = $this->profile_save_failure;
+			$profile = $attempt['submitted'];
+
+			// An Edit's immutable ID comes from the verified request identity, not
+			// from profile[id], which may have been tampered with on a rejected POST.
+			// Keep all submitted editable fields and the original CAS credentials.
+			if ( '' !== $attempt['existing_id'] ) {
+				$profile['id'] = $attempt['existing_id'];
+			}
+			$profile['revision']       = $attempt['revision'];
+			$profile['incarnation_id'] = $attempt['incarnation'];
+			$this->render_profile_form( $profile, '' !== $attempt['existing_id'] );
+			return;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
 		$action = isset( $_GET['action'] ) && is_string( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin routing; no state mutation occurs here.
@@ -349,21 +368,59 @@ final class PGR_Admin {
 	 */
 	public function handle_profile_save() {
 		$this->assert_profile_write_access( 'pgr_scanner_profile_save' );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified immediately above by assert_profile_write_access().
-		$existing_id = isset( $_POST['existing_id'] ) ? sanitize_key( wp_unslash( $_POST['existing_id'] ) ) : '';
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified by assert_profile_write_access() above.
-		$revision = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
-			? (int) $_POST['profile_revision'] : null;
-		if ( '' !== $existing_id && ( null === $revision || $revision < 1 ) ) {
-			$this->redirect_profiles( array( 'pgr_notice' => 'save_error' ) );
+		$attempt = $this->profile_save_attempt();
+		$this->redirect_profiles( array( 'pgr_notice' => $attempt['result']['success'] ? 'saved' : 'save_error' ) );
+	}
+
+	/**
+	 * Handle Scanner Profile form POST at the native admin page's pre-header load hook.
+	 * A rejected write remains on this authenticated request, with no URL, transient,
+	 * session, or database copy of the submitted values.
+	 *
+	 * @return void
+	 */
+	public function handle_profile_save_on_page() {
+		if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
 			return;
 		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Guard selects the form; capability and nonce are verified below before reading profile data.
+		if ( ! isset( $_POST['pgr_profile_action'] ) || 'save' !== $_POST['pgr_profile_action'] ) {
+			return;
+		}
+
+		$this->assert_profile_write_access( 'pgr_scanner_profile_save' );
+		$attempt = $this->profile_save_attempt();
+		if ( $attempt['result']['success'] ) {
+			$this->redirect_profiles( array( 'pgr_notice' => 'saved' ) );
+		}
+		$this->profile_save_failure = $attempt;
+	}
+
+	/**
+	 * Evaluate an authenticated, nonce-verified save without weakening Registry v2
+	 * expected revision, incarnation identity, or conditional-write safeguards.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function profile_save_attempt() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Callers verify capability and nonce before invoking this method.
+		$existing_id = isset( $_POST['existing_id'] ) && is_string( $_POST['existing_id'] )
+			? sanitize_key( wp_unslash( $_POST['existing_id'] ) ) : '';
+		$revision    = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
+			? (int) $_POST['profile_revision'] : null;
 		$incarnation = isset( $_POST['profile_incarnation_id'] ) && is_string( $_POST['profile_incarnation_id'] )
 			? wp_unslash( $_POST['profile_incarnation_id'] ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $this->profile_from_request(), $existing_id, $revision, $incarnation );
-		$this->redirect_profiles( array( 'pgr_notice' => $result['success'] ? 'saved' : 'save_error' ) );
+		$submitted = $this->profile_from_request();
+		$result    = PGR_Scanner_Profile_Registry::save_custom_profile( $submitted, $existing_id, $revision, $incarnation );
+		return array(
+			'existing_id' => $existing_id,
+			'revision'    => $revision,
+			'incarnation' => $incarnation,
+			'submitted'   => $submitted,
+			'result'      => $result,
+		);
 	}
 
 	/**
@@ -572,9 +629,9 @@ final class PGR_Admin {
 	 * @param array<string,mixed>|null $profile Existing custom profile.
 	 * @return void
 	 */
-	private function render_profile_form( $profile ) {
-		$is_edit = is_array( $profile );
-		if ( ! $is_edit ) {
+	private function render_profile_form( $profile, $is_edit_override = null ) {
+		$is_edit = null === $is_edit_override ? is_array( $profile ) : (bool) $is_edit_override;
+		if ( ! is_array( $profile ) ) {
 			$profile = array(
 				'id'      => '',
 				'label'   => '',
@@ -598,9 +655,15 @@ final class PGR_Admin {
 		<div class="wrap pgr-admin">
 			<h1><?php echo esc_html( $is_edit ? __( 'Edit Scanner Profile', 'persian-gravityforms' ) : __( 'Create Scanner Profile', 'persian-gravityforms' ) ); ?></h1>
 			<p class="pgr-admin__lead"><?php esc_html_e( 'Scanner Profiles v1 uses only the bounded newline-based segments_v1 parser. No executable rules or regular-expression language is stored.', 'persian-gravityforms' ); ?></p>
-			<?php $this->render_notice(); ?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="pgr-profile-form">
-				<input type="hidden" name="action" value="pgr_scanner_profile_save" />
+			<?php
+			if ( null !== $this->profile_save_failure ) {
+				$this->render_profile_save_error( $this->profile_save_failure['result']['errors'] );
+			} else {
+				$this->render_notice();
+			}
+			?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PROFILES_SLUG ) ); ?>" class="pgr-profile-form">
+				<input type="hidden" name="pgr_profile_action" value="save" />
 				<input type="hidden" name="existing_id" value="<?php echo esc_attr( $is_edit ? $profile['id'] : '' ); ?>" />
 				<?php if ( $is_edit ) : ?>
 					<input type="hidden" name="profile_revision" value="<?php echo esc_attr( isset( $profile['revision'] ) ? (string) $profile['revision'] : '' ); ?>" />
@@ -652,6 +715,30 @@ final class PGR_Admin {
 			</form>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Explain a rejected save accurately, without exposing submitted profile
+	 * values in URLs, logs, or notices.
+	 *
+	 * @param array<int,string> $errors Registry error codes.
+	 * @return void
+	 */
+	private function render_profile_save_error( $errors ) {
+		if ( in_array( 'edit_conflict', $errors, true ) || in_array( 'missing_edit_identity', $errors, true ) ||
+			in_array( 'profile_not_found', $errors, true ) ) {
+			$message = __( 'This edit is out of date or its identity is missing. Your changes are retained here, but cannot be saved until you open the latest profile and reapply them. Newer saved data was not overwritten.', 'persian-gravityforms' );
+		} elseif ( in_array( 'write_conflict_or_failure', $errors, true ) ) {
+			$message = __( 'The profile could not be written. Your entries remain here. Check for newer changes or a storage error before trying again; no overwrite was accepted.', 'persian-gravityforms' );
+		} elseif ( in_array( 'migration_required_or_invalid_storage', $errors, true ) ) {
+			$message = __( 'Scanner Profile storage is not ready for changes. Your entries remain here. Ask an administrator to check Registry migration or storage before retrying.', 'persian-gravityforms' );
+		} else {
+			$message = __( 'The profile was not saved. Your entries remain editable below. Check the ID, labels, parser settings and outputs, then correct them and try again.', 'persian-gravityforms' );
+		}
+		printf(
+			'<div class="notice notice-error inline" role="alert" id="pgr-profile-save-error"><p>%s</p></div>',
+			esc_html( $message )
+		);
 	}
 
 	/**

@@ -62,17 +62,18 @@ final class PGR_Product_Admin {
 		);
 
 		foreach ( $pages as $page ) {
-			$this->remember(
-				add_submenu_page(
-					PGR_Admin::MENU_SLUG,
-					__( $page[0], 'persian-gravityforms' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
-					__( $page[0], 'persian-gravityforms' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
-					PGR_Admin::CAPABILITY,
-					$page[1],
-					array( $this, $page[2] )
-				),
-				$page[3]
+			$page_hook = add_submenu_page(
+				PGR_Admin::MENU_SLUG,
+				__( $page[0], 'persian-gravityforms' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+				__( $page[0], 'persian-gravityforms' ), // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+				PGR_Admin::CAPABILITY,
+				$page[1],
+				array( $this, $page[2] )
 			);
+			$this->remember( $page_hook, $page[3] );
+			if ( PGR_Admin::PROFILES_SLUG === $page[1] && is_string( $page_hook ) && '' !== $page_hook ) {
+				add_action( 'load-' . $page_hook, array( $this->legacy, 'handle_profile_save_on_page' ) );
+			}
 		}
 	}
 
