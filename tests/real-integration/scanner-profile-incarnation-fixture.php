@@ -131,7 +131,7 @@ if ( 'create_a' === $action ) {
 	$assert_definition( $b );
 } elseif ( 'cleanup' === $action ) {
 	if ( null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
-		if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id ) ) {
+		if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( $id ) ) ) ) {
 			throw new RuntimeException( 'Cleanup failed to remove test-only alpha.' );
 		}
 	}
