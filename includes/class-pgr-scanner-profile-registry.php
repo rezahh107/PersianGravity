@@ -592,6 +592,21 @@ final class PGR_Scanner_Profile_Registry {
 		if ( empty( $before['available'] ) || ! self::valid_v2( $next ) || ! isset( $wpdb ) ) {
 			return false;
 		}
+		// Mirror WordPress Options API's relevant write hooks, but refuse any
+		// filter that would change the canonical payload or bypass the CAS guard.
+		if ( sanitize_option( self::OPTION, $next ) !== $next ) {
+			return false;
+		}
+		if ( $before['exists'] ) {
+			$filtered = apply_filters( 'pre_update_option_' . self::OPTION, $next, $before['value'], self::OPTION );
+			$filtered = apply_filters( 'pre_update_option', $filtered, self::OPTION, $before['value'] );
+			if ( $filtered !== $next ) {
+				return false;
+			}
+			do_action( 'update_option', self::OPTION, $before['value'], $next );
+		} else {
+			do_action( 'add_option', self::OPTION, $next );
+		}
 		$serialized = maybe_serialize( $next );
 		if ( $before['exists'] ) {
 			$written = $wpdb->query( $wpdb->prepare(
@@ -613,6 +628,13 @@ final class PGR_Scanner_Profile_Registry {
 		wp_cache_delete( self::OPTION, 'options' );
 		wp_cache_delete( 'alloptions', 'options' );
 		wp_cache_delete( 'notoptions', 'options' );
+		if ( $before['exists'] ) {
+			do_action( 'update_option_' . self::OPTION, $before['value'], $next, self::OPTION );
+			do_action( 'updated_option', self::OPTION, $before['value'], $next );
+		} else {
+			do_action( 'add_option_' . self::OPTION, self::OPTION, $next );
+			do_action( 'added_option', self::OPTION, $next );
+		}
 		return true;
 	}
 }
