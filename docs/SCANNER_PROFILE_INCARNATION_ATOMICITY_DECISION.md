@@ -1,7 +1,8 @@
 # Scanner Profile deletion — incarnation and atomicity decision (qualification only)
 
 Status: **OWNER DECISION REQUIRED — NO PRODUCTION PATCH**  
-Verified merged baseline: `c7c5377e93f5f4f704acc797dc67ea8554b5dfd7` (2026-10-31).  
+Verified merged baseline: `c7c5377e93f5f4f704acc797dc67ea8554b5dfd7` (2026-10-31).
+Current merged main independently rechecked (2026-11-01): `ff3f390511da3ce194815a2c856251ade145b2cc` (merged qualification PR #104; **production Registry/admin behavior unchanged**).  
 Authoritative repository: `rezahh107/PersianGravity`.  
 This document does not authorize a storage migration or UI/business-rule change.
 
@@ -55,3 +56,17 @@ This is **not** authorization to use raw SQL or a migration by default. If DB-le
 - Publish measured runtime evidence on a run-specific evidence branch with **exact tested Head** and source-bound artifacts; do not infer PASS from this document, source inspection, or a pending workflow.
 
 **Release/merge/deploy:** none authorized by this qualification.
+
+## Post-merge qualification checkpoint (2026-11-01)
+
+**Status remains OWNER DECISION REQUIRED. This checkpoint is not a production fix.** Merged main is `ff3f390511da3ce194815a2c856251ade145b2cc`; compared with the earlier production-reviewed `c7c5377e93f5f4f704acc797dc67ea8554b5dfd7`, only the five qualification/doc/test paths changed. Registry and admin handler source blobs are unchanged: `448482be6c32d35f4183560dbdefc79a4a5fee2c` and `f7943ef27a7ee5159b72664ddec8ce4128227bcd`, respectively.
+
+The existing **exact-Head WU008 run** [41234928792](https://github.com/rezahh107/PersianGravity/actions/runs/41234928792) succeeded on source Head `f1503c2e060e349708bb645bf12d2f2e4b4b6212`. Its [published immutable-commit evidence](https://github.com/rezahh107/PersianGravity/blob/9e25f60bf1da07f7b8494d8d7cb5dcb861f908a2/scanner-incarnation-evidence/report.json) independently read back on this checkpoint contains the eight expected cases, 24 JPEGs, unchanged mapped GFAPI data and the deterministic test-only interleaving marker. **Negative controls remain unsafe:** stale A deletes identical-content B; stale A also deletes changed B after injection at the Registry's second option read. Injected mutation only: **1.404 ms**; this is not two-worker concurrency.
+
+The previous results include positive controls for unchanged A deletion, missing/changed B refusal, enabled/output-label edits, and fresh B deletion. Existing WU008 deletion security/visual evidence covers the original fa_IR/en_US, 1280/390/320, keyboard/focus/no-JS, permission/nonce/replay/cancellation/built-in scenarios, but **they were not rerun in this session**. The exact current merged main was not subjected to a new licensed WordPress execution. No changed production screenshots are needed because no production source/UI was changed.
+
+**Unproved acceptance work:** independent concurrent workers; persistent object cache and external option-writer behavior; host-option filter/action semantics under conditional writes; failed-write and recovery behavior; migrated legacy profiles, rollback/downgrade and restored backup safety. None can be labeled PASS from a single-request hook.
+
+**Decision requested, unchanged:** authorize explicit canonical incarnation identity/versioned migration with defined v1 handling and rollback, plus a genuinely guarded conflict-detecting Registry write/delete operation, only after authentic disposable WordPress validation. Preserve the approved deletion screen and WordPress security controls without widening the repair.
+
+[Post-merge evidence branch](https://github.com/rezahh107/PersianGravity/tree/evidence/scanner-incarnation-postmerge-20261101/scanner-incarnation-postmerge-evidence) contains the source-SHA-bound readback report and measured negative outcomes. It is not a runtime patch.
