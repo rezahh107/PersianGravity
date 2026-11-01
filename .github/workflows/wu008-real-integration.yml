@@ -146,6 +146,7 @@ jobs:
           node --check tests/real-integration/scanner-profile-delete-browser.mjs
           node --check tests/real-integration/scanner-profile-delete-summary.mjs
           php -l tests/real-integration/scanner-profile-incarnation-fixture.php
+          php -l tests/real-integration/scanner-profile-interleaving-mu.php
           node --check tests/real-integration/scanner-profile-incarnation-browser.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
@@ -1394,7 +1395,7 @@ jobs:
           assert(report.evidence_class==='AUTHENTIC_WORDPRESS_GFAPI_SCANNER_INCAR_QUALIFICATION',
             'wrong evidence class');
           assert(report.qualification_head===head &&
-            report.reviewed_production_head==='11e2c5974d37878ec6f2398aa99d5dc147629e11',
+            report.reviewed_production_head==='c7c5377e93f5f4f704acc797dc67ea8554b5dfd7',
             'missing exact qualification and reviewed production heads');
           assert(report.state==='QUALIFICATION_COMPLETE'&&report.cases?.length===8,
             'incomplete runtime cases');
@@ -1431,7 +1432,7 @@ jobs:
             cases.identical_content.before_stale_post.exists===true &&
             cases.identical_content.after_post.exists===false,
             'identical-content residual not honestly observed');
-          assert(report.finding==='BOUNDED_SNAPSHOT_REPAIR_VERIFIED','false repair classification');
+          assert(report.finding==='IDENTICAL_CONTENT_AND_CHECK_DELETE_INTERLEAVING_UNSAFE','false repair classification');
           const expected=new Set(['README.md','report.json']);
           const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
           for(const name of names) {
@@ -1451,12 +1452,38 @@ jobs:
                 'not authentic JPEG: '+filename);
             }
           }
+          const race=report.boundary_interleaving;
+          assert(race?.state==='OBSERVED_UNSAFE_INTERLEAVING' &&
+            race.notice==='deleted' && race.old_a_confirmation_deleted_replacement_b===true &&
+            race.gfapi_mapping_unchanged===true && race.true_concurrent_workers==='NOT_PROVEN',
+            'interleaving test result missing or misclassified');
+          assert(race.marker?.probe==='WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING' &&
+            race.marker.replacement_persisted_before_delete_read===true &&
+            race.marker.replacement_content_differs===true &&
+            race.marker.actual_parallel_workers===false &&
+            Number.isFinite(race.marker.mutation_elapsed_ms),
+            'interleaving marker missing genuine Registry evidence');
+          assert(JSON.stringify(race.marker)===JSON.stringify(JSON.parse(fs.readFileSync(
+            path.join(dir,'interleaving-marker.json'),'utf8'))),
+            'interleaving marker not byte-equivalent to report object');
+          expected.add('interleaving-marker.json');
+          assert(race.images?.length===2,'missing interleaving screenshots');
+          for(const n of ['interleaved_replace-original-confirmation.jpg','interleaved_replace-after-old-POST.jpg']){
+            assert(race.images.includes(n)&&readme.includes(']('+n+')'),'missing race screenshot link '+n);
+            const b=fs.readFileSync(path.join(dir,n));
+            assert(b.length>1000&&b[0]===255&&b[1]===216&&b.at(-2)===255&&b.at(-1)===217,
+              'invalid race screenshot '+n);
+            expected.add(n);
+          }
+          assert(readme.includes('interleaving-marker.json') &&
+            readme.includes('true parallel workers=NOT_PROVEN'),
+            'report falsely claims concurrent-worker proof');
           const files=fs.readdirSync(dir,{withFileTypes:true});
           assert(files.length===expected.size&&files.every(x=>x.isFile()&&!x.isSymbolicLink()&&expected.has(x.name)),
             'unverified/missing incarnation evidence files');
           assert(readme.includes(head)&&readme.includes(report.finding),'summary not source bound');
           console.log('SCANNER_INCAR_PUBLICATION_GATE QUALIFIED: '+report.finding+
-            ' cases=8 images=22 exactHead='+head);
+            ' cases=8 images=24 race=UNSAFE_INTERLEAVING exactHead='+head);
           PGR_INCAR_QUALIFICATION_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links

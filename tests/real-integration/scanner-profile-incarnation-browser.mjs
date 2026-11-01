@@ -10,7 +10,7 @@ const dir = process.env.WU008_ARTIFACT_DIR;
 const manifest = process.env.WU008_MANIFEST_PATH;
 const sha = process.env.WU008_PGR_SHA;
 const password = process.env.WU008_ADMIN_PASSWORD;
-const reviewed = '11e2c5974d37878ec6f2398aa99d5dc147629e11';
+const reviewed = 'c7c5377e93f5f4f704acc797dc67ea8554b5dfd7';
 if (!root || !wpcli || !dir || !manifest || !password || !/^[0-9a-f]{40}$/.test(sha || '')) {
   throw Error('SCANNER_INCAR: disposable WU008 runtime/identity absent');
 }
@@ -45,7 +45,7 @@ const report = {
     'No raw session cookies or nonces are stored in evidence',
     'Runtime observation alone does not establish whether incarnation protection is Owner-approved policy',
     'Identical-content recreation is not distinguishable by a deterministic content fingerprint',
-    'A replacement racing between fresh state check and Registry deletion remains unverified'
+    'Two-worker concurrent requests and persistent object cache races remain NOT_PROVEN; the deterministic hook interleaving qualifies only the check/delete boundary'
   ]
 };
 try {
@@ -193,6 +193,61 @@ try {
     assert(!cleaned.exists && cleaned.gfapi_mapping_unchanged,'qualification cleanup failed');
     item.state='OBSERVED';
   }
+  // New bounded negative control: replace A with changed B at the exact Registry
+  // get_option boundary AFTER the admin handler has already verified A.
+  // This is deliberate single-request interleaving, NOT a parallel-worker test.
+  const raceCase='interleaved_replace';
+  const raceOriginal=invoke('create_a',raceCase);
+  assert(raceOriginal.exists && raceOriginal.keys.join(',')==='original','race A missing');
+  response=await page.goto(decisionUrl,{waitUntil:'domcontentloaded'});
+  assert(response?.ok(),'race A confirmation page missing');
+  const raceForm=page.locator('.pgr-profile-delete-decision form');
+  assert(await raceForm.count()===1,'race original decision missing');
+  const racePayload=await raceForm.evaluate(f=>Object.fromEntries(new FormData(f)));
+  assert(racePayload.profile_id==='alpha'&&/^[a-f0-9]{64}$/.test(racePayload.confirmed_profile_fingerprint||'')
+    &&typeof racePayload._wpnonce==='string'&&racePayload._wpnonce.length>5,'genuine A security data absent');
+  const originalRaceShot='interleaved_replace-original-confirmation.jpg';
+  await page.screenshot({path:path.join(out,originalRaceShot),type:'jpeg',quality:80,fullPage:true});
+  const muDir=path.join(root,'wp-content','mu-plugins');
+  const muPath=path.join(muDir,'pgr-wu008-scanner-interleaving.php');
+  const markerPath=path.join(out,'interleaving-marker.json');
+  assert(!fs.existsSync(muPath)&&!fs.existsSync(markerPath),'race probe collision');
+  fs.mkdirSync(muDir,{recursive:true});
+  let raceOutcome;
+  try {
+    fs.copyFileSync('tests/real-integration/scanner-profile-interleaving-mu.php',muPath);
+    const raceResponse=await page.request.post(postUrl,{form:racePayload,maxRedirects:10});
+    const raceNotice=new URL(raceResponse.url()).searchParams.get('pgr_notice');
+    const raceMarker=JSON.parse(fs.readFileSync(markerPath,'utf8'));
+    const raceAfter=invoke('inspect',raceCase);
+    assert(raceMarker.probe==='WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING' &&
+      raceMarker.original_was_read===true &&
+      raceMarker.replacement_persisted_before_delete_read===true &&
+      raceMarker.replacement_content_differs===true &&
+      raceMarker.actual_parallel_workers===false &&
+      Number.isFinite(raceMarker.mutation_elapsed_ms),
+      'genuine Registry check/delete injection not proven');
+    assert(raceNotice==='deleted' && !raceAfter.exists && raceAfter.gfapi_mapping_unchanged===true,
+      'old A confirmation did not delete B at real Registry interleaving boundary');
+    response=await page.goto(listUrl,{waitUntil:'domcontentloaded'});
+    assert(response?.ok(),'race final list missing');
+    const finalRaceShot='interleaved_replace-after-old-POST.jpg';
+    await page.screenshot({path:path.join(out,finalRaceShot),type:'jpeg',quality:80,fullPage:true});
+    raceOutcome={
+      state:'OBSERVED_UNSAFE_INTERLEAVING',notice:raceNotice,
+      old_a_confirmation_deleted_replacement_b:!raceAfter.exists,
+      gfapi_mapping_unchanged:raceAfter.gfapi_mapping_unchanged,
+      marker:raceMarker,
+      images:[originalRaceShot,finalRaceShot],
+      true_concurrent_workers:'NOT_PROVEN'
+    };
+  } finally {
+    fs.rmSync(muPath,{force:true});
+    const cleaned=invoke('cleanup',raceCase);
+    assert(!cleaned.exists&&cleaned.gfapi_mapping_unchanged,'race fixture cleanup failed');
+  }
+  report.boundary_interleaving=raceOutcome;
+
   const byCase=Object.fromEntries(report.cases.map(x=>[x.case,x]));
   assert(byCase.unchanged.response.notice==='deleted' && !byCase.unchanged.after_post.exists,
     'normal unchanged confirmation control invalid');
@@ -209,7 +264,7 @@ try {
   assert(byCase.identical_content.response.notice==='deleted' &&
     byCase.identical_content.before_stale_post.exists && !byCase.identical_content.after_post.exists,
     'identical content limitation was not honestly exercised');
-  report.finding='BOUNDED_SNAPSHOT_REPAIR_VERIFIED';
+  report.finding='IDENTICAL_CONTENT_AND_CHECK_DELETE_INTERLEAVING_UNSAFE';
   report.state='QUALIFICATION_COMPLETE';
   const lines=[
     '# Same-ID Scanner Profile recreation — independent WU008 runtime qualification','',
@@ -222,6 +277,10 @@ try {
     '|---|---|---|',
     ...report.cases.map(c=>'| '+c.case+' | '+c.response.notice+' | '+(c.after_post.exists?c.after_post.label+' / '+c.after_post.keys.join(','):'absent')+' |'),
     '', 'Fresh B confirmation outcome: '+byCase.fresh_b.fresh_b.notice,
+    '', 'Deterministic check/delete interleaving: '+raceOutcome.notice+
+      '; old A confirmation deleted replacement B='+raceOutcome.old_a_confirmation_deleted_replacement_b+
+      '; mutation elapsed ms='+raceOutcome.marker.mutation_elapsed_ms+
+      '; true parallel workers='+raceOutcome.true_concurrent_workers,
     '', '**Observed disposition:** '+report.finding,'',
     'Raw nonce and authenticated cookies are never saved.',''
   ];
@@ -229,6 +288,9 @@ try {
     lines.push('## '+c.case,'');
     for(const n of c.images) lines.push('['+n+']('+n+')','');
   }
+  lines.push('## interleaved_replace (single-request test-only hook; NOT a two-worker concurrency test)','');
+  for(const n of raceOutcome.images) lines.push('['+n+']('+n+')','');
+  lines.push('Exact hook marker: [interleaving-marker.json](interleaving-marker.json)','');
   fs.writeFileSync(path.join(out,'README.md'),lines.join('\n'));
 } finally {
   await browser.close();

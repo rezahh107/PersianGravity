@@ -9,7 +9,7 @@ $root   = getenv( 'WU008_WP_PATH' );
 $dir    = getenv( 'WU008_ARTIFACT_DIR' );
 $action = getenv( 'WU008_INCAR_ACTION' );
 $case   = getenv( 'WU008_INCAR_CASE' );
-$cases  = array( 'unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b', 'identical_content' );
+$cases  = array( 'unchanged', 'missing', 'changed_label', 'same_label', 'enabled_only', 'output_label_only', 'fresh_b', 'identical_content', 'interleaved_replace' );
 $steps  = array( 'create_a', 'delete_a', 'recreate_b', 'edit_a', 'inspect', 'cleanup' );
 if (
 	! $root || ! $dir || realpath( ABSPATH ) !== realpath( $root ) ||
