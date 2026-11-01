@@ -148,6 +148,7 @@ jobs:
           php -l tests/real-integration/scanner-profile-incarnation-fixture.php
           php -l tests/real-integration/scanner-profile-interleaving-mu.php
           php -l tests/real-integration/scanner-profile-cas-workers.php
+          php -l tests/real-integration/scanner-profile-migration-recovery.php
           node --check tests/real-integration/scanner-profile-incarnation-browser.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
@@ -926,6 +927,15 @@ jobs:
           console.log('WU008_REAL_PHP_WORKER_CAS_PASS distinct workers='+r.worker_a_pid+','+r.worker_b_pid);
           PGR_CAS_WORKER_GATE
 
+      - name: Qualify explicit Scanner migration, actual wpdb failure and raw backup recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This fixture restores initial option bytes and deletes its GFAPI form.
+          # Never run on a real installation.
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-migration-recovery.php
+          test -s "$WU008_ARTIFACT_DIR/scanner-registry-recovery-evidence/report.json"
+
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
         run: |
@@ -1513,6 +1523,41 @@ jobs:
             ' cases=8 images=24 race=CAS_CONFLICT_REJECTED exactHead='+head);
           PGR_INCAR_QUALIFICATION_EVIDENCE_GATE
 
+      - name: Verify Scanner real-worker and recovery artifacts against exact Head
+        shell: bash
+        env:
+          PGR_SCANNER_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node - <<'PGR_SCANNER_STORAGE_PUBLICATION_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const root='/tmp/wu008-downloaded-evidence';
+          const head=process.env.PGR_SCANNER_EXPECTED_HEAD;
+          const workerDir=path.join(root,'scanner-cas-worker-evidence');
+          const recoveryDir=path.join(root,'scanner-registry-recovery-evidence');
+          const worker=JSON.parse(fs.readFileSync(path.join(workerDir,'report.json'),'utf8'));
+          const recovery=JSON.parse(fs.readFileSync(path.join(recoveryDir,'report.json'),'utf8'));
+          const check=(ok,why)=>{if(!ok)throw Error('SCANNER_STORAGE_EVIDENCE: '+why);};
+          check(worker.evidence_class==='WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS'&&
+            worker.old_confirmation==='rejected'&&worker.new_incarnation==='preserved'&&
+            worker.workers_distinct===true&&worker.worker_a_suspended_during_b_write===true&&
+            worker.worker_a_pid>0&&worker.worker_b_pid>0&&worker.worker_a_pid!==worker.worker_b_pid&&
+            worker.persistent_object_cache==='NOT_PROVEN','real-worker report missing or invalid');
+          const expected=['verified_raw_backup','no_automatic_migration','wrong_backup_hash_rejected',
+            'real_wpdb_query_failure_preserved_v1','lossless_v2_migration_gfapi_and_cache_readback',
+            'repeated_migration_idempotent','raw_backup_restored_with_post_backup_changes_lost',
+            'restored_backup_can_remigrate','original_test_registry_restored_byte_exact'];
+          check(recovery.exact_head===head&&recovery.evidence_class==='WU008_REAL_WPDB_MIGRATION_AND_RECOVERY'&&
+            Object.keys(recovery.checks||{}).length===expected.length&&
+            expected.every(x=>recovery.checks[x]===true)&&
+            recovery.matched_version_plugin_restore==='NOT_PROVEN'&&
+            recovery.production_restore==='NOT_ATTEMPTED'&&recovery.persistent_cache==='NOT_PROVEN'&&
+            recovery.backup_contents_in_artifact===false,
+            'recovery evidence lacks exact-Head, all controls, or truthful limitations');
+          check(fs.readdirSync(recoveryDir).join(',')==='report.json','recovery artifact contains unapproved files');
+          console.log('SCANNER_STORAGE_EVIDENCE_GATE PASS: MariaDB two-worker CAS and 9 recovery checks; cache and matched-version restore remain NOT_PROVEN');
+          PGR_SCANNER_STORAGE_PUBLICATION_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1544,7 +1589,11 @@ jobs:
           cp -a "$source_dir/../scanner-delete-evidence/." scanner-delete-evidence/
           mkdir -p scanner-incarnation-evidence
           cp -a "$source_dir/../scanner-incarnation-evidence/." scanner-incarnation-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence
+          # Publish only minimal verified JSON, never synchronization markers or raw backups.
+          mkdir -p scanner-cas-worker-evidence scanner-registry-recovery-evidence
+          cp -a "$source_dir/../scanner-cas-worker-evidence/report.json" scanner-cas-worker-evidence/
+          cp -a "$source_dir/../scanner-registry-recovery-evidence/report.json" scanner-registry-recovery-evidence/
+          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1557,3 +1606,5 @@ jobs:
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Actual two-PHP-worker MariaDB CAS report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-cas-worker-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "Raw-backup recovery and wpdb failure report: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-registry-recovery-evidence/report.json" >> "$GITHUB_STEP_SUMMARY"
