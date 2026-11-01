@@ -40,6 +40,27 @@ $persisted = GFAPI::get_form( $id );
 if ( ! is_array( $persisted ) || count( $persisted['fields'] ?? array() ) !== 3 ) {
 	throw new RuntimeException( 'Native GFAPI did not persist expected Form Builder fixture.' );
 }
+// Independent native-host control: no Scanner field is present in this second form.
+$native_form_id = GFAPI::add_form(
+  array(
+    'title' => 'Native Gravity Forms Tabs Initialization Control',
+    'fields' => array(
+      array( 'id' => 1, 'label' => 'Native Text', 'type' => 'text' ),
+      array( 'id' => 3, 'label' => 'Native Notes', 'type' => 'textarea' ),
+    ),
+    'button' => array( 'type' => 'text', 'text' => 'Submit' ),
+  )
+);
+$native_form = is_int( $native_form_id ) && $native_form_id > 0 ? GFAPI::get_form( $native_form_id ) : null;
+if (
+  ! is_array( $native_form ) ||
+  count( $native_form['fields'] ?? array() ) !== 2 ||
+  array_filter( $native_form['fields'], static function ( $field ) {
+    return $field->type === 'pgr_structured_scanner';
+  } )
+) {
+  throw new RuntimeException( 'Independent native GF control form was not persisted correctly.' );
+}
 if ( $registry_before !== serialize( get_option( PGR_Scanner_Profile_Registry::OPTION ) ) ) {
 	throw new RuntimeException( 'Registry changed during GF fixture setup.' );
 }
@@ -54,6 +75,8 @@ $evidence = array(
 	'form_id' => $id,
 	'scanner_field_id' => 3,
 	'form_builder_url' => admin_url( 'admin.php?page=gf_edit_forms&id=' . $id ),
+	'native_form_id' => $native_form_id,
+	'native_form_builder_url' => admin_url( 'admin.php?page=gf_edit_forms&id=' . $native_form_id ),
 	'admin_url' => admin_url(),
 	'login_url' => wp_login_url( admin_url() ),
 	'expected_source_commit' => $expected,
