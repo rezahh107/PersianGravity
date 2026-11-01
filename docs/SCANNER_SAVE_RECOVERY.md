@@ -1,7 +1,7 @@
 # Scanner Profiles failed-save recovery (bounded admin UX)
 
 This page describes the Scanner Create/Edit request path and the dedicated
-WU008 qualification on the Draft PR. It does not constitute product acceptance,
+WU008 qualification on PR #110, merged into `main` on 2026-11-01 at `a20a2baab2cd0450efcf852d4c4f5e95e07e087c`. It does not constitute product acceptance,
 a published release, or proof on a production WordPress site.
 
 ## Root cause and ownership
@@ -66,5 +66,5 @@ from an earlier Head is not valid as acceptance for a later change.
 
 An actual MariaDB write outage/failure, live production installation, independent
 screen-reader behavior, and full UX-G01/G02/G03/G04 acceptance remain separate
-claims requiring their own evidence. No release, deployment, merge, or live
-Registry migration is authorized by this Draft PR.
+claims requiring their own evidence. PR #110 has been merged in source; no public release, deployment, or live
+Registry migration has been authorized by that merge.
