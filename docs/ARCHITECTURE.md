@@ -187,7 +187,7 @@ Detection:
 
 Enable never performs a usage scan.
 
-### Scanner Profiles rejected Edit identity (unmerged PR #110 candidate)
+### Scanner Profiles rejected Edit identity (merged PR #110; unreleased)
 
 `PGR_Product_Admin` owns the active native Scanner Profiles page hook and forwards same-screen POST processing to `PGR_Admin` before WordPress sends the admin header. `profile_save_attempt()` verifies the capability/nonce through its caller and passes the separate sanitized `existing_id`, revision, incarnation and submitted profile to the unchanged Registry v2 writer. Rejection remains request-local; success uses the existing redirect.
 
