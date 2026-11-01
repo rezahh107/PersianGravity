@@ -1,6 +1,6 @@
 <?php
 /**
- * Structured Scanner profile registry and v1 custom-profile persistence.
+ * Structured Scanner profiles: versioned incarnation identities and guarded option writes.
  *
  * @package PersianGravityForms
  */
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 final class PGR_Scanner_Profile_Registry {
 
 	const OPTION          = 'pgr_scanner_profiles';
-	const SCHEMA_VERSION  = 1;
+	const SCHEMA_VERSION  = 2;
 	const SAYAD_V01       = 'sayad_v01';
 	const PARSER_SEGMENTS = 'segments_v1';
 
@@ -80,7 +80,7 @@ final class PGR_Scanner_Profile_Registry {
 	 * @return array<string,array<string,mixed>>
 	 */
 	public static function custom_profiles() {
-		$stored = self::normalize_option( get_option( self::OPTION, array() ) );
+		$stored = self::normalize_option( self::raw_state()['value'] );
 		$result = array();
 
 		foreach ( $stored['profiles'] as $profile ) {
@@ -289,159 +289,255 @@ final class PGR_Scanner_Profile_Registry {
 	 * @param mixed $profile Candidate profile.
 	 * @return string SHA-256 hex, or an empty string for invalid input.
 	 */
+
 	public static function snapshot_fingerprint( $profile ) {
 		$validation = self::validate_profile( $profile );
-		if ( ! $validation['valid'] || isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
+		if ( ! $validation['valid'] || ! is_array( $profile ) ||
+			! isset( $profile['incarnation_id'], $profile['revision'] ) ||
+			! is_string( $profile['incarnation_id'] ) ||
+			1 !== preg_match( '/^[a-f0-9-]{36}$/', $profile['incarnation_id'] ) ||
+			! is_int( $profile['revision'] ) || $profile['revision'] < 1 ||
+			isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
 			return '';
 		}
 
-		$canonical = wp_json_encode( $validation['profile'] );
+		$canonical = wp_json_encode( array(
+			'profile'        => $validation['profile'],
+			'incarnation_id' => $profile['incarnation_id'],
+			'revision'       => $profile['revision'],
+		) );
 		return is_string( $canonical ) ? hash( 'sha256', $canonical ) : '';
 	}
 
 	/**
-	 * Normalize the versioned storage envelope.
+	 * Read v1 for compatibility; keep v2 metadata in the only canonical option.
+	 * Unknown versions and invalid records are never eligible for mutation.
 	 *
-	 * @param mixed $stored Raw option value.
-	 * @return array{schema_version:int,profiles:array<int,array<string,mixed>>}
+	 * @param mixed $stored Untrusted stored state.
+	 * @return array<string,mixed>
 	 */
 	public static function normalize_option( $stored ) {
-		if (
-			! is_array( $stored ) ||
-			! isset( $stored['schema_version'] ) ||
-			self::SCHEMA_VERSION !== (int) $stored['schema_version'] ||
-			! isset( $stored['profiles'] ) ||
-			! is_array( $stored['profiles'] )
-		) {
-			return array(
-				'schema_version' => self::SCHEMA_VERSION,
-				'profiles'       => array(),
-			);
+		$empty = array( 'schema_version' => self::SCHEMA_VERSION, 'profiles' => array() );
+		if ( ! is_array( $stored ) || ! isset( $stored['schema_version'], $stored['profiles'] ) ||
+			! is_int( $stored['schema_version'] ) || ! is_array( $stored['profiles'] ) ||
+			! in_array( $stored['schema_version'], array( 1, self::SCHEMA_VERSION ), true ) ) {
+			return $empty;
 		}
 
-		$profiles = array();
+		$result = array( 'schema_version' => $stored['schema_version'], 'profiles' => array() );
 		foreach ( $stored['profiles'] as $profile ) {
 			$validation = self::validate_profile( $profile );
-			if ( ! $validation['valid'] ) {
-				continue;
+			if ( ! $validation['valid'] || isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
+			continue;
 			}
-			if ( isset( self::built_in_profiles()[ $validation['profile']['id'] ] ) ) {
-				continue;
+			$normalized = $validation['profile'];
+			if ( self::SCHEMA_VERSION === $stored['schema_version'] ) {
+				if ( '' === self::snapshot_fingerprint( $profile ) ) {
+					continue;
+				}
+				$normalized['incarnation_id'] = $profile['incarnation_id'];
+				$normalized['revision']       = $profile['revision'];
 			}
-			$profiles[] = $validation['profile'];
+			$result['profiles'][] = $normalized;
 		}
-
-		return array(
-			'schema_version' => self::SCHEMA_VERSION,
-			'profiles'       => $profiles,
-		);
+		return $result;
 	}
 
 	/**
-	 * Save a new or existing custom profile.
+	 * All reads used for mutation/confirmation bypass potentially stale Options API caches.
+	 * This also deliberately bypasses value-altering get_option filters. The option is
+	 * plugin-owned: external direct option writers and filters are not supported.
 	 *
-	 * The executable parser/output contract is immutable after creation. Labels
-	 * and enabled state may change, but positional legacy mappings therefore can
-	 * never be reinterpreted against a different output order or semantic key.
-	 *
-	 * @param mixed  $profile     Candidate profile.
-	 * @param string $existing_id Existing immutable ID when editing.
-	 * @return array{success:bool,profile:array<string,mixed>|null,errors:array<int,string>}
+	 * @return array{exists:bool,raw:string,value:mixed}
 	 */
-	public static function save_custom_profile( $profile, $existing_id = '' ) {
-		$validation = self::validate_profile( $profile, $existing_id );
-		if ( ! $validation['valid'] ) {
-			return array(
-				'success' => false,
-				'profile' => null,
-				'errors'  => $validation['errors'],
-			);
+	private static function raw_state() {
+		global $wpdb;
+		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
+			return array( 'exists' => false, 'raw' => '', 'value' => null, 'available' => false );
 		}
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
+			self::OPTION
+		) );
+		if ( null === $row && ! empty( $wpdb->last_error ) ) {
+			return array( 'exists' => false, 'raw' => '', 'value' => null, 'available' => false );
+		}
+		return is_object( $row )
+			? array( 'exists' => true, 'raw' => $row->option_value, 'value' => maybe_unserialize( $row->option_value ), 'available' => true )
+			: array( 'exists' => false, 'raw' => '', 'value' => null, 'available' => true );
+	}
 
-		$normalized = $validation['profile'];
+	/**
+	 * Only an explicit, operator-invoked migration with a verified raw backup hash
+	 * may assign fresh non-content-derived identities to legacy records.
+	 *
+	 * @param string $backup_sha256 SHA-256 of the exact pre-migration serialized option.
+	 * @return array{success:bool,reason:string}
+	 */
+	public static function migrate_v1_to_v2( $backup_sha256 ) {
+		$before = self::raw_state();
+		if ( empty( $before['available'] ) ) {
+			return array( 'success' => false, 'reason' => 'storage_unavailable' );
+		}
+		if ( $before['exists'] && is_array( $before['value'] ) &&
+			( $before['value']['schema_version'] ?? null ) === self::SCHEMA_VERSION ) {
+			return array( 'success' => true, 'reason' => 'already_v2' );
+		}
+		if ( ! $before['exists'] || ! is_string( $backup_sha256 ) ||
+			! hash_equals( hash( 'sha256', $before['raw'] ), $backup_sha256 ) ||
+			! self::valid_legacy( $before['value'] ) ) {
+			return array( 'success' => false, 'reason' => 'backup_or_legacy_mismatch' );
+		}
+		$next = array( 'schema_version' => self::SCHEMA_VERSION, 'profiles' => array() );
+		foreach ( $before['value']['profiles'] as $legacy ) {
+			$legacy['incarnation_id'] = wp_generate_uuid4();
+			$legacy['revision']       = 1;
+			$next['profiles'][]       = $legacy;
+		}
+		return self::persist_option( $next, $before )
+			? array( 'success' => true, 'reason' => 'migrated' )
+			: array( 'success' => false, 'reason' => 'write_conflict_or_failure' );
+	}
+
+	/**
+	 * Produce a raw, read-only backup envelope for separately verified safe storage.
+	 * The operator must retain it outside WordPress before requesting migration.
+	 *
+	 * @return array<string,mixed>|null
+	 */
+	public static function pre_migration_backup() {
+		$state = self::raw_state();
+		return ! empty( $state['available'] ) && $state['exists'] && self::valid_legacy( $state['value'] )
+			? array( 'raw' => $state['raw'], 'sha256' => hash( 'sha256', $state['raw'] ) )
+			: null;
+	}
+
+	/** Require a lossless, source-produced v1 envelope; never drop unknown/bad records. */
+	private static function valid_legacy( $value ) {
+		if ( ! is_array( $value ) || array_keys( $value ) !== array( 'schema_version', 'profiles' ) ||
+			1 !== $value['schema_version'] || ! is_array( $value['profiles'] ) ||
+			array_keys( $value['profiles'] ) !== range( 0, count( $value['profiles'] ) - 1 ) && ! empty( $value['profiles'] ) ) {
+			return false;
+		}
+		$seen = array();
+		foreach ( $value['profiles'] as $profile ) {
+			$check = self::validate_profile( $profile );
+			if ( ! $check['valid'] || $check['profile'] !== $profile ||
+				isset( self::built_in_profiles()[ $profile['id'] ] ) || isset( $seen[ $profile['id'] ] ) ) {
+				return false;
+			}
+			$seen[ $profile['id'] ] = true;
+		}
+		return true;
+	}
+
+	/**
+	 * Create/edit only against v2; a stale opened edit form cannot overwrite a newer revision.
+	 * The executable parser/output contract is immutable for the same incarnation.
+	 *
+	 * @param mixed $profile Candidate profile.
+	 * @param string $existing_id Existing profile ID on edit.
+	 * @param int|null $expected_revision Revision in the opened edit form, when supplied.
+	 * @return array<string,mixed>
+	 */
+	public static function save_custom_profile( $profile, $existing_id = '', $expected_revision = null ) {
+		$check = self::validate_profile( $profile, $existing_id );
+		if ( ! $check['valid'] ) {
+			return array( 'success' => false, 'profile' => null, 'errors' => $check['errors'] );
+		}
+		$normalized = $check['profile'];
 		if ( isset( self::built_in_profiles()[ $normalized['id'] ] ) ) {
-			return array(
-				'success' => false,
-				'profile' => null,
-				'errors'  => array( 'built_in_collision' ),
-			);
+			return array( 'success' => false, 'profile' => null, 'errors' => array( 'built_in_collision' ) );
 		}
-
-		$stored = self::normalize_option( get_option( self::OPTION, array() ) );
-		$found  = false;
-
+		$before = self::raw_state();
+		if ( empty( $before['available'] ) || ( $before['exists'] && ! self::valid_v2( $before['value'] ) ) ) {
+			return array( 'success' => false, 'profile' => null, 'errors' => array( 'migration_required_or_invalid_storage' ) );
+		}
+		$stored = $before['exists'] ? $before['value'] : array( 'schema_version' => self::SCHEMA_VERSION, 'profiles' => array() );
+		$found = false;
 		foreach ( $stored['profiles'] as $index => $saved ) {
 			if ( $saved['id'] !== $normalized['id'] ) {
 				continue;
 			}
 			if ( '' === $existing_id ) {
-				return array(
-					'success' => false,
-					'profile' => null,
-					'errors'  => array( 'duplicate_profile_id' ),
-				);
+				return array( 'success' => false, 'profile' => null, 'errors' => array( 'duplicate_profile_id' ) );
+			}
+			if ( null !== $expected_revision && $saved['revision'] !== $expected_revision ) {
+				return array( 'success' => false, 'profile' => null, 'errors' => array( 'edit_conflict' ) );
 			}
 			if ( self::contract_definition( $saved ) !== self::contract_definition( $normalized ) ) {
-				return array(
-					'success' => false,
-					'profile' => null,
-					'errors'  => array( 'immutable_contract' ),
-				);
+				return array( 'success' => false, 'profile' => null, 'errors' => array( 'immutable_contract' ) );
 			}
-
-			$stored['profiles'][ $index ] = $normalized;
-			$found                        = true;
+			$normalized['incarnation_id'] = $saved['incarnation_id'];
+			$normalized['revision']       = $saved['revision'] + 1;
+			$stored['profiles'][ $index ]  = $normalized;
+			$found = true;
 			break;
 		}
-
 		if ( '' !== $existing_id && ! $found ) {
-			return array(
-				'success' => false,
-				'profile' => null,
-				'errors'  => array( 'profile_not_found' ),
-			);
+			return array( 'success' => false, 'profile' => null, 'errors' => array( 'profile_not_found' ) );
 		}
-
 		if ( '' === $existing_id ) {
-			$stored['profiles'][] = $normalized;
+			$normalized['incarnation_id'] = wp_generate_uuid4();
+			$normalized['revision']       = 1;
+			$stored['profiles'][]         = $normalized;
 		}
-
-		self::persist_option( $stored );
-
-		return array(
-			'success' => true,
-			'profile' => $normalized,
-			'errors'  => array(),
-		);
+		if ( ! self::persist_option( $stored, $before ) ) {
+			return array( 'success' => false, 'profile' => null, 'errors' => array( 'write_conflict_or_failure' ) );
+		}
+		return array( 'success' => true, 'profile' => $normalized, 'errors' => array() );
 	}
 
 	/**
-	 * Delete one custom profile without rewriting existing form metadata.
+	 * Delete only the exact confirmed incarnation AND revision/content, at the
+	 * atomic compare-and-swap boundary. An ID-only delete is not permitted.
 	 *
-	 * @param string $profile_id Profile ID.
+	 * @param string $profile_id Stable public profile ID.
+	 * @param string $expected_fingerprint Confirmed snapshot-bound nonce identity.
 	 * @return bool
 	 */
-	public static function delete_custom_profile( $profile_id ) {
-		if ( isset( self::built_in_profiles()[ $profile_id ] ) ) {
+	public static function delete_custom_profile( $profile_id, $expected_fingerprint = '' ) {
+		if ( isset( self::built_in_profiles()[ $profile_id ] ) ||
+			! is_string( $expected_fingerprint ) || 1 !== preg_match( '/^[a-f0-9]{64}$/', $expected_fingerprint ) ) {
 			return false;
 		}
-
-		$stored   = self::normalize_option( get_option( self::OPTION, array() ) );
-		$before   = count( $stored['profiles'] );
-		$profiles = array();
-
-		foreach ( $stored['profiles'] as $profile ) {
-			if ( $profile_id !== $profile['id'] ) {
-				$profiles[] = $profile;
+		$before = self::raw_state();
+		if ( empty( $before['available'] ) || ! $before['exists'] || ! self::valid_v2( $before['value'] ) ) {
+			return false;
+		}
+		$next = $before['value'];
+		foreach ( $next['profiles'] as $i => $profile ) {
+			if ( $profile['id'] !== $profile_id ) {
+				continue;
 			}
+			if ( ! hash_equals( $expected_fingerprint, self::snapshot_fingerprint( $profile ) ) ) {
+				return false;
+			}
+			array_splice( $next['profiles'], $i, 1 );
+			return self::persist_option( $next, $before );
 		}
+		return false;
+	}
 
-		if ( count( $profiles ) === $before ) {
+	/** Strict mutation gate: unknown fields/schema/duplicate IDs never disappear on write. */
+	private static function valid_v2( $value ) {
+		if ( ! is_array( $value ) || array_keys( $value ) !== array( 'schema_version', 'profiles' ) ||
+			self::SCHEMA_VERSION !== $value['schema_version'] || ! is_array( $value['profiles'] ) ) {
 			return false;
 		}
-
-		$stored['profiles'] = $profiles;
-		self::persist_option( $stored );
+		$seen = array();
+		foreach ( $value['profiles'] as $profile ) {
+			$check = self::validate_profile( $profile );
+			if ( ! $check['valid'] || '' === self::snapshot_fingerprint( $profile ) ||
+				isset( $seen[ $profile['id'] ] ) || isset( self::built_in_profiles()[ $profile['id'] ] ) ||
+				array_merge( $check['profile'], array(
+					'incarnation_id' => $profile['incarnation_id'],
+					'revision' => $profile['revision'],
+				) ) !== $profile ) {
+				return false;
+			}
+			$seen[ $profile['id'] ] = true;
+		}
 		return true;
 	}
 
@@ -481,18 +577,42 @@ final class PGR_Scanner_Profile_Registry {
 	}
 
 	/**
-	 * Persist custom profiles in one non-autoloaded option.
+	 * DB compare-and-swap is the linearization point for all Registry writers.
+	 * get_option/update_option are not conditional and cannot provide this guard.
+	 * Raw DB updates intentionally do not impersonate WP option filters or hooks:
+	 * the plugin-owned option must not be intercepted by third-party writers.
+	 * A cache delete never serves as the concurrency authority.
 	 *
-	 * @param array<string,mixed> $value Option value.
-	 * @return void
+	 * @param array<string,mixed> $next Validated next canonical envelope.
+	 * @param array<string,mixed> $before Exact DB version read before mutation.
+	 * @return bool
 	 */
-	private static function persist_option( $value ) {
-		$existing = get_option( self::OPTION, null );
-		if ( null === $existing && function_exists( 'add_option' ) ) {
-			add_option( self::OPTION, $value, '', false );
-			return;
+	private static function persist_option( $next, $before ) {
+		global $wpdb;
+		if ( empty( $before['available'] ) || ! self::valid_v2( $next ) || ! isset( $wpdb ) ) {
+			return false;
 		}
-
-		update_option( self::OPTION, $value, false );
+		$serialized = maybe_serialize( $next );
+		if ( $before['exists'] ) {
+			$written = $wpdb->query( $wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND BINARY option_value = BINARY %s",
+				$serialized,
+				self::OPTION,
+				$before['raw']
+			) );
+		} else {
+			$written = $wpdb->insert( $wpdb->options,
+				array( 'option_name' => self::OPTION, 'option_value' => $serialized, 'autoload' => 'off' ),
+				array( '%s', '%s', '%s' ) );
+		}
+		if ( 1 !== $written ) {
+			return false;
+		}
+		// Registry readers use fresh DB snapshots, including with a persistent cache.
+		// Invalidate all three WP option cache paths for ordinary downstream readers.
+		wp_cache_delete( self::OPTION, 'options' );
+		wp_cache_delete( 'alloptions', 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+		return true;
 	}
 }
