@@ -99,7 +99,7 @@ const geom = () => {
       let list;try{list=sheet.cssRules;}catch{continue;}
       const walk=(group)=>{for(const rule of group){if(rule.type===CSSRule.STYLE_RULE){
         try{if(el.matches(rule.selectorText))rules.push({origin:sheet.href||'inline',selector:rule.selectorText,
-          style:rule.style.cssText.slice(0,600)});}catch{}
+          properties:[...rule.style].filter(name=>/^(?:font|line-height|margin|padding|width|min-width|max-width|display|grid|overflow|direction|text-align|white-space|box-sizing|position)/.test(name)).slice(0,20)});}catch{}
       }else if(rule.cssRules){try{walk(rule.cssRules);}catch{}}}};
       try{walk(list);}catch{}
     }
