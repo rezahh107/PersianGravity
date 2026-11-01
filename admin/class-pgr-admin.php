@@ -711,7 +711,10 @@ final class PGR_Admin {
 						?>
 					</div>
 				</section>
-				<?php submit_button( $is_edit ? __( 'Save Profile', 'persian-gravityforms' ) : __( 'Create Profile', 'persian-gravityforms' ) ); ?>
+				<div class="pgr-actions pgr-profile-form__actions">
+					<?php submit_button( $is_edit ? __( 'Save Profile', 'persian-gravityforms' ) : __( 'Create Profile', 'persian-gravityforms' ), 'primary', 'submit', false ); ?>
+					<a class="button button-secondary pgr-profile-form__cancel" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PROFILES_SLUG ) ); ?>"><?php esc_html_e( 'Back to Scanner Profiles', 'persian-gravityforms' ); ?></a>
+				</div>
 			</form>
 		</div>
 		<?php
