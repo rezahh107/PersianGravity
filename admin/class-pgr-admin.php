@@ -64,18 +64,16 @@ final class PGR_Admin {
 				array( $this, 'render_overview_page' )
 			)
 		);
-		$profiles_hook = add_submenu_page(
-			self::MENU_SLUG,
-			esc_html__( 'Scanner Profiles', 'persian-gravityforms' ),
-			esc_html__( 'Scanner Profiles', 'persian-gravityforms' ),
-			self::CAPABILITY,
-			self::PROFILES_SLUG,
-			array( $this, 'render_profiles_page' )
+		$this->remember_hook(
+			add_submenu_page(
+				self::MENU_SLUG,
+				esc_html__( 'Scanner Profiles', 'persian-gravityforms' ),
+				esc_html__( 'Scanner Profiles', 'persian-gravityforms' ),
+				self::CAPABILITY,
+				self::PROFILES_SLUG,
+				array( $this, 'render_profiles_page' )
+			)
 		);
-		$this->remember_hook( $profiles_hook );
-		if ( is_string( $profiles_hook ) && '' !== $profiles_hook ) {
-			add_action( 'load-' . $profiles_hook, array( $this, 'handle_profile_save_on_page' ) );
-		}
 		$this->remember_hook(
 			add_submenu_page(
 				self::MENU_SLUG,
