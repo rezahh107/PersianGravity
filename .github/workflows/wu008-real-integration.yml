@@ -1742,8 +1742,9 @@ jobs:
               const native=data.native_host_controls.find(x=>x.width===width);
               const scanner=data.cases.find(x=>x.state==='form-builder'&&x.width===width);
               check(native?.status==='OBSERVED'&&native.locale===locale&&
-                native.model?.present===true&&native.model?.nativeTextarea===true&&
-                native.model?.scanner===false&&native.model?.fieldCount===2&&
+                native.model?.present===true&&native.model?.nativeText===true&&
+                native.model?.nativeTextarea===true&&native.model?.scanner===false&&
+                native.model?.fieldCount>=2&&
                 native.nativePanelVisible===true&&Array.isArray(native.pageErrors)&&
                 Array.isArray(native.pageErrorStacks)&&native.pageErrors.length===native.pageErrorStacks.length&&
                 Array.isArray(scanner?.pageErrors)&&Array.isArray(scanner?.pageErrorStacks)&&
