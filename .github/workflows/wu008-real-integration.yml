@@ -883,6 +883,42 @@ jobs:
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
 
+      - name: Qualify Scanner list/create/edit and native GF Form Builder read-only geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/scanner-ui-readonly-fixture.php
+          node --check tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-ui-readonly-fixture.php
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          restore_scanner_ui_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_scanner_ui_locale EXIT
+          SCANNER_UI_LOCALE=fa_IR node tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_UI_LOCALE=en_US node tests/real-integration/scanner-ui-readonly-browser.mjs
+          restore_scanner_ui_locale
+          trap - EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $file = getenv("WU008_ARTIFACT_DIR")."/scanner-ui-readonly-evidence/fixture.json";
+            $m = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+            $now = hash("sha256", serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));
+            if ($now !== $m["registry_snapshot_sha256"]) {
+              throw new RuntimeException("Scanner UI qualification unexpectedly changed Registry");
+            }
+          '
+          test -s "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/geometry-fa_IR.json"
+          test -s "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/geometry-en_US.json"
+          printf '# Scanner PR106 read-only UI qualification\n\n' > "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [Persian: 12 native pages + 3 CSS controls](CONTACT-fa_IR.md)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [English: 12 native pages + 3 CSS controls](CONTACT-en_US.md)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [Exact installed source and GF Form Builder fixture](fixture.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [fa_IR detailed geometry, cascade, keyboard focusables](geometry-fa_IR.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+
       - name: Verify Scanner Profile deletion appearance and mapping in real WordPress Chromium
         shell: bash
         run: |
