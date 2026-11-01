@@ -202,6 +202,7 @@ jobs:
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
           node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          node --check tests/real-integration/scanner-save-recovery-browser.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
@@ -919,6 +920,13 @@ jobs:
           printf -- '- [fa_IR detailed geometry, cascade, keyboard focusables](geometry-fa_IR.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+
+      - name: Reproduce Scanner failed Create POST with real authenticated browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          SCANNER_SAVE_MODE=baseline node tests/real-integration/scanner-save-recovery-browser.mjs
+          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report.json"
 
       - name: Compare real GF tabs initialization against synchronized native pointer clicks
         shell: bash
