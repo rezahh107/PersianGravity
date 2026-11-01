@@ -255,15 +255,62 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
   report.drag={before:beforeOrder,after:afterOrder,nativeDown,dragGeometry,
     widthBeforeDrag:afterWidth,widthAfterDrag:postDragWidth};
 
+  // Native saved-state readiness is not established by an early header alone.
+  // Observe each lifecycle boundary before accepting or rejecting restoration.
+  const stateSnapshot=()=>page.evaluate(()=>{
+    const host=document.querySelector('[data-js="gflow-inbox"]');
+    const opts=window.gflow_config?.grids?.[host?.dataset.gridId]?.grid_options;
+    const root=host?.querySelector('.ag-root-wrapper');
+    const viewport=host?.querySelector('.ag-center-cols-viewport');
+    const column=opts?.columnDefs?.find(c=>c.field==='created_by');
+    let apiState=null;
+    if(typeof opts?.api?.getColumnState==='function'){
+      try{
+        apiState=opts.api.getColumnState().map(c=>({
+          colId:c.colId,width:c.width,flex:c.flex,hide:c.hide,pinned:c.pinned
+        }));
+      }catch(e){apiState={error:String(e).slice(0,130)};}
+    }
+    return {
+      rows:host?.querySelectorAll('.ag-center-cols-container .ag-row').length,
+      rootClass:root?.className,rootWidth:root?.getBoundingClientRect().width,
+      viewportWidth:viewport?.clientWidth,
+      documentClient:document.documentElement.clientWidth,
+      headers:[...host?.querySelectorAll('.ag-header-cell[col-id]')||[]].map(n=>({
+        id:n.getAttribute('col-id'),width:Math.round(n.getBoundingClientRect().width)})),
+      definition:column?{field:column.field,width:column.width,flex:column.flex,
+        minWidth:column.minWidth,maxWidth:column.maxWidth,resizable:column.resizable}:null,
+      defaultColDef:opts?.defaultColDef?{
+        width:opts.defaultColDef.width,flex:opts.defaultColDef.flex,
+        minWidth:opts.defaultColDef.minWidth}:null,
+      apiState,
+      // Keys only, never log potentially sensitive saved Grid values.
+      storageKeys:Object.keys(localStorage).filter(k=>/grid|flow|inbox|column/i.test(k)).slice(0,20)
+    };
+  });
+  const beforeReload=await stateSnapshot();
+  await page.waitForTimeout(800);
+  const preReloadSettled=await stateSnapshot();
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator(`${scope} .ag-root-wrapper`).first().waitFor({timeout:20000});
   await page.waitForFunction(()=>document.querySelectorAll(
     '[data-js="gflow-inbox"] .ag-header-cell').length>0,null,{timeout:20000});
+  await page.waitForFunction(()=>document.querySelectorAll(
+    '[data-js="gflow-inbox"] .ag-center-cols-container .ag-row').length>0,
+    null,{timeout:18000});
+  const reloadedSnapshots=[{phase:'rows_ready',state:await stateSnapshot()}];
+  for(const delayMs of [250,500,900]){
+    await page.waitForTimeout(delayMs);
+    reloadedSnapshots.push({phase:'settle_'+delayMs+'ms',state:await stateSnapshot()});
+  }
   const reloadWidth=await widths();
   const reloadOrder=await visualColumnOrder();
+  report.reload={width:reloadWidth,order:reloadOrder,beforeReload,preReloadSettled,
+    reloadedSnapshots,restored:false};
   if(Math.abs(reloadWidth-postDragWidth)>3||JSON.stringify(reloadOrder)!==JSON.stringify(afterOrder))
-    throw Error('Native saved Grid columns not restored after reload: '+JSON.stringify(
-      {afterWidth,postDragWidth,reloadWidth,afterOrder,reloadOrder}));
-  report.reload={width:reloadWidth,order:reloadOrder,restored:true};
+    throw Error('Native saved Grid columns not restored after settled reload: '+JSON.stringify(
+      {afterWidth,postDragWidth,reloadWidth,afterOrder,reloadOrder,beforeReload,
+        preReloadSettled,reloadedSnapshots}));
+  report.reload.restored=true;
   return report;
 }
