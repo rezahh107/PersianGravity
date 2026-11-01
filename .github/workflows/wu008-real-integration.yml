@@ -201,6 +201,7 @@ jobs:
           node --check tests/real-integration/g008-timeline-print-reconcile.mjs
           node --check tests/real-integration/g008-flow-residual-reconcile.mjs
           node --check tests/real-integration/reconcile-qualification-evidence.mjs
+          node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
           node --test tests/real-integration/browser-diagnostics.test.mjs
           node --test tests/real-integration/admin-ui-evidence-publish-gate.test.mjs
           node --test tests/js/flow-workflow-info-persian-digits.test.js
@@ -882,6 +883,70 @@ jobs:
           node tests/real-integration/admin-ui-evidence-contact-sheet.mjs
           node tests/real-integration/system-status-scroll-summary.mjs
           test -s "$WU008_ARTIFACT_DIR/admin-ui-evidence/CONTACT_SHEET.md"
+
+      - name: Qualify Scanner list/create/edit and native GF Form Builder read-only geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/scanner-ui-readonly-fixture.php
+          node --check tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-ui-readonly-fixture.php
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          restore_scanner_ui_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_scanner_ui_locale EXIT
+          SCANNER_UI_LOCALE=fa_IR node tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_UI_LOCALE=en_US node tests/real-integration/scanner-ui-readonly-browser.mjs
+          restore_scanner_ui_locale
+          trap - EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $file = getenv("WU008_ARTIFACT_DIR")."/scanner-ui-readonly-evidence/fixture.json";
+            $m = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+            $now = hash("sha256", serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));
+            if ($now !== $m["registry_snapshot_sha256"]) {
+              throw new RuntimeException("Scanner UI qualification unexpectedly changed Registry");
+            }
+          '
+          test -s "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/geometry-fa_IR.json"
+          test -s "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/geometry-en_US.json"
+          printf '# Scanner PR106 read-only UI qualification\n\n' > "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [Persian: 12 native pages + 3 CSS controls](CONTACT-fa_IR.md)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [English: 12 native pages + 3 CSS controls](CONTACT-en_US.md)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [Exact installed source and GF Form Builder fixture](fixture.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [fa_IR detailed geometry, cascade, keyboard focusables](geometry-fa_IR.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+          printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
+
+      - name: Compare real GF tabs initialization against synchronized native pointer clicks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          restore_tabs_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_tabs_locale EXIT
+          SCANNER_UI_LOCALE=fa_IR node tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_UI_LOCALE=en_US node tests/real-integration/scanner-tabs-lifecycle-browser.mjs
+          restore_tabs_locale
+          trap - EXIT
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
+            $dir = getenv("WU008_ARTIFACT_DIR");
+            $fixture = json_decode(file_get_contents($dir."/scanner-ui-readonly-evidence/fixture.json"),true,512,JSON_THROW_ON_ERROR);
+            $now = hash("sha256",serialize(get_option(PGR_Scanner_Profile_Registry::OPTION)));
+            if ($now !== $fixture["registry_snapshot_sha256"]) {
+              throw new RuntimeException("Tabs diagnosis changed Scanner Registry");
+            }
+          '
+          printf '# Native GF Tabs lifecycle comparison\n\n' > "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
+          printf '%s\n' '- [fa_IR exact-head direct/synchronized comparison](tabs-fa_IR.json)' '- [en_US exact-head direct/synchronized comparison](tabs-en_US.json)' >> "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
+          printf '\nNo production edits, Scanner Registry writes or Form submissions. Synchronized clicks are real pointer interactions; readiness timeouts are reported, not masked.\n' >> "$WU008_ARTIFACT_DIR/scanner-tabs-lifecycle-evidence/README.md"
 
       - name: Verify Scanner Profile deletion appearance and mapping in real WordPress Chromium
         shell: bash
@@ -1622,6 +1687,206 @@ jobs:
           console.log('SCANNER_STORAGE_EVIDENCE_GATE PASS: MariaDB two-worker CAS, real cross-process Redis cache, 9 recovery checks; matched-version restore remains NOT_PROVEN');
           PGR_SCANNER_STORAGE_PUBLICATION_GATE
 
+      - name: Reject incomplete or unsafe Scanner read-only UI data before publication
+        shell: bash
+        env:
+          # Trusted event metadata, never a value read from the downloaded evidence.
+          PGR_SCANNER_UI_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node <<'PGR_SCANNER_UI_GATE'
+          const fs=require('node:fs'), path=require('node:path'),crypto=require('node:crypto');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-ui-readonly-evidence';
+          const trustedHead=process.env.PGR_SCANNER_UI_EXPECTED_HEAD;
+          const states=['list','create','edit','form-builder'],widths=[1280,390,320],locales=['fa_IR','en_US'];
+          const expected=new Set(['README.md','fixture.json']);
+          for(const locale of locales){
+            for(const filename of ['geometry-'+locale+'.json','CONTACT-'+locale+'.md','SHA256-'+locale+'.json'])expected.add(filename);
+            for(const state of states)for(const width of widths)expected.add(locale+'-'+state+'-'+width+'.png');
+            for(const width of widths){
+              expected.add(locale+'-form-builder-'+width+'-grid-one-column.png');
+              expected.add(locale+'-form-builder-'+width+'-preview-css-only.png');
+            }
+          }
+          function check(cond,reason){if(!cond)throw Error('SCANNER_UI_GATE: '+reason);}
+          check(/^[0-9a-f]{40}$/.test(trustedHead),'missing trusted event Head SHA');
+          // Each independent artifact must agree with event authority, not merely each
+          // other. This predicate is also exercised against a consistent forged set.
+          function matchesTrustedHead(fx,geometry,expectedHead){
+            return fx.expected_source_commit===expectedHead &&
+              fx.installed_release_manifest?.source_commit===expectedHead &&
+              geometry.length===2&&geometry.every(d=>d.head===expectedHead &&
+                d.source?.expected_source_commit===expectedHead &&
+                d.source?.installed_release_manifest?.source_commit===expectedHead);
+          }
+          check(fs.existsSync(dir),'missing evidence directory');
+          const actual=fs.readdirSync(dir).sort();
+          check(actual.length===expected.size,'unexpected evidence file count '+actual.length);
+          check(actual.every(x=>expected.has(x)),'unapproved filename');
+          for(const name of actual){
+            const stat=fs.lstatSync(path.join(dir,name));
+            check(stat.isFile()&&!stat.isSymbolicLink()&&stat.size>0&&stat.size<12000000,'invalid file '+name);
+          }
+          const fixture=JSON.parse(fs.readFileSync(path.join(dir,'fixture.json'),'utf8'));
+          const geometry=[];
+          check(fixture.expected_source_commit===trustedHead &&
+            fixture.installed_release_manifest?.source_commit===trustedHead,
+            'fixture and installed package do not match trusted PR Head');
+          check(fixture.evidence_class==='REAL_LICENSED_GF_BUILDER_READONLY_GEOMETRY_FIXTURE'&&
+            fixture.wordpress==='6.8.3'&&fixture.gravityforms==='3.1.1.1'&&
+            fixture.registry_unchanged===true&&
+            /^[0-9a-f]{40}$/.test(fixture.expected_source_commit),'invalid installed source fixture');
+          for(const locale of locales){
+            const data=JSON.parse(fs.readFileSync(path.join(dir,'geometry-'+locale+'.json'),'utf8'));
+            geometry.push(data);
+            check(data.head===trustedHead &&
+              data.source?.expected_source_commit===trustedHead &&
+              data.source?.installed_release_manifest?.source_commit===trustedHead,
+              'geometry and embedded installed source do not match trusted PR Head: '+locale);
+            check(data.source?.form_id===fixture.form_id &&
+              data.source?.native_form_id===fixture.native_form_id,
+              'geometry source fixture differs from independently verified fixture: '+locale);
+            check(data.class==='AUTHENTIC_LICENSED_GF_SCANNER_READONLY_UI'&&data.locale===locale&&
+              data.head===fixture.expected_source_commit&&data.read_only===true&&data.registry_mutation===false&&
+              data.form_submissions===0&&data.cases.length===12&&data.screenshots.length===18,'incomplete authenticated scenario matrix '+locale);
+            check(data.cases.every(x=>x.authentic===true&&x.qualification==='CAPTURED_FOR_REVIEW'&&
+              x.baseline?.html?.lang?.toLowerCase().replace('_','-')===(locale==='fa_IR'?'fa-ir':'en-us')&&
+              (x.state==='form-builder'||x.baseline?.html?.effectiveDirection===(locale==='fa_IR'?'rtl':'ltr'))&&
+              x.baseline?.fonts?.status==='loaded'&&x.baseline?.viewport?.dpr===1),'wrong locale/native browser/failed capture '+locale);
+            check(data.cases.filter(x=>x.state==='form-builder').every(x=>x.realGfFormModel?.scanner===true&&
+              x.oneVariable?.mutation&&x.oneVariable?.restored===true&&
+              x.oneVariable?.control?.count===7&&x.baseline?.mapping?.grid?.width>100&&
+              x.baseline?.panelState?.tabSelected===true&&
+              x.baseline?.panelState?.panelVisible===true&&
+              x.baseline?.panelState?.panel?.width>100&&
+              x.baseline?.mapping?.sidebar?.width>100&&
+              x.baseline?.mapping?.containingSidebarWidth>100&&
+              x.cssAttribution?.restored===true&&x.cssAttribution?.originallyLoaded===false&&
+              x.cssAttribution?.screenshot),'missing real visible Builder/control '+locale);
+            check(Number.isInteger(fixture.native_form_id)&&fixture.native_form_id>0&&
+              fixture.native_form_id!==fixture.form_id,'native-only control form missing');
+            check(Array.isArray(data.native_host_controls)&&data.native_host_controls.length===3,
+              'missing native GF-only JavaScript control captures '+locale);
+            for(const width of widths){
+              const native=data.native_host_controls.find(x=>x.width===width);
+              const scanner=data.cases.find(x=>x.state==='form-builder'&&x.width===width);
+              check(native?.status==='OBSERVED'&&native.locale===locale&&
+                native.nativeInteraction?.tabsReadyBeforeClick===true&&
+                scanner.nativeInteraction?.tabsReadyBeforeClick===true&&
+                !native.pageErrors.some(x=>x.includes('cannot call methods on tabs prior to initialization'))&&
+                !scanner.pageErrors.some(x=>x.includes('cannot call methods on tabs prior to initialization'))&&
+                native.model?.present===true&&native.model?.nativeText===true&&
+                native.model?.nativeTextarea===true&&native.model?.scanner===false&&
+                native.model?.fieldCount>=2&&
+                native.nativePanelVisible===true&&Array.isArray(native.pageErrors)&&
+                Array.isArray(native.pageErrorStacks)&&native.pageErrors.length===native.pageErrorStacks.length&&
+                Array.isArray(scanner?.pageErrors)&&Array.isArray(scanner?.pageErrorStacks)&&
+                scanner.pageErrors.length===scanner.pageErrorStacks.length,
+                'native/Scanner pageerror collection incomplete: '+locale+'/'+width);
+              const tabsError=x=>x.includes('cannot call methods on tabs prior to initialization');
+              const inScanner=scanner.pageErrors.some(tabsError),inNative=native.pageErrors.some(tabsError);
+              check(native.tabs_error_in_scanner===inScanner&&
+                native.tabs_error_in_native===inNative&&
+                native.attribution===(inNative?'ALSO_OBSERVED_WITH_NATIVE_GF_FIELD':
+                  'NOT_REPRODUCED_WITH_NATIVE_GF_FIELD_GLOBAL_CAUSE_UNPROVEN'),
+                'native GF tab-error reconciliation does not match captured errors: '+locale+'/'+width);
+            }
+            const hashes=JSON.parse(fs.readFileSync(path.join(dir,'SHA256-'+locale+'.json'),'utf8'));
+            check(hashes.length===18&&new Set(hashes.map(x=>x.name)).size===18,'incomplete image hash manifest '+locale);
+            for(const {name,sha256} of hashes){
+              check(expected.has(name),'unapproved screenshot '+name);
+              const b=fs.readFileSync(path.join(dir,name));
+              check(b.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))&&b.toString('ascii',12,16)==='IHDR','invalid PNG '+name);
+              const width=b.readUInt32BE(16),height=b.readUInt32BE(20);
+              const suffix=name.match(/-(1280|390|320)(?:-grid-one-column|-preview-css-only)?\.png$/);
+              check(!!suffix&&width>=Number(suffix[1])&&height>400,'not original resolution '+name);
+              check(crypto.createHash('sha256').update(b).digest('hex')===sha256,'screenshot hash mismatch '+name);
+            }
+            const contact=fs.readFileSync(path.join(dir,'CONTACT-'+locale+'.md'),'utf8');
+            check(data.screenshots.every(x=>contact.includes(x)),'contact sheet misses full screenshot '+locale);
+          }
+          check(matchesTrustedHead(fixture,geometry,trustedHead),'authentic evidence Head mismatch');
+          // Negative control: even when ALL evidence-internal Head values agree
+          // with a forged SHA, the event-bound publisher must reject the set.
+          const forgedHead=trustedHead==='0'.repeat(40)?'1'.repeat(40):'0'.repeat(40);
+          const forgedFixture=structuredClone(fixture),forgedGeometry=structuredClone(geometry);
+          forgedFixture.expected_source_commit=forgedHead;
+          forgedFixture.installed_release_manifest.source_commit=forgedHead;
+          for(const report of forgedGeometry){
+            report.head=forgedHead;
+            report.source.expected_source_commit=forgedHead;
+            report.source.installed_release_manifest.source_commit=forgedHead;
+          }
+          check(forgedGeometry.every(d=>d.head===forgedFixture.expected_source_commit &&
+            d.source.expected_source_commit===forgedHead &&
+            d.source.installed_release_manifest.source_commit===forgedHead),
+            'forged-set negative control is not internally consistent');
+          check(!matchesTrustedHead(forgedFixture,forgedGeometry,trustedHead),
+            'CRITICAL: internally consistent forged evidence bypassed the trusted Head gate');
+          console.log('SCANNER_UI_GATE PASS: authentic matching Head accepted; consistent forged Head REJECTED; 24 native pages, 12 CSS controls, 6 native GF-only tabs probes');
+          PGR_SCANNER_UI_GATE
+
+      - name: Require exact-Head native GF tabs lifecycle diagnostic evidence
+        shell: bash
+        env:
+          PGR_TABS_TRUSTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node <<'PGR_TABS_LIFECYCLE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir='/tmp/wu008-downloaded-evidence/scanner-tabs-lifecycle-evidence';
+          const head=process.env.PGR_TABS_TRUSTED_HEAD;
+          const ok=(v,msg)=>{if(!v)throw Error('TABS_LIFECYCLE_GATE: '+msg);};
+          ok(/^[a-f0-9]{40}$/.test(head),'trusted PR Head missing');
+          const required=['README.md','tabs-fa_IR.json','tabs-en_US.json'];
+          const names=fs.readdirSync(dir).sort();
+          ok(names.join('|')===required.slice().sort().join('|'),'unexpected or missing diagnostic files');
+          for(const name of names) {
+            const st=fs.lstatSync(path.join(dir,name));
+            ok(st.isFile()&&!st.isSymbolicLink()&&st.size>0&&st.size<9000000,'unsafe diagnostic artifact: '+name);
+          }
+          const widths=[1280,390,320], kinds=['scanner','native'],modes=['direct','synchronized'];
+          for(const locale of ['fa_IR','en_US']){
+            const d=JSON.parse(fs.readFileSync(path.join(dir,'tabs-'+locale+'.json'),'utf8'));
+            ok(d.evidence_class==='AUTHENTIC_GF_TABS_LIFECYCLE_DIAGNOSTIC'&&d.exact_head===head&&
+              d.locale===locale&&d.source?.wordpress==='6.8.3'&&d.source?.gravityforms==='3.1.1.1'&&
+              d.form_submissions===0&&d.scanner_registry_mutations===0&&d.cases?.length===12,
+              'head/provenance/scenario mismatch: '+locale);
+            const keys=new Set();
+            for(const c of d.cases) {
+              const key=c.kind+'-'+c.mode+'-'+c.width;
+              ok(widths.includes(c.width)&&kinds.includes(c.kind)&&modes.includes(c.mode)&&
+                !keys.has(key)&&c.status==='OBSERVED'&&c.locale===locale&&
+                c.model?.scanner===(c.kind==='scanner')&&c.model?.nativeTextarea===true,
+                'incomplete or duplicate browser control: '+locale+'/'+key);
+              keys.add(key);
+              ok(Array.isArray(c.events)&&c.events.some(e=>e.name==='before-click')&&
+                c.events.some(e=>e.name==='after-click')&&
+                c.beforeClick?.tabsFunction===true&&c.afterClick?.tabsFunction===true&&
+                c.navigation?.domContentLoadedEnd!==null&&
+                Array.isArray(c.tabsCalls)&&Array.isArray(c.errors)&&
+                c.tabsError===c.errors.some(e=>e.message.includes('cannot call methods on tabs prior to initialization')),
+                'unverified tab timing/error trace: '+locale+'/'+key);
+              if(c.mode==='synchronized')ok(c.comparison?.directTabsError===
+                d.cases.find(x=>x.width===c.width&&x.kind===c.kind&&x.mode==='direct')?.tabsError&&
+                c.comparison?.synchronizedTabsError===c.tabsError&&
+                c.readiness!==undefined&&c.waitedTarget!==undefined,
+                'synchronized control is not paired with direct click: '+locale+'/'+key);
+              if(c.kind==='scanner') {
+                ok(c.geometry?.mappingCount===7&&c.geometry?.inkCollisions&&
+                  c.priorGeometry?.baselineDrift?.comparable===true,
+                  'Scanner UI geometry not comparable: '+locale+'/'+key);
+                if(c.mode==='synchronized')ok(c.css?.matchingInstalledBytes===true&&
+                  c.css?.originallyLoaded===false&&c.css?.restored===true&&
+                  c.css.after?.inkCollisions&&c.css.delta?.comparable===true,
+                  'synchronized preview CSS experiment not source-verified: '+locale+'/'+key);
+              }
+            }
+            ok(keys.size===12,'missing expected direct/synchronized cases: '+locale);
+          }
+          console.log('GF_TABS_LIFECYCLE_GATE PASS: exact PR Head, 24 browser comparisons, timeline and geometry/CSS controls');
+          PGR_TABS_LIFECYCLE_GATE
+
       - name: Publish verified evidence with exact commit links
         shell: bash
         env:
@@ -1659,7 +1924,11 @@ jobs:
           cp -a "$source_dir/../scanner-registry-recovery-evidence/report.json" scanner-registry-recovery-evidence/
           mkdir -p scanner-redis-cas-worker-evidence
           cp -a "$source_dir/../scanner-redis-cas-worker-evidence/report.json" scanner-redis-cas-worker-evidence/
-          git add -- admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
+          mkdir -p scanner-ui-readonly-evidence
+          cp -a "$source_dir/../scanner-ui-readonly-evidence/." scanner-ui-readonly-evidence/
+          mkdir -p scanner-tabs-lifecycle-evidence
+          cp -a "$source_dir/../scanner-tabs-lifecycle-evidence/." scanner-tabs-lifecycle-evidence/
+          git add -- scanner-tabs-lifecycle-evidence scanner-ui-readonly-evidence admin-ui-evidence system-status-scroll-evidence module-disable-evidence scanner-delete-evidence scanner-incarnation-evidence scanner-cas-worker-evidence scanner-registry-recovery-evidence scanner-redis-cas-worker-evidence
           git commit -m "evidence: WU008 admin UI run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
           evidence_commit="$(git rev-parse HEAD)"
           git push origin "HEAD:refs/heads/${publication_branch}"
@@ -1669,6 +1938,8 @@ jobs:
           echo "Exact published commit SHA: ${evidence_commit}" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed Contact Sheet: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/admin-ui-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Commit-addressed evidence tree: https://github.com/${GITHUB_REPOSITORY}/tree/${evidence_commit}/admin-ui-evidence" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner PR106 original-resolution UI/contact sheets: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-ui-readonly-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scanner tabs lifecycle diagnostic: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-tabs-lifecycle-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Module-disable decision evidence: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/module-disable-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Scanner deletion decision screenshots and tests: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-delete-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
           echo "Stale nonce and same-ID recreation qualification: https://github.com/${GITHUB_REPOSITORY}/blob/${evidence_commit}/scanner-incarnation-evidence/README.md" >> "$GITHUB_STEP_SUMMARY"
