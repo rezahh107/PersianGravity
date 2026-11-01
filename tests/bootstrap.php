@@ -20,6 +20,17 @@ $GLOBALS['pgr_test_timezone']        = 'UTC';
 
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_actions'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
 function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) { $GLOBALS['pgr_test_filters'][ $hook ][ $priority ][] = array( $callback, $accepted_args ); }
+function apply_filters( $hook, $value, ...$args ) {
+	$callbacks = $GLOBALS['pgr_test_filters'][ $hook ] ?? array();
+	ksort( $callbacks, SORT_NUMERIC );
+	foreach ( $callbacks as $entries ) {
+		foreach ( $entries as $entry ) {
+			$value = call_user_func_array( $entry[0], array_slice( array_merge( array( $value ), $args ), 0, $entry[1] ) );
+		}
+	}
+	return $value;
+}
+function sanitize_option( $option, $value ) { unset( $option ); return $value; }
 function do_action( $hook, ...$args ) { foreach ( $GLOBALS['pgr_test_actions'][ $hook ] ?? array() as $callbacks ) { foreach ( $callbacks as $item ) { call_user_func_array( $item[0], array_slice( $args, 0, $item[1] ) ); } } }
 function plugin_dir_path( $file ) { return dirname( $file ) . '/'; }
 function plugin_dir_url( $file ) { return 'https://example.test/wp-content/plugins/persian-gravity/'; }
