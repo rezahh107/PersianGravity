@@ -37,6 +37,7 @@ jobs:
       PGR_SCANNER_ARTIFACT_DIR: /tmp/pgr-scanner-artifacts
       PGR_SCANNER_BASE_URL: http://127.0.0.1:8080
       PGR_SCANNER_WP_CLI: /tmp/wp-cli.phar
+      PGR_ROLLBACK_PRIVATE_DIR: /tmp/pgr-scanner-private-rollback
       PGR_REMEDIATION_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       PGR_GF_FILE_ID: 1mnCxBZVDL5qBALXh9CvxEMwIwg-YASCy
       PGR_GF_FILE: gravityforms-3.1.1.1-source-package.zip
@@ -66,7 +67,7 @@ jobs:
       - name: Set up PHP 8.2 runtime
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:
-          php-version: '8.2.33'
+          php-version: '8.2'
           coverage: none
           extensions: mysqli
 
@@ -74,9 +75,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(php -r 'echo PHP_VERSION;')" = "8.2.33"
+          php tools/ci/check-php82-runtime.php
+          printf 'Scanner editor PHP: %s (stable 8.2.x)\n' "$(php -r 'echo PHP_VERSION;')" >> "$GITHUB_STEP_SUMMARY"
           php -l tests/real-integration/scanner-editor-remediation-setup.php
           php -l tests/real-integration/scanner-editor-remediation-observer.php
+          php -l tests/rollback-rehearsal/scanner-matched-version.php
           node --check tests/real-integration/scanner-editor-remediation.mjs
           bash -n tests/real-integration/verify-package.sh
 
@@ -169,6 +172,55 @@ jobs:
           set -euo pipefail
           node tests/real-integration/scanner-editor-remediation.mjs
 
+      - name: Rehearse real v4.10.0 matched-binary Registry rollback (disposable only)
+        id: matched_rollback
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "rezahh107/PersianGravity"
+          test "$(git rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          test -f "$PGR_SCANNER_ARTIFACT_DIR/runtime-manifest.json"
+          mkdir -m 700 "$PGR_ROLLBACK_PRIVATE_DIR"
+          zip="$PGR_SCANNER_PACKAGE_DIR/persian-gravityforms-4.10.0.zip"
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 \
+            -o "$zip" "https://github.com/rezahh107/PersianGravity/releases/download/v4.10.0/persian-gravityforms-4.10.0.zip"
+          echo "8d7a61d77f9ef7f59ac39336767a65f125c36df01f85ae7854fe7b80fa1d9f91  $zip" | sha256sum -c -
+          unzip -p "$zip" persian-gravityforms/release-manifest.json | php -r '
+            $m = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
+            if (($m["version"] ?? "") !== "4.10.0" ||
+                ($m["source_commit"] ?? "") !== "97b9fedb4b8d2743ce645c60a8a467fac0de6e76") exit(1);
+          '
+          pgr="$PGR_SCANNER_WP_PATH/wp-content/plugins/persian-gravityforms"
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          candidate="$PGR_SCANNER_PACKAGE_DIR/candidate-source"
+          historical="$PGR_SCANNER_PACKAGE_DIR/historical-source"
+          old_main_sha="$(unzip -p "$zip" persian-gravityforms/persian-gravityforms.php | sha256sum | cut -d ' ' -f1)"
+          phase() {
+            PGR_ROLLBACK_PHASE="$1" php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" \
+              eval-file tests/rollback-rehearsal/scanner-matched-version.php
+          }
+          # Seed via real release code, not a synthetic hand-built v1 option.
+          mv "$pgr" "$candidate"
+          unzip -q "$zip" -d "$PGR_SCANNER_WP_PATH/wp-content/plugins"
+          test "$(sha256sum "$pgr/persian-gravityforms.php" | cut -d ' ' -f1)" = "$old_main_sha"
+          phase seed_legacy
+          mv "$pgr" "$historical"
+          mv "$candidate" "$pgr"
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          phase migrate_and_change
+          # Restore verified v1 bytes before ever re-loading the old plugin.
+          phase restore_backup
+          mv "$pgr" "$candidate"
+          mv "$historical" "$pgr"
+          test "$(sha256sum "$pgr/persian-gravityforms.php" | cut -d ' ' -f1)" = "$old_main_sha"
+          phase verify_legacy
+          mv "$pgr" "$historical"
+          mv "$candidate" "$pgr"
+          test "$(git -C "$pgr" rev-parse HEAD)" = "$PGR_REMEDIATION_SHA"
+          test -s "$PGR_SCANNER_ARTIFACT_DIR/matched-version-rollback-report.json"
+          printf 'Matched historical v4.10.0 plugin/backup rollback: PASS (disposable only)\n' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Hash remediation evidence
         if: always()
         shell: bash
@@ -196,3 +248,5 @@ jobs:
           set -euo pipefail
           echo "browser outcome: ${{ steps.browser.outcome }}"
           test "${{ steps.browser.outcome }}" = "success"
+          echo "matched rollback outcome: ${{ steps.matched_rollback.outcome }}"
+          test "${{ steps.matched_rollback.outcome }}" = "success"

@@ -35,6 +35,7 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 		require_once dirname( __DIR__ ) . '/includes/class-pgr-scanner-profile-registry.php';
 		require_once dirname( __DIR__ ) . '/admin/class-pgr-admin.php';
 		$GLOBALS['pgr_test_options'] = array();
+		$GLOBALS['wpdb'] = new PGR_Test_Scanner_WPDB();
 		$make = static function ( $id, $label ) {
 			return array(
 				'id'      => $id,
@@ -137,7 +138,7 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 				// Display label changes also invalidate the previously confirmed snapshot.
 				$changed['label'] = 'Different profile label';
 			}
-			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $changed, 'alpha' )['success'] );
+			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $changed, 'alpha', PGR_Scanner_Profile_Registry::get( 'alpha' )['revision'], PGR_Scanner_Profile_Registry::get( 'alpha' )['incarnation_id'] )['success'] );
 			$this->assertNotSame( $fingerprint_a, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) );
 			$_POST = $valid;
 			try {
@@ -147,12 +148,12 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 				$this->assertStringContainsString( 'pgr_notice=delete_error', $e->getMessage() );
 			}
 			$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
-			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $make( 'alpha', $alpha ), 'alpha' )['success'] );
-			$this->assertSame( $fingerprint_a, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) );
+			$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $make( 'alpha', $alpha ), 'alpha', PGR_Scanner_Profile_Registry::get( 'alpha' )['revision'], PGR_Scanner_Profile_Registry::get( 'alpha' )['incarnation_id'] )['success'] );
+			$this->assertNotSame( $fingerprint_a, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) );
 		}
 
 		// An old confirmation cannot delete a differently defined new incarnation.
-		$this->assertTrue( PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha' ) );
+		$this->assertTrue( PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha', PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) ) ) );
 		$new_incarnation = $make( 'alpha', $alpha );
 		$new_incarnation['outputs'][0]['key'] = 'replacement';
 		$new_incarnation['parser']['trim'] = false;
@@ -167,6 +168,22 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 			$this->assertStringContainsString( 'pgr_notice=delete_error', $e->getMessage() );
 		}
 		$this->assertSame( array( 'replacement' ), PGR_Scanner_Profile_Registry::output_keys( 'alpha' ) );
+
+
+		// Restored original content is not the same incarnation or revision.
+		$this->assertTrue( PGR_Scanner_Profile_Registry::delete_custom_profile( 'alpha', $fingerprint_b ) );
+		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $make( 'alpha', $alpha ) )['success'] );
+		$identical_fingerprint = PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
+		$this->assertNotSame( $fingerprint_a, $identical_fingerprint );
+		$_POST = $valid;
+		try {
+			$admin->handle_profile_delete();
+			$this->fail( 'Original A must not delete identical-content recreated B.' );
+		} catch ( RuntimeException $e ) {
+			$this->assertStringContainsString( 'pgr_notice=delete_error', $e->getMessage() );
+		}
+		$this->assertNotNull( PGR_Scanner_Profile_Registry::get( 'alpha' ) );
+		$fingerprint_b = $identical_fingerprint;
 
 		// A genuinely fresh B-specific confirmation may still delete B.
 		$valid['confirmed_profile_fingerprint'] = $fingerprint_b;

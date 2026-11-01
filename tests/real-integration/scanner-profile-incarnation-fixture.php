@@ -106,7 +106,7 @@ if ( 'create_a' === $action ) {
 	) ) );
 } elseif ( 'delete_a' === $action ) {
 	$assert_definition( $a );
-	if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id ) || null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
+	if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( $id ) ) ) || null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
 		throw new RuntimeException( 'Independent legitimate Registry deletion of A failed.' );
 	}
 } elseif ( 'recreate_b' === $action ) {
@@ -123,14 +123,15 @@ if ( 'create_a' === $action ) {
 		throw new RuntimeException( 'Unexpected in-place mutation scenario.' );
 	}
 	$assert_definition( $a );
-	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b, $id );
+	$current = PGR_Scanner_Profile_Registry::get( $id );
+	$result = PGR_Scanner_Profile_Registry::save_custom_profile( $b, $id, $current['revision'], $current['incarnation_id'] );
 	if ( ! $result['success'] ) {
 		throw new RuntimeException( 'Registry refused valid in-place metadata change: ' . wp_json_encode( $result['errors'] ) );
 	}
 	$assert_definition( $b );
 } elseif ( 'cleanup' === $action ) {
 	if ( null !== PGR_Scanner_Profile_Registry::get( $id ) ) {
-		if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id ) ) {
+		if ( ! PGR_Scanner_Profile_Registry::delete_custom_profile( $id, PGR_Scanner_Profile_Registry::snapshot_fingerprint( PGR_Scanner_Profile_Registry::get( $id ) ) ) ) {
 			throw new RuntimeException( 'Cleanup failed to remove test-only alpha.' );
 		}
 	}

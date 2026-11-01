@@ -3,7 +3,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {chromium} from 'playwright';
 
-// Qualification-only. It tests the exact production Registry and handler without patching them.
+// Exact-Head v2 candidate: genuine Registry/admin POST and stale-write safety regression.
 const root = process.env.WU008_WP_PATH;
 const wpcli = process.env.WU008_WP_CLI;
 const dir = process.env.WU008_ARTIFACT_DIR;
@@ -40,12 +40,12 @@ const report = {
   chromium:browser.version(), session:'same_authenticated_browser_context',
   nonce:'genuine_wp_nonce_field_and_admin_post_check_admin_referer_not_stubbed',
   cases:[], limitations:[
-    'Disposable WordPress only, not production; no production plugin source changes',
+    'Disposable WordPress candidate only; unmerged production source changed on test Head',
     'WP-CLI uses the canonical Registry API for independent deletion and recreation',
     'No raw session cookies or nonces are stored in evidence',
     'Runtime observation alone does not establish whether incarnation protection is Owner-approved policy',
-    'Identical-content recreation is not distinguishable by a deterministic content fingerprint',
-    'Two-worker concurrent requests and persistent object cache races remain NOT_PROVEN; the deterministic hook interleaving qualifies only the check/delete boundary'
+    'Per-creation identity must distinguish identical-content recreations',
+    'Single-request deterministic pre-CAS hook does not prove real two-worker concurrency or persistent object-cache coherence'
   ]
 };
 try {
@@ -148,10 +148,10 @@ try {
     const notice=location.searchParams.get('pgr_notice');
     const after=invoke('inspect',scenario);
     assert(after.gfapi_mapping_unchanged===true,'real mapped Gravity Forms field changed');
-    const expectedNotice=['unchanged','identical_content'].includes(scenario)?'deleted':'delete_error';
+    const expectedNotice=scenario==='unchanged'?'deleted':'delete_error';
     assert(notice===expectedNotice,
       'Unexpected original nonce POST response: '+scenario+' actual '+notice+' expected '+expectedNotice);
-    const expectedExist=!['unchanged','missing','identical_content'].includes(scenario);
+    const expectedExist=!['unchanged','missing'].includes(scenario);
     assert(after.exists===expectedExist,
       'Unexpected Registry state after old A POST '+scenario+': '+JSON.stringify(after));
     if (expectedExist) {
@@ -194,7 +194,7 @@ try {
     item.state='OBSERVED';
   }
   // New bounded negative control: replace A with changed B at the exact Registry
-  // get_option boundary AFTER the admin handler has already verified A.
+  // update_option pre-CAS hook AFTER the handler has verified A.
   // This is deliberate single-request interleaving, NOT a parallel-worker test.
   const raceCase='interleaved_replace';
   const raceOriginal=invoke('create_a',raceCase);
@@ -220,21 +220,22 @@ try {
     const raceNotice=new URL(raceResponse.url()).searchParams.get('pgr_notice');
     const raceMarker=JSON.parse(fs.readFileSync(markerPath,'utf8'));
     const raceAfter=invoke('inspect',raceCase);
-    assert(raceMarker.probe==='WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING' &&
+    assert(raceMarker.probe==='WU008_REGISTRY_PRE_CAS_INTERLEAVING' &&
       raceMarker.original_was_read===true &&
-      raceMarker.replacement_persisted_before_delete_read===true &&
+      raceMarker.replacement_persisted_before_cas===true &&
       raceMarker.replacement_content_differs===true &&
       raceMarker.actual_parallel_workers===false &&
       Number.isFinite(raceMarker.mutation_elapsed_ms),
       'genuine Registry check/delete injection not proven');
-    assert(raceNotice==='deleted' && !raceAfter.exists && raceAfter.gfapi_mapping_unchanged===true,
-      'old A confirmation did not delete B at real Registry interleaving boundary');
+    assert(raceNotice==='delete_error' && raceAfter.exists &&
+      raceAfter.keys.join(',')==='replacement' && raceAfter.gfapi_mapping_unchanged===true,
+      'stale A confirmation modified B at real Registry pre-CAS boundary');
     response=await page.goto(listUrl,{waitUntil:'domcontentloaded'});
     assert(response?.ok(),'race final list missing');
     const finalRaceShot='interleaved_replace-after-old-POST.jpg';
     await page.screenshot({path:path.join(out,finalRaceShot),type:'jpeg',quality:80,fullPage:true});
     raceOutcome={
-      state:'OBSERVED_UNSAFE_INTERLEAVING',notice:raceNotice,
+      state:'OBSERVED_CONFLICT_REJECTED',notice:raceNotice,
       old_a_confirmation_deleted_replacement_b:!raceAfter.exists,
       gfapi_mapping_unchanged:raceAfter.gfapi_mapping_unchanged,
       marker:raceMarker,
@@ -261,10 +262,10 @@ try {
   }
   assert(byCase.fresh_b.fresh_b?.deleted === true && byCase.fresh_b.fresh_b?.gfapi_mapping_unchanged === true,
     'fresh B legitimate confirmation was blocked');
-  assert(byCase.identical_content.response.notice==='deleted' &&
-    byCase.identical_content.before_stale_post.exists && !byCase.identical_content.after_post.exists,
-    'identical content limitation was not honestly exercised');
-  report.finding='IDENTICAL_CONTENT_AND_CHECK_DELETE_INTERLEAVING_UNSAFE';
+  assert(byCase.identical_content.response.notice==='delete_error' &&
+    byCase.identical_content.before_stale_post.exists && byCase.identical_content.after_post.exists,
+    'identical content recreation was not protected');
+  report.finding='IDENTICAL_CONTENT_AND_PRE_CAS_INTERLEAVING_REJECTED';
   report.state='QUALIFICATION_COMPLETE';
   const lines=[
     '# Same-ID Scanner Profile recreation — independent WU008 runtime qualification','',
@@ -272,12 +273,12 @@ try {
     'Isolated test-only qualification Head: \`'+sha+'\`','',
     'Genuine logged-in WordPress/Chromium; original A nonce remains in the same session.',
     'Independent Registry API deletion/recreation; original mapped GF field checked through GFAPI.',
-    'No source production code modified. All scenarios are disposable.','',
+    'Source candidate tested only on disposable WordPress; no live data migration.','',
     '| Scenario | Original confirmation POST | Registry after POST |',
     '|---|---|---|',
     ...report.cases.map(c=>'| '+c.case+' | '+c.response.notice+' | '+(c.after_post.exists?c.after_post.label+' / '+c.after_post.keys.join(','):'absent')+' |'),
     '', 'Fresh B confirmation outcome: '+byCase.fresh_b.fresh_b.notice,
-    '', 'Deterministic check/delete interleaving: '+raceOutcome.notice+
+    '', 'Deterministic pre-CAS interleaving: '+raceOutcome.notice+
       '; old A confirmation deleted replacement B='+raceOutcome.old_a_confirmation_deleted_replacement_b+
       '; mutation elapsed ms='+raceOutcome.marker.mutation_elapsed_ms+
       '; true parallel workers='+raceOutcome.true_concurrent_workers,
