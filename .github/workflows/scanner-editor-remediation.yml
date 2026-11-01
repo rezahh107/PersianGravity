@@ -197,6 +197,25 @@ jobs:
           restore_locale
           trap - EXIT
           test -s "$PGR_SCANNER_ARTIFACT_DIR/scanner-ui-qualification-evidence/CONTACT_SHEET.md"
+          # The old rollback fixture requires a completely absent Registry.
+          # Our isolated UI long-name fixture is the sole Registry record;
+          # remove only its disposable option AFTER all browser observations.
+          php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval '
+            $option = PGR_Scanner_Profile_Registry::OPTION;
+            $raw = get_option($option, false);
+            if (!is_array($raw) ||
+                ($raw["schema_version"] ?? 0) !== 2 ||
+                count($raw["profiles"] ?? array()) !== 1 ||
+                ($raw["profiles"][0]["id"] ?? "") !== "wu008_ui_long_label") {
+              throw new RuntimeException("UI fixture not sole disposable Registry entry: refusing cleanup");
+            }
+            if (!delete_option($option) ||
+                get_option($option, false) !== false ||
+                PGR_Scanner_Profile_Registry::get("wu008_ui_long_label") !== null) {
+              throw new RuntimeException("Disposable UI fixture cleanup or readback failed");
+            }
+            echo "SCANNER_UI_DISPOSABLE_REGISTRY_RESTORED_ABSENT\n";
+          '
 
       - name: Rehearse real v4.10.0 matched-binary Registry rollback (disposable only)
         id: matched_rollback
