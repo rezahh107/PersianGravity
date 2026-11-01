@@ -120,6 +120,58 @@ try {
       throw new Error('Corrected edit retry failed');
     evidence('corrected_edit_retry', editBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'RETRY_EDIT_SAVED' });
+
+    // A manipulated immutable profile[id] must be rejected by Registry v2,
+    // but the recovery form must bind its hidden identity/CAS fields to the
+    // original authenticated Edit request, not to the submitted wrong ID.
+    await page.goto(url('&action=edit&profile=wu008_ui_long_label'));
+    await page.locator('.pgr-profile-form').waitFor();
+    const originalEditId = await page.locator('input[name="existing_id"]').inputValue();
+    const originalRevision = await page.locator('input[name="profile_revision"]').inputValue();
+    const originalIncarnation = await page.locator('input[name="profile_incarnation_id"]').inputValue();
+    if (originalEditId !== 'wu008_ui_long_label' || !/^\\d+$/.test(originalRevision) ||
+        !/^[a-f0-9]{32}$/.test(originalIncarnation)) {
+      throw new Error('Original Edit identity and CAS fields not present before mismatch test');
+    }
+    const wrongSubmittedId = 'wu008_wrong_identity_' + (locale === 'fa_IR' ? 'fa' : 'en');
+    const retainedLabel = 'Retained synthetic mismatched ID edit';
+    const retainedOutputLabel = 'Retained synthetic output label';
+    const originalRegistry = registryHash();
+    await page.locator('input[name="profile[label]"]').fill(retainedLabel);
+    await page.locator('input[name="profile[outputs][0][label]"]').fill(retainedOutputLabel);
+    await page.locator('input[name="profile[id]"]').evaluate(el => { el.readOnly = false; });
+    await page.locator('input[name="profile[id]"]').fill(wrongSubmittedId);
+    await Promise.all([page.waitForNavigation(), page.locator('.pgr-profile-form input[type="submit"]').click()]);
+    if (await page.locator('#pgr-profile-save-error').count() !== 1 ||
+        await page.locator('input[name="existing_id"]').inputValue() !== originalEditId ||
+        await page.locator('input[name="profile_revision"]').inputValue() !== originalRevision ||
+        await page.locator('input[name="profile_incarnation_id"]').inputValue() !== originalIncarnation ||
+        await page.locator('input[name="profile[id]"]').inputValue() !== originalEditId ||
+        !(await page.locator('input[name="profile[id]"]').getAttribute('readonly') !== null) ||
+        await page.locator('input[name="profile[label]"]').inputValue() !== retainedLabel ||
+        await page.locator('input[name="profile[outputs][0][label]"]').inputValue() !== retainedOutputLabel ||
+        registryHash() !== originalRegistry || JSON.parse(current(wrongSubmittedId)) !== null) {
+      throw new Error('Rejected immutable-ID Edit changed Registry, lost editable fields, or rebound retry identity');
+    }
+    await capture('after-immutable-id-mismatch');
+    evidence('mismatched_edit_id_retains_original_identity', originalRegistry, registryHash(), {
+      gf_mapping_unchanged: gfHash() === gfBefore, observed: 'REJECTED_IMMUTABLE_ID_RESTORED_ORIGINAL_EDIT_ID_REVISION_AND_INCARNATION' });
+
+    // Retrying unchanged recovered immutable identity must be a guarded Edit,
+    // not a Create, and must advance only the original profile revision.
+    await Promise.all([page.waitForNavigation(), page.locator('.pgr-profile-form input[type="submit"]').click()]);
+    const correctedIdentity = JSON.parse(current(originalEditId));
+    if (!page.url().includes('pgr_notice=saved') ||
+        correctedIdentity?.label !== retainedLabel ||
+        correctedIdentity?.incarnation_id !== originalIncarnation ||
+        correctedIdentity?.revision !== Number(originalRevision) + 1 ||
+        JSON.parse(current(wrongSubmittedId)) !== null ||
+        gfHash() !== gfBefore) {
+      throw new Error('Recovered immutable-ID retry was not a safe original-profile Edit');
+    }
+    evidence('mismatched_edit_id_corrected_retry', originalRegistry, registryHash(), {
+      gf_mapping_unchanged: gfHash() === gfBefore, observed: 'ORIGINAL_PROFILE_EDIT_ONLY_REVISION_INCREMENTED_ONCE' });
+
     await page.goto(url('&action=edit&profile=wu008_ui_long_label'));
     await page.locator('.pgr-profile-form').waitFor();
     await page.locator('input[name="profile[label]"]').fill('Stale unsaved client label');
