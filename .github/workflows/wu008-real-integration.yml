@@ -921,11 +921,11 @@ jobs:
           printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
 
-      - name: Reproduce Scanner failed Create POST with real authenticated browser
+      - name: Prove Scanner failed-save retention and safe retry with real browser
         shell: bash
         run: |
           set -euo pipefail
-          SCANNER_SAVE_MODE=baseline node tests/real-integration/scanner-save-recovery-browser.mjs
+          SCANNER_SAVE_MODE=repaired node tests/real-integration/scanner-save-recovery-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report.json"
 
       - name: Compare real GF tabs initialization against synchronized native pointer clicks
