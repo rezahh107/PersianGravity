@@ -1670,7 +1670,10 @@ jobs:
           for(const locale of locales){
             for(const filename of ['geometry-'+locale+'.json','CONTACT-'+locale+'.md','SHA256-'+locale+'.json'])expected.add(filename);
             for(const state of states)for(const width of widths)expected.add(locale+'-'+state+'-'+width+'.png');
-            for(const width of widths)expected.add(locale+'-form-builder-'+width+'-grid-one-column.png');
+            for(const width of widths){
+              expected.add(locale+'-form-builder-'+width+'-grid-one-column.png');
+              expected.add(locale+'-form-builder-'+width+'-preview-css-only.png');
+            }
           }
           function check(cond,reason){if(!cond)throw Error('SCANNER_UI_GATE: '+reason);}
           check(fs.existsSync(dir),'missing evidence directory');
@@ -1691,27 +1694,31 @@ jobs:
             const data=JSON.parse(fs.readFileSync(path.join(dir,'geometry-'+locale+'.json'),'utf8'));
             check(data.class==='AUTHENTIC_LICENSED_GF_SCANNER_READONLY_UI'&&data.locale===locale&&
               data.head===fixture.expected_source_commit&&data.read_only===true&&data.registry_mutation===false&&
-              data.form_submissions===0&&data.cases.length===12&&data.screenshots.length===15,'incomplete authenticated scenario matrix '+locale);
+              data.form_submissions===0&&data.cases.length===12&&data.screenshots.length===18,'incomplete authenticated scenario matrix '+locale);
             check(data.cases.every(x=>x.authentic===true&&x.qualification==='CAPTURED_FOR_REVIEW'&&
-              x.baseline?.html?.effectiveDirection===(locale==='fa_IR'?'rtl':'ltr')&&
+              x.baseline?.html?.lang?.toLowerCase().replace('_','-')===(locale==='fa_IR'?'fa-ir':'en-us')&&
+              (x.state==='form-builder'||x.baseline?.html?.effectiveDirection===(locale==='fa_IR'?'rtl':'ltr'))&&
               x.baseline?.fonts?.status==='loaded'&&x.baseline?.viewport?.dpr===1),'wrong locale/native browser/failed capture '+locale);
             check(data.cases.filter(x=>x.state==='form-builder').every(x=>x.realGfFormModel?.scanner===true&&
-              x.oneVariable?.mutation&&x.oneVariable?.restored===true),'missing real Builder/control '+locale);
+              x.oneVariable?.mutation&&x.oneVariable?.restored===true&&
+              x.oneVariable?.control?.count===7&&x.baseline?.mapping?.grid?.width>0&&
+              x.cssAttribution?.restored===true&&x.cssAttribution?.originallyLoaded===false&&
+              x.cssAttribution?.screenshot),'missing real visible Builder/control '+locale);
             const hashes=JSON.parse(fs.readFileSync(path.join(dir,'SHA256-'+locale+'.json'),'utf8'));
-            check(hashes.length===15&&new Set(hashes.map(x=>x.name)).size===15,'incomplete image hash manifest '+locale);
+            check(hashes.length===18&&new Set(hashes.map(x=>x.name)).size===18,'incomplete image hash manifest '+locale);
             for(const {name,sha256} of hashes){
               check(expected.has(name),'unapproved screenshot '+name);
               const b=fs.readFileSync(path.join(dir,name));
               check(b.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))&&b.toString('ascii',12,16)==='IHDR','invalid PNG '+name);
               const width=b.readUInt32BE(16),height=b.readUInt32BE(20);
-              const suffix=name.match(/-(1280|390|320)(?:-grid-one-column)?\.png$/);
+              const suffix=name.match(/-(1280|390|320)(?:-grid-one-column|-preview-css-only)?\.png$/);
               check(!!suffix&&width>=Number(suffix[1])&&height>400,'not original resolution '+name);
               check(crypto.createHash('sha256').update(b).digest('hex')===sha256,'screenshot hash mismatch '+name);
             }
             const contact=fs.readFileSync(path.join(dir,'CONTACT-'+locale+'.md'),'utf8');
             check(data.screenshots.every(x=>contact.includes(x)),'contact sheet misses full screenshot '+locale);
           }
-          console.log('SCANNER_UI_GATE PASSED 24 authenticated page captures and 6 live CSS controls; no source execution');
+          console.log('SCANNER_UI_GATE PASSED 24 native pages and twelve independent CSS experiment captures');
           PGR_SCANNER_UI_GATE
 
       - name: Publish verified evidence with exact commit links
