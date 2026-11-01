@@ -253,6 +253,7 @@ final class PGR_Admin {
 		if ( null !== $this->profile_save_failure ) {
 			$attempt = $this->profile_save_failure;
 			$profile = $attempt['submitted'];
+
 			$profile['revision']       = $attempt['revision'];
 			$profile['incarnation_id'] = $attempt['incarnation'];
 			$this->render_profile_form( $profile, '' !== $attempt['existing_id'] );
@@ -401,14 +402,14 @@ final class PGR_Admin {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Callers verify capability and nonce before invoking this method.
 		$existing_id = isset( $_POST['existing_id'] ) && is_string( $_POST['existing_id'] )
 			? sanitize_key( wp_unslash( $_POST['existing_id'] ) ) : '';
-		$revision = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
+		$revision    = isset( $_POST['profile_revision'] ) && is_string( $_POST['profile_revision'] ) && ctype_digit( $_POST['profile_revision'] )
 			? (int) $_POST['profile_revision'] : null;
 		$incarnation = isset( $_POST['profile_incarnation_id'] ) && is_string( $_POST['profile_incarnation_id'] )
 			? wp_unslash( $_POST['profile_incarnation_id'] ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$submitted = $this->profile_from_request();
-		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $submitted, $existing_id, $revision, $incarnation );
+		$result    = PGR_Scanner_Profile_Registry::save_custom_profile( $submitted, $existing_id, $revision, $incarnation );
 		return array(
 			'existing_id' => $existing_id,
 			'revision'    => $revision,
