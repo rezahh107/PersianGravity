@@ -56,3 +56,61 @@ function determine_locale() { return $GLOBALS['pgr_test_locale']; }
 function is_rtl() { return (bool) $GLOBALS['pgr_test_is_rtl']; }
 function wp_timezone() { return new DateTimeZone( $GLOBALS['pgr_test_timezone'] ); }
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ], $GLOBALS['pgr_test_option_autoload'][ $key ] ); }
+
+/**
+ * Isolated SQL CAS double. The real WPDB/MariaDB behavior MUST also be
+ * exercised by WU008; this double only protects decision-level regressions.
+ */
+class PGR_Test_Scanner_WPDB {
+	public $options = 'wp_options';
+	public $last_error = '';
+	public $prepared = array();
+
+	public function prepare( $sql, ...$args ) {
+		$this->prepared = array( 'sql' => $sql, 'args' => $args );
+		return $sql;
+	}
+	public function get_row( $query ) {
+		unset( $query );
+		$key = $this->prepared['args'][0] ?? '';
+		if ( ! array_key_exists( $key, $GLOBALS['pgr_test_options'] ) ) {
+			return null;
+		}
+		return (object) array( 'option_value' => maybe_serialize( $GLOBALS['pgr_test_options'][ $key ] ) );
+	}
+	public function insert( $table, $fields, $formats ) {
+		unset( $table, $formats );
+		if ( ! empty( $GLOBALS['pgr_test_fail_write'] ) ||
+			array_key_exists( $fields['option_name'], $GLOBALS['pgr_test_options'] ) ) {
+			return false;
+		}
+		$GLOBALS['pgr_test_options'][ $fields['option_name'] ] = maybe_unserialize( $fields['option_value'] );
+		$GLOBALS['pgr_test_option_autoload'][ $fields['option_name'] ] = false;
+		return 1;
+	}
+	public function query( $query ) {
+		unset( $query );
+		if ( ! empty( $GLOBALS['pgr_test_interleave'] ) ) {
+			$interleave = $GLOBALS['pgr_test_interleave'];
+			unset( $GLOBALS['pgr_test_interleave'] );
+			$interleave();
+		}
+		if ( ! empty( $GLOBALS['pgr_test_fail_write'] ) ) {
+			return false;
+		}
+		list( $next, $key, $expected ) = $this->prepared['args'];
+		if ( ! array_key_exists( $key, $GLOBALS['pgr_test_options'] ) ||
+			maybe_serialize( $GLOBALS['pgr_test_options'][ $key ] ) !== $expected ) {
+			return 0;
+		}
+		$GLOBALS['pgr_test_options'][ $key ] = maybe_unserialize( $next );
+		return 1;
+	}
+}
+function maybe_serialize( $value ) { return is_array( $value ) || is_object( $value ) ? serialize( $value ) : $value; }
+function maybe_unserialize( $value ) { $decoded = @unserialize( $value ); return false === $decoded ? $value : $decoded; }
+function wp_generate_uuid4() {
+	$hex = bin2hex( random_bytes( 16 ) );
+	return substr( $hex, 0, 8 ) . '-' . substr( $hex, 8, 4 ) . '-4' . substr( $hex, 13, 3 ) . '-a' . substr( $hex, 17, 3 ) . '-' . substr( $hex, 20, 12 );
+}
+function wp_cache_delete( $key, $group = '' ) { unset( $GLOBALS['pgr_test_cache'][ $group ][ $key ] ); return true; }
