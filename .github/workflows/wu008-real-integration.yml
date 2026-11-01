@@ -1660,11 +1660,15 @@ jobs:
 
       - name: Reject incomplete or unsafe Scanner read-only UI data before publication
         shell: bash
+        env:
+          # Trusted event metadata, never a value read from the downloaded evidence.
+          PGR_SCANNER_UI_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           node <<'PGR_SCANNER_UI_GATE'
           const fs=require('node:fs'), path=require('node:path'),crypto=require('node:crypto');
           const dir='/tmp/wu008-downloaded-evidence/scanner-ui-readonly-evidence';
+          const trustedHead=process.env.PGR_SCANNER_UI_EXPECTED_HEAD;
           const states=['list','create','edit','form-builder'],widths=[1280,390,320],locales=['fa_IR','en_US'];
           const expected=new Set(['README.md','fixture.json']);
           for(const locale of locales){
@@ -1676,6 +1680,16 @@ jobs:
             }
           }
           function check(cond,reason){if(!cond)throw Error('SCANNER_UI_GATE: '+reason);}
+          check(/^[0-9a-f]{40}$/.test(trustedHead),'missing trusted event Head SHA');
+          // Each independent artifact must agree with event authority, not merely each
+          // other. This predicate is also exercised against a consistent forged set.
+          function matchesTrustedHead(fx,geometry,expectedHead){
+            return fx.expected_source_commit===expectedHead &&
+              fx.installed_release_manifest?.source_commit===expectedHead &&
+              geometry.length===2&&geometry.every(d=>d.head===expectedHead &&
+                d.source?.expected_source_commit===expectedHead &&
+                d.source?.installed_release_manifest?.source_commit===expectedHead);
+          }
           check(fs.existsSync(dir),'missing evidence directory');
           const actual=fs.readdirSync(dir).sort();
           check(actual.length===expected.size,'unexpected evidence file count '+actual.length);
@@ -1685,13 +1699,24 @@ jobs:
             check(stat.isFile()&&!stat.isSymbolicLink()&&stat.size>0&&stat.size<12000000,'invalid file '+name);
           }
           const fixture=JSON.parse(fs.readFileSync(path.join(dir,'fixture.json'),'utf8'));
-          const head=process.env.GITHUB_HEAD_REF ? null : null; // Head is verified by existing WU008 publisher's own gate
+          const geometry=[];
+          check(fixture.expected_source_commit===trustedHead &&
+            fixture.installed_release_manifest?.source_commit===trustedHead,
+            'fixture and installed package do not match trusted PR Head');
           check(fixture.evidence_class==='REAL_LICENSED_GF_BUILDER_READONLY_GEOMETRY_FIXTURE'&&
             fixture.wordpress==='6.8.3'&&fixture.gravityforms==='3.1.1.1'&&
             fixture.registry_unchanged===true&&
             /^[0-9a-f]{40}$/.test(fixture.expected_source_commit),'invalid installed source fixture');
           for(const locale of locales){
             const data=JSON.parse(fs.readFileSync(path.join(dir,'geometry-'+locale+'.json'),'utf8'));
+            geometry.push(data);
+            check(data.head===trustedHead &&
+              data.source?.expected_source_commit===trustedHead &&
+              data.source?.installed_release_manifest?.source_commit===trustedHead,
+              'geometry and embedded installed source do not match trusted PR Head: '+locale);
+            check(data.source?.form_id===fixture.form_id &&
+              data.source?.native_form_id===fixture.native_form_id,
+              'geometry source fixture differs from independently verified fixture: '+locale);
             check(data.class==='AUTHENTIC_LICENSED_GF_SCANNER_READONLY_UI'&&data.locale===locale&&
               data.head===fixture.expected_source_commit&&data.read_only===true&&data.registry_mutation===false&&
               data.form_submissions===0&&data.cases.length===12&&data.screenshots.length===18,'incomplete authenticated scenario matrix '+locale);
@@ -1709,6 +1734,29 @@ jobs:
               x.baseline?.mapping?.containingSidebarWidth>100&&
               x.cssAttribution?.restored===true&&x.cssAttribution?.originallyLoaded===false&&
               x.cssAttribution?.screenshot),'missing real visible Builder/control '+locale);
+            check(Number.isInteger(fixture.native_form_id)&&fixture.native_form_id>0&&
+              fixture.native_form_id!==fixture.form_id,'native-only control form missing');
+            check(Array.isArray(data.native_host_controls)&&data.native_host_controls.length===3,
+              'missing native GF-only JavaScript control captures '+locale);
+            for(const width of widths){
+              const native=data.native_host_controls.find(x=>x.width===width);
+              const scanner=data.cases.find(x=>x.state==='form-builder'&&x.width===width);
+              check(native?.status==='OBSERVED'&&native.locale===locale&&
+                native.model?.present===true&&native.model?.nativeTextarea===true&&
+                native.model?.scanner===false&&native.model?.fieldCount===2&&
+                native.nativePanelVisible===true&&Array.isArray(native.pageErrors)&&
+                Array.isArray(native.pageErrorStacks)&&native.pageErrors.length===native.pageErrorStacks.length&&
+                Array.isArray(scanner?.pageErrors)&&Array.isArray(scanner?.pageErrorStacks)&&
+                scanner.pageErrors.length===scanner.pageErrorStacks.length,
+                'native/Scanner pageerror collection incomplete: '+locale+'/'+width);
+              const tabsError=x=>x.includes('cannot call methods on tabs prior to initialization');
+              const inScanner=scanner.pageErrors.some(tabsError),inNative=native.pageErrors.some(tabsError);
+              check(native.tabs_error_in_scanner===inScanner&&
+                native.tabs_error_in_native===inNative&&
+                native.attribution===(inNative?'ALSO_OBSERVED_WITH_NATIVE_GF_FIELD':
+                  'NOT_REPRODUCED_WITH_NATIVE_GF_FIELD_GLOBAL_CAUSE_UNPROVEN'),
+                'native GF tab-error reconciliation does not match captured errors: '+locale+'/'+width);
+            }
             const hashes=JSON.parse(fs.readFileSync(path.join(dir,'SHA256-'+locale+'.json'),'utf8'));
             check(hashes.length===18&&new Set(hashes.map(x=>x.name)).size===18,'incomplete image hash manifest '+locale);
             for(const {name,sha256} of hashes){
@@ -1723,7 +1771,25 @@ jobs:
             const contact=fs.readFileSync(path.join(dir,'CONTACT-'+locale+'.md'),'utf8');
             check(data.screenshots.every(x=>contact.includes(x)),'contact sheet misses full screenshot '+locale);
           }
-          console.log('SCANNER_UI_GATE PASSED 24 native pages and twelve independent CSS experiment captures');
+          check(matchesTrustedHead(fixture,geometry,trustedHead),'authentic evidence Head mismatch');
+          // Negative control: even when ALL evidence-internal Head values agree
+          // with a forged SHA, the event-bound publisher must reject the set.
+          const forgedHead=trustedHead==='0'.repeat(40)?'1'.repeat(40):'0'.repeat(40);
+          const forgedFixture=structuredClone(fixture),forgedGeometry=structuredClone(geometry);
+          forgedFixture.expected_source_commit=forgedHead;
+          forgedFixture.installed_release_manifest.source_commit=forgedHead;
+          for(const report of forgedGeometry){
+            report.head=forgedHead;
+            report.source.expected_source_commit=forgedHead;
+            report.source.installed_release_manifest.source_commit=forgedHead;
+          }
+          check(forgedGeometry.every(d=>d.head===forgedFixture.expected_source_commit &&
+            d.source.expected_source_commit===forgedHead &&
+            d.source.installed_release_manifest.source_commit===forgedHead),
+            'forged-set negative control is not internally consistent');
+          check(!matchesTrustedHead(forgedFixture,forgedGeometry,trustedHead),
+            'CRITICAL: internally consistent forged evidence bypassed the trusted Head gate');
+          console.log('SCANNER_UI_GATE PASS: authentic matching Head accepted; consistent forged Head REJECTED; 24 native pages, 12 CSS controls, 6 native GF-only tabs probes');
           PGR_SCANNER_UI_GATE
 
       - name: Publish verified evidence with exact commit links
