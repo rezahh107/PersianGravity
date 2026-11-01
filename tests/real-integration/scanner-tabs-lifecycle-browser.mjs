@@ -28,7 +28,7 @@ const tabsError=x=>String(x).includes('cannot call methods on tabs prior to init
 const state=()=>{
   const j=window.jQuery;
   return {atMs:performance.now(),documentReady:document.readyState,tabsFunction:typeof j?.fn?.tabs==='function',
-    nodes:['#field_settings','#field_settings_container','#settings_tab_item'].map(selector=>{
+    nodes:['#field_settings','.sidebar.ui-tabs','#field_settings_container','#settings_tab_item'].map(selector=>{
       const el=document.querySelector(selector);
       return {selector,present:!!el,initialized:!!(j&&el&&j.data(el,'ui-tabs'))};
     }),active:document.querySelector('#settings_tab_item')?.getAttribute('aria-selected')==='true',
@@ -120,11 +120,19 @@ try {
        window.__pgrRestoreTabs=()=>{j.fn.tabs=original;};
      });
      if(mode==='synchronized'){
-       const target=direct?.tabsCalls?.find(x=>x.method==='option'&&x.targets?.[0]?.id)?.targets[0].id;
-       r.waitedTarget=target||null;r.readiness='NOT_ESTABLISHED';
-       if(target)try{
-         await p.waitForFunction(id=>!!(window.jQuery&&document.getElementById(id)&&
-           window.jQuery.data(document.getElementById(id),'ui-tabs')),target,{timeout:3500});
+       const targetCall=direct?.tabsCalls?.find(x=>x.method==='option'&&x.targets?.length);
+       const actualTarget=targetCall?.targets?.[0];
+       // GF 3.1.1.1 calls tabs('option') on its id-less .sidebar.ui-tabs.
+       // Do not confuse this with #settings_tab_item (a separate control).
+       const selector=actualTarget?.id?'#'+actualTarget.id:
+         actualTarget?.className?.split(' ')?.includes('sidebar')&&
+         actualTarget?.className?.split(' ')?.includes('ui-tabs')?'.sidebar.ui-tabs':null;
+       r.waitedTarget=selector;r.readiness='NOT_ESTABLISHED';
+       if(selector)try{
+         await p.waitForFunction(sel=>{
+           const el=document.querySelector(sel),j=window.jQuery;
+           return !!(el&&j&&j.data(el,'ui-tabs'));
+         },selector,{timeout:3500});
          r.readiness='INSTANCE_READY';
        }catch{r.readiness='INSTANCE_NOT_READY_WITHIN_BOUND';}
        await p.waitForTimeout(250);
@@ -134,7 +142,19 @@ try {
      if(mode==='direct'){
        if(!await p.evaluate(()=>{const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;}))
          throw Error('EditField button missing');
-     }else await p.locator('#gfield_edit_3').click({timeout:7000});
+     }else{
+       // A genuine pointer action requires revealing the hover-only GF editor
+       // edit button first. Keep a separately recorded native field-card fallback.
+       await p.locator('#field_3').hover({timeout:7000});
+       try {
+         await p.locator('#gfield_edit_3').click({timeout:4000});
+         r.userAction='pointer-hover-then-edit-button';
+       } catch(e) {
+         r.editButtonUnavailable=String(e.message).slice(0,500);
+         await p.locator('#field_3').click({timeout:7000});
+         r.userAction='pointer-field-card-fallback';
+       }
+     }
      r.events.push({name:'after-click',elapsedMs:Date.now()-t0});
      r.afterClick=await p.evaluate(state);
      await p.waitForFunction(()=>document.querySelector('#field_3')?.classList.contains('field_selected')===true,
