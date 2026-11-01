@@ -168,10 +168,25 @@ $assert( is_array( $current ) && 'replacement' === $current['outputs'][0]['key']
 	$fp !== PGR_Scanner_Profile_Registry::snapshot_fingerprint( $current ), 'replacement not intact in third PHP process' );
 if ( $using_redis ) {
 	$cached = get_option( 'pgr_scanner_profiles' );
+	$profile_rows = is_array( $cached ) && is_array( $cached['profiles'] ?? null )
+		? array_values(
+			array_filter(
+				$cached['profiles'],
+				static function ( $profile ) use ( $id ) {
+					return is_array( $profile ) && ( $profile['id'] ?? null ) === $id;
+				}
+			)
+		)
+		: array();
+	// WU008 may retain unrelated Scanner profiles from earlier scenarios.
+	// Cache coherence is decided by the *target* incarnation, not a false
+	// single-profile Registry assumption. Old A or missing B must fail.
 	$assert( is_array( $cached ) && ( $cached['schema_version'] ?? null ) === 2 &&
-		count( $cached['profiles'] ) === 1 &&
-		'replacement' === $cached['profiles'][0]['outputs'][0]['key'],
-		'actual Redis-backed get_option returned stale Registry after B CAS' );
+		1 === count( $profile_rows ) &&
+		'replacement' === ( $profile_rows[0]['outputs'][0]['key'] ?? null ) &&
+		$profile_rows[0]['incarnation_id'] === $current['incarnation_id'] &&
+		$profile_rows[0]['revision'] === $current['revision'],
+		'actual Redis-backed get_option returned stale or missing target incarnation after B CAS' );
 }
 $report = array(
 	'evidence_class' => 'WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS',
