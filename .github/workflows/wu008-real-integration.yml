@@ -1771,6 +1771,10 @@ jobs:
               const native=data.native_host_controls.find(x=>x.width===width);
               const scanner=data.cases.find(x=>x.state==='form-builder'&&x.width===width);
               check(native?.status==='OBSERVED'&&native.locale===locale&&
+                native.nativeInteraction?.tabsReadyBeforeClick===true&&
+                scanner.nativeInteraction?.tabsReadyBeforeClick===true&&
+                !native.pageErrors.some(x=>x.includes('cannot call methods on tabs prior to initialization'))&&
+                !scanner.pageErrors.some(x=>x.includes('cannot call methods on tabs prior to initialization'))&&
                 native.model?.present===true&&native.model?.nativeText===true&&
                 native.model?.nativeTextarea===true&&native.model?.scanner===false&&
                 native.model?.fieldCount>=2&&
