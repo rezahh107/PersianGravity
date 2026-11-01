@@ -1,0 +1,9 @@
+{
+    "probe": "WU008_REGISTRY_PRE_CAS_INTERLEAVING",
+    "original_was_read": true,
+    "replacement_persisted_before_cas": true,
+    "replacement_content_differs": true,
+    "mutation_elapsed_ms": 9.201,
+    "mechanism": "WordPress update_option pre-write action intercepted guarded Registry CAS after validated A snapshot",
+    "actual_parallel_workers": false
+}
