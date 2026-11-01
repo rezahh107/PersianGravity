@@ -129,7 +129,7 @@ try {
     const originalEditId = await page.locator('input[name="existing_id"]').inputValue();
     const originalRevision = await page.locator('input[name="profile_revision"]').inputValue();
     const originalIncarnation = await page.locator('input[name="profile_incarnation_id"]').inputValue();
-    if (originalEditId !== 'wu008_ui_long_label' || !/^\\d+$/.test(originalRevision) ||
+    if (originalEditId !== 'wu008_ui_long_label' || !/^\d+$/.test(originalRevision) ||
         !/^[a-f0-9]{32}$/.test(originalIncarnation)) {
       throw new Error('Original Edit identity and CAS fields not present before mismatch test');
     }
