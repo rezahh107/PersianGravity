@@ -147,6 +147,7 @@ jobs:
           node --check tests/real-integration/scanner-profile-delete-summary.mjs
           php -l tests/real-integration/scanner-profile-incarnation-fixture.php
           php -l tests/real-integration/scanner-profile-interleaving-mu.php
+          php -l tests/real-integration/scanner-profile-cas-workers.php
           node --check tests/real-integration/scanner-profile-incarnation-browser.mjs
           node --check tests/real-integration/system-status-responsive-browser.mjs
           node --check tests/real-integration/system-status-scroll-summary.mjs
@@ -898,6 +899,32 @@ jobs:
           node tests/real-integration/scanner-profile-incarnation-browser.mjs
           test -s "$WU008_ARTIFACT_DIR/scanner-incarnation-evidence/report.json"
           php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+
+      - name: Verify Scanner CAS with two genuinely concurrent WP-CLI PHP workers
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Real independent PHP processes. A blocks inside the Registry's
+          # pre-CAS hook while B deletes A and recreates a changed B.
+          WU008_CAS_ROLE=setup php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php
+          WU008_CAS_ROLE=a php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php &
+          cas_a=$!
+          WU008_CAS_ROLE=b php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php &
+          cas_b=$!
+          wait "$cas_b"
+          wait "$cas_a"
+          WU008_CAS_ROLE=verify php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php
+          test -s "$WU008_ARTIFACT_DIR/scanner-cas-worker-evidence/report.json"
+          node - <<'PGR_CAS_WORKER_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const r=JSON.parse(fs.readFileSync(path.join(process.env.WU008_ARTIFACT_DIR,'scanner-cas-worker-evidence/report.json'),'utf8'));
+          if(r.evidence_class!=='WU008_REAL_INDEPENDENT_PHP_WORKERS_MARIADB_CAS'||
+             r.old_confirmation!=='rejected'||r.new_incarnation!=='preserved'||
+             r.worker_a_pid===r.worker_b_pid||!r.workers_distinct||
+             !r.worker_a_suspended_during_b_write||
+             r.persistent_object_cache!=='NOT_PROVEN')throw Error('Scanner two-process proof missing');
+          console.log('WU008_REAL_PHP_WORKER_CAS_PASS distinct workers='+r.worker_a_pid+','+r.worker_b_pid);
+          PGR_CAS_WORKER_GATE
 
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
