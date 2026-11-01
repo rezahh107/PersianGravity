@@ -245,7 +245,15 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
     console.log('G014_NATIVE_DRAG_FAILURE_DIAGNOSTIC '+JSON.stringify(detail));
     throw Error('Native header drag did not reorder columns: '+JSON.stringify(detail));
   }
-  report.drag={before:beforeOrder,after:afterOrder,nativeDown,dragGeometry};
+  // Reordering can legitimately reflow native column geometry. Persisted
+  // state must restore the stable state *after the final user interaction*,
+  // not the obsolete snapshot captured before the subsequent drag.
+  const postDragWidth=await widths();
+  if(postDragWidth-beforeWidth<30)
+    throw Error('Native drag discarded previously resized width: '+JSON.stringify(
+      {beforeWidth,afterWidth,postDragWidth,beforeOrder,afterOrder}));
+  report.drag={before:beforeOrder,after:afterOrder,nativeDown,dragGeometry,
+    widthBeforeDrag:afterWidth,widthAfterDrag:postDragWidth};
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator(`${scope} .ag-root-wrapper`).first().waitFor({timeout:20000});
@@ -253,9 +261,9 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
     '[data-js="gflow-inbox"] .ag-header-cell').length>0,null,{timeout:20000});
   const reloadWidth=await widths();
   const reloadOrder=await visualColumnOrder();
-  if(Math.abs(reloadWidth-afterWidth)>3||JSON.stringify(reloadOrder)!==JSON.stringify(afterOrder))
+  if(Math.abs(reloadWidth-postDragWidth)>3||JSON.stringify(reloadOrder)!==JSON.stringify(afterOrder))
     throw Error('Native saved Grid columns not restored after reload: '+JSON.stringify(
-      {afterWidth,reloadWidth,afterOrder,reloadOrder}));
+      {afterWidth,postDragWidth,reloadWidth,afterOrder,reloadOrder}));
   report.reload={width:reloadWidth,order:reloadOrder,restored:true};
   return report;
 }
