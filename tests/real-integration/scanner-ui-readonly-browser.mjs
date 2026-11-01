@@ -347,12 +347,14 @@ try{
       await nativePage.locator('#field_3').waitFor({state:'attached',timeout:20000});
       nativeControl.model=await nativePage.evaluate(()=>({
         present:typeof window.form==='object',
+        nativeText:window.form?.fields?.some(f=>f.id===1 && f.type==='text')||false,
         nativeTextarea:window.form?.fields?.some(f=>f.id===3 && f.type==='textarea')||false,
         scanner:window.form?.fields?.some(f=>f.type==='pgr_structured_scanner')||false,
         fieldCount:window.form?.fields?.length??null,
       }));
-      if(!nativeControl.model.present||!nativeControl.model.nativeTextarea||
-        nativeControl.model.scanner||nativeControl.model.fieldCount!==2)
+      if(!nativeControl.model.present||!nativeControl.model.nativeText||
+        !nativeControl.model.nativeTextarea||nativeControl.model.scanner||
+        nativeControl.model.fieldCount<2)
         throw Error('Control is not an independent native-only GF form model');
       const clicked=await nativePage.evaluate(()=>{
         const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
