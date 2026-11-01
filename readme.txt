@@ -7,6 +7,12 @@ Tags: gravity forms, persian, iran, national id, jalali, scanner
 
 Focused Persian and Iranian capabilities for Gravity Forms with runtime module control, bilingual product UI, and local help.
 
+== Scanner failed-save Edit identity (PR #110 Draft; not released) ==
+
+The current unmerged Scanner Profiles candidate keeps the native WordPress same-request recovery for rejected Create/Edit submissions. For a rejected Edit, the immutable Profile ID and hidden existing_id are reconstructed from the original nonce/capability-checked request identity, never from a mismatched submitted profile[id]. The submitted editable labels, outputs and parser values remain available for correction; the original revision and incarnation are retained for Registry v2 CAS. The rejected Edit cannot silently become Create or overwrite a newer profile. Successful saves still redirect. No extra persistence or automatic rebase is introduced.
+
+The proposed mismatch/guarded-retry regression runs in the licensed disposable WU008 lane, alongside ordinary Create/Edit, stale revision, controlled WordPress option-filter rejection, and unchanged GFAPI mapping checks. This is candidate source only: not a plugin release, live database failure proof, deployment, or broader UX acceptance. See docs/SCANNER_SAVE_RECOVERY.md and docs/VALIDATION.md.
+
 == Description ==
 
 Persian Gravity Forms provides generic Persian/Iranian functionality for Gravity Forms. It also provides explicitly manifested `fa_IR` localization overlays for bounded Gravity ecosystem products; it does not own typography, workflow business rules, payment gateways, or arbitrary third-party translations.
