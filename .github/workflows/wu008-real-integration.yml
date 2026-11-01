@@ -933,7 +933,7 @@ jobs:
             WU008_SCANNER_SNAPSHOT="$scanner_snapshot_b64" php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval '
               $raw = base64_decode(getenv("WU008_SCANNER_SNAPSHOT"), true);
               $original = is_string($raw) ? unserialize($raw, ["allowed_classes" => false]) : null;
-              if (!is_array($original) || ($original !== get_option(PGR_Scanner_Profile_Registry::OPTION) && !update_option(PGR_Scanner_Profile_Registry::OPTION, $original, false))) {
+              if (!is_array($original) || ($original !== get_option(PGR_Scanner_Profile_Registry::OPTION) && !update_option(PGR_Scanner_Profile_Registry::OPTION, $original))) {
                 throw new RuntimeException("Disposable Scanner Registry restore failed");
               }
             '
