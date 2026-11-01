@@ -169,10 +169,83 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
     nodes.map(el=>({id:el.getAttribute('col-id'),x:el.getBoundingClientRect().left}))
       .filter(v=>Number.isFinite(v.x)).sort((a,b)=>a.x-b.x).map(v=>v.id));
   const beforeOrder=await visualColumnOrder();
-  await header('created_by').dragTo(header('workflow_step'),{force:true});
+  // A single dragTo() between element centres is not a faithful native AG Grid
+  // column move: its default pointer path may never cross an insertion edge.
+  // Admit the vendor's movable columns and use a hit-tested header LABEL,
+  // then drag through the physical far side of the destination column.
+  const dragGeometry=await page.evaluate(()=>{
+    const host=document.querySelector('[data-js="gflow-inbox"]');
+    const opts=window.gflow_config?.grids?.[host?.dataset.gridId]?.grid_options;
+    const from=host?.querySelector('.ag-header-cell[col-id="created_by"]');
+    const to=host?.querySelector('.ag-header-cell[col-id="workflow_step"]');
+    const sourceDefinition=opts?.columnDefs?.find(c=>c.field==='created_by');
+    const destinationDefinition=opts?.columnDefs?.find(c=>c.field==='workflow_step');
+    if(!from||!to||!sourceDefinition||!destinationDefinition)
+      throw Error('Expected native movable column definitions are missing');
+    const constraints={
+      source:{suppressMovable:sourceDefinition.suppressMovable??null,
+        lockPosition:sourceDefinition.lockPosition??null},
+      destination:{suppressMovable:destinationDefinition.suppressMovable??null,
+        lockPosition:destinationDefinition.lockPosition??null},
+      suppressMovableColumns:opts?.suppressMovableColumns??null
+    };
+    if(opts.suppressMovableColumns===true||sourceDefinition.suppressMovable===true||
+      !!sourceDefinition.lockPosition||!!destinationDefinition.lockPosition)
+      throw Error('Vendor declares native column moving disallowed: '+JSON.stringify(constraints));
+    const sourceRect=from.getBoundingClientRect(),targetRect=to.getBoundingClientRect();
+    const label=from.querySelector('.ag-header-cell-label');
+    if(!label)throw Error('Native header drag label missing');
+    const l=label.getBoundingClientRect();
+    if(l.width<=0||sourceRect.width<=0||targetRect.width<=0)
+      throw Error('Native drag header has no layout');
+    let start=null;
+    for(const fraction of [.5,.35,.65,.2,.8]){
+      const x=l.left+l.width*fraction,y=l.top+l.height/2;
+      const hit=document.elementFromPoint(x,y);
+      if(hit&&from.contains(hit)&&!hit.closest('.ag-header-cell-resize')){
+        start={x,y,hit:hit.className||hit.tagName};break;
+      }
+    }
+    if(!start)throw Error('Native header drag label is obscured');
+    const sign=targetRect.left>sourceRect.left?1:-1;
+    const finish={
+      x:sign>0?targetRect.right-Math.min(12,targetRect.width/10):
+        targetRect.left+Math.min(12,targetRect.width/10),
+      y:targetRect.top+targetRect.height/2
+    };
+    return {start,finish,sign,constraints,
+      source:{left:sourceRect.left,right:sourceRect.right,width:sourceRect.width},
+      target:{left:targetRect.left,right:targetRect.right,width:targetRect.width}};
+  });
+  await page.evaluate(()=>{
+    window.__g014DragDown=null;
+    document.addEventListener('mousedown',event=>{
+      const el=event.target;
+      window.__g014DragDown={col:el.closest?.('.ag-header-cell')?.getAttribute('col-id')||null,
+        tag:el.tagName,cls:String(el.className||'').slice(0,130)};
+    },{once:true,capture:true});
+  });
+  await page.mouse.move(dragGeometry.start.x,dragGeometry.start.y);
+  await page.mouse.down();
+  await page.mouse.move(dragGeometry.start.x+dragGeometry.sign*28,
+    dragGeometry.start.y,{steps:6});
+  await page.mouse.move(dragGeometry.finish.x,dragGeometry.finish.y,{steps:22});
+  await page.mouse.up();
+  await page.waitForTimeout(300);
   const afterOrder=await visualColumnOrder();
-  if(JSON.stringify(beforeOrder)===JSON.stringify(afterOrder))throw Error('Native header drag did not reorder columns');
-  report.drag={before:beforeOrder,after:afterOrder};
+  const nativeDown=await page.evaluate(()=>window.__g014DragDown||null);
+  if(JSON.stringify(beforeOrder)===JSON.stringify(afterOrder)){
+    // Diagnostic control only; keyboard movement does not substitute for the
+    // required real mouse drag and can never make this assertion pass.
+    await header('created_by').focus();
+    await page.keyboard.press('Shift+ArrowRight');
+    await page.waitForTimeout(200);
+    const afterKeyboard=await visualColumnOrder();
+    const detail={beforeOrder,afterOrder,afterKeyboard,nativeDown,dragGeometry};
+    console.log('G014_NATIVE_DRAG_FAILURE_DIAGNOSTIC '+JSON.stringify(detail));
+    throw Error('Native header drag did not reorder columns: '+JSON.stringify(detail));
+  }
+  report.drag={before:beforeOrder,after:afterOrder,nativeDown,dragGeometry};
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator(`${scope} .ag-root-wrapper`).first().waitFor({timeout:20000});
