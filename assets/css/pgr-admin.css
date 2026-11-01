@@ -95,6 +95,16 @@
 	gap: 7px;
 }
 
+/* Native Create/Edit completion and non-destructive exit share one action row. */
+.pgr-profile-form__actions {
+	flex-wrap: wrap;
+	margin-block-start: 16px;
+}
+
+.pgr-profile-form__actions .button {
+	max-width: 100%;
+}
+
 .pgr-output-list {
 	display: grid;
 	gap: 10px;
@@ -450,3 +460,17 @@
 		width: 100%;
 	}
 }
+
+@media (max-width: 782px) {
+	.pgr-profile-form__actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.pgr-profile-form__actions .button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+	}
+}
+
