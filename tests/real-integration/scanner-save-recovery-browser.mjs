@@ -75,6 +75,15 @@ try {
         await page.locator('.pgr-profile-form').count() !== 1 ||
         await page.locator('input[name="profile[label]"]').inputValue() !== 'Unsaved synthetic browser create value' ||
         await page.locator('input[name="profile[id]"]').inputValue() !== 'sayad_v01') {
+      console.error('SCANNER_SAVE_CREATE_DIAGNOSTIC', JSON.stringify({
+        url: page.url(), formCount: await page.locator('.pgr-profile-form').count(),
+        displayName: await page.locator('input[name="profile[label]"]').count()
+          ? await page.locator('input[name="profile[label]"]').inputValue() : null,
+        submittedId: await page.locator('input[name="profile[id]"]').count()
+          ? await page.locator('input[name="profile[id]"]').inputValue() : null,
+        errorNotice: await page.locator('.notice-error').allInnerTexts(),
+        pageHeading: await page.locator('h1').allInnerTexts(),
+      }));
       throw new Error('Failed Create did not retain original editable submission on same WordPress screen');
     }
     if (registryHash() !== before || gfHash() !== gfBefore) throw new Error('Failed Create changed persisted state');
