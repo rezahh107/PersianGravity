@@ -23,7 +23,7 @@ const report = {
   wp:fixture.wordpress, gf:fixture.gravityforms, php:fixture.php,
   chromium:browser.version(), playwright:'1.55.0',
   device_scale_factor:1, source:fixture,
-  screenshots:[], cases:[], read_only:true, registry_mutation:false,
+  screenshots:[], cases:[], native_host_controls:[], read_only:true, registry_mutation:false,
   form_submissions:0, baseline_comparison:'NOT_RUN_SEPARATE_RESTORED_ENV_REQUIRED',
 };
 const states = [
@@ -159,7 +159,11 @@ try{
     const height=width===1280?900:width===390?844:700;
     const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,locale:locale==='fa_IR'?'fa-IR':'en-US'});
     const page=await context.newPage();
-    const failures=[];page.on('pageerror',e=>failures.push(String(e.message).slice(0,300)));
+    const failures=[], failureStacks=[];
+    page.on('pageerror',e=>{
+      failures.push(String(e.message).slice(0,300));
+      failureStacks.push(String(e.stack||e).slice(0,1500));
+    });
     const login=await page.goto(fixture.login_url,{waitUntil:'domcontentloaded'});
     if(!login?.ok())throw Error('Real WP login failed HTTP: '+login?.status());
     await page.locator('#user_login').fill('runtime_admin');
@@ -309,9 +313,11 @@ try{
           }));
         }
         record.pageErrors=failures.splice(0);
+        record.pageErrorStacks=failureStacks.splice(0);
       }catch(e){
         failed=true;record.errors.push(String(e.stack||e).slice(0,900));
         record.pageErrors=failures.splice(0);
+        record.pageErrorStacks=failureStacks.splice(0);
         const failureShot=locale+'-'+state+'-'+width+'-failure.png';
         await page.screenshot({path:path.join(out,failureShot),type:'png',fullPage:true}).then(()=>{
           report.screenshots.push(failureShot);record.screenshot=failureShot;
@@ -320,10 +326,75 @@ try{
       record.qualification=failed?'BLOCKED_CAPTURED_FAILURE':'CAPTURED_FOR_REVIEW';
       report.cases.push(record);
     }
+    // Native-host comparison: same licensed GF Builder and activated plugins, but
+    // a separately persisted form containing only built-in GF fields.
+    // This control distinguishes field-local evidence; it does not by itself
+    // distinguish an upstream GF defect from globally active plugin code.
+    const nativeControl={state:'native-gf-field',width,height,locale,
+      status:'NOT_VERIFIED',pageErrors:[],pageErrorStacks:[],errors:[]};
+    const nativePage=await context.newPage();
+    nativePage.on('pageerror',e=>{
+      nativeControl.pageErrors.push(String(e.message).slice(0,300));
+      nativeControl.pageErrorStacks.push(String(e.stack||e).slice(0,1500));
+    });
+    try{
+      const response=await nativePage.goto(fixture.native_form_builder_url,{waitUntil:'domcontentloaded'});
+      nativeControl.httpStatus=response?.status()??null;
+      nativeControl.actualUrl=nativePage.url();
+      if(!response?.ok()||nativePage.url().includes('wp-login.php'))
+        throw Error('Authenticated native-only GF Form Builder control failed');
+      await nativePage.locator('#wpadminbar').waitFor({state:'attached'});
+      await nativePage.locator('#field_3').waitFor({state:'attached',timeout:20000});
+      nativeControl.model=await nativePage.evaluate(()=>({
+        present:typeof window.form==='object',
+        nativeTextarea:window.form?.fields?.some(f=>f.id===3 && f.type==='textarea')||false,
+        scanner:window.form?.fields?.some(f=>f.type==='pgr_structured_scanner')||false,
+        fieldCount:window.form?.fields?.length??null,
+      }));
+      if(!nativeControl.model.present||!nativeControl.model.nativeTextarea||
+        nativeControl.model.scanner||nativeControl.model.fieldCount!==2)
+        throw Error('Control is not an independent native-only GF form model');
+      const clicked=await nativePage.evaluate(()=>{
+        const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
+      });
+      if(!clicked)throw Error('Native-only textarea edit control not available');
+      await nativePage.waitForFunction(
+        ()=>document.querySelector('#field_3')?.classList.contains('field_selected')===true,
+        null,{timeout:10000});
+      await nativePage.evaluate(()=>{
+        const tab=document.querySelector('#settings_tab_item');
+        if(tab?.getAttribute('aria-selected')!=='true')tab?.querySelector('a')?.click();
+      });
+      await nativePage.waitForFunction(()=>{
+        const tab=document.querySelector('#settings_tab_item');
+        const panel=document.querySelector('#field_settings_container');
+        return tab?.getAttribute('aria-selected')==='true' &&
+          panel?.getBoundingClientRect().width>100 &&
+          getComputedStyle(panel).display!=='none';
+      },null,{timeout:10000});
+      await nativePage.waitForTimeout(300);
+      nativeControl.status='OBSERVED';
+      nativeControl.nativePanelVisible=true;
+    }catch(e){
+      nativeControl.errors.push(String(e.stack||e).slice(0,900));
+    }finally{
+      report.native_host_controls.push(nativeControl);
+      await nativePage.close();
+    }
     await context.close();
   }
 }finally{await browser.close();}
 const failures=report.cases.filter(x=>x.qualification==='BLOCKED_CAPTURED_FAILURE');
+const failedNativeControls=report.native_host_controls.filter(x=>x.status!=='OBSERVED');
+for(const native of report.native_host_controls){
+  const scanner=report.cases.find(x=>x.state==='form-builder'&&x.width===native.width);
+  const tabsError=e=>String(e).includes('cannot call methods on tabs prior to initialization');
+  native.tabs_error_in_scanner=!!scanner?.pageErrors?.some(tabsError);
+  native.tabs_error_in_native=!!native.pageErrors.some(tabsError);
+  native.attribution=native.status!=='OBSERVED'?'NOT_PROVEN_CONTROL_FAILED':
+    native.tabs_error_in_native?'ALSO_OBSERVED_WITH_NATIVE_GF_FIELD':
+    'NOT_REPRODUCED_WITH_NATIVE_GF_FIELD_GLOBAL_CAUSE_UNPROVEN';
+}
 const contact=['# Authentic Scanner UI read-only qualification — '+locale,'',
   'Source: real WordPress 6.8.3 / Gravity Forms 3.1.1.1 / PersianGravity installed package; Head `'+head+'`.',
   'No profile save/delete, no form submissions, no Registry changes by this qualification script.',
@@ -343,10 +414,16 @@ for(const w of [1280,390,320]){
 }
 contact.push('','## Limits','No pre/post PR106 equivalence is claimed without distinct isolated database/byte-matched environments.',
   'Viewport changes and in-browser temporary column override are not persistent changes.',
-  'Save failure is not re-executed because this qualification prohibits form submission.','');
+  'Save failure is not re-executed because this qualification prohibits form submission.',
+  'Native-only Gravity Forms control is exercised in a separate form with the same active plugins.',
+  'JavaScript pageerrors are recorded, not silently counted as PASS or attributed without isolation.','');
 fs.writeFileSync(path.join(out,'geometry-'+locale+'.json'),JSON.stringify(report,null,2)+'\n');
 fs.writeFileSync(path.join(out,'CONTACT-'+locale+'.md'),contact.join('\n')+'\n');
 const pngs=report.screenshots.map(name=>({name,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(out,name))).digest('hex')}));
 fs.writeFileSync(path.join(out,'SHA256-'+locale+'.json'),JSON.stringify(pngs,null,2)+'\n');
-console.log('SCANNER_NATIVE_UI_READONLY '+locale+' cases='+report.cases.length+' captured='+report.screenshots.length+' blocked='+failures.length);
-if(report.cases.length!==12||failures.length)process.exitCode=1;
+console.log('SCANNER_NATIVE_UI_READONLY '+locale+' cases='+report.cases.length+' captured='+report.screenshots.length+
+  ' blocked='+failures.length+' nativeControls='+report.native_host_controls.length+
+  ' failedNativeControls='+failedNativeControls.length+
+  ' tabsInScanner='+report.native_host_controls.filter(c=>c.tabs_error_in_scanner).length+
+  ' tabsInNative='+report.native_host_controls.filter(c=>c.tabs_error_in_native).length);
+if(report.cases.length!==12||failures.length||report.native_host_controls.length!==3||failedNativeControls.length)process.exitCode=1;
