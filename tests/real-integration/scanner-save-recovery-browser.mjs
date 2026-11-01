@@ -40,7 +40,7 @@ const capture = async name => {
     const filename = `${locale}-${name}-${width}.png`;
     await page.screenshot({ path: path.join(dir, filename), fullPage: true });
     screenshotStates.push({filename, width,
-      direction: await page.locator('html').getAttribute('dir'),
+      direction: await page.evaluate(() => getComputedStyle(document.documentElement).direction),
       horizontalOverflow: await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth) });
   }
   await page.setViewportSize({width: 1280, height: 900});
@@ -54,7 +54,7 @@ try {
   await Promise.all([page.waitForNavigation(), page.locator('#wp-submit').click()]);
   await page.goto(url('&action=new'));
   await page.locator('.pgr-profile-form').waitFor();
-  const observedDir = await page.locator('html').getAttribute('dir');
+  const observedDir = await page.evaluate(() => getComputedStyle(document.documentElement).direction);
   if (observedDir !== (locale === 'fa_IR' ? 'rtl' : 'ltr')) throw Error('Locale/direction mismatch: ' + locale + '/' + observedDir);
   const before = registryHash(), gfBefore = gfHash();
   await page.locator('input[name="profile[id]"]').fill('sayad_v01');
