@@ -625,7 +625,7 @@ final class PGR_Admin {
 	 */
 	private function render_profile_form( $profile, $is_edit_override = null ) {
 		$is_edit = null === $is_edit_override ? is_array( $profile ) : (bool) $is_edit_override;
-		if ( ! $is_edit ) {
+		if ( ! is_array( $profile ) ) {
 			$profile = array(
 				'id'      => '',
 				'label'   => '',
