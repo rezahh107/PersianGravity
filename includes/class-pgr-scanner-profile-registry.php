@@ -89,7 +89,7 @@ final class PGR_Scanner_Profile_Registry {
 				continue;
 			}
 
-			$normalized = $validation['profile'];
+			$normalized = $profile; // normalize_option() already validated the source and preserved v2 identity.
 			if ( isset( self::built_in_profiles()[ $normalized['id'] ] ) ) {
 				continue;
 			}
