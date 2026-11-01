@@ -1,0 +1,767 @@
+{
+  "exact_head": "6c990401e8d291c102cf5b98e0f230928f61073c",
+  "locale": "en_US",
+  "phase": "used",
+  "status": "CAPTURED",
+  "runtime": {
+    "php": "8.2.35",
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "chromium": "140.0.7339.16",
+    "wordpress": "6.8.3"
+  },
+  "cases": [
+    {
+      "width": 1280,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-used-en_US-1280-normal.jpg",
+        "decision-used-en_US-1280-all-enabled.jpg",
+        "decision-used-en_US-1280-decision.jpg",
+        "decision-used-en_US-1280-cancel.jpg",
+        "decision-used-en_US-1280-confirmed.jpg"
+      ],
+      "checks": [
+        "early_header_flush_probe_active",
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "all_enabled_inventory",
+        "negative_missing_action_detected",
+        "decision_seven_total_distinct_module_identities",
+        "negative_duplicate_decision_detected",
+        "gettext_decision_heading_risk_pending_actions",
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "gettext_invalid_confirmation_notice",
+        "cancel_http302_clean_location_before_header_flush",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "invalid_nonce_rejected",
+        "unknown_second_post_disabled",
+        "currency_restored",
+        "unauthorized_post_rejected"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 1280,
+        "width": 1280,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 222.484375,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "decision_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "structured_scanner"
+        ],
+        "rows": 6,
+        "decisions": 1,
+        "scrollWidth": 1280,
+        "width": 1280,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "decision": {
+        "viewport": 1280,
+        "document_scroll_width": 1280,
+        "direction": "ltr",
+        "decision_top": 218.484375,
+        "grid_top": 588.875,
+        "decision_width": 1078,
+        "action_width": 1033,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 782,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-used-en_US-782-normal.jpg",
+        "decision-used-en_US-782-all-enabled.jpg",
+        "decision-used-en_US-782-decision.jpg",
+        "decision-used-en_US-782-cancel.jpg",
+        "decision-used-en_US-782-confirmed.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "all_enabled_inventory",
+        "decision_seven_total_distinct_module_identities",
+        "gettext_decision_heading_risk_pending_actions",
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "gettext_invalid_confirmation_notice",
+        "cancel_http302_clean_location_before_header_flush",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 782,
+        "width": 782,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 782,
+        "document_scroll_width": 782,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 270.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "decision_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "structured_scanner"
+        ],
+        "rows": 6,
+        "decisions": 1,
+        "scrollWidth": 782,
+        "width": 782,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "decision": {
+        "viewport": 782,
+        "document_scroll_width": 782,
+        "direction": "ltr",
+        "decision_top": 266.390625,
+        "grid_top": 770.78125,
+        "decision_width": 760,
+        "action_width": 715,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 768,
+      "height": 900,
+      "status": "PASS",
+      "images": [
+        "decision-used-en_US-768-normal.jpg",
+        "decision-used-en_US-768-all-enabled.jpg",
+        "decision-used-en_US-768-decision.jpg",
+        "decision-used-en_US-768-cancel.jpg",
+        "decision-used-en_US-768-confirmed.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "all_enabled_inventory",
+        "decision_seven_total_distinct_module_identities",
+        "gettext_decision_heading_risk_pending_actions",
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "gettext_invalid_confirmation_notice",
+        "cancel_http302_clean_location_before_header_flush",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 768,
+        "width": 768,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 768,
+        "document_scroll_width": 768,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 270.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "decision_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "structured_scanner"
+        ],
+        "rows": 6,
+        "decisions": 1,
+        "scrollWidth": 768,
+        "width": 768,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "decision": {
+        "viewport": 768,
+        "document_scroll_width": 768,
+        "direction": "ltr",
+        "decision_top": 266.390625,
+        "grid_top": 770.78125,
+        "decision_width": 746,
+        "action_width": 701,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "status": "PASS",
+      "images": [
+        "decision-used-en_US-390-normal.jpg",
+        "decision-used-en_US-390-all-enabled.jpg",
+        "decision-used-en_US-390-decision.jpg",
+        "decision-used-en_US-390-cancel.jpg",
+        "decision-used-en_US-390-confirmed.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "all_enabled_inventory",
+        "decision_seven_total_distinct_module_identities",
+        "gettext_decision_heading_risk_pending_actions",
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "gettext_invalid_confirmation_notice",
+        "cancel_http302_clean_location_before_header_flush",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 390,
+        "width": 390,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 351.390625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "decision_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "structured_scanner"
+        ],
+        "rows": 6,
+        "decisions": 1,
+        "scrollWidth": 390,
+        "width": 390,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "decision": {
+        "viewport": 390,
+        "document_scroll_width": 390,
+        "direction": "ltr",
+        "decision_top": 347.390625,
+        "grid_top": 949.28125,
+        "decision_width": 368,
+        "action_width": 323,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "status": "PASS",
+      "images": [
+        "decision-used-en_US-320-normal.jpg",
+        "decision-used-en_US-320-all-enabled.jpg",
+        "decision-used-en_US-320-long.jpg",
+        "decision-used-en_US-320-decision.jpg",
+        "decision-used-en_US-320-cancel.jpg",
+        "decision-used-en_US-320-confirmed.jpg"
+      ],
+      "checks": [
+        "seven_bilingual_module_rows",
+        "module_row_keyboard_focus_order",
+        "all_enabled_inventory",
+        "long_content_no_overflow",
+        "decision_seven_total_distinct_module_identities",
+        "gettext_decision_heading_risk_pending_actions",
+        "forged_get_rejected",
+        "mismatched_get_rejected",
+        "gettext_invalid_confirmation_notice",
+        "cancel_http302_clean_location_before_header_flush",
+        "cancel_no_change",
+        "cancel_revoked_token",
+        "used_blocked",
+        "used_forged_confirm_blocked",
+        "unknown_second_post_disabled",
+        "currency_restored"
+      ],
+      "original_g011_enabled": true,
+      "normal_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "iranian_currency",
+          "structured_scanner"
+        ],
+        "rows": 7,
+        "decisions": 0,
+        "scrollWidth": 320,
+        "width": 320,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "iranian_currency",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "normal": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "ltr",
+        "decision_top": null,
+        "grid_top": 396.890625,
+        "decision_width": null,
+        "action_width": null,
+        "focusables": 0
+      },
+      "row_focus": {
+        "focused": true,
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "decision_inventory": {
+        "errors": [],
+        "ids": [
+          "national_id",
+          "jalali_date",
+          "jalali_presentation",
+          "iranian_address",
+          "digit_normalization",
+          "structured_scanner"
+        ],
+        "rows": 6,
+        "decisions": 1,
+        "scrollWidth": 320,
+        "width": 320,
+        "states": [
+          {
+            "id": "national_id",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_date",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "jalali_presentation",
+            "state": "DISABLED"
+          },
+          {
+            "id": "iranian_address",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "digit_normalization",
+            "state": "AVAILABLE"
+          },
+          {
+            "id": "structured_scanner",
+            "state": "AVAILABLE"
+          }
+        ]
+      },
+      "decision": {
+        "viewport": 320,
+        "document_scroll_width": 320,
+        "direction": "ltr",
+        "decision_top": 392.890625,
+        "grid_top": 1033.78125,
+        "decision_width": 298,
+        "action_width": 253,
+        "focusables": 3
+      },
+      "focus": {
+        "outline": "solid",
+        "boxShadow": "rgb(53, 130, 196) 0px 0px 0px 1px"
+      },
+      "original_g011_restored": true
+    }
+  ],
+  "limits": [
+    "Automated focus and layout probes are not screen-reader or human usability acceptance"
+  ]
+}
