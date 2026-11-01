@@ -1660,6 +1660,7 @@ jobs:
             for(const state of ['list','create','edit','built-in','builder'])
               allowed.add('scanner-ui-'+loc+'-'+state+'-'+w+'.png');
             allowed.add('scanner-ui-'+loc+'-builder-grid-one-column-'+w+'.png');
+            allowed.add('scanner-ui-'+loc+'-builder-preview-css-control-'+w+'.png');
           }
           const names=fs.readdirSync(dir);
           assert(names.length===allowed.size,'wrong evidence file count');
@@ -1684,7 +1685,8 @@ jobs:
               assert(c.status==='CAPTURED_UNREVIEWED'&&allowed.has(c.screenshot)&&
                 c.before?.page?.fontsReady==='loaded','unqualified capture');
               if(c.state==='builder')assert(c.one_variable?.screenshot&&
-                c.plugin_css_proof?.identical===true,'grid control/CSS proof missing');
+                c.preview_stylesheet_control?.screenshot&&
+                c.plugin_css_proof?.identical===true,'grid/preview CSS controls or CSS proof missing');
             }
           }
           assert(fs.readFileSync(path.join(dir,'CONTACT_SHEET.md'),'utf8').includes('Gravity Forms 3.1.1.1'),'sheet missing');
