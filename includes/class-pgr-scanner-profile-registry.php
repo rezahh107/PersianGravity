@@ -166,8 +166,8 @@ final class PGR_Scanner_Profile_Registry {
 
 		foreach ( self::active() as $profile ) {
 			$profiles[] = array(
-				'id'     => $profile['id'],
-				'parser' => $profile['parser'],
+				'id'      => $profile['id'],
+				'parser'  => $profile['parser'],
 				'outputs' => array_values(
 					array_map(
 						static function ( $output ) {
@@ -303,8 +303,8 @@ final class PGR_Scanner_Profile_Registry {
 
 		$canonical = wp_json_encode(
 			array(
-			'profile'        => $validation['profile'],
-			'incarnation_id' => $profile['incarnation_id'],
+				'profile'        => $validation['profile'],
+				'incarnation_id' => $profile['incarnation_id'],
 				'revision'       => $profile['revision'],
 			)
 		);
@@ -416,9 +416,15 @@ final class PGR_Scanner_Profile_Registry {
 		if ( $before['exists'] && is_array( $before['value'] ) &&
 			( $before['value']['schema_version'] ?? null ) === self::SCHEMA_VERSION ) {
 			if ( ! self::valid_v2( $before['value'] ) ) {
-				return array( 'success' => false, 'reason' => 'invalid_v2' );
+				return array(
+					'success' => false,
+					'reason'  => 'invalid_v2',
+				);
 			}
-			return array( 'success' => true, 'reason' => 'already_v2' );
+			return array(
+				'success' => true,
+				'reason'  => 'already_v2',
+			);
 		}
 		if ( ! $before['exists'] || ! is_string( $backup_sha256 ) ||
 			! hash_equals( hash( 'sha256', $before['raw'] ), $backup_sha256 ) ||
