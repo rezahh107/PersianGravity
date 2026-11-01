@@ -1,0 +1,128 @@
+{
+  "evidence_class": "AUTHENTIC_SCANNER_SAVE_RECOVERY",
+  "head": "9329f6e94c9b56db0918bac03ccbcc5763555fc5",
+  "mode": "repaired",
+  "locale": "fa_IR",
+  "wordpress": "6.8.3",
+  "gravityforms": "3.1.1.1",
+  "scenarios": [
+    {
+      "name": "invalid_create_after",
+      "registry_before": "01aee1b4c04c0d5d5969591ae316235dbadde7489a3ba2d090f5590c4d48db5e",
+      "registry_after": "01aee1b4c04c0d5d5969591ae316235dbadde7489a3ba2d090f5590c4d48db5e",
+      "gf_mapping_unchanged": true,
+      "observed": "INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR"
+    },
+    {
+      "name": "corrected_create_retry",
+      "registry_before": "01aee1b4c04c0d5d5969591ae316235dbadde7489a3ba2d090f5590c4d48db5e",
+      "registry_after": "7697510ce80256e424eaf694b658f0106b7b5d9481ebada9f5e6dbde01a938bc",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_SAVED"
+    },
+    {
+      "name": "invalid_edit_retention",
+      "registry_before": "7697510ce80256e424eaf694b658f0106b7b5d9481ebada9f5e6dbde01a938bc",
+      "registry_after": "7697510ce80256e424eaf694b658f0106b7b5d9481ebada9f5e6dbde01a938bc",
+      "gf_mapping_unchanged": true,
+      "observed": "IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES"
+    },
+    {
+      "name": "corrected_edit_retry",
+      "registry_before": "7697510ce80256e424eaf694b658f0106b7b5d9481ebada9f5e6dbde01a938bc",
+      "registry_after": "190b46faecb52d328e31c0e6d17404fd9c4a979d4a25add8b16f1f9081d9bc11",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_EDIT_SAVED"
+    },
+    {
+      "name": "stale_edit_conflict",
+      "registry_before": "a60565585897d525048b9386232612327b8c9f639d37b83ee0b6972ad9e189dc",
+      "registry_after": "a60565585897d525048b9386232612327b8c9f639d37b83ee0b6972ad9e189dc",
+      "gf_mapping_unchanged": true,
+      "observed": "REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED"
+    },
+    {
+      "name": "controlled_write_failure",
+      "registry_before": "a60565585897d525048b9386232612327b8c9f639d37b83ee0b6972ad9e189dc",
+      "registry_after": "a60565585897d525048b9386232612327b8c9f639d37b83ee0b6972ad9e189dc",
+      "gf_mapping_unchanged": true,
+      "observed": "PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED"
+    }
+  ],
+  "persisting_registry_data": "DISPOSABLE_WU008_ONLY",
+  "screenshots": [
+    {
+      "filename": "fa_IR-after-invalid-create-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    }
+  ],
+  "status": "PASS"
+}

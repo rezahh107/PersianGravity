@@ -1,0 +1,3995 @@
+{
+  "schema": 1,
+  "evidence_class": "AUTHENTIC_GF_TABS_LIFECYCLE_DIAGNOSTIC",
+  "exact_head": "9329f6e94c9b56db0918bac03ccbcc5763555fc5",
+  "locale": "en_US",
+  "source": {
+    "wordpress": "6.8.3",
+    "gravityforms": "3.1.1.1",
+    "preview_css_sha256": "607a5bb145480b12bef1655a28dc729b2f19e8c6a2623091675d86238fef1309"
+  },
+  "form_submissions": 0,
+  "scanner_registry_mutations": 0,
+  "cases": [
+    {
+      "width": 1280,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 490
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 556
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 584
+        },
+        {
+          "name": "load",
+          "elapsedMs": 739
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 583,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=20:2468:5)"
+        }
+      ],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 487.29999999998836,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 552,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "beforeClick": {
+        "atMs": 554.9000000000233,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "afterClick": {
+        "atMs": 591.0999999999767,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "afterPanel": {
+        "atMs": 787.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "geometry": {
+        "scanner": {
+          "x": 209,
+          "y": 586.046875,
+          "left": 209,
+          "right": 861,
+          "top": 586.046875,
+          "bottom": 834.046875,
+          "width": 652,
+          "height": 248
+        },
+        "preview": {
+          "lead": {
+            "x": 209,
+            "y": 618.046875,
+            "left": 209,
+            "right": 861,
+            "top": 618.046875,
+            "bottom": 634.046875,
+            "width": 652,
+            "height": 16
+          },
+          "capture": {
+            "x": 209,
+            "y": 650.046875,
+            "left": 209,
+            "right": 861,
+            "top": 650.046875,
+            "bottom": 780.046875,
+            "width": 652,
+            "height": 130
+          },
+          "buttons": {
+            "x": 209,
+            "y": 780.046875,
+            "left": 209,
+            "right": 861,
+            "top": 780.046875,
+            "bottom": 834.046875,
+            "width": 652,
+            "height": 54
+          },
+          "status": {
+            "x": 209,
+            "y": 818.046875,
+            "left": 209,
+            "right": 861,
+            "top": 818.046875,
+            "bottom": 834.046875,
+            "width": 652,
+            "height": 16
+          },
+          "focus": {
+            "x": 209,
+            "y": 780.046875,
+            "left": 209,
+            "right": 376,
+            "top": 780.046875,
+            "bottom": 818.046875,
+            "width": 167,
+            "height": 38
+          },
+          "privacy": {
+            "x": 209,
+            "y": 634.046875,
+            "left": 209,
+            "right": 861,
+            "top": 634.046875,
+            "bottom": 650.046875,
+            "width": 652,
+            "height": 16
+          },
+          "header": {
+            "x": 209,
+            "y": 586.046875,
+            "left": 209,
+            "right": 861,
+            "top": 586.046875,
+            "bottom": 618.046875,
+            "width": 652,
+            "height": 32
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 342,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "tabsCalls": [
+        {
+          "atMs": 580.2000000000116,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 706.4000000000233,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 711.5999999999767,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 791.9000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsError": true
+    },
+    {
+      "width": 1280,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 496
+        },
+        {
+          "name": "load",
+          "elapsedMs": 681
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 951
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 1058
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 492,
+        "loadEnd": 677.7999999999884
+      },
+      "afterNavigation": {
+        "atMs": 682.3999999999651,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 947.6999999999534,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "userAction": "pointer-hover-then-edit-button",
+      "afterClick": {
+        "atMs": 1056.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "afterPanel": {
+        "atMs": 1100.7999999999884,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "geometry": {
+        "scanner": {
+          "x": 209,
+          "y": 586.046875,
+          "left": 209,
+          "right": 861,
+          "top": 586.046875,
+          "bottom": 834.046875,
+          "width": 652,
+          "height": 248
+        },
+        "preview": {
+          "lead": {
+            "x": 209,
+            "y": 618.046875,
+            "left": 209,
+            "right": 861,
+            "top": 618.046875,
+            "bottom": 634.046875,
+            "width": 652,
+            "height": 16
+          },
+          "capture": {
+            "x": 209,
+            "y": 650.046875,
+            "left": 209,
+            "right": 861,
+            "top": 650.046875,
+            "bottom": 780.046875,
+            "width": 652,
+            "height": 130
+          },
+          "buttons": {
+            "x": 209,
+            "y": 780.046875,
+            "left": 209,
+            "right": 861,
+            "top": 780.046875,
+            "bottom": 834.046875,
+            "width": 652,
+            "height": 54
+          },
+          "status": {
+            "x": 209,
+            "y": 818.046875,
+            "left": 209,
+            "right": 861,
+            "top": 818.046875,
+            "bottom": 834.046875,
+            "width": 652,
+            "height": 16
+          },
+          "focus": {
+            "x": 209,
+            "y": 780.046875,
+            "left": 209,
+            "right": 376,
+            "top": 780.046875,
+            "bottom": 818.046875,
+            "width": 167,
+            "height": 38
+          },
+          "privacy": {
+            "x": 209,
+            "y": 634.046875,
+            "left": 209,
+            "right": 861,
+            "top": 634.046875,
+            "bottom": 650.046875,
+            "width": 652,
+            "height": 16
+          },
+          "header": {
+            "x": 209,
+            "y": 586.046875,
+            "left": 209,
+            "right": 861,
+            "top": 586.046875,
+            "bottom": 618.046875,
+            "width": 652,
+            "height": 32
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 342,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "css": {
+        "after": {
+          "scanner": {
+            "x": 209,
+            "y": 586.046875,
+            "left": 209,
+            "right": 861,
+            "top": 586.046875,
+            "bottom": 850.046875,
+            "width": 652,
+            "height": 264
+          },
+          "preview": {
+            "lead": {
+              "x": 209,
+              "y": 626.046875,
+              "left": 209,
+              "right": 861,
+              "top": 626.046875,
+              "bottom": 642.046875,
+              "width": 652,
+              "height": 16
+            },
+            "capture": {
+              "x": 209,
+              "y": 674.046875,
+              "left": 209,
+              "right": 861,
+              "top": 674.046875,
+              "bottom": 804.046875,
+              "width": 652,
+              "height": 130
+            },
+            "buttons": {
+              "x": 209,
+              "y": 812.046875,
+              "left": 209,
+              "right": 861,
+              "top": 812.046875,
+              "bottom": 850.046875,
+              "width": 652,
+              "height": 38
+            },
+            "status": {
+              "x": 384,
+              "y": 823.046875,
+              "left": 384,
+              "right": 540,
+              "top": 823.046875,
+              "bottom": 839.046875,
+              "width": 156,
+              "height": 16
+            },
+            "focus": {
+              "x": 209,
+              "y": 812.046875,
+              "left": 209,
+              "right": 376,
+              "top": 812.046875,
+              "bottom": 850.046875,
+              "width": 167,
+              "height": 38
+            },
+            "privacy": {
+              "x": 209,
+              "y": 650.046875,
+              "left": 209,
+              "right": 861,
+              "top": 650.046875,
+              "bottom": 666.046875,
+              "width": 652,
+              "height": 16
+            },
+            "header": {
+              "x": 209,
+              "y": 586.046875,
+              "left": 209,
+              "right": 861,
+              "top": 586.046875,
+              "bottom": 618.046875,
+              "width": 652,
+              "height": 32
+            }
+          },
+          "inkCollisions": {
+            "leadPrivacy": false,
+            "privacyCapture": false,
+            "focusStatus": false
+          },
+          "mappingCount": 7,
+          "mappingWidth": 342,
+          "tabsSelected": true
+        },
+        "matchingInstalledBytes": true,
+        "originallyLoaded": false,
+        "delta": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 8,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 24,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 32,
+              "width": 0,
+              "height": -16
+            },
+            "status": {
+              "relativeX": 175,
+              "relativeY": 5,
+              "width": -496,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 32,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 16,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 496
+        },
+        "restored": true
+      },
+      "tabsCalls": [
+        {
+          "atMs": 1043.2999999999884,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 1153.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 580.2000000000116,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    },
+    {
+      "width": 1280,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 474
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 534
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 561
+        },
+        {
+          "name": "load",
+          "elapsedMs": 727
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 561,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=21:2402:5)"
+        }
+      ],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 471.5,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 531,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "beforeClick": {
+        "atMs": 532.7999999999884,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "afterClick": {
+        "atMs": 567.2000000000116,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 370
+      },
+      "afterPanel": {
+        "atMs": 733.0999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsCalls": [
+        {
+          "atMs": 557.5,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 694.0999999999767,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 700.2999999999884,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 734.9000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsError": true
+    },
+    {
+      "width": 1280,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 484
+        },
+        {
+          "name": "load",
+          "elapsedMs": 667
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 938
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 5021
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 482.29999999998836,
+        "loadEnd": 665.7000000000116
+      },
+      "afterNavigation": {
+        "atMs": 671.0999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 936.4000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "editButtonUnavailable": "locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('#gfield_edit_3')\n    - locator resolved to <button id=\"gfield_edit_3\" onclick=\"EditField(this);\" class=\"gfield-field-action gfield-edit\" onkeypress=\"EditField(this); return false;\" aria-label=\"Native Notes - Paragraph Text, jump to this field's settings.\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling int",
+      "userAction": "pointer-field-card-fallback",
+      "afterClick": {
+        "atMs": 5019.900000000023,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "afterPanel": {
+        "atMs": 5051,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsCalls": [
+        {
+          "atMs": 5007.5,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 5052.700000000012,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 370
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 557.5,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    },
+    {
+      "width": 390,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 476
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 541
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 567
+        },
+        {
+          "name": "load",
+          "elapsedMs": 711
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 566,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=20:2468:5)"
+        }
+      ],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 473.69999999995343,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 538,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "beforeClick": {
+        "atMs": 539.8999999999651,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterClick": {
+        "atMs": 573,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 758,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "geometry": {
+        "scanner": {
+          "x": 49,
+          "y": 660.09375,
+          "left": 49,
+          "right": 71,
+          "top": 660.09375,
+          "bottom": 1234.09375,
+          "width": 22,
+          "height": 574
+        },
+        "preview": {
+          "lead": {
+            "x": 49,
+            "y": 724.09375,
+            "left": 49,
+            "right": 71,
+            "top": 724.09375,
+            "bottom": 820.09375,
+            "width": 22,
+            "height": 96
+          },
+          "capture": {
+            "x": 49,
+            "y": 1012.09375,
+            "left": 49,
+            "right": 75,
+            "top": 1012.09375,
+            "bottom": 1142.09375,
+            "width": 26,
+            "height": 130
+          },
+          "buttons": {
+            "x": 49,
+            "y": 1142.09375,
+            "left": 49,
+            "right": 71,
+            "top": 1142.09375,
+            "bottom": 1234.09375,
+            "width": 22,
+            "height": 92
+          },
+          "status": {
+            "x": 49,
+            "y": 1186.09375,
+            "left": 49,
+            "right": 71,
+            "top": 1186.09375,
+            "bottom": 1234.09375,
+            "width": 22,
+            "height": 48
+          },
+          "focus": {
+            "x": 49,
+            "y": 1142.09375,
+            "left": 49,
+            "right": 146,
+            "top": 1142.09375,
+            "bottom": 1186.09375,
+            "width": 97,
+            "height": 44
+          },
+          "privacy": {
+            "x": 49,
+            "y": 820.09375,
+            "left": 49,
+            "right": 71,
+            "top": 820.09375,
+            "bottom": 1012.09375,
+            "width": 22,
+            "height": 192
+          },
+          "header": {
+            "x": 49,
+            "y": 660.09375,
+            "left": 49,
+            "right": 71,
+            "top": 660.09375,
+            "bottom": 724.09375,
+            "width": 22,
+            "height": 64
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 254,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "tabsCalls": [
+        {
+          "atMs": 564.3999999999651,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 680.8999999999651,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 686.2999999999884,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 761.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": true
+    },
+    {
+      "width": 390,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 496
+        },
+        {
+          "name": "load",
+          "elapsedMs": 662
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 931
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 1040
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 494.20000000001164,
+        "loadEnd": 660.5
+      },
+      "afterNavigation": {
+        "atMs": 665.1000000000349,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 929.6000000000349,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "userAction": "pointer-hover-then-edit-button",
+      "afterClick": {
+        "atMs": 1041.3000000000466,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 1086.600000000035,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "geometry": {
+        "scanner": {
+          "x": -61,
+          "y": 253.09375,
+          "left": -61,
+          "right": -39,
+          "top": 253.09375,
+          "bottom": 827.09375,
+          "width": 22,
+          "height": 574
+        },
+        "preview": {
+          "lead": {
+            "x": -61,
+            "y": 317.09375,
+            "left": -61,
+            "right": -39,
+            "top": 317.09375,
+            "bottom": 413.09375,
+            "width": 22,
+            "height": 96
+          },
+          "capture": {
+            "x": -61,
+            "y": 605.09375,
+            "left": -61,
+            "right": -35,
+            "top": 605.09375,
+            "bottom": 735.09375,
+            "width": 26,
+            "height": 130
+          },
+          "buttons": {
+            "x": -61,
+            "y": 735.09375,
+            "left": -61,
+            "right": -39,
+            "top": 735.09375,
+            "bottom": 827.09375,
+            "width": 22,
+            "height": 92
+          },
+          "status": {
+            "x": -61,
+            "y": 779.09375,
+            "left": -61,
+            "right": -39,
+            "top": 779.09375,
+            "bottom": 827.09375,
+            "width": 22,
+            "height": 48
+          },
+          "focus": {
+            "x": -61,
+            "y": 735.09375,
+            "left": -61,
+            "right": 36,
+            "top": 735.09375,
+            "bottom": 779.09375,
+            "width": 97,
+            "height": 44
+          },
+          "privacy": {
+            "x": -61,
+            "y": 413.09375,
+            "left": -61,
+            "right": -39,
+            "top": 413.09375,
+            "bottom": 605.09375,
+            "width": 22,
+            "height": 192
+          },
+          "header": {
+            "x": -61,
+            "y": 253.09375,
+            "left": -61,
+            "right": -39,
+            "top": 253.09375,
+            "bottom": 317.09375,
+            "width": 22,
+            "height": 64
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 254,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "css": {
+        "after": {
+          "scanner": {
+            "x": -61,
+            "y": 268.09375,
+            "left": -61,
+            "right": -39,
+            "top": 268.09375,
+            "bottom": 706.09375,
+            "width": 22,
+            "height": 438
+          },
+          "preview": {
+            "lead": {
+              "x": -61,
+              "y": 324.09375,
+              "left": -61,
+              "right": 36,
+              "top": 324.09375,
+              "bottom": 356.09375,
+              "width": 97,
+              "height": 32
+            },
+            "capture": {
+              "x": -61,
+              "y": 484.09375,
+              "left": -61,
+              "right": 36,
+              "top": 484.09375,
+              "bottom": 614.09375,
+              "width": 97,
+              "height": 130
+            },
+            "buttons": {
+              "x": -61,
+              "y": 622.09375,
+              "left": -61,
+              "right": 36,
+              "top": 622.09375,
+              "bottom": 706.09375,
+              "width": 97,
+              "height": 84
+            },
+            "status": {
+              "x": -61,
+              "y": 674.09375,
+              "left": -61,
+              "right": 36,
+              "top": 674.09375,
+              "bottom": 706.09375,
+              "width": 97,
+              "height": 32
+            },
+            "focus": {
+              "x": -61,
+              "y": 622.09375,
+              "left": -61,
+              "right": 36,
+              "top": 622.09375,
+              "bottom": 666.09375,
+              "width": 97,
+              "height": 44
+            },
+            "privacy": {
+              "x": -61,
+              "y": 364.09375,
+              "left": -61,
+              "right": 36,
+              "top": 364.09375,
+              "bottom": 476.09375,
+              "width": 97,
+              "height": 112
+            },
+            "header": {
+              "x": -61,
+              "y": 268.09375,
+              "left": -61,
+              "right": 36,
+              "top": 268.09375,
+              "bottom": 316.09375,
+              "width": 97,
+              "height": 48
+            }
+          },
+          "inkCollisions": {
+            "leadPrivacy": false,
+            "privacyCapture": false,
+            "focusStatus": false
+          },
+          "mappingCount": 7,
+          "mappingWidth": 254,
+          "tabsSelected": true
+        },
+        "matchingInstalledBytes": true,
+        "originallyLoaded": false,
+        "delta": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": -8,
+              "width": 75,
+              "height": -64
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": -136,
+              "width": 71,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": -128,
+              "width": 75,
+              "height": -8
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": -120,
+              "width": 75,
+              "height": -16
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": -128,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": -64,
+              "width": 75,
+              "height": -80
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 75,
+              "height": -16
+            }
+          },
+          "maxAbsDelta": 136
+        },
+        "restored": true
+      },
+      "tabsCalls": [
+        {
+          "atMs": 1028.9000000000233,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 1122.5,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 564.3999999999651,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    },
+    {
+      "width": 390,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 467
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 530
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 552
+        },
+        {
+          "name": "load",
+          "elapsedMs": 703
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 551,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=21:2402:5)"
+        }
+      ],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 464.70000000001164,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 526.7000000000116,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "beforeClick": {
+        "atMs": 528.4000000000233,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterClick": {
+        "atMs": 558.7999999999884,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 709.7999999999884,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsCalls": [
+        {
+          "atMs": 549.5,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 671.0999999999767,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 677.2999999999884,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 711.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": true
+    },
+    {
+      "width": 390,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 510
+        },
+        {
+          "name": "load",
+          "elapsedMs": 677
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 946
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 1051
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 507.9000000000233,
+        "loadEnd": 674.6000000000349
+      },
+      "afterNavigation": {
+        "atMs": 678.9000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 943.9000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "userAction": "pointer-hover-then-edit-button",
+      "afterClick": {
+        "atMs": 1050.3000000000466,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 1080.3000000000466,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsCalls": [
+        {
+          "atMs": 1038.600000000035,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 1082.2000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 549.5,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    },
+    {
+      "width": 320,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 469
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 530
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 556
+        },
+        {
+          "name": "load",
+          "elapsedMs": 708
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 555,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=20:2468:5)"
+        }
+      ],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 466.5999999999767,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 526.7999999999884,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "beforeClick": {
+        "atMs": 528.5999999999767,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterClick": {
+        "atMs": 562,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 754.5,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "geometry": {
+        "scanner": {
+          "x": 49,
+          "y": 660.09375,
+          "left": 49,
+          "right": 49,
+          "top": 660.09375,
+          "bottom": 1234.09375,
+          "width": 0,
+          "height": 574
+        },
+        "preview": {
+          "lead": {
+            "x": 49,
+            "y": 724.09375,
+            "left": 49,
+            "right": 49,
+            "top": 724.09375,
+            "bottom": 820.09375,
+            "width": 0,
+            "height": 96
+          },
+          "capture": {
+            "x": 49,
+            "y": 1012.09375,
+            "left": 49,
+            "right": 75,
+            "top": 1012.09375,
+            "bottom": 1142.09375,
+            "width": 26,
+            "height": 130
+          },
+          "buttons": {
+            "x": 49,
+            "y": 1142.09375,
+            "left": 49,
+            "right": 49,
+            "top": 1142.09375,
+            "bottom": 1234.09375,
+            "width": 0,
+            "height": 92
+          },
+          "status": {
+            "x": 49,
+            "y": 1186.09375,
+            "left": 49,
+            "right": 49,
+            "top": 1186.09375,
+            "bottom": 1234.09375,
+            "width": 0,
+            "height": 48
+          },
+          "focus": {
+            "x": 49,
+            "y": 1142.09375,
+            "left": 49,
+            "right": 146,
+            "top": 1142.09375,
+            "bottom": 1186.09375,
+            "width": 97,
+            "height": 44
+          },
+          "privacy": {
+            "x": 49,
+            "y": 820.09375,
+            "left": 49,
+            "right": 49,
+            "top": 820.09375,
+            "bottom": 1012.09375,
+            "width": 0,
+            "height": 192
+          },
+          "header": {
+            "x": 49,
+            "y": 660.09375,
+            "left": 49,
+            "right": 49,
+            "top": 660.09375,
+            "bottom": 724.09375,
+            "width": 0,
+            "height": 64
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 254,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "tabsCalls": [
+        {
+          "atMs": 553.2000000000116,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 677.9000000000233,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 683.2000000000116,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 758,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": true
+    },
+    {
+      "width": 320,
+      "locale": "en_US",
+      "kind": "scanner",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 468
+        },
+        {
+          "name": "load",
+          "elapsedMs": 658
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 928
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 1037
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": true,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 465.79999999998836,
+        "loadEnd": 655.7999999999884
+      },
+      "afterNavigation": {
+        "atMs": 660.5999999999767,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 925.7000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "userAction": "pointer-hover-then-edit-button",
+      "afterClick": {
+        "atMs": 1036.7000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 1081.2000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "geometry": {
+        "scanner": {
+          "x": -89,
+          "y": 223.09375,
+          "left": -89,
+          "right": -89,
+          "top": 223.09375,
+          "bottom": 797.09375,
+          "width": 0,
+          "height": 574
+        },
+        "preview": {
+          "lead": {
+            "x": -89,
+            "y": 287.09375,
+            "left": -89,
+            "right": -89,
+            "top": 287.09375,
+            "bottom": 383.09375,
+            "width": 0,
+            "height": 96
+          },
+          "capture": {
+            "x": -89,
+            "y": 575.09375,
+            "left": -89,
+            "right": -63,
+            "top": 575.09375,
+            "bottom": 705.09375,
+            "width": 26,
+            "height": 130
+          },
+          "buttons": {
+            "x": -89,
+            "y": 705.09375,
+            "left": -89,
+            "right": -89,
+            "top": 705.09375,
+            "bottom": 797.09375,
+            "width": 0,
+            "height": 92
+          },
+          "status": {
+            "x": -89,
+            "y": 749.09375,
+            "left": -89,
+            "right": -89,
+            "top": 749.09375,
+            "bottom": 797.09375,
+            "width": 0,
+            "height": 48
+          },
+          "focus": {
+            "x": -89,
+            "y": 705.09375,
+            "left": -89,
+            "right": 8,
+            "top": 705.09375,
+            "bottom": 749.09375,
+            "width": 97,
+            "height": 44
+          },
+          "privacy": {
+            "x": -89,
+            "y": 383.09375,
+            "left": -89,
+            "right": -89,
+            "top": 383.09375,
+            "bottom": 575.09375,
+            "width": 0,
+            "height": 192
+          },
+          "header": {
+            "x": -89,
+            "y": 223.09375,
+            "left": -89,
+            "right": -89,
+            "top": 223.09375,
+            "bottom": 287.09375,
+            "width": 0,
+            "height": 64
+          }
+        },
+        "inkCollisions": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "mappingCount": 7,
+        "mappingWidth": 254,
+        "tabsSelected": true
+      },
+      "priorGeometry": {
+        "oldInk": {
+          "leadPrivacy": true,
+          "privacyCapture": true,
+          "focusStatus": true
+        },
+        "oldCssInk": {
+          "leadPrivacy": false,
+          "privacyCapture": false,
+          "focusStatus": false
+        },
+        "baselineDrift": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 0,
+              "height": 0
+            }
+          },
+          "maxAbsDelta": 0
+        }
+      },
+      "css": {
+        "after": {
+          "scanner": {
+            "x": -89,
+            "y": 223.09375,
+            "left": -89,
+            "right": -89,
+            "top": 223.09375,
+            "bottom": 661.09375,
+            "width": 0,
+            "height": 438
+          },
+          "preview": {
+            "lead": {
+              "x": -89,
+              "y": 279.09375,
+              "left": -89,
+              "right": 8,
+              "top": 279.09375,
+              "bottom": 311.09375,
+              "width": 97,
+              "height": 32
+            },
+            "capture": {
+              "x": -89,
+              "y": 439.09375,
+              "left": -89,
+              "right": 8,
+              "top": 439.09375,
+              "bottom": 569.09375,
+              "width": 97,
+              "height": 130
+            },
+            "buttons": {
+              "x": -89,
+              "y": 577.09375,
+              "left": -89,
+              "right": 8,
+              "top": 577.09375,
+              "bottom": 661.09375,
+              "width": 97,
+              "height": 84
+            },
+            "status": {
+              "x": -89,
+              "y": 629.09375,
+              "left": -89,
+              "right": 8,
+              "top": 629.09375,
+              "bottom": 661.09375,
+              "width": 97,
+              "height": 32
+            },
+            "focus": {
+              "x": -89,
+              "y": 577.09375,
+              "left": -89,
+              "right": 8,
+              "top": 577.09375,
+              "bottom": 621.09375,
+              "width": 97,
+              "height": 44
+            },
+            "privacy": {
+              "x": -89,
+              "y": 319.09375,
+              "left": -89,
+              "right": 8,
+              "top": 319.09375,
+              "bottom": 431.09375,
+              "width": 97,
+              "height": 112
+            },
+            "header": {
+              "x": -89,
+              "y": 223.09375,
+              "left": -89,
+              "right": 8,
+              "top": 223.09375,
+              "bottom": 271.09375,
+              "width": 97,
+              "height": 48
+            }
+          },
+          "inkCollisions": {
+            "leadPrivacy": false,
+            "privacyCapture": false,
+            "focusStatus": false
+          },
+          "mappingCount": 7,
+          "mappingWidth": 254,
+          "tabsSelected": true
+        },
+        "matchingInstalledBytes": true,
+        "originallyLoaded": false,
+        "delta": {
+          "comparable": true,
+          "changes": {
+            "lead": {
+              "relativeX": 0,
+              "relativeY": -8,
+              "width": 97,
+              "height": -64
+            },
+            "capture": {
+              "relativeX": 0,
+              "relativeY": -136,
+              "width": 71,
+              "height": 0
+            },
+            "buttons": {
+              "relativeX": 0,
+              "relativeY": -128,
+              "width": 97,
+              "height": -8
+            },
+            "status": {
+              "relativeX": 0,
+              "relativeY": -120,
+              "width": 97,
+              "height": -16
+            },
+            "focus": {
+              "relativeX": 0,
+              "relativeY": -128,
+              "width": 0,
+              "height": 0
+            },
+            "privacy": {
+              "relativeX": 0,
+              "relativeY": -64,
+              "width": 97,
+              "height": -80
+            },
+            "header": {
+              "relativeX": 0,
+              "relativeY": 0,
+              "width": 97,
+              "height": -16
+            }
+          },
+          "maxAbsDelta": 136
+        },
+        "restored": true
+      },
+      "tabsCalls": [
+        {
+          "atMs": 1026.5999999999767,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 1117.2999999999884,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 553.2000000000116,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    },
+    {
+      "width": 320,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "direct",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 460
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 520
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 549
+        },
+        {
+          "name": "load",
+          "elapsedMs": 709
+        }
+      ],
+      "errors": [
+        {
+          "phase": "click",
+          "elapsedMs": 548,
+          "message": "cannot call methods on tabs prior to initialization; attempted to call method 'option'",
+          "stack": "Error: cannot call methods on tabs prior to initialization; attempted to call method 'option'\n    at ce.error (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:2741)\n    at HTMLElement.<anonymous> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:2055)\n    at ce.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:3129)\n    at e.<computed>.each (http://127.0.0.1:8080/wp-admin/load-scripts.php?c=1&load%5Bchunk_0%5D=jquery-core,jquery-migrate,wp-hooks,heartbeat,utils,wp-dom-ready&ver=6.8.3:2:1594)\n    at x.fn.<computed> (http://127.0.0.1:8080/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3:116:1794)\n    at j.fn.tabs (eval at evaluate (:291:30), <anonymous>:9:26)\n    at ShowSettings (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:69481)\n    at FieldClick (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:66644)\n    at EditField (http://127.0.0.1:8080/wp-content/plugins/gravityforms/js/form_editor.min.js?ver=3.1.1.1:1:55551)\n    at HTMLButtonElement.onclick (http://127.0.0.1:8080/wp-admin/admin.php?page=gf_edit_forms&id=21:2402:5)"
+        }
+      ],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "interactive",
+        "domContentLoadedEnd": 457.20000000001164,
+        "loadEnd": 0
+      },
+      "afterNavigation": {
+        "atMs": 517.1000000000349,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "beforeClick": {
+        "atMs": 518.7000000000116,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterClick": {
+        "atMs": 556.9000000000233,
+        "documentReady": "interactive",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 714.9000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsCalls": [
+        {
+          "atMs": 545.7000000000116,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 676.5,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs",
+              "initialized": false
+            }
+          ]
+        },
+        {
+          "atMs": 682.7000000000116,
+          "method": "initialize",
+          "targets": [
+            {
+              "id": "field_settings",
+              "className": "",
+              "initialized": false
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 716.4000000000233,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": true
+    },
+    {
+      "width": 320,
+      "locale": "en_US",
+      "kind": "native",
+      "mode": "synchronized",
+      "status": "OBSERVED",
+      "events": [
+        {
+          "name": "domcontentloaded",
+          "elapsedMs": 463
+        },
+        {
+          "name": "load",
+          "elapsedMs": 659
+        },
+        {
+          "name": "before-click",
+          "elapsedMs": 922
+        },
+        {
+          "name": "after-click",
+          "elapsedMs": 1025
+        }
+      ],
+      "errors": [],
+      "model": {
+        "scanner": false,
+        "nativeTextarea": true
+      },
+      "navigation": {
+        "readyState": "complete",
+        "domContentLoadedEnd": 461.70000000001164,
+        "loadEnd": 657.5
+      },
+      "afterNavigation": {
+        "atMs": 662.3000000000466,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "waitedTarget": ".sidebar.ui-tabs",
+      "readiness": "INSTANCE_READY",
+      "beforeClick": {
+        "atMs": 920.7000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": false,
+        "visiblePanelWidth": 0
+      },
+      "userAction": "pointer-hover-then-edit-button",
+      "afterClick": {
+        "atMs": 1025.2000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "afterPanel": {
+        "atMs": 1054.2000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsCalls": [
+        {
+          "atMs": 1012.9000000000233,
+          "method": "option",
+          "targets": [
+            {
+              "id": null,
+              "className": "sidebar ui-tabs ui-corner-all ui-widget ui-widget-content",
+              "initialized": true
+            }
+          ]
+        }
+      ],
+      "final": {
+        "atMs": 1056.2000000000116,
+        "documentReady": "complete",
+        "tabsFunction": true,
+        "nodes": [
+          {
+            "selector": "#field_settings",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": ".sidebar.ui-tabs",
+            "present": true,
+            "initialized": true
+          },
+          {
+            "selector": "#field_settings_container",
+            "present": true,
+            "initialized": false
+          },
+          {
+            "selector": "#settings_tab_item",
+            "present": true,
+            "initialized": false
+          }
+        ],
+        "active": true,
+        "visiblePanelWidth": 270
+      },
+      "tabsError": false,
+      "comparison": {
+        "directTabsError": true,
+        "synchronizedTabsError": false,
+        "directTabTargets": [
+          {
+            "atMs": 545.7000000000116,
+            "method": "option",
+            "targets": [
+              {
+                "id": null,
+                "className": "sidebar ui-tabs",
+                "initialized": false
+              }
+            ]
+          }
+        ],
+        "widgetReadyBeforeClick": true
+      }
+    }
+  ],
+  "limits": [
+    "Native-only form still loads PersianGravity",
+    "A timed-out readiness wait is not initialization proof"
+  ]
+}
