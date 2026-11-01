@@ -1,0 +1,103 @@
+{
+  "evidence_class": "AUTHENTIC_SCANNER_SAVE_RECOVERY",
+  "head": "7b48c7ec987048785eb381badcc5995e39b89a8c",
+  "mode": "repaired",
+  "locale": "en_US",
+  "wordpress": "6.8.3",
+  "gravityforms": "3.1.1.1",
+  "scenarios": [
+    {
+      "name": "invalid_create_after",
+      "registry_before": "b2c27c47caae070417f7cd9a1886214b7e7be5f6b7ed15784b0c70d18c918a8a",
+      "registry_after": "b2c27c47caae070417f7cd9a1886214b7e7be5f6b7ed15784b0c70d18c918a8a",
+      "gf_mapping_unchanged": true,
+      "observed": "INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR"
+    },
+    {
+      "name": "corrected_create_retry",
+      "registry_before": "b2c27c47caae070417f7cd9a1886214b7e7be5f6b7ed15784b0c70d18c918a8a",
+      "registry_after": "87a5b2689243a45f9035218330ea7ef04ee174d762c699dafd40ce1b5ade51d3",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_SAVED"
+    },
+    {
+      "name": "invalid_edit_retention",
+      "registry_before": "87a5b2689243a45f9035218330ea7ef04ee174d762c699dafd40ce1b5ade51d3",
+      "registry_after": "87a5b2689243a45f9035218330ea7ef04ee174d762c699dafd40ce1b5ade51d3",
+      "gf_mapping_unchanged": true,
+      "observed": "IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES"
+    },
+    {
+      "name": "corrected_edit_retry",
+      "registry_before": "87a5b2689243a45f9035218330ea7ef04ee174d762c699dafd40ce1b5ade51d3",
+      "registry_after": "d6235b3775af74757cf949481452d79128421286a9a5164dc5fca9354e934f40",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_EDIT_SAVED"
+    },
+    {
+      "name": "stale_edit_conflict",
+      "registry_before": "87a10794c1ece3645e09e613f17f3941c1bfda5cf313da635b89c3f4dbeb0173",
+      "registry_after": "87a10794c1ece3645e09e613f17f3941c1bfda5cf313da635b89c3f4dbeb0173",
+      "gf_mapping_unchanged": true,
+      "observed": "REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED"
+    }
+  ],
+  "persisting_registry_data": "DISPOSABLE_WU008_ONLY",
+  "screenshots": [
+    {
+      "filename": "en_US-after-invalid-create-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-create-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-create-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    }
+  ],
+  "status": "PASS"
+}

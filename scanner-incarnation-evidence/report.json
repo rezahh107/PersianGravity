@@ -1,0 +1,524 @@
+{
+  "evidence_class": "AUTHENTIC_WORDPRESS_GFAPI_SCANNER_INCAR_QUALIFICATION",
+  "qualification_head": "7b48c7ec987048785eb381badcc5995e39b89a8c",
+  "reviewed_production_head": "c7c5377e93f5f4f704acc797dc67ea8554b5dfd7",
+  "wordpress": "6.8.3",
+  "php": "8.2.35",
+  "versions": {
+    "gravityforms": "3.1.1.1",
+    "gravityflow": "3.1.0",
+    "gravityview": "3.3.4",
+    "persiangravity": "4.10.0",
+    "gravityperks": "2.3.16",
+    "gpfileuploadpro": "1.5.13",
+    "gpadvancedselect": "1.1.21"
+  },
+  "chromium": "140.0.7339.16",
+  "session": "same_authenticated_browser_context",
+  "nonce": "genuine_wp_nonce_field_and_admin_post_check_admin_referer_not_stubbed",
+  "cases": [
+    {
+      "case": "unchanged",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "unchanged-original-confirmation.jpg",
+        "unchanged-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Original",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "action": "create_a",
+        "case": "unchanged"
+      },
+      "response": {
+        "status": 200,
+        "notice": "deleted"
+      },
+      "after_post": {
+        "exists": false,
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "unchanged"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    },
+    {
+      "case": "missing",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "independent_canonical_registry_delete_A",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "missing-original-confirmation.jpg",
+        "missing-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": false,
+        "gfapi_mapping_unchanged": true,
+        "action": "delete_a",
+        "case": "missing"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": false,
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "missing"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    },
+    {
+      "case": "changed_label",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "independent_canonical_registry_delete_A",
+        "different_executable_definition_B_persisted_with_same_alpha_ID",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "changed_label-original-confirmation.jpg",
+        "changed_label-recreated-B-before-old-POST.jpg",
+        "changed_label-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Beta",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "recreate_b",
+        "case": "changed_label"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Beta",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "changed_label"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    },
+    {
+      "case": "same_label",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "independent_canonical_registry_delete_A",
+        "different_executable_definition_B_persisted_with_same_alpha_ID",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "same_label-original-confirmation.jpg",
+        "same_label-recreated-B-before-old-POST.jpg",
+        "same_label-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "recreate_b",
+        "case": "same_label"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "same_label"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": false
+    },
+    {
+      "case": "enabled_only",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "canonical_registry_in_place_validated_metadata_edit",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "enabled_only-original-confirmation.jpg",
+        "enabled_only-recreated-B-before-old-POST.jpg",
+        "enabled_only-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": false,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Original",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "edit_a",
+        "case": "enabled_only"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": false,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Original",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "enabled_only"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    },
+    {
+      "case": "output_label_only",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "canonical_registry_in_place_validated_metadata_edit",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "output_label_only-original-confirmation.jpg",
+        "output_label_only-recreated-B-before-old-POST.jpg",
+        "output_label_only-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Replacement output label",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "edit_a",
+        "case": "output_label_only"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Replacement output label",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "output_label_only"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    },
+    {
+      "case": "fresh_b",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "independent_canonical_registry_delete_A",
+        "different_executable_definition_B_persisted_with_same_alpha_ID",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session",
+        "new_B_specific_confirmation_nonce_legitimately_deleted_B"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "fresh_b-original-confirmation.jpg",
+        "fresh_b-recreated-B-before-old-POST.jpg",
+        "fresh_b-after-new-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "recreate_b",
+        "case": "fresh_b"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": false,
+        "normalize": false,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "replacement",
+            "label": "Replacement",
+            "required": true
+          }
+        ],
+        "keys": [
+          "replacement"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "fresh_b"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null,
+      "fresh_b": {
+        "notice": "deleted",
+        "deleted": true,
+        "gfapi_mapping_unchanged": true
+      }
+    },
+    {
+      "case": "identical_content",
+      "steps": [
+        "genuine_registry_created_A",
+        "original_GET_decision_and_nonce_preserved_in_memory",
+        "independent_canonical_registry_delete_A",
+        "different_executable_definition_B_persisted_with_same_alpha_ID",
+        "old_A_nonce_post_sent_via_same_authenticated_WordPress_session"
+      ],
+      "state": "OBSERVED",
+      "nonce_present": true,
+      "images": [
+        "identical_content-original-confirmation.jpg",
+        "identical_content-recreated-B-before-old-POST.jpg",
+        "identical_content-after-old-POST.jpg"
+      ],
+      "before_stale_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Original",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "recreate_b",
+        "case": "identical_content"
+      },
+      "response": {
+        "status": 200,
+        "notice": "delete_error"
+      },
+      "after_post": {
+        "exists": true,
+        "id": "alpha",
+        "label": "Alpha",
+        "trim": true,
+        "normalize": true,
+        "enabled": true,
+        "outputs": [
+          {
+            "key": "original",
+            "label": "Original",
+            "required": true
+          }
+        ],
+        "keys": [
+          "original"
+        ],
+        "gfapi_mapping_unchanged": true,
+        "action": "inspect",
+        "case": "identical_content"
+      },
+      "original_nonce_still_verified": true,
+      "b_deleted_by_A_confirmation": null
+    }
+  ],
+  "limitations": [
+    "Disposable WordPress candidate only; unmerged production source changed on test Head",
+    "WP-CLI uses the canonical Registry API for independent deletion and recreation",
+    "No raw session cookies or nonces are stored in evidence",
+    "Runtime observation alone does not establish whether incarnation protection is Owner-approved policy",
+    "Per-creation identity must distinguish identical-content recreations",
+    "Single-request deterministic pre-CAS hook does not prove real two-worker concurrency or persistent object-cache coherence"
+  ],
+  "boundary_interleaving": {
+    "state": "OBSERVED_CONFLICT_REJECTED",
+    "notice": "delete_error",
+    "old_a_confirmation_deleted_replacement_b": false,
+    "gfapi_mapping_unchanged": true,
+    "marker": {
+      "probe": "WU008_REGISTRY_PRE_CAS_INTERLEAVING",
+      "original_was_read": true,
+      "replacement_persisted_before_cas": true,
+      "replacement_content_differs": true,
+      "mutation_elapsed_ms": 2.779,
+      "mechanism": "WordPress update_option pre-write action intercepted guarded Registry CAS after validated A snapshot",
+      "actual_parallel_workers": false
+    },
+    "images": [
+      "interleaved_replace-original-confirmation.jpg",
+      "interleaved_replace-after-old-POST.jpg"
+    ],
+    "true_concurrent_workers": "NOT_PROVEN"
+  },
+  "finding": "IDENTICAL_CONTENT_AND_PRE_CAS_INTERLEAVING_REJECTED",
+  "state": "QUALIFICATION_COMPLETE"
+}
