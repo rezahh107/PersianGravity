@@ -115,15 +115,55 @@ export async function exerciseNativeInboxInteractions(page, rawDueFilter, expect
   const beforeWidth=await widths();
   const resize=header('created_by').locator('.ag-header-cell-resize').first();
   await resize.waitFor({timeout:10000});
-  const rect=await resize.boundingBox();
-  if(!rect)throw Error('Native column resize handle has no layout');
-  await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);
+  // The real Flow 3.1.0 / AG Grid handle is not necessarily hit-testable at
+  // its bounding-box centre (observed in the OFF/ag-ltr control). Find an
+  // actual native pointer target, not a neighbouring header or loading layer.
+  // The expansion axis follows the physical side of that handle, not the
+  // WordPress document direction or a hard-coded positive mouse movement.
+  const geometry=await page.evaluate(()=>{
+    const host=document.querySelector('[data-js="gflow-inbox"]');
+    const cell=host?.querySelector('.ag-header-cell[col-id="created_by"]');
+    const handle=cell?.querySelector('.ag-header-cell-resize');
+    const opts=window.gflow_config?.grids?.[host?.dataset.gridId]?.grid_options;
+    const definition=opts?.columnDefs?.find(c=>c.field==='created_by');
+    if(!cell||!handle||!definition||definition.resizable===false)
+      throw Error('Native created_by resize is not admitted by vendor column definitions');
+    const h=cell.getBoundingClientRect(),r=handle.getBoundingClientRect();
+    if(h.width<=0||r.width<=0||r.height<=0)
+      throw Error('Native resize handle has no measurable layout');
+    const y=r.top+r.height/2,centre=r.left+r.width/2;
+    const targetAt=x=>{
+      const target=document.elementFromPoint(x,y);
+      return target===handle||handle.contains(target);
+    };
+    let x=targetAt(centre)?centre:null;
+    if(x===null)for(let candidate=r.left+0.5;candidate<r.right;candidate+=0.5){
+      if(targetAt(candidate)){x=candidate;break;}
+    }
+    if(x===null)throw Error('Native resize handle is obscured or not pointer-hit-testable');
+    const handleCentre=r.left+r.width/2,headerCentre=h.left+h.width/2;
+    if(Math.abs(handleCentre-headerCentre)<h.width/4)
+      throw Error('Native resize handle side is ambiguous');
+    const physicalExpansion=handleCentre<headerCentre?-1:1;
+    return {x,y,physicalExpansion,headerLeft:h.left,headerRight:h.right,
+      headerWidth:h.width,handleLeft:r.left,handleRight:r.right,
+      gridClass:host.querySelector('.ag-root-wrapper')?.className||null,
+      columnDefinition:{field:definition.field,resizable:definition.resizable,
+        minWidth:definition.minWidth??null,maxWidth:definition.maxWidth??null}};
+  });
+  const endX=geometry.x+geometry.physicalExpansion*55;
+  await page.mouse.move(geometry.x,geometry.y);
   await page.mouse.down();
-  await page.mouse.move(rect.x+rect.width/2+55,rect.y+rect.height/2,{steps:8});
+  await page.mouse.move(endX,geometry.y,{steps:8});
   await page.mouse.up();
   const afterWidth=await widths();
-  if(Math.abs(afterWidth-beforeWidth)<8)throw Error('Native column resize did not change width');
-  report.resize={beforeWidth,afterWidth};
+  const growth=afterWidth-beforeWidth;
+  // Require a material native *expansion* with the expected 55px mouse drag.
+  // A no-op, min-width clamp, wrong handle or unrelated shrink cannot pass.
+  if(growth<35||growth>75)
+    throw Error('Native column resize did not expand from a genuine handle: '+
+      JSON.stringify({beforeWidth,afterWidth,growth,geometry}));
+  report.resize={beforeWidth,afterWidth,growth,geometry,dragEndX:endX};
 
   const visualColumnOrder=()=>page.locator(`${scope} .ag-header-cell[col-id]`).evaluateAll(nodes=>
     nodes.map(el=>({id:el.getAttribute('col-id'),x:el.getBoundingClientRect().left}))
