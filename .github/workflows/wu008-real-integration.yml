@@ -921,12 +921,23 @@ jobs:
           printf -- '- [en_US detailed geometry, cascade, keyboard focusables](geometry-en_US.json)\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
           printf '\nOnly browser-memory CSS changed during A/B. No Registry mutation or form submission.\n' >> "$WU008_ARTIFACT_DIR/scanner-ui-readonly-evidence/README.md"
 
-      - name: Prove Scanner failed-save retention and safe retry with real browser
+      - name: Prove bilingual Scanner failed-save recovery and safe retry in real browser
         shell: bash
         run: |
           set -euo pipefail
-          SCANNER_SAVE_MODE=repaired node tests/real-integration/scanner-save-recovery-browser.mjs
-          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report.json"
+          restore_scanner_save_locale() {
+            php "$WU008_WP_CLI" option update WPLANG fa_IR --path="$WU008_WP_PATH"
+          }
+          trap restore_scanner_save_locale EXIT
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "fa_IR"
+          SCANNER_SAVE_MODE=repaired SCANNER_SAVE_LOCALE=fa_IR node tests/real-integration/scanner-save-recovery-browser.mjs
+          php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
+          test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          SCANNER_SAVE_MODE=repaired SCANNER_SAVE_LOCALE=en_US node tests/real-integration/scanner-save-recovery-browser.mjs
+          restore_scanner_save_locale
+          trap - EXIT
+          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report-fa_IR.json"
+          test -s "$WU008_ARTIFACT_DIR/scanner-save-recovery-evidence/report-en_US.json"
 
       - name: Compare real GF tabs initialization against synchronized native pointer clicks
         shell: bash
