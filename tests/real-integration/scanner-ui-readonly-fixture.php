@@ -11,9 +11,43 @@ if (!$dir || !preg_match('/^[a-f0-9]{40}$/', (string)$expected) ||
     !class_exists('PGR_GF_Field_Structured_Scanner')) {
     throw new RuntimeException('Missing authentic WU008 runtime or Scanner field');
 }
-$package = json_decode(file_get_contents(PGR_PATH . 'release-manifest.json'), true, 512, JSON_THROW_ON_ERROR);
+$manifest_path = PGR_PATH . 'release-manifest.json';
+if (is_file($manifest_path)) {
+    $package = json_decode(file_get_contents($manifest_path), true, 512, JSON_THROW_ON_ERROR);
+} else {
+    // Dedicated Scanner Editor fixture installs an exact detached source checkout,
+    // not a build ZIP. Prove the actual included PHP bytes and CSS against Git
+    // blobs, not merely the worktree HEAD.
+    $repo = rtrim(PGR_PATH, '/');
+    $git = static function ($args) use ($repo) {
+        $command = 'git -C ' . escapeshellarg($repo) . ' ' . $args . ' 2>/dev/null';
+        $output = array();
+        $status = 0;
+        exec($command, $output, $status);
+        if (0 !== $status) { throw new RuntimeException('Git content provenance unavailable'); }
+        return implode("\n", $output);
+    };
+    $head = trim($git('rev-parse HEAD'));
+    $tree = trim($git('rev-parse HEAD^{tree}'));
+    $field_path = realpath(PGR_PATH . 'includes/fields/class-gf-field-structured-scanner.php');
+    $reflected = realpath((new ReflectionClass('PGR_GF_Field_Structured_Scanner'))->getFileName());
+    if (!$field_path || $field_path !== $reflected || $head !== $expected) {
+        throw new RuntimeException('Actual loaded Structured Scanner PHP does not match checked-out identity');
+    }
+    foreach (array('includes/fields/class-gf-field-structured-scanner.php',
+                   'assets/css/pgr-scanner-editor.css',
+                   'assets/css/pgr-structured-scanner.css') as $file) {
+        $git_bytes = trim($git('show HEAD:' . escapeshellarg($file))) . "\n";
+        $actual_bytes = file_get_contents(PGR_PATH . $file);
+        if (!is_string($actual_bytes) || hash('sha256', $actual_bytes) !==
+            hash('sha256', $git_bytes)) {
+            throw new RuntimeException('Installed plugin file differs from pinned Git blob: ' . $file);
+        }
+    }
+    $package = array('source_commit'=>$head, 'source_tree'=>$tree);
+}
 if (($package['source_commit'] ?? '') !== $expected) {
-    throw new RuntimeException('Installed production package SHA does not match test head');
+    throw new RuntimeException('Installed product code does not match exact test HEAD');
 }
 $form = array(
     'title' => 'Scanner UI Readonly Qualification Fixture',
