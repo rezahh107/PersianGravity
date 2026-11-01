@@ -1,0 +1,226 @@
+{
+  "head": "4c8f129adf97c1217f96bfb4497f4f5653d18800",
+  "locale": "en_US",
+  "mode": "normal",
+  "runtime": {
+    "versions": {
+      "gravityforms": "3.1.1.1",
+      "gravityflow": "3.1.0",
+      "gravityview": "3.3.4",
+      "persiangravity": "4.10.0",
+      "gravityperks": "2.3.16",
+      "gpfileuploadpro": "1.5.13",
+      "gpadvancedselect": "1.1.21"
+    },
+    "php": "8.2.35"
+  },
+  "browser": {
+    "chromium": "140.0.7339.16",
+    "device_scale_factor": 1,
+    "licensed_wordpress": true
+  },
+  "cases": [
+    {
+      "width": 1280,
+      "height": 900,
+      "status": "PASS",
+      "initial": {
+        "viewport_width": 1280,
+        "document_scroll_width": 1280,
+        "document_client_width": 1280,
+        "region_client_width": 1036,
+        "region_scroll_width": 1036,
+        "region_scroll_left": 0,
+        "region_left": 203,
+        "region_right": 1239,
+        "overflow_x": "auto",
+        "direction": "ltr",
+        "focusable": true,
+        "region_role": "region",
+        "labelled_by": "pgr-gravity-flow-compatibility-heading",
+        "header_count": 5,
+        "row_count": 13,
+        "data_cell_counts": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "focus_outline": "none"
+      },
+      "screenshot": "status-after-normal-en_US-1280.jpg",
+      "long_values": {
+        "document_scroll_width": 1280,
+        "region_scroll_width": 5767
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "status": "PASS",
+      "initial": {
+        "viewport_width": 390,
+        "document_scroll_width": 390,
+        "document_client_width": 390,
+        "region_client_width": 326,
+        "region_scroll_width": 760,
+        "region_scroll_left": 0,
+        "region_left": 31,
+        "region_right": 357,
+        "overflow_x": "auto",
+        "direction": "ltr",
+        "focusable": true,
+        "region_role": "region",
+        "labelled_by": "pgr-gravity-flow-compatibility-heading",
+        "header_count": 5,
+        "row_count": 13,
+        "data_cell_counts": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "focus_outline": "none"
+      },
+      "screenshot": "status-after-normal-en_US-390.jpg",
+      "last_column": {
+        "reachable": true,
+        "last_left": 234.5625,
+        "last_right": 356
+      },
+      "keyboard": {
+        "key": "ArrowRight",
+        "scroll_left": 320,
+        "outline": "solid"
+      },
+      "pointer_target": {
+        "x": 194,
+        "y": 422,
+        "clip": {
+          "left": 31,
+          "right": 357,
+          "top": 0,
+          "bottom": 844
+        },
+        "hit": {
+          "inside": true,
+          "node": "td"
+        }
+      },
+      "pointer": {
+        "scroll_left": 290,
+        "delta_x": 290
+      },
+      "touch": {
+        "scroll_left": 296,
+        "swipe_sign": -1
+      },
+      "long_values": {
+        "document_scroll_width": 390,
+        "region_scroll_width": 760
+      }
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "status": "PASS",
+      "initial": {
+        "viewport_width": 320,
+        "document_scroll_width": 320,
+        "document_client_width": 320,
+        "region_client_width": 256,
+        "region_scroll_width": 760,
+        "region_scroll_left": 0,
+        "region_left": 31,
+        "region_right": 287,
+        "overflow_x": "auto",
+        "direction": "ltr",
+        "focusable": true,
+        "region_role": "region",
+        "labelled_by": "pgr-gravity-flow-compatibility-heading",
+        "header_count": 5,
+        "row_count": 13,
+        "data_cell_counts": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "focus_outline": "none"
+      },
+      "screenshot": "status-after-normal-en_US-320.jpg",
+      "last_column": {
+        "reachable": true,
+        "last_left": 164.5625,
+        "last_right": 286
+      },
+      "keyboard": {
+        "key": "ArrowRight",
+        "scroll_left": 320,
+        "outline": "solid"
+      },
+      "pointer_target": {
+        "x": 159,
+        "y": 350,
+        "clip": {
+          "left": 31,
+          "right": 287,
+          "top": 0,
+          "bottom": 700
+        },
+        "hit": {
+          "inside": true,
+          "node": "td"
+        }
+      },
+      "pointer": {
+        "scroll_left": 290,
+        "delta_x": 290
+      },
+      "touch": {
+        "scroll_left": 292,
+        "swipe_sign": -1
+      },
+      "long_values": {
+        "document_scroll_width": 320,
+        "region_scroll_width": 760
+      },
+      "stress_screenshot": "status-stress-normal-en_US-320.jpg",
+      "negative": {
+        "document_width": 791,
+        "viewport_width": 320,
+        "overflow": "visible"
+      },
+      "negative_screenshot": "status-negative-uncontained-normal-en_US-320.jpg"
+    }
+  ],
+  "negative_control": "DETECTED_AND_RESTORED",
+  "status": "CAPTURED"
+}
