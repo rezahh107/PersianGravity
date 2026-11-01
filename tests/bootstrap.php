@@ -120,8 +120,4 @@ class PGR_Test_Scanner_WPDB {
 }
 function maybe_serialize( $value ) { return is_array( $value ) || is_object( $value ) ? serialize( $value ) : $value; }
 function maybe_unserialize( $value ) { $decoded = @unserialize( $value ); return false === $decoded ? $value : $decoded; }
-function wp_generate_uuid4() {
-	$hex = bin2hex( random_bytes( 16 ) );
-	return substr( $hex, 0, 8 ) . '-' . substr( $hex, 8, 4 ) . '-4' . substr( $hex, 13, 3 ) . '-a' . substr( $hex, 17, 3 ) . '-' . substr( $hex, 20, 12 );
-}
 function wp_cache_delete( $key, $group = '' ) { unset( $GLOBALS['pgr_test_cache'][ $group ][ $key ] ); return true; }
