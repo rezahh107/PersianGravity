@@ -951,6 +951,13 @@ jobs:
           set -euo pipefail
           # Redis backend, PhpRedis, and the Redis Object Cache 2.8.0 plugin
           # run only in this disposable installation after other UI checks.
+          # Restore the drop-in and plugin even when the proof fails.
+          cleanup_scanner_test_redis() {
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" redis disable || true
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin deactivate redis-cache || true
+            php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin delete redis-cache || true
+          }
+          trap cleanup_scanner_test_redis EXIT
           php -r 'if (!extension_loaded("redis")) { exit(1); }'
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin install redis-cache --version=2.8.0 --activate
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin get redis-cache --field=version)" = "2.8.0"
@@ -978,8 +985,10 @@ jobs:
           WU008_CAS_EVIDENCE_SUBDIR=scanner-redis-cas-worker-evidence WU008_CAS_ROLE=verify php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/real-integration/scanner-profile-cas-workers.php
           test -s "$WU008_ARTIFACT_DIR/scanner-redis-cas-worker-evidence/report.json"
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" redis disable
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin deactivate redis-cache
           php "$WU008_WP_CLI" --path="$WU008_WP_PATH" plugin delete redis-cache
           test ! -e "$WU008_WP_PATH/wp-content/object-cache.php"
+          trap - EXIT
 
       - name: Verify real consequential module-disable decisions in disposable licensed WordPress
         shell: bash
