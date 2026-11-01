@@ -134,6 +134,30 @@ try {
     await capture('after-stale-edit');
     evidence('stale_edit_conflict', newerHash, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED' });
+
+    // The disposable must-use fixture rejects only this synthetic new profile
+    // via the standard pre_update_option filter. This qualifies the Registry's
+    // write-failure return path, not an actual MySQL outage.
+    await page.goto(url('&action=new'));
+    await page.locator('.pgr-profile-form').waitFor();
+    const rejectedId = 'wu008_denied_save_' + (locale === 'fa_IR' ? 'fa' : 'en');
+    await page.locator('input[name="profile[id]"]').fill(rejectedId);
+    await page.locator('input[name="profile[label]"]').fill('WU008_DENY_SCANNER_SAVE');
+    await page.locator('input[name="profile[outputs][0][key]"]').fill('valid_output');
+    await page.locator('input[name="profile[outputs][0][label]"]').fill('Synthetic test output');
+    const writeBefore = registryHash();
+    await Promise.all([page.waitForNavigation(), page.locator('.pgr-profile-form input[type="submit"]').click()]);
+    const failNotice = await page.locator('#pgr-profile-save-error').innerText();
+    if (await page.locator('.pgr-profile-form').count() !== 1 ||
+        await page.locator('input[name="profile[id]"]').inputValue() !== rejectedId ||
+        await page.locator('input[name="profile[label]"]').inputValue() !== 'WU008_DENY_SCANNER_SAVE' ||
+        (locale === 'fa_IR' ? !failNotice.includes('ذخیره نشد') : !failNotice.includes('could not be written')) ||
+        registryHash() !== writeBefore || JSON.parse(current(rejectedId)) !== null) {
+      throw new Error('Controlled rejected write did not preserve entries, explain failure, or maintain Registry state');
+    }
+    await capture('after-write-failure');
+    evidence('controlled_write_failure', writeBefore, registryHash(), {
+      gf_mapping_unchanged: gfHash() === gfBefore, observed: 'PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED' });
   }
   if (report.scenarios.some(x => !x.gf_mapping_unchanged)) throw new Error('GFAPI mapping changed');
   report.screenshots = screenshotStates;
