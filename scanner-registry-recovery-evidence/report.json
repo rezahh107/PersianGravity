@@ -1,0 +1,20 @@
+{
+    "evidence_class": "WU008_REAL_WPDB_MIGRATION_AND_RECOVERY",
+    "exact_head": "e6292b1ac7b5d80c388a4d7ed0554ebdfb3f73e4",
+    "wordpress": "6.8.3",
+    "checks": {
+        "verified_raw_backup": true,
+        "no_automatic_migration": true,
+        "wrong_backup_hash_rejected": true,
+        "real_wpdb_query_failure_preserved_v1": true,
+        "lossless_v2_migration_gfapi_and_cache_readback": true,
+        "repeated_migration_idempotent": true,
+        "raw_backup_restored_with_post_backup_changes_lost": true,
+        "restored_backup_can_remigrate": true,
+        "original_test_registry_restored_byte_exact": true
+    },
+    "matched_version_plugin_restore": "NOT_PROVEN",
+    "production_restore": "NOT_ATTEMPTED",
+    "persistent_cache": "NOT_PROVEN",
+    "backup_contents_in_artifact": false
+}
