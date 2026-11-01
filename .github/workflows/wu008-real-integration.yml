@@ -892,7 +892,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # No production changes: execute the real existing Registry/handler in the disposable WU008 installation.
+          # Execute the candidate Registry/handler in disposable WordPress (not production).
           php "$WU008_WP_CLI" option delete WPLANG --path="$WU008_WP_PATH"
           test "$(php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval 'echo get_locale();')" = "en_US"
           node tests/real-integration/scanner-profile-incarnation-browser.mjs
@@ -1428,11 +1428,11 @@ jobs:
           assert(cases.fresh_b.fresh_b?.notice==='deleted'&&cases.fresh_b.fresh_b?.deleted===true &&
             cases.fresh_b.fresh_b?.gfapi_mapping_unchanged===true,
             'fresh B-specific confirmation not proven');
-          assert(cases.identical_content.response?.notice==='deleted'&&
+          assert(cases.identical_content.response?.notice==='delete_error'&&
             cases.identical_content.before_stale_post.exists===true &&
-            cases.identical_content.after_post.exists===false,
-            'identical-content residual not honestly observed');
-          assert(report.finding==='IDENTICAL_CONTENT_AND_CHECK_DELETE_INTERLEAVING_UNSAFE','false repair classification');
+            cases.identical_content.after_post.exists===true,
+            'identical-content replacement was not protected');
+          assert(report.finding==='IDENTICAL_CONTENT_AND_PRE_CAS_INTERLEAVING_REJECTED','false repair classification');
           const expected=new Set(['README.md','report.json']);
           const readme=fs.readFileSync(path.join(dir,'README.md'),'utf8');
           for(const name of names) {
@@ -1453,12 +1453,12 @@ jobs:
             }
           }
           const race=report.boundary_interleaving;
-          assert(race?.state==='OBSERVED_UNSAFE_INTERLEAVING' &&
-            race.notice==='deleted' && race.old_a_confirmation_deleted_replacement_b===true &&
+          assert(race?.state==='OBSERVED_CONFLICT_REJECTED' &&
+            race.notice==='delete_error' && race.old_a_confirmation_deleted_replacement_b===false &&
             race.gfapi_mapping_unchanged===true && race.true_concurrent_workers==='NOT_PROVEN',
             'interleaving test result missing or misclassified');
-          assert(race.marker?.probe==='WU008_REGISTRY_PRE_DELETE_READ_INTERLEAVING' &&
-            race.marker.replacement_persisted_before_delete_read===true &&
+          assert(race.marker?.probe==='WU008_REGISTRY_PRE_CAS_INTERLEAVING' &&
+            race.marker.replacement_persisted_before_cas===true &&
             race.marker.replacement_content_differs===true &&
             race.marker.actual_parallel_workers===false &&
             Number.isFinite(race.marker.mutation_elapsed_ms),
@@ -1483,7 +1483,7 @@ jobs:
             'unverified/missing incarnation evidence files');
           assert(readme.includes(head)&&readme.includes(report.finding),'summary not source bound');
           console.log('SCANNER_INCAR_PUBLICATION_GATE QUALIFIED: '+report.finding+
-            ' cases=8 images=24 race=UNSAFE_INTERLEAVING exactHead='+head);
+            ' cases=8 images=24 race=CAS_CONFLICT_REJECTED exactHead='+head);
           PGR_INCAR_QUALIFICATION_EVIDENCE_GATE
 
       - name: Publish verified evidence with exact commit links
