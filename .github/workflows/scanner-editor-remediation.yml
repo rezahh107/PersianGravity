@@ -172,6 +172,51 @@ jobs:
           set -euo pipefail
           node tests/real-integration/scanner-editor-remediation.mjs
 
+      - name: Capture authentic read-only Scanner UI in both WordPress locales
+        id: scanner_ui
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/real-integration/scanner-ui-readonly-fixture.php
+          node --check tests/real-integration/scanner-ui-readonly-browser.mjs
+          export WU008_WP_PATH="$PGR_SCANNER_WP_PATH"
+          export WU008_ARTIFACT_DIR="$PGR_SCANNER_ARTIFACT_DIR"
+          export WU008_MANIFEST_PATH="$PGR_SCANNER_ARTIFACT_DIR/runtime-manifest.json"
+          export WU008_PGR_SHA="$PGR_REMEDIATION_SHA"
+          export WU008_ADMIN_PASSWORD="$PGR_SCANNER_ADMIN_PASSWORD"
+          php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval-file tests/real-integration/admin-ui-evidence-fixture.php
+          php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval-file tests/real-integration/scanner-ui-readonly-fixture.php
+          restore_locale() {
+            php "$PGR_SCANNER_WP_CLI" option update WPLANG fa_IR --path="$PGR_SCANNER_WP_PATH"
+          }
+          trap restore_locale EXIT
+          WU008_SCANNER_AUDIT_LOCALE=fa_IR node tests/real-integration/scanner-ui-readonly-browser.mjs
+          php "$PGR_SCANNER_WP_CLI" option delete WPLANG --path="$PGR_SCANNER_WP_PATH"
+          test "$(php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval 'echo get_locale();')" = "en_US"
+          WU008_SCANNER_AUDIT_LOCALE=en_US node tests/real-integration/scanner-ui-readonly-browser.mjs
+          restore_locale
+          trap - EXIT
+          test -s "$PGR_SCANNER_ARTIFACT_DIR/scanner-ui-qualification-evidence/CONTACT_SHEET.md"
+          # The old rollback fixture requires a completely absent Registry.
+          # Our isolated UI long-name fixture is the sole Registry record;
+          # remove only its disposable option AFTER all browser observations.
+          php "$PGR_SCANNER_WP_CLI" --path="$PGR_SCANNER_WP_PATH" eval '
+            $option = PGR_Scanner_Profile_Registry::OPTION;
+            $raw = get_option($option, false);
+            if (!is_array($raw) ||
+                ($raw["schema_version"] ?? 0) !== 2 ||
+                count($raw["profiles"] ?? array()) !== 1 ||
+                ($raw["profiles"][0]["id"] ?? "") !== "wu008_ui_long_label") {
+              throw new RuntimeException("UI fixture not sole disposable Registry entry: refusing cleanup");
+            }
+            if (!delete_option($option) ||
+                get_option($option, false) !== false ||
+                PGR_Scanner_Profile_Registry::get("wu008_ui_long_label") !== null) {
+              throw new RuntimeException("Disposable UI fixture cleanup or readback failed");
+            }
+            echo "SCANNER_UI_DISPOSABLE_REGISTRY_RESTORED_ABSENT\n";
+          '
+
       - name: Rehearse real v4.10.0 matched-binary Registry rollback (disposable only)
         id: matched_rollback
         continue-on-error: true
@@ -250,3 +295,93 @@ jobs:
           test "${{ steps.browser.outcome }}" = "success"
           echo "matched rollback outcome: ${{ steps.matched_rollback.outcome }}"
           test "${{ steps.matched_rollback.outcome }}" = "success"
+
+  publish-scanner-ui:
+    name: Publish independent exact-Head Scanner UI screenshots
+    needs: scanner-editor-browser
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download read-only evidence as untrusted data
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
+        with:
+          name: scanner-editor-remediation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: /tmp/scanner-ui-downloaded
+      - name: Validate screenshots, exact source identity and scenario geometry
+        shell: bash
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'PGR_SCANNER_UI_GATE'
+          import fs from 'node:fs'; import path from 'node:path';
+          const dir='/tmp/scanner-ui-downloaded/pgr-scanner-artifacts/scanner-ui-qualification-evidence';
+          const check=(v,m)=>{if(!v)throw Error('SCANNER_UI_GATE: '+m);};
+          const names=new Set(['fixture.json','CONTACT_SHEET.md','manifest-fa_IR.json','manifest-en_US.json']);
+          for(const l of ['fa_IR','en_US'])for(const w of [1280,390,320]){
+            for(const s of ['list','create','edit','built-in','builder'])
+              names.add('scanner-ui-'+l+'-'+s+'-'+w+'.png');
+            for(const s of ['grid-one-column','preview-css-control'])
+              names.add('scanner-ui-'+l+'-builder-'+s+'-'+w+'.png');
+          }
+          const actual=fs.readdirSync(dir);
+          check(actual.length===names.size,'missing or extra files');
+          for(const file of actual){
+            const full=path.join(dir,file),s=fs.lstatSync(full);
+            check(names.has(file)&&s.isFile()&&!s.isSymbolicLink()&&s.size>0&&s.size<8*1024*1024,
+              'unexpected file '+file);
+            if(file.endsWith('.png')){
+              const b=fs.readFileSync(full),w=Number(file.match(/-(1280|390|320)\.png$/)[1]);
+              check(b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) &&
+                b.readUInt32BE(16)>=w&&b.readUInt32BE(20)>=700,'invalid or cropped PNG '+file);
+            }
+          }
+          const f=JSON.parse(fs.readFileSync(path.join(dir,'fixture.json'),'utf8'));
+          check(f.source_commit_installed===process.env.EXPECTED&&f.output_count===7&&f.form_id>0,
+            'fixture identity');
+          for(const l of ['fa_IR','en_US']){
+            const m=JSON.parse(fs.readFileSync(path.join(dir,'manifest-'+l+'.json'),'utf8'));
+            check(m.exact_test_head===process.env.EXPECTED&&m.installed_package===process.env.EXPECTED&&
+              m.locale===l&&m.no_form_submission===true&&m.no_registry_mutation_by_observer===true&&
+              m.cases.length===15,'runtime identity or missing scenarios');
+            for(const x of m.cases){
+              check(x.status==='CAPTURED_UNREVIEWED'&&names.has(x.screenshot)&&
+                x.before.page.fontsReady==='loaded','unverified browser result');
+              if(x.state==='builder')check(x.plugin_css_proof?.identical===true&&
+                x.one_variable?.screenshot&&x.preview_stylesheet_control?.screenshot,
+                'missing independent CSS controls');
+            }
+          }
+          check(fs.readFileSync(path.join(dir,'CONTACT_SHEET.md'),'utf8').includes('Gravity Forms 3.1.1.1'),
+            'no contact sheet');
+          console.log('SCANNER_UI_PUBLICATION_GATE PASS: 42 original PNGs and 2 manifests');
+          PGR_SCANNER_UI_GATE
+      - name: Publish to fresh no-overwrite evidence branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/scanner-ui-public && cd /tmp/scanner-ui-public
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          branch="evidence/scanner-ui-readonly-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null; then
+            echo "Evidence branch already exists" >&2; exit 1
+          fi
+          git checkout --orphan "$branch"
+          mkdir -p scanner-ui-qualification-evidence
+          cp -a /tmp/scanner-ui-downloaded/pgr-scanner-artifacts/scanner-ui-qualification-evidence/. scanner-ui-qualification-evidence/
+          git add -- scanner-ui-qualification-evidence
+          git commit -m "evidence: exact-Head Scanner UI ${GITHUB_RUN_ID}"
+          commit="$(git rev-parse HEAD)"
+          git push origin "HEAD:refs/heads/$branch"
+          observed="$(git ls-remote origin "refs/heads/$branch" | cut -f1)"
+          test "$observed" = "$commit"
+          echo "Exact source evidence SHA: $commit" >> "$GITHUB_STEP_SUMMARY"
+          echo "Contact sheet: https://github.com/${GITHUB_REPOSITORY}/blob/$commit/scanner-ui-qualification-evidence/CONTACT_SHEET.md" >> "$GITHUB_STEP_SUMMARY"
