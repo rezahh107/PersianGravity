@@ -72,21 +72,23 @@ final class ScannerProfileRegistryTest extends TestCase {
 	public function test_existing_profile_output_contract_cannot_be_reordered_renamed_removed_or_redefined() {
 		$profile = $this->custom_profile();
 		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $profile )['success'] );
+		$saved = PGR_Scanner_Profile_Registry::get( 'custom_v1' );
 		$reordered = $profile; $reordered['outputs'] = array_reverse( $reordered['outputs'] );
-		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $reordered, 'custom_v1' )['errors'] );
+		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $reordered, 'custom_v1', $saved['revision'], $saved['incarnation_id'] )['errors'] );
 		$renamed = $profile; $renamed['outputs'][0]['key'] = 'renamed_value';
-		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $renamed, 'custom_v1' )['errors'] );
+		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $renamed, 'custom_v1', $saved['revision'], $saved['incarnation_id'] )['errors'] );
 		$removed = $profile; array_pop( $removed['outputs'] );
-		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $removed, 'custom_v1' )['errors'] );
+		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $removed, 'custom_v1', $saved['revision'], $saved['incarnation_id'] )['errors'] );
 		$required_changed = $profile; $required_changed['outputs'][1]['required'] = true;
-		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $required_changed, 'custom_v1' )['errors'] );
+		$this->assertSame( array( 'immutable_contract' ), PGR_Scanner_Profile_Registry::save_custom_profile( $required_changed, 'custom_v1', $saved['revision'], $saved['incarnation_id'] )['errors'] );
 	}
 
 	public function test_existing_profile_label_and_enabled_state_can_change_without_contract_drift() {
 		$profile = $this->custom_profile();
 		$this->assertTrue( PGR_Scanner_Profile_Registry::save_custom_profile( $profile )['success'] );
+		$saved = PGR_Scanner_Profile_Registry::get( 'custom_v1' );
 		$profile['label'] = 'Renamed display label'; $profile['enabled'] = false; $profile['outputs'][0]['label'] = 'Renamed output label';
-		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $profile, 'custom_v1' );
+		$result = PGR_Scanner_Profile_Registry::save_custom_profile( $profile, 'custom_v1', $saved['revision'], $saved['incarnation_id'] );
 		$this->assertTrue( $result['success'] );
 		$this->assertSame( 'Renamed display label', PGR_Scanner_Profile_Registry::get( 'custom_v1' )['label'] );
 		$this->assertFalse( PGR_Scanner_Profile_Registry::get( 'custom_v1' )['enabled'] );
