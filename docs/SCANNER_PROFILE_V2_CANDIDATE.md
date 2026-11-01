@@ -1,6 +1,6 @@
 # Scanner Profile Registry v2 — candidate safety and migration procedure
 
-**Status:** Unmerged candidate. No production migration, release, deployment or acceptance. Owner authorization is required separately for rollout. Scope: Scanner Profiles only; no changes to G-013, G-014, GPP or Vazir.
+**Current status (2026-11-01):** [PR #106](https://github.com/rezahh107/PersianGravity/pull/106) **MERGED** into `main` (merge commit `810ed1eabf956f7073ea7f568fc7d1c24a69b661`); Registry v2 code is present in `main`. **No new public release is established**: the latest public tag is still `v4.10.0` (published 2026-10-29 before the merge). No production migration, deployment, site-specific rollback qualification or Owner rollout acceptance is implied. This document preserves the historical candidate architecture, tests and guarded migration/rollback procedure. Scope: Scanner Profiles only; no changes to G-013, G-014, GPP or Vazir.
 
 ## Defect and correction
 
@@ -35,7 +35,7 @@ The candidate exposes no destructive downgrade or automatic restore endpoint. Do
 - WU008's eight authentic Scanner scenarios plus authenticated deletion pages in fa_IR/en_US at 1280/390/320 (including keyboard and no JavaScript) must run on the **candidate exact Head**.
 - A deterministic WordPress hook between the Registry's read and SQL write is **not** a two-worker concurrency proof.
 - Real independent PHP workers, write failure on MariaDB, and an actual persistent-cache backend are separate acceptance gates.
-- If any required host guarantee is not proven, this PR remains a **draft candidate**, not a safe release or finished product.
+- At the historical pre-merge checkpoint, missing host guarantees kept PR #106 a **draft candidate**. Its subsequent merge does **not** prove every production host, a safe public release, site-specific migration or a qualified rollback.
 
 ## Next bounded UI/UX checkpoint
 
