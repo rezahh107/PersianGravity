@@ -165,9 +165,9 @@ try{
             const b=document.querySelector('#gfield_edit_3');if(!b)return false;b.click();return true;
           });
           if(!clicked)throw Error('Native GF scanner edit button missing');
-          if(!(await page.locator('#advanced_tab_toggle').isVisible())){
-            await page.locator('#field_3').click({force:true});
-          }
+          await page.waitForFunction(()=>{
+            return document.querySelector('#field_3')?.classList.contains('field_selected')===true;
+          },null,{timeout:10000});
           await page.locator('#advanced_tab_toggle').waitFor({state:'visible',timeout:10000});
           await page.evaluate(()=>{const tab=document.querySelector('#advanced_tab_toggle');if(tab?.getAttribute('aria-expanded')!=='true')tab?.click();});
           await page.locator('#advanced_tab').waitFor({state:'visible',timeout:10000});
