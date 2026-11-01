@@ -68,11 +68,11 @@ class PGR_Test_Scanner_WPDB {
 
 	public function prepare( $sql, ...$args ) {
 		$this->prepared = array( 'sql' => $sql, 'args' => $args );
-		return $sql;
+		return serialize( $this->prepared );
 	}
 	public function get_row( $query ) {
-		unset( $query );
-		$key = $this->prepared['args'][0] ?? '';
+		$statement = unserialize( $query );
+		$key = $statement['args'][0] ?? '';
 		if ( ! array_key_exists( $key, $GLOBALS['pgr_test_options'] ) ) {
 			return null;
 		}
@@ -89,7 +89,7 @@ class PGR_Test_Scanner_WPDB {
 		return 1;
 	}
 	public function query( $query ) {
-		unset( $query );
+		$statement = unserialize( $query );
 		if ( ! empty( $GLOBALS['pgr_test_interleave'] ) ) {
 			$interleave = $GLOBALS['pgr_test_interleave'];
 			unset( $GLOBALS['pgr_test_interleave'] );
@@ -98,7 +98,7 @@ class PGR_Test_Scanner_WPDB {
 		if ( ! empty( $GLOBALS['pgr_test_fail_write'] ) ) {
 			return false;
 		}
-		list( $next, $key, $expected ) = $this->prepared['args'];
+		list( $next, $key, $expected ) = $statement['args'];
 		if ( ! array_key_exists( $key, $GLOBALS['pgr_test_options'] ) ||
 			maybe_serialize( $GLOBALS['pgr_test_options'][ $key ] ) !== $expected ) {
 			return 0;
