@@ -8,6 +8,7 @@ const password = process.env.WU008_ADMIN_PASSWORD;
 const head = process.env.WU008_PGR_SHA;
 const mode = process.env.SCANNER_SAVE_MODE || 'baseline';
 const locale = process.env.SCANNER_SAVE_LOCALE || 'fa_IR';
+const expectedCancelCopy = locale === 'fa_IR' ? 'لغو بدون ذخیره' : 'Cancel without saving';
 if (!root || !password || !head || !['baseline', 'repaired'].includes(mode) || !['fa_IR', 'en_US'].includes(locale)) {
   throw new Error('Pinned WU008 environment and explicitly selected qualification mode required');
 }
@@ -87,6 +88,8 @@ try {
       throw new Error('Failed Create did not retain original editable submission on same WordPress screen');
     }
     if (registryHash() !== before || gfHash() !== gfBefore) throw new Error('Failed Create changed persisted state');
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Create cancellation label missing after rejected save');
     await capture('after-invalid-create');
     const err = await page.locator('#pgr-profile-save-error').innerText();
     if (locale === 'fa_IR' ? !/[آ-ی]/.test(err) : !err.includes('not saved')) throw Error('Expected translated actionable save error missing');
@@ -111,6 +114,8 @@ try {
         await page.locator('input[name="profile[label]"]').inputValue() !== 'Unsaved synthetic edit label' ||
         await page.locator('input[name="profile[outputs][0][key]"]').inputValue() !== 'changed_immutable_key' ||
         registryHash() !== editBefore) throw new Error('Rejected edit lost values or changed Registry');
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Edit cancellation label missing after rejected save');
     await capture('after-invalid-edit');
     evidence('invalid_edit_retention', editBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES' });
@@ -207,9 +212,71 @@ try {
         registryHash() !== writeBefore || JSON.parse(current(rejectedId)) !== null) {
       throw new Error('Controlled rejected write did not preserve entries, explain failure, or maintain Registry state');
     }
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Create cancellation label missing after controlled write failure');
     await capture('after-write-failure');
     evidence('controlled_write_failure', writeBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED' });
+
+    // The Create/Edit exit is a native GET link; cancellation must never invoke
+    // Save, discard a newer stored revision, or alter a GFAPI mapping.
+    for (const width of [1280, 390, 320]) {
+      await page.setViewportSize({width, height:900});
+      if (width !== 1280) {
+        await page.goto(url('&action=new'));
+        await page.locator('input[name="profile[label]"]').fill('Unsaved cancelled Create at ' + width);
+      }
+      const exit = page.locator('.pgr-profile-form__cancel');
+      if (!await exit.isVisible() || await exit.getAttribute('href') !== url(''))
+        throw new Error('Create cancellation link is absent or points outside the Scanner list at '+width);
+      const stateBefore = registryHash();
+      const focus = await exit.evaluate(el => ({tabIndex:el.tabIndex, label:el.textContent.trim(),
+        direction:getComputedStyle(document.documentElement).direction,
+        dpr:window.devicePixelRatio, zoom:window.visualViewport?.scale ?? null,
+        scrollWidth:document.documentElement.scrollWidth, viewportWidth:window.innerWidth}));
+      if (focus.label !== expectedCancelCopy || focus.tabIndex !== 0 ||
+          focus.direction !== (locale === 'fa_IR' ? 'rtl' : 'ltr'))
+        throw new Error('Create exit not keyboard-reachable or locale direction incorrect');
+      if (width === 1280) {
+        await Promise.all([page.waitForNavigation(), exit.click()]);
+      } else {
+        await exit.focus();
+        if (!await exit.evaluate(el => document.activeElement === el))
+          throw new Error('Create exit could not receive keyboard focus');
+        await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+      }
+      if (page.url() !== url('') || await page.locator('.pgr-profile-form').count() ||
+          registryHash() !== stateBefore || gfHash() !== gfBefore)
+        throw new Error('Cancelled Create unexpectedly saved, mutated state, or navigated incorrectly at '+width);
+      evidence('cancel_create_'+width, stateBefore, registryHash(), {
+        gf_mapping_unchanged:gfHash() === gfBefore,
+        observed:JSON.stringify({method:width===1280?'pointer GET':'keyboard Enter GET',...focus})});
+    }
+    for (const width of [1280, 390, 320]) {
+      await page.setViewportSize({width,height:900});
+      await page.goto(url('&action=edit&profile=wu008_ui_long_label'));
+      await page.locator('.pgr-profile-form').waitFor();
+      const originalId = await page.locator('input[name="existing_id"]').inputValue();
+      const originalRevision = await page.locator('input[name="profile_revision"]').inputValue();
+      const originalIncarnation = await page.locator('input[name="profile_incarnation_id"]').inputValue();
+      await page.locator('input[name="profile[label]"]').fill('Unsaved cancelled Edit at '+width);
+      const stateBefore = registryHash();
+      const exit = page.locator('.pgr-profile-form__cancel');
+      if (!await exit.isVisible() || await exit.getAttribute('href') !== url('') ||
+          (await exit.innerText()).trim() !== expectedCancelCopy ||
+          originalId !== 'wu008_ui_long_label' || !originalRevision || !originalIncarnation)
+        throw new Error('Edit exit or original protected identity is unavailable at '+width);
+      await exit.focus();
+      await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+      if (page.url() !== url('') || await page.locator('.pgr-profile-form').count() ||
+          registryHash() !== stateBefore || gfHash() !== gfBefore)
+        throw new Error('Cancelled Edit modified persisted state or routed incorrectly at '+width);
+      evidence('cancel_edit_'+width, stateBefore, registryHash(), {
+        gf_mapping_unchanged:gfHash() === gfBefore,
+        observed:JSON.stringify({method:'keyboard Enter GET',width,originalId,
+          protectedIdentityPreserved:!!originalRevision&&!!originalIncarnation})});
+    }
+    await page.setViewportSize({width:1280,height:900});
   }
   if (report.scenarios.some(x => !x.gf_mapping_unchanged)) throw new Error('GFAPI mapping changed');
   report.screenshots = screenshotStates;
