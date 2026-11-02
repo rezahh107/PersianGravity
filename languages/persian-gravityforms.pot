@@ -787,6 +787,10 @@ msgstr ""
 msgid "Back to Scanner Profiles"
 msgstr ""
 
+#: admin/class-pgr-admin.php
+msgid "Cancel without saving"
+msgstr ""
+
 
 #: admin/class-pgr-admin.php
 msgid "This edit is out of date or its identity is missing. Your changes are retained here, but cannot be saved until you open the latest profile and reapply them. Newer saved data was not overwritten."

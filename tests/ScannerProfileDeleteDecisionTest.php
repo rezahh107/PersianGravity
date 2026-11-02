@@ -71,7 +71,8 @@ final class ScannerProfileDeleteDecisionTest extends TestCase {
 			$this->assertStringContainsString( 'class="pgr-actions pgr-profile-form__actions"', $form );
 			$this->assertSame( 1, substr_count( $form, 'class="button button-secondary pgr-profile-form__cancel"' ) );
 			$this->assertStringContainsString( 'href="https://example.test/wp-admin/admin.php?page=persian-gravityforms-scanner-profiles"', $form );
-			$this->assertStringContainsString( 'Back to Scanner Profiles', $form );
+			$this->assertStringContainsString( '>Cancel without saving</a>', $form );
+			$this->assertStringNotContainsString( '>Back to Scanner Profiles</a>', $form );
 			$this->assertSame( 2, count( PGR_Scanner_Profile_Registry::custom_profiles() ) );
 		}
 		$this->assertStringContainsString( 'name="existing_id" value="alpha"', $form );

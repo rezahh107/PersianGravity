@@ -832,6 +832,10 @@ msgstr "این پروفایل پیدا نشد یا امکان حذف آن وجو
 msgid "Back to Scanner Profiles"
 msgstr "بازگشت به پروفایل‌های اسکنر"
 
+#: admin/class-pgr-admin.php
+msgid "Cancel without saving"
+msgstr "لغو بدون ذخیره"
+
 
 #: admin/class-pgr-admin.php
 msgid "This edit is out of date or its identity is missing. Your changes are retained here, but cannot be saved until you open the latest profile and reapply them. Newer saved data was not overwritten."

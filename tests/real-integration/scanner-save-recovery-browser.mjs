@@ -8,6 +8,7 @@ const password = process.env.WU008_ADMIN_PASSWORD;
 const head = process.env.WU008_PGR_SHA;
 const mode = process.env.SCANNER_SAVE_MODE || 'baseline';
 const locale = process.env.SCANNER_SAVE_LOCALE || 'fa_IR';
+const expectedCancelCopy = locale === 'fa_IR' ? 'لغو بدون ذخیره' : 'Cancel without saving';
 if (!root || !password || !head || !['baseline', 'repaired'].includes(mode) || !['fa_IR', 'en_US'].includes(locale)) {
   throw new Error('Pinned WU008 environment and explicitly selected qualification mode required');
 }
@@ -87,6 +88,8 @@ try {
       throw new Error('Failed Create did not retain original editable submission on same WordPress screen');
     }
     if (registryHash() !== before || gfHash() !== gfBefore) throw new Error('Failed Create changed persisted state');
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Create cancellation label missing after rejected save');
     await capture('after-invalid-create');
     const err = await page.locator('#pgr-profile-save-error').innerText();
     if (locale === 'fa_IR' ? !/[آ-ی]/.test(err) : !err.includes('not saved')) throw Error('Expected translated actionable save error missing');
@@ -111,6 +114,8 @@ try {
         await page.locator('input[name="profile[label]"]').inputValue() !== 'Unsaved synthetic edit label' ||
         await page.locator('input[name="profile[outputs][0][key]"]').inputValue() !== 'changed_immutable_key' ||
         registryHash() !== editBefore) throw new Error('Rejected edit lost values or changed Registry');
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Edit cancellation label missing after rejected save');
     await capture('after-invalid-edit');
     evidence('invalid_edit_retention', editBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES' });
@@ -207,6 +212,8 @@ try {
         registryHash() !== writeBefore || JSON.parse(current(rejectedId)) !== null) {
       throw new Error('Controlled rejected write did not preserve entries, explain failure, or maintain Registry state');
     }
+    if ((await page.locator('.pgr-profile-form__cancel').innerText()).trim() !== expectedCancelCopy)
+      throw new Error('Translated Create cancellation label missing after controlled write failure');
     await capture('after-write-failure');
     evidence('controlled_write_failure', writeBefore, registryHash(), {
       gf_mapping_unchanged: gfHash() === gfBefore, observed: 'PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED' });
@@ -227,7 +234,8 @@ try {
         direction:getComputedStyle(document.documentElement).direction,
         dpr:window.devicePixelRatio, zoom:window.visualViewport?.scale ?? null,
         scrollWidth:document.documentElement.scrollWidth, viewportWidth:window.innerWidth}));
-      if (focus.tabIndex !== 0 || focus.direction !== (locale === 'fa_IR' ? 'rtl' : 'ltr'))
+      if (focus.label !== expectedCancelCopy || focus.tabIndex !== 0 ||
+          focus.direction !== (locale === 'fa_IR' ? 'rtl' : 'ltr'))
         throw new Error('Create exit not keyboard-reachable or locale direction incorrect');
       if (width === 1280) {
         await Promise.all([page.waitForNavigation(), exit.click()]);
@@ -255,6 +263,7 @@ try {
       const stateBefore = registryHash();
       const exit = page.locator('.pgr-profile-form__cancel');
       if (!await exit.isVisible() || await exit.getAttribute('href') !== url('') ||
+          (await exit.innerText()).trim() !== expectedCancelCopy ||
           originalId !== 'wu008_ui_long_label' || !originalRevision || !originalIncarnation)
         throw new Error('Edit exit or original protected identity is unavailable at '+width);
       await exit.focus();
