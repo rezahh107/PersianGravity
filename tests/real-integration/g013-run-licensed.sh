@@ -47,15 +47,31 @@ restore_profile() {
   rm -rf "$WU008_WP_PATH/wp-content/uploads"
   tar -C "$WU008_WP_PATH/wp-content" -xf "$uploads"
   wp cache flush >/dev/null
-  wp option update WPLANG "$locale" >/dev/null
+  if [ "$locale" = en_US ]; then
+    # Same native English control used by existing qualified WU008 runs.
+    wp option delete WPLANG >/dev/null
+  else
+    wp option update WPLANG fa_IR >/dev/null
+  fi
   G013_LOCALE="$locale" wp eval '
     $u=get_user_by("login","runtime_admin");
     $locale=getenv("G013_LOCALE");
     if (!$u || !in_array($locale,array("fa_IR","en_US"),true))
       throw new RuntimeException("G013 invalid runtime user/locale");
     update_user_meta($u->ID,"locale",$locale);
-    if (get_locale()!==$locale || get_user_locale($u)!==$locale)
-      throw new RuntimeException("G013 locale restore/isolation mismatch");
+  '
+  # WordPress's request-local locale/user caches must not be used as the
+  # readback for a just-mutated WP_User. Reopen the real runtime.
+  G013_LOCALE="$locale" wp eval '
+    $u=get_user_by("login","runtime_admin");
+    $want=getenv("G013_LOCALE");
+    $state=array("target"=>$want,"site"=>get_locale(),
+      "user"=>get_user_locale($u),"stored_user"=>(string)get_user_meta($u->ID,"locale",true),
+      "WPLANG"=>(string)get_option("WPLANG",""));
+    fwrite(STDERR,"G013_LOCALE_READBACK ".wp_json_encode($state)."\n");
+    if ($state["site"]!==$want || $state["user"]!==$want ||
+      $state["stored_user"]!==$want)
+      throw new RuntimeException("G013 fresh-request locale restore/isolation mismatch");
   '
   if wp plugin is-active vazir-font-wp >/dev/null 2>&1; then
     echo "Restored profile is unexpectedly WITH_VAZIR" >&2
