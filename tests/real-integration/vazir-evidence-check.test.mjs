@@ -170,6 +170,19 @@ expectReject('non-200 official font cannot be PASS',f=>{
   d.pages.find(p=>p.name==='overview'&&p.width===390).font_network[0].status=404;
   write(f,key+'.json',d);
 });
+expectReject('split network/font proof across distinct pages is not same-page evidence',f=>{
+  const key='with-vazir-fa_IR',d=read(f,key+'.json');
+  for(const width of WIDTHS) {
+    const overview=d.pages.find(p=>p.name==='overview'&&p.width===width);
+    const settings=d.pages.find(p=>p.name==='settings'&&p.width===width);
+    settings.font_network=overview.font_network;
+    overview.font_network=[];
+  }
+  write(f,key+'.json',d);
+});
+expectReject('README external link injection rejected by producer and publisher',f=>{
+  fs.appendFileSync(path.join(f.dir,'README.md'),'\n[other](https://example.invalid/)\n');
+});
 expectReject('different restored WordPress DB snapshot is rejected',f=>{
   const key='with-vazir-en_US',d=read(f,key+'.json');
   d.environment.db_snapshot_sha256='b'.repeat(64);write(f,key+'.json',d);
