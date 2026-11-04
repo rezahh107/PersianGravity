@@ -105,11 +105,11 @@ function validateProfile(d,key,head) {
   // delivery and actual computed use, never borrow a desktop-only observation.
   if (isVazir && locale==='fa_IR') for (const width of WIDTHS) {
     const pages=byWidth.get(width);
-    expect(pages.some(p=>p.faces.some(x=>/vazirmatn/i.test(x.family) && x.status==='loaded')) &&
-      pages.some(p=>p.font_network.some(x=>x.status===200)) &&
-      pages.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(
-        x=>x && /vazirmatn/i.test(x.family))),
-      'required mobile/desktop real font evidence ' + key+'/'+width);
+    expect(pages.some(p=>
+      p.faces.some(x=>/vazirmatn/i.test(x.family) && x.status==='loaded') &&
+      p.font_network.some(x=>x.status===200) &&
+      [p.body,p.headline,p.label,p.input,p.button].some(x=>x && /vazirmatn/i.test(x.family))),
+      'same-page mobile/desktop real font evidence required ' + key+'/'+width);
   }
 }
 function jpegDimensions(bytes,name) {
@@ -144,7 +144,7 @@ function jpegDimensions(bytes,name) {
   expect(frame && scan && ended && pos===bytes.length,'incomplete/corrupt JPEG '+name);
   return frame;
 }
-function validateFiles(dir,sheet) {
+function validateFiles(dir,sheet,head) {
   const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
   for (const key of PROFILES) {
     required.add(key+'.json');
@@ -152,6 +152,16 @@ function validateFiles(dir,sheet) {
   }
   const entries=fs.readdirSync(dir,{withFileTypes:true});
   expect(entries.length===required.size,'missing/extra files');
+  const expectedSheet=['# G013 real Vazir coexistence — browser evidence','',
+    'Exact PersianGravity Head: '+head,'Official Vazir v1.5.0: '+VAZIR_SHA,
+    'Four authenticated profiles, nine surfaces, two viewports: 72 observations / 36 paired comparisons.','',
+    'Screenshots (1280px and 390px):',''];
+  for(const key of PROFILES)for(const width of WIDTHS)for(const name of SCREENSHOTS){
+    const image=key+'-'+name+'-'+width+'.jpg';
+    expectedSheet.push('- ['+image+']('+image+')');
+  }
+  expectedSheet.push('','Measurements: comparison.json. These files do not prove browser authenticity independently.');
+  expect(sheet===expectedSheet.join('\n')+'\n','unexpected README content/links');
   const linked=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/gi)].map(x=>x[1]);
   expect(linked.length===32 && new Set(linked).size===32,'missing/duplicate screenshot links');
   for(const entry of entries) {
@@ -215,7 +225,7 @@ export function validateEvidence(dir,head,{comparison=true,files=true}={}) {
   }
   if(comparison)expect([...docs.values()].every(d=>d.grid_acceptance==='PASS'),
     'actual native RTL/LTR Grid behavior is FAIL or NOT_PROVEN; evidence not green');
-  if(files)validateFiles(dir,fs.readFileSync(file(dir,'README.md'),'utf8'));
+  if(files)validateFiles(dir,fs.readFileSync(file(dir,'README.md'),'utf8'),head);
   return expected;
 }
 export function writeComparison(dir,head) {
