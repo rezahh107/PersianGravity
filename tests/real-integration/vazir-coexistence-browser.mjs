@@ -152,8 +152,10 @@ try {
       });
       const observed = {name:spec.name,width, ...data,interaction,
         ...events.snapshot()};
-      if(observed.font_network.some(x=>x.status==='FAILED'||Number(x.status)>=400))
-        throw Error('WOFF2 request failed '+spec.name+' '+width);
+      if(observed.font_network.some(x=>x.status!==200))
+        throw Error('WOFF2 response not HTTP 200 '+spec.name+' '+width);
+      if(observed.page_errors.length||observed.console_errors.length)
+        throw Error('Real browser JS/console error '+spec.name+' '+width);
       // Do not infer UI behavior from the HTML root: genuine Gravity Forms
       // admin CSS may set html computed LTR despite a visible RTL Inbox.
       // A wrong native AG Grid mode is an explicit failure, not a successful RTL.

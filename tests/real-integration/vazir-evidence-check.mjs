@@ -67,7 +67,8 @@ function validateProfile(d,key,head) {
       ['rtl','ltr'].includes(p.body.direction) &&
       finite(p.body.width) && finite(p.body.height) && p.body.width>=0 && p.body.height>=0,
       'invalid geometry/style ' + key+'/'+id);
-    expect(Array.isArray(p.font_network) && Array.isArray(p.page_errors) && Array.isArray(p.faces),
+    expect(Array.isArray(p.font_network) && Array.isArray(p.page_errors) &&
+      Array.isArray(p.console_errors) && Array.isArray(p.faces),
       'missing page-scoped network/errors/faces ' + key+'/'+id);
     expect(p.font_network.every(x=>record(x) && (x.status==='FAILED' ||
       Number.isInteger(x.status) && x.status>=100 && x.status<=599) &&
@@ -76,6 +77,9 @@ function validateProfile(d,key,head) {
       p.faces.every(x=>record(x) && typeof x.family==='string' &&
         typeof x.weight==='string' && ['unloaded','loading','loaded','error'].includes(x.status)),
       'malformed font or error observation ' + key+'/'+id);
+    expect(p.page_errors.length===0 && p.console_errors.length===0 &&
+      p.font_network.every(x=>x.status===200),
+      'browser error or non-200 WOFF2 in PASS '+key+'/'+id);
     const image=SCREENSHOTS.includes(p.name) ? key+'-'+p.name+'-'+p.width+'.jpg' : null;
     expect((p.image||null)===image, 'incorrect screenshot mapping ' + key+'/'+id);
     if (!isVazir) {

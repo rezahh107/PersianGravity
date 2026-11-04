@@ -49,7 +49,7 @@ function makeFixture() {
         direction:locale==='fa_IR'?'rtl':'ltr',body,headline:null,label:null,input:null,button:null,
         faces:positive?[{family:'Vazirmatn',weight:'400',status:'loaded'}]:[],
         font_network:positive?[{url:'vazirmatn-400.woff2',status:200}]:[],
-        page_errors:[],...(image?{image}:{}),
+        page_errors:[],console_errors:[],...(image?{image}:{}),
         ...(['gravity-flow','flow-frontend'].includes(name)?{grid_mode:{
           expected:locale==='fa_IR'?'rtl':'ltr',actual:locale==='fa_IR'?'rtl':'ltr',
           status:'PASS'}}:{})});
@@ -157,6 +157,19 @@ expectReject('missing mobile Grid mode is not an RTL PASS',f=>{
   p.grid_mode.actual=null;p.grid_mode.status='NOT_PROVEN';d.grid_acceptance='NOT_PROVEN';
   write(f,key+'.json',d);
 });
+expectReject('uncaught JS error cannot be PASS',f=>{
+  const key='baseline-en_US',d=read(f,key+'.json');
+  d.pages[0].page_errors=['uncaught error'];write(f,key+'.json',d);
+});
+expectReject('browser console error cannot be PASS',f=>{
+  const key='with-vazir-en_US',d=read(f,key+'.json');
+  d.pages[0].console_errors=['console.error'];write(f,key+'.json',d);
+});
+expectReject('non-200 official font cannot be PASS',f=>{
+  const key='with-vazir-fa_IR',d=read(f,key+'.json');
+  d.pages.find(p=>p.name==='overview'&&p.width===390).font_network[0].status=404;
+  write(f,key+'.json',d);
+});
 expectReject('different restored WordPress DB snapshot is rejected',f=>{
   const key='with-vazir-en_US',d=read(f,key+'.json');
   d.environment.db_snapshot_sha256='b'.repeat(64);write(f,key+'.json',d);
@@ -173,7 +186,10 @@ test('browser events belong to originating page and viewport',()=>{
   page.emit('pageerror',Error('second-page-error'));
   assert.deepEqual(second.snapshot().font_network,[]);
   assert.deepEqual(second.snapshot().page_errors,['Error: second-page-error']);
+  page.emit('console',{type:()=> 'error',text:()=> 'console-error'});
+  assert.deepEqual(second.snapshot().console_errors,['console-error']);
   second.stop();
   assert.equal(page.listenerCount('response'),0);
   assert.equal(page.listenerCount('pageerror'),0);
+  assert.equal(page.listenerCount('console'),0);
 });
