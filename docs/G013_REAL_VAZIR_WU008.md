@@ -50,3 +50,10 @@ This branch is reconstructed from canonical main after merged Scanner #112 rathe
 - Nine surfaces × 2 viewports × 4 profiles are a **minimal initial matrix**, not permission to silently drop G-013 accepted admin/frontend scope, independent GravityView block-editor/portal behavior, standalone Perks settings, crop/cancel/save/rerender, module-state and keyboard/assistive interactions. Unreached items remain `NOT_PROVEN`; production-site acceptance is separate.
 
 Current review policy: leave this evidence-only G-013 PR **OPEN / DRAFT / UNMERGED**. G-014 and GPP remain out of scope, and the private release prerequisite does not authorize changing security posture or publishing a release.
+
+
+## 2026-11-04 — Official Vazir repository visibility changed
+
+The Owner made `rezahh107/Vazir` public after the earlier 404 failures. A fresh GitHub repository read confirms `visibility=public`; the published, non-draft/non-prerelease `v1.5.0` GitHub release lists the exact three official assets (`release-manifest.json`, `vazir-font-wp-1.5.0.zip`, and `vazir-font-wp-1.5.0.zip.sha256`). GitHub's release asset metadata reports the ZIP as 300139 bytes with digest `sha256:95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5`, matching the pinned published manifest. No release, repository visibility, credential, or publication setting was changed by this qualification PR.
+
+The previous private-asset 404 is historical evidence, **not a currently asserted access-control blocker**. Public metadata is not proof that an anonymous download or install has succeeded. The authentic WU008 job must still download and validate actual released bytes before WITH_VAZIR browser runtime evidence, comparison, and independent publisher claims can be promoted. Native fa_IR Gravity Flow AG Grid `ag-ltr` in the baseline remains an observed finding from the earlier pinned Head, not a Vazir regression. Leave PR #113 open/draft/unmerged.
