@@ -49,10 +49,10 @@ function makeFixture() {
         direction:locale==='fa_IR'?'rtl':'ltr',body,headline:null,label:null,input:null,button:null,
         faces:positive?[{family:'Vazirmatn',weight:'400',status:'loaded'}]:[],
         font_network:positive?[{url:'vazirmatn-400.woff2',status:200}]:[],
-        page_errors:[],...(image?{image}:{})},
+        page_errors:[],...(image?{image}:{}),
         ...(['gravity-flow','flow-frontend'].includes(name)?{grid_mode:{
           expected:locale==='fa_IR'?'rtl':'ltr',actual:locale==='fa_IR'?'rtl':'ltr',
-          status:'PASS'}}:{}));
+          status:'PASS'}}:{})});
       if(image)fs.writeFileSync(path.join(dir,image),jpegByWidth[width]);
     }
     write(f,key+'.json',{schema:'g013-vazir-coexistence-v1',status:'PASS',exact_head:HEAD,
