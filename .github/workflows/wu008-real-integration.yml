@@ -2044,10 +2044,11 @@ jobs:
             ok(visited.size===18,'missing cases '+key);
             if(withFont&&locale==='fa_IR')for(const w of widths){
               const list=d.pages.filter(p=>p.width===w);
-              ok(list.some(p=>p.faces.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded'))&&
-                list.some(p=>p.font_network.some(f=>f.status===200))&&
-                list.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(f=>f&&/vazirmatn/i.test(f.family))),
-                'missing required font evidence '+key+'/'+w);
+              ok(list.some(p=>
+                p.faces.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded')&&
+                p.font_network.some(f=>f.status===200)&&
+                [p.body,p.headline,p.label,p.input,p.button].some(f=>f&&/vazirmatn/i.test(f.family))),
+                'missing same-page real font evidence '+key+'/'+w);
             }
             const nativeGrids=d.pages.filter(p=>['gravity-flow','flow-frontend'].includes(p.name));
             ok(nativeGrids.length===4 && nativeGrids.every(p=>{
@@ -2124,6 +2125,17 @@ jobs:
             for(const w of widths)for(const name of screens)required.add(key+'-'+name+'-'+w+'.jpg');
           }
           const actual=fs.readdirSync(dir,{withFileTypes:true}),sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          // README itself is untrusted publisher input; reject extra links/content.
+          const expectedSheet=['# G013 real Vazir coexistence — browser evidence','',
+            'Exact PersianGravity Head: '+head,'Official Vazir v1.5.0: '+sha,
+            'Four authenticated profiles, nine surfaces, two viewports: 72 observations / 36 paired comparisons.','',
+            'Screenshots (1280px and 390px):',''];
+          for(const key of profiles)for(const width of widths)for(const name of screens){
+            const image=key+'-'+name+'-'+width+'.jpg';
+            expectedSheet.push('- ['+image+']('+image+')');
+          }
+          expectedSheet.push('','Measurements: comparison.json. These files do not prove browser authenticity independently.');
+          ok(sheet===expectedSheet.join('\n')+'\n','untrusted README content/links');
           const links=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/gi)].map(x=>x[1]);
           ok(actual.length===required.size&&links.length===32&&new Set(links).size===32,'file/link coverage');
           for(const entry of actual){
