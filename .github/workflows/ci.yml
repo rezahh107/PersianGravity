@@ -59,6 +59,10 @@ jobs:
           node --test tests/real-integration/qualification-reconciliation.test.mjs
           node --test tests/real-integration/g008-claim-classification.test.mjs
           node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
+          node --check tests/real-integration/vazir-coexistence-browser.mjs
+          node --check tests/real-integration/vazir-release-verify.mjs
+          node --test tests/real-integration/vazir-release-verify.test.mjs
+          node --test tests/real-integration/vazir-evidence-check.test.mjs
 
       - name: Check out pinned current WordPress Core
         uses: actions/checkout@v7
