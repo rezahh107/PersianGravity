@@ -87,7 +87,7 @@ release=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
 for asset in vazir-font-wp-1.5.0.zip vazir-font-wp-1.5.0.zip.sha256 release-manifest.json; do
   if ! curl --fail --location --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 180 \
     -o "$WU008_PACKAGE_DIR/$asset" "$release/$asset"; then
-    echo "G013_OFFICIAL_RELEASE_ASSET_BLOCKED: cannot download official v1.5.0 asset $asset. Vazir repository is private; use approved read-only exact-release asset provisioning. No rebuilt ZIP, source checkout, or substitute fixture accepted." >&2
+    echo "G013_OFFICIAL_RELEASE_ASSET_DOWNLOAD_FAILED: cannot download official v1.5.0 asset $asset. Inspect the actual HTTP/network/release-asset failure; repository visibility is not inferred from curl failure. Use only the exact official release asset; no rebuilt ZIP, source checkout, or substitute fixture accepted." >&2
     exit 1
   fi
 done
