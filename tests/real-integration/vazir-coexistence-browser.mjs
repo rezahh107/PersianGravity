@@ -87,7 +87,12 @@ try {
         const input=page.locator(fileRoot+' input[type=file]').first();
         await input.setInputFiles({name:'vazir-probe.txt',mimeType:'text/plain',
           buffer:Buffer.from('G013 disposable WU008 coexistence fixture')});
-        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({timeout:15000});
+        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({state:'visible',timeout:30000});
+        // File Upload Pro 1.5.13 renders the filename before Plupload DONE.
+        await page.locator(fileRoot+' .gpfup__progress-container').first()
+          .waitFor({state:'hidden',timeout:30000});
+        await page.waitForTimeout(100);
+        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({state:'visible',timeout:15000});
         const search=page.locator(selectRoot+' .ts-control input').first();
         await search.focus();
         await search.fill('');
@@ -101,9 +106,44 @@ try {
           file_preview:true,selected_value: selected ? 'NONEMPTY' : 'EMPTY',
           focus_verified:await page.locator(selectRoot+' .ts-control').count()>0};
       }
-      if(spec.name==='gravity-flow')
-        await page.locator('.ag-root-wrapper:visible, .ag-root:visible').first()
-          .waitFor({state:'visible',timeout:20000});
+      if(['gravity-flow','flow-frontend'].includes(spec.name)) {
+        // A visible shell does not prove AG Grid initialization completed.
+        const ready=()=> {
+          const host=document.querySelector('[data-js="gflow-inbox"]');
+          const root=host?.querySelector('.ag-root-wrapper,.ag-root');
+          const visible=e=>{if(!e)return false;const r=e.getBoundingClientRect(),s=getComputedStyle(e);
+            return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden';};
+          const headers=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-header-cell')].filter(visible);
+          const rows=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')].filter(visible);
+          const empty=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-overlay-no-rows-center,[data-js="gflow-inbox"] .ag-overlay-no-rows-wrapper')].filter(visible);
+          const loading=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-overlay-loading-center,[data-js="gflow-inbox"] .ag-overlay-loading-wrapper,[data-js="gflow-inbox"] [aria-busy="true"]')].filter(visible);
+          const id=host?.dataset?.gridId||'inbox_default';
+          const cfg=window.gflow_config?.grids?.[id]?.grid_options;
+          return {ready:Boolean(root&&visible(root)&&headers.length&&!loading.length&&
+            (rows.length||(empty.length&&Array.isArray(cfg?.rowData)&&cfg.rowData.length===0))),
+            rows:rows.length,headers:headers.length,empty:empty.length,loading:loading.length,
+            mode:root?.className||null,enableRtl:cfg?.enableRtl??null};
+        };
+        await page.waitForFunction(()=> {
+          const host=document.querySelector('[data-js="gflow-inbox"]');
+          const root=host?.querySelector('.ag-root-wrapper,.ag-root');
+          const visible=e=>{if(!e)return false;const b=e.getBoundingClientRect(),s=getComputedStyle(e);
+            return b.width>0&&b.height>0&&s.display!=='none'&&s.visibility!=='hidden';};
+          const header=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-header-cell')].some(visible);
+          const row=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-center-cols-container .ag-row')].some(visible);
+          const empty=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-overlay-no-rows-center,[data-js="gflow-inbox"] .ag-overlay-no-rows-wrapper')].some(visible);
+          const loading=[...document.querySelectorAll('[data-js="gflow-inbox"] .ag-overlay-loading-center,[data-js="gflow-inbox"] .ag-overlay-loading-wrapper,[data-js="gflow-inbox"] [aria-busy="true"]')].some(visible);
+          const id=host?.dataset?.gridId||'inbox_default';
+          const data=window.gflow_config?.grids?.[id]?.grid_options?.rowData;
+          return Boolean(root&&visible(root)&&header&&!loading&&(row||(empty&&Array.isArray(data)&&data.length===0)));
+        },null,{timeout:30000,polling:250});
+        const first=await page.evaluate(ready);
+        await page.waitForTimeout(350);
+        const second=await page.evaluate(ready);
+        if(!first.ready||!second.ready||
+          !['rows','headers','empty','loading','mode','enableRtl'].every(k=>first[k]===second[k]))
+          throw Error('Authentic AG Grid was not stably ready '+spec.name+'/'+width);
+      }
       const data = await page.evaluate(async () => {
         await document.fonts.ready;
         const css = (sel) => {
@@ -182,12 +222,15 @@ try {
   }
   for (const width of [1280,390]) {
     const cases=result.pages.filter(p=>p.width===width);
-    const loaded=cases.some(p=>p.faces?.some(x=>/vazirmatn/i.test(x.family) && x.status==='loaded'));
-    const delivered=cases.some(p=>p.font_network?.some(x=>x.status===200));
-    const fontUsed=cases.some(p=>[p.body,p.headline,p.label,p.input,p.button].some(x=>x && /vazirmatn/i.test(x.family)));
-    if (profile==='WITH_VAZIR' && locale==='fa_IR' && (!loaded || !delivered || !fontUsed))
-      throw Error('Required independent real Vazirmatn observation missing at '+width);
-    if (profile==='BASELINE' && (loaded || delivered || fontUsed))
+    const samePage=cases.some(p=>p.faces?.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded')&&
+      p.font_network?.some(f=>f.status===200)&&
+      [p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family)));
+    const contaminated=cases.some(p=>p.faces?.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded')||
+      p.font_network?.some(f=>f.status===200)||
+      [p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family)));
+    if(profile==='WITH_VAZIR'&&locale==='fa_IR'&&!samePage)
+      throw Error('Same-page real WOFF2, loaded face and computed family missing at '+width);
+    if(profile==='BASELINE'&&contaminated)
       throw Error('BASELINE contaminated at '+width);
   }
   if (result.pages.length!==18) throw Error('Incomplete actual browser case matrix');
