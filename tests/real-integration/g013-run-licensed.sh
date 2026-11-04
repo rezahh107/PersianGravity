@@ -85,8 +85,11 @@ for locale in fa_IR en_US; do
 done
 release=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
 for asset in vazir-font-wp-1.5.0.zip vazir-font-wp-1.5.0.zip.sha256 release-manifest.json; do
-  curl --fail --location --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 180 \
-    -o "$WU008_PACKAGE_DIR/$asset" "$release/$asset"
+  if ! curl --fail --location --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 180 \
+    -o "$WU008_PACKAGE_DIR/$asset" "$release/$asset"; then
+    echo "G013_OFFICIAL_RELEASE_ASSET_BLOCKED: cannot download official v1.5.0 asset $asset. Vazir repository is private; use approved read-only exact-release asset provisioning. No rebuilt ZIP, source checkout, or substitute fixture accepted." >&2
+    exit 1
+  fi
 done
 node tests/real-integration/vazir-release-verify.mjs "$WU008_PACKAGE_DIR" > "$evidence_dir/official-release.json"
 test -s "$evidence_dir/official-release.json"
