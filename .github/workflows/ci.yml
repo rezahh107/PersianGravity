@@ -61,6 +61,7 @@ jobs:
           node --test tests/real-integration/g008-gravityview-source-evidence.test.mjs
           node --check tests/real-integration/vazir-coexistence-browser.mjs
           node --check tests/real-integration/vazir-release-verify.mjs
+          node --check tests/real-integration/g013-public-evidence-contract.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
           node --test tests/real-integration/vazir-evidence-check.test.mjs
 

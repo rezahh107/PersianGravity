@@ -18,7 +18,7 @@ Expected official ZIP SHA-256: `95fdc3774d6079c34c04331bb8acf980a699e02a215e3227
 
 Nine authentic surfaces are exercised in each viewport: Overview, Settings, Scanner Profiles, System Status, Gravity Forms frontend, Gravity Flow Admin Inbox, Flow frontend Inbox, GravityView frontend and Gravity Perks frontend. GravityView editor portals and additional detached widget states remain outside this matrix.
 
-Each run yields four profile JSON manifests, 32 JPEG screenshots, a comparison JSON, real settings JSON, release-verification JSON and a linked README in a **separate** `vazir-coexistence-evidence` directory. The publisher (without write credentials) checks the exact PR Head and separate allowlist, profile identities, real matrix, font release/settings and JPEG/link integrity before allowing the existing write-token publisher to add that directory. It never expands the original baseline 67-file inventory. Public licensed vendor ZIPs, Vazir ZIP and font payloads do not enter committed or published evidence.
+A complete run creates four profile JSON manifests, 32 JPEG screenshots, a comparison JSON, real settings JSON, release-verification JSON and a linked README in a runner-local directory. The independent verifier checks the exact PR Head, profile identities, matrix, font release/settings and JPEG/link integrity there. WU008 stages its existing evidence and a copy of its shared HTTP log before G013 starts. G013 redirects its own diagnostic output to the runner and reports only the exact Head, qualification status and Persian Grid status. Raw G013 files are outside the Actions artifact and the public evidence branch. The original baseline 67-file gate still applies to the unrelated WU008 publication.
 
 ## Evidence boundaries
 
@@ -28,7 +28,7 @@ Inspect the exact candidate CI and licensed WU008 run before merging. If CI or b
 
 ## G-013 evidence corrections and RTL verification boundary
 
-The producer, comparator and credential-free publisher independently enforce four identities, exactly 18 unique cases per manifest (nine surfaces × 1280/390), 72 observations, 36 uniquely keyed paired comparisons and 32 JPEGs. Numeric widths, classifications, file links, release/settings identity and per-viewport font controls must agree; artifact consistency never proves that a browser was truly run. BASELINE and WITH_VAZIR must not be conflated. The 67-file original WU008 gate stays separate.
+The producer, comparator and independent runner-local verifier enforce four identities, exactly 18 unique cases per manifest (nine surfaces × 1280/390), 72 observations, 36 uniquely keyed paired comparisons and 32 JPEGs. Numeric widths, classifications, file links, release/settings identity and per-viewport font controls must agree; artifact consistency never proves that a browser was truly run. BASELINE and WITH_VAZIR must not be conflated. The 67-file original WU008 gate stays separate.
 
 Font responses and page errors are captured between each page navigation and measurement, not assigned to the last page in a viewport. A missing 390px required font observation cannot borrow 1280px success. No additional vendor/product behaviors or release assurances are inferred.
 

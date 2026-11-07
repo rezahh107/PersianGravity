@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {auditG013PublicDirectory} from './g013-public-evidence-contract.mjs';
 
 export const HEAD_RE = /^[0-9a-f]{40}$/;
 export const VAZIR_SHA = '95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5';
@@ -179,6 +180,10 @@ function validateFiles(dir,sheet,head) {
 }
 export function validateEvidence(dir,head,{comparison=true,files=true}={}) {
   expect(HEAD_RE.test(head||''),'exact Head missing/malformed');
+  // Reject any unapproved public data, including nested JSON and free text.
+  // Do not conflate complete captures with a native RTL PASS.
+  try { auditG013PublicDirectory(dir,head,{withComparison:comparison,withFiles:files}); }
+  catch(e) { fail(String(e.message)); }
   expect(fs.existsSync(dir) && fs.lstatSync(dir).isDirectory() &&
     !fs.lstatSync(dir).isSymbolicLink(),'unsafe evidence directory');
   const release=read(dir,'official-release.json'),settings=read(dir,'vazir-settings.json');
