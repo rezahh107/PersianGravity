@@ -11,10 +11,22 @@ final class ProductServicesTest extends TestCase {
 	public function test_settings_are_reduced_to_sanitized_active_values() {
 		$admin = new PGR_Admin();
 		$this->assertSame(
-			array( 'default_force_english' => 1 ),
+			array( 'default_force_english' => 1, 'gravity_flow_inbox_rtl' => 0 ),
 			$admin->sanitize_settings( array( 'default_force_english' => 'yes', 'legacy' => 'drop-me' ) )
 		);
-		$this->assertSame( array( 'default_force_english' => 0 ), $admin->sanitize_settings( array() ) );
+		$this->assertSame( array( 'default_force_english' => 0, 'gravity_flow_inbox_rtl' => 0 ), $admin->sanitize_settings( array() ) );
+	}
+
+	public function test_g014_setting_is_opt_in_and_does_not_change_existing_default() {
+		$admin = new PGR_Admin();
+		$this->assertSame(
+			array( 'default_force_english' => 1, 'gravity_flow_inbox_rtl' => 1 ),
+			$admin->sanitize_settings( array( 'default_force_english' => '1', 'gravity_flow_inbox_rtl' => '1' ) )
+		);
+		foreach ( array( null, false, true, 'true', array(), array( 'gravity_flow_inbox_rtl' => 'yes' ) ) as $bad ) {
+			$sanitized = $admin->sanitize_settings( $bad );
+			$this->assertSame( 0, $sanitized['gravity_flow_inbox_rtl'] );
+		}
 	}
 
 	public function test_iran_address_type_and_provinces_are_generic_and_bounded() {
