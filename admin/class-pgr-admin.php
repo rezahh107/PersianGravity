@@ -167,6 +167,19 @@ final class PGR_Admin {
 			self::SETTINGS_SLUG,
 			'pgr_national_id_defaults'
 		);
+		add_settings_section(
+			'pgr_gravity_flow_inbox',
+			'Gravity Flow Inbox — RTL',
+			'__return_false',
+			self::SETTINGS_SLUG
+		);
+		add_settings_field(
+			'gravity_flow_inbox_rtl',
+			'اصلاح راست‌به‌چپ جدول‌های Gravity Flow',
+			array( $this, 'render_gravity_flow_inbox_rtl' ),
+			self::SETTINGS_SLUG,
+			'pgr_gravity_flow_inbox'
+		);
 	}
 
 	/**
@@ -177,7 +190,10 @@ final class PGR_Admin {
 	 */
 	public function sanitize_settings( $input ) {
 		$input = is_array( $input ) ? $input : array();
-		return array( 'default_force_english' => empty( $input['default_force_english'] ) ? 0 : 1 );
+		return array(
+			'default_force_english'  => empty( $input['default_force_english'] ) ? 0 : 1,
+			'gravity_flow_inbox_rtl' => isset( $input['gravity_flow_inbox_rtl'] ) && '1' === (string) $input['gravity_flow_inbox_rtl'] ? 1 : 0,
+		);
 	}
 
 	/**
@@ -192,6 +208,63 @@ final class PGR_Admin {
 			<input type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[default_force_english]" value="1" <?php checked( ! empty( $settings['default_force_english'] ) ); ?> />
 			<?php esc_html_e( 'Convert Persian/Arabic digits to ASCII in new National ID fields while the user types. Server-side normalization always remains authoritative.', 'persian-gravityforms' ); ?>
 		</label>
+		<?php
+	}
+
+	/**
+	 * Show the owner-approved G-014 warning and read-only capability diagnostics.
+	 *
+	 * This admin-only presentation never writes GPP or host Grid state.
+	 *
+	 * @return void
+	 */
+	public function render_gravity_flow_inbox_rtl() {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			return;
+		}
+
+		$status = pgr_gravity_flow_inbox_rtl_status();
+		$fa     = is_rtl();
+		?>
+		<label for="pgr-g014-rtl-checkbox">
+			<input id="pgr-g014-rtl-checkbox" type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[gravity_flow_inbox_rtl]" value="1" <?php checked( 'on' === $status['requested'] ); ?> />
+			<?php echo esc_html( $fa ? 'فعال‌سازی RTL بومی جدول (پیش‌فرض: خاموش)' : 'Enable native Inbox RTL (default: off)' ); ?>
+		</label>
+		<p class="description">
+			<?php echo esc_html( $fa ? 'فقط Gravity Flow 3.1.0 با شناسهٔ رسمی پشتیبانی می‌شود. روشن‌بودن گزینه به معنی سازگاری اثبات‌شده با GPP نیست.' : 'Only the identified Gravity Flow 3.1.0 host is admitted. ON does not prove GPP compatibility.' ); ?>
+		</p>
+		<div class="notice notice-warning inline" role="note">
+			<p><?php echo esc_html( 'هشدار سازگاری RTL: این گزینه فقط متن فارسی را راست‌چین نمی‌کند؛ جهت واقعی موتور جدول Gravity Flow را نیز تغییر می‌دهد. اگر نسخهٔ GPP نصب‌شده با RTL بومی سازگار نباشد، ممکن است عنوان و ردیف‌ها هنگام اسکرول از هم جدا شوند، ترتیب پنج ستون جابه‌جا شود یا چیدمان ذخیره‌شده درست بازگردانی نشود. پیش از فعال‌سازی، وضعیت سازگاری GPP را بررسی کنید. اگر سازگاری تأیید نشده است، حالت پیش‌فرض خاموش را حفظ کنید.' ); ?></p>
+		</div>
+		<p>
+			<a href="#pgr-g014-compatibility"><?php echo esc_html( $fa ? 'بررسی سازگاری' : 'Check compatibility' ); ?></a>
+			<span aria-hidden="true"> | </span>
+			<a href="#pgr-g014-gpp-guide"><?php echo esc_html( $fa ? 'راهنمای بررسی در GPP' : 'GPP verification guide' ); ?></a>
+			<span aria-hidden="true"> | </span>
+			<a href="#pgr-g014-rtl-checkbox"><?php echo esc_html( $fa ? 'فعلاً فعال نکن (تیک را بردارید و ذخیره کنید)' : 'Keep OFF (uncheck, then save)' ); ?></a>
+		</p>
+		<details id="pgr-g014-compatibility" open>
+			<summary><?php echo esc_html( 'جزئیات فنی و روش بررسی' ); ?></summary>
+			<p>
+				<?php echo esc_html( $fa ? 'وضعیت درخواست:' : 'Requested:' ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>
+				<?php echo esc_html( $fa ? '— پشتیبانی میزبان:' : '— Host:' ); ?> <code><?php echo esc_html( $status['host'] ); ?></code>
+				<?php echo esc_html( $fa ? '— حالت واقعی مرورگر:' : '— Browser Grid:' ); ?> <code><?php echo esc_html( $status['grid_mode'] ); ?></code>
+			</p>
+			<p><?php echo esc_html( $fa ? 'وضعیت بالا فقط تنظیم درخواستی و نسخهٔ میزبان را گزارش می‌کند؛ باید در مرورگر، پس از بارگذاری جدول، ag-rtl یا ag-ltr و سازگاری GPP جداگانه آزموده شود.' : 'This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP.' ); ?></p>
+			<div class="pgr-card-grid">
+				<section class="pgr-card" role="group" aria-label="حالت A: جدول از موتور چپ‌به‌راست استفاده می‌کند، ولی نوشته‌های فارسی و ترتیب پنج ستون برای کاربر راست‌به‌چپ‌اند؛ عنوان و ردیف هنگام پیمایش هم‌راستا می‌مانند.">
+					<h3>حالت A — موتور LTR، متن فارسی RTL</h3>
+					<p><code>ag-ltr</code> ← نام دانش‌آموز | کد ملی | مدرسه و پایه | تاریخ و ساعت ثبت | عملیات</p>
+					<p>عنوان و ردیف هم‌راستا؛ وضعیت ذخیره‌شده حفظ می‌شود (در حالت تأییدشدهٔ فعلی GPP).</p>
+				</section>
+				<section class="pgr-card" role="group" aria-label="حالت B: موتور جدول راست‌به‌چپ شده، اما قواعد قدیمی محور LTR در GPP می‌توانند عنوان و ردیف‌ها را ناهم‌راستا کنند؛ ترتیب ستون‌ها و بازیابی حالت ذخیره‌شده نیازمند آزمون سازگاری است.">
+					<h3>حالت B — RTL بومی پیش از تأیید GPP</h3>
+					<p><code>ag-rtl</code> ← امکان ناسازگاری با چهار قاعدهٔ محور LTR در GPP</p>
+					<p>ممکن است پیمایش عنوان/ردیف، ترتیب پنج ستون یا بازیابی چیدمان ذخیره‌شده متفاوت شود؛ این یک طرح شماتیک است، نه تصویر واقعی آزمون.</p>
+				</section>
+			</div>
+			<p id="pgr-g014-gpp-guide"><?php echo esc_html( $fa ? 'در GPP، ابتدا حالت واقعی جدول و ترتیب پنج ستون را بررسی کنید؛ سپس پیمایش افقی، بازگردانی چیدمان، جستجو و صفحه‌بندی را در حالت OFF و ON جداگانه بیازمایید. تا زمان تأیید، گزینه را خاموش نگه دارید.' : 'In GPP, verify actual Grid mode, five-column order, scroll, saved layout, search and paging in both OFF and ON. Keep OFF until qualified.' ); ?></p>
+		</details>
 		<?php
 	}
 

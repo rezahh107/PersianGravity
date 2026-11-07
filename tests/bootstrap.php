@@ -36,7 +36,7 @@ function plugin_dir_path( $file ) { return dirname( $file ) . '/'; }
 function plugin_dir_url( $file ) { return 'https://example.test/wp-content/plugins/persian-gravity/'; }
 function plugin_basename( $file ) { return 'persian-gravity/' . basename( $file ); }
 function load_plugin_textdomain() { return true; }
-function current_user_can() { return true; }
+function current_user_can() { return $GLOBALS['pgr_test_can_manage_options'] ?? true; }
 function esc_html__( $text ) { return $text; }
 function esc_attr__( $text ) { return $text; }
 function __( $text ) { return $text; }
@@ -63,6 +63,7 @@ function wp_enqueue_style( $handle ) { $GLOBALS['pgr_test_styles'][] = $handle; 
 function wp_add_inline_script( $handle, $data, $position = 'after' ) { $GLOBALS['pgr_test_inline_scripts'][] = array( 'handle' => $handle, 'data' => $data, 'position' => $position ); return true; }
 function wp_add_inline_style( $handle, $data ) { $GLOBALS['pgr_test_inline_styles'][] = array( 'handle' => $handle, 'data' => $data ); return true; }
 function wp_style_is( $handle, $status = 'enqueued' ) { return ! empty( $GLOBALS['pgr_test_style_states'][ $handle ][ $status ] ); }
+function did_action( $hook ) { return $GLOBALS['pgr_test_fired_actions'][ $hook ] ?? 0; }
 function determine_locale() { return $GLOBALS['pgr_test_locale']; }
 function is_rtl() { return (bool) $GLOBALS['pgr_test_is_rtl']; }
 function wp_timezone() { return new DateTimeZone( $GLOBALS['pgr_test_timezone'] ); }
