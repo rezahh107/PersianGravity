@@ -1,0 +1,202 @@
+{
+  "evidence_class": "AUTHENTIC_SCANNER_SAVE_RECOVERY",
+  "head": "237e8006fae00be586d90a5b76666ceef7a025ca",
+  "mode": "repaired",
+  "locale": "en_US",
+  "wordpress": "6.8.3",
+  "gravityforms": "3.1.1.1",
+  "scenarios": [
+    {
+      "name": "invalid_create_after",
+      "registry_before": "3958bf416e28d114eaa79d551ff1a65b154d78d69f160120c0c771f06eee8a93",
+      "registry_after": "3958bf416e28d114eaa79d551ff1a65b154d78d69f160120c0c771f06eee8a93",
+      "gf_mapping_unchanged": true,
+      "observed": "INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR"
+    },
+    {
+      "name": "corrected_create_retry",
+      "registry_before": "3958bf416e28d114eaa79d551ff1a65b154d78d69f160120c0c771f06eee8a93",
+      "registry_after": "4096b7aec33b51afc2d98340d794539843d7b4fc1ee5d91617e9e103503071da",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_SAVED"
+    },
+    {
+      "name": "invalid_edit_retention",
+      "registry_before": "4096b7aec33b51afc2d98340d794539843d7b4fc1ee5d91617e9e103503071da",
+      "registry_after": "4096b7aec33b51afc2d98340d794539843d7b4fc1ee5d91617e9e103503071da",
+      "gf_mapping_unchanged": true,
+      "observed": "IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES"
+    },
+    {
+      "name": "corrected_edit_retry",
+      "registry_before": "4096b7aec33b51afc2d98340d794539843d7b4fc1ee5d91617e9e103503071da",
+      "registry_after": "ae0f6a44ed3b31e76ef499a6bfb0408ca394d52a05bb9108881fa6a51f5d4999",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_EDIT_SAVED"
+    },
+    {
+      "name": "mismatched_edit_id_retains_original_identity",
+      "registry_before": "ae0f6a44ed3b31e76ef499a6bfb0408ca394d52a05bb9108881fa6a51f5d4999",
+      "registry_after": "ae0f6a44ed3b31e76ef499a6bfb0408ca394d52a05bb9108881fa6a51f5d4999",
+      "gf_mapping_unchanged": true,
+      "observed": "REJECTED_IMMUTABLE_ID_RESTORED_ORIGINAL_EDIT_ID_REVISION_AND_INCARNATION"
+    },
+    {
+      "name": "mismatched_edit_id_corrected_retry",
+      "registry_before": "ae0f6a44ed3b31e76ef499a6bfb0408ca394d52a05bb9108881fa6a51f5d4999",
+      "registry_after": "b1332ea5ef0b00c7dc4107184bcdd3a5de73656f599f89ad94f921dee500ce6d",
+      "gf_mapping_unchanged": true,
+      "observed": "ORIGINAL_PROFILE_EDIT_ONLY_REVISION_INCREMENTED_ONCE"
+    },
+    {
+      "name": "stale_edit_conflict",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED"
+    },
+    {
+      "name": "controlled_write_failure",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED"
+    },
+    {
+      "name": "cancel_create_1280",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"pointer GET\",\"tabIndex\":0,\"label\":\"Cancel without saving\",\"direction\":\"ltr\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":1280,\"viewportWidth\":1280}"
+    },
+    {
+      "name": "cancel_create_390",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"tabIndex\":0,\"label\":\"Cancel without saving\",\"direction\":\"ltr\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":390,\"viewportWidth\":390}"
+    },
+    {
+      "name": "cancel_create_320",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"tabIndex\":0,\"label\":\"Cancel without saving\",\"direction\":\"ltr\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":320,\"viewportWidth\":320}"
+    },
+    {
+      "name": "cancel_edit_1280",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":1280,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    },
+    {
+      "name": "cancel_edit_390",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":390,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    },
+    {
+      "name": "cancel_edit_320",
+      "registry_before": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "registry_after": "cbd4232b9ae76e80993fe26ba3602f8d5253dd7b1405afb6eae919a88a589b78",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":320,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    }
+  ],
+  "persisting_registry_data": "DISPOSABLE_WU008_ONLY",
+  "screenshots": [
+    {
+      "filename": "en_US-after-invalid-create-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-create-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-create-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-invalid-edit-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-immutable-id-mismatch-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-immutable-id-mismatch-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-immutable-id-mismatch-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-stale-edit-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-write-failure-1280.png",
+      "width": 1280,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-write-failure-390.png",
+      "width": 390,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "en_US-after-write-failure-320.png",
+      "width": 320,
+      "direction": "ltr",
+      "horizontalOverflow": false
+    }
+  ],
+  "status": "PASS"
+}
