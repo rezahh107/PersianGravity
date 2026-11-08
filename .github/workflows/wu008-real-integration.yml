@@ -481,11 +481,15 @@ jobs:
           if(d.schema!=='pgr-g014-reciprocal-warning-v1'||d.data_class!=='SYNTHETIC_NON_PII'||
             d.test_class!=='REAL_WORDPRESS_SETTINGS_BROWSER'||d.source_pgr!==process.env.WU008_PGR_SHA||
             d.source_gpp!==process.env.PGR_G014_GPP_REF||d.gravityflow!=='3.1.0'||d.status!=='PASS'||
-            d.cases?.length!==19||!d.cases.every(x=>x.status==='PASS')||
-            !d.cases.some(x=>x.id==='original-admin-locale-and-site-restored')||
+            d.cases?.length!==27||!d.cases.every(x=>x.status==='PASS')||
+            !['source-qualified-exact-option-snapshots','subscriber-pgr-session-nonce-valid',
+               'subscriber-valid-nonce-pgr-write-denied','subscriber-gpp-session-nonce-valid',
+               'subscriber-valid-nonce-gpp-write-denied','original-plugin-activation-restored',
+               'original-pgr-option-existence-value-restored','original-gpp-option-existence-value-restored',
+               'original-admin-locale-and-site-restored'].every(id=>d.cases.some(x=>x.id===id&&x.status==='PASS'))||
             !known.every(key=>d.cases.some(x=>x.id.startsWith('warning-'+key+'-'))))
             throw Error('Incomplete/failed reciprocal warning browser controls');
-          console.log('PGR_G014_RECIPROCAL_LICENSED_EVIDENCE_PASS controls=19');
+          console.log('PGR_G014_RECIPROCAL_LICENSED_EVIDENCE_PASS controls=27');
           RECIPROCAL_EVIDENCE_GATE
           cleanup_reciprocal
           trap - EXIT

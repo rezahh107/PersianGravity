@@ -1,6 +1,6 @@
 # G-014 — Optional native Gravity Flow Inbox RTL and read-only status v1
 
-Status: draft on current main; not yet GPP-integrated or released. Independent G-013 Vazir PR #113 is untouched.
+Status: OPEN/DRAFT/UNMERGED/UNRELEASED PR #114. Reciprocal GPP #174 Settings integration is implemented; the exact current source pair was exercised in licensed WU008 run 42473965646 (19 original authentic Chromium Settings controls PASS). Independent G-013 Vazir PR #113 is untouched.
 
 ## Native implementation carried forward from qualified PR #102
 
@@ -58,6 +58,6 @@ Historical 96-case four-state result for GPP #174 at `c8cf9fd7bb615075402b78eaa1
 
 ## Evidence and remaining acceptance
 
-Historical licensed PR #102 WU008 G-014 observations and PR #113 G-013 failure remain historical, scoped to their exact Heads; this branch has not yet demonstrated authentic GPP coexistence. PHPUnit/stub results prove only the PHP contract. True native RTL and GPP two-mode compatibility require separate licensed Gravity Flow 3.1.0 plus both actual plugins, admin/frontend fa_IR/en_US including mixed site/user locales, 1280/390px, OFF→ON→OFF reloads, five columns, header/body scroll, saved state, sort/search/filter/page, resize/drag, live refresh, keyboard/touch, no console/network errors and permission cases.
+Historical licensed PR #102 WU008 G-014 observations and PR #113 G-013 failure remain historical, scoped to their exact Heads. The exact PR #114 (237e8006fa) + GPP #174 (c8cf9fd7bb) source pair already passed bounded reciprocal Settings qualification in authentic licensed WordPress/Chromium (WU008 run 42473965646, 19 original PASS controls). The follow-on candidate adds valid-nonce Subscriber POST controls and exact PGR/GPP option, plugin and locale restoration/readback, whose results require a successful new exact-Head WU008 run. Settings success does NOT establish native AG Grid compatibility. Full RTL Mode B, five-column order, saved Grid state, scrolling, touch, keyboard and native interactions remain open; the historical GPP 96-case suite retains 28 FAIL and 28 NOT_PROVEN. PR #114 remains draft, unmerged and unreleased.
 
 No GPP, vendor, G-013, Inbox 2, production setting, CI workflow, merge, release, tag or deployment is changed here.

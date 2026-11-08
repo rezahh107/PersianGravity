@@ -28,6 +28,110 @@ function wp(...args){
 const evaluate=code=>wp('eval',code);
 const snapshot=()=>JSON.parse(evaluate(`echo wp_json_encode(['pgr'=>pgr_gravity_flow_inbox_rtl_status(),'gpp'=>function_exists('gpp_gravity_flow_inbox_axis_status')?gpp_gravity_flow_inbox_axis_status():null,'site'=>get_locale()]);`));
 const checks=(id,expected,actual)=>{requireTrue(actual===expected,'ASSERT_'+id+'_'+JSON.stringify({expected,actual})); report.cases.push({id,status:'PASS',observed:actual});};
+
+/** Source-qualified option snapshots; serialized values never enter artifacts. */
+function storedState(){
+ const php=String.raw`
+if(!class_exists('GFAddOn',false)||!class_exists('GravityPresentationProfiles\\GravityForms\\AddOn'))throw new RuntimeException('Required GF/GPP provider missing');
+$addon=\GravityPresentationProfiles\GravityForms\AddOn::get_instance();
+if($addon->get_slug()!=='gravity-presentation-profiles')throw new RuntimeException('Unexpected GPP slug');
+$source=realpath(WP_PLUGIN_DIR.'/gravityforms/includes/addon/class-gf-addon.php');
+if(!$source)throw new RuntimeException('Licensed GFAddOn source missing');
+$lines=file($source);
+foreach(['get_plugin_settings'=>'get_option','update_plugin_settings'=>'update_option'] as $method=>$operation){
+ $r=new ReflectionMethod('GFAddOn',$method);
+ if(realpath($r->getFileName())!==$source)throw new RuntimeException('GFAddOn settings owner mismatch');
+ $body=implode('',array_slice($lines,$r->getStartLine()-1,$r->getEndLine()-$r->getStartLine()+1));
+ if(strpos($body,$operation)===false||strpos($body,'gravityformsaddon_')===false||
+   strpos($body,'_settings')===false||strpos($body,'get_slug()')===false)
+   throw new RuntimeException('Unverified licensed GFAddOn persistence: '.$method);
+}
+require_once ABSPATH.'wp-admin/includes/plugin.php';
+global $wpdb;
+$keys=['pgr'=>'pgr_settings','gpp'=>'gravityformsaddon_'.$addon->get_slug().'_settings','site'=>'WPLANG'];
+$options=[];
+foreach($keys as $type=>$name){
+ $row=$wpdb->get_row($wpdb->prepare("SELECT option_value,autoload FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",$name),ARRAY_A);
+ $options[$type]=$row===null?['exists'=>false]:[
+  'exists'=>true,'value'=>base64_encode(serialize(get_option($name))),
+  'raw'=>base64_encode($row['option_value']),'autoload'=>$row['autoload'],
+ ];
+}
+$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Synthetic admin missing');
+echo wp_json_encode([
+ 'keys'=>$keys,'options'=>$options,
+ 'locale'=>['exists'=>metadata_exists('user',$u->ID,'locale'),'values'=>base64_encode(serialize(get_user_meta($u->ID,'locale',false)))],
+ 'plugins'=>['gpp'=>is_plugin_active('gravity-presentation-profiles/gravity-presentation-profiles.php'),
+  'flow'=>is_plugin_active('gravityflow/gravityflow.php')],
+]);
+`;
+ return JSON.parse(evaluate(php));
+}
+function pluginState(){
+ return JSON.parse(evaluate(String.raw`
+require_once ABSPATH.'wp-admin/includes/plugin.php';
+echo wp_json_encode(['gpp'=>is_plugin_active('gravity-presentation-profiles/gravity-presentation-profiles.php'),
+ 'flow'=>is_plugin_active('gravityflow/gravityflow.php')]);
+`));
+}
+function restorePlugins(initial){
+ for(const [key,name] of [['gpp','gravity-presentation-profiles'],['flow','gravityflow']]){
+  if(pluginState()[key]!==initial.plugins[key])wp('plugin',initial.plugins[key]?'activate':'deactivate',name);
+ }
+ requireTrue(JSON.stringify(pluginState())===JSON.stringify(initial.plugins),'PLUGIN_RESTORATION_FAILED');
+}
+/** WordPress APIs restore exact existing/missing states without foreign writes. */
+function restoreStored(initial){
+ const encoded=Buffer.from(JSON.stringify(initial),'utf8').toString('base64');
+ const php=String.raw`
+$initial=json_decode(base64_decode('INITIAL_STATE_B64',true),true,512,JSON_THROW_ON_ERROR);
+if(!isset($initial['options'],$initial['keys'],$initial['locale']))throw new RuntimeException('Invalid initial state');
+global $wpdb;
+foreach(['pgr','gpp','site'] as $type){
+ $name=$initial['keys'][$type];$saved=$initial['options'][$type];
+ if(!$saved['exists']){delete_option($name);continue;}
+ $value=unserialize(base64_decode($saved['value'],true),['allowed_classes'=>false]);
+ $row=$wpdb->get_var($wpdb->prepare("SELECT option_name FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",$name));
+ if($row===null){if(!add_option($name,$value))throw new RuntimeException('Option recreation failed: '.$type);}
+ else update_option($name,$value);
+}
+$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Admin missing on restore');
+$values=unserialize(base64_decode($initial['locale']['values'],true),['allowed_classes'=>false]);
+if(!is_array($values))throw new RuntimeException('Invalid saved locale values');
+delete_user_meta($u->ID,'locale');
+if($initial['locale']['exists'])foreach($values as $value)add_user_meta($u->ID,'locale',$value,false);
+`;
+ evaluate(php.replace('INITIAL_STATE_B64',encoded));
+}
+/** Native WP nonce in the Subscriber's ACTUAL logged-in browser session. */
+async function subscriberNonce(context,action){
+ const cookie=(await context.cookies(origin)).find(c=>c.name.startsWith('wordpress_logged_in_'));
+ requireTrue(cookie&&cookie.value.includes('|'),'SUBSCRIBER_LOGGED_IN_COOKIE_MISSING');
+ const encoded=Buffer.from(cookie.value,'utf8').toString('base64');
+ const php=String.raw`
+$u=get_user_by('login','g014_reciprocal_viewer');
+if(!$u)throw new RuntimeException('Synthetic Subscriber missing');
+$_COOKIE[LOGGED_IN_COOKIE]=base64_decode('SESSION_COOKIE_B64',true);
+wp_set_current_user($u->ID);
+if(current_user_can('manage_options')||\GFCommon::current_user_can_any('gravityforms_edit_settings'))
+ throw new RuntimeException('Subscriber unexpectedly authorized');
+$nonce=wp_create_nonce('NATIVE_NONCE_ACTION');
+if(!wp_verify_nonce($nonce,'NATIVE_NONCE_ACTION'))throw new RuntimeException('Own nonce not valid');
+echo $nonce;
+`;
+ const nonce=evaluate(php.replace('SESSION_COOKIE_B64',encoded).replaceAll('NATIVE_NONCE_ACTION',action));
+ requireTrue(/^[a-z0-9]{10}$/i.test(nonce),'NATIVE_SUBSCRIBER_NONCE_MISSING');
+ return nonce;
+}
+async function subscriberPost(context,url,fields,privateMarkup){
+ const response=await context.request.post(url,{form:fields,maxRedirects:0,timeout:30000});
+ const body=await response.text();
+ requireTrue(!body.includes(privateMarkup),'SUBSCRIBER_SETTINGS_UI_EXPOSED');
+ const denied=response.status()>=300||/access denied|not allowed|not have sufficient permissions|do not have permission|sorry, you are not allowed/i.test(body);
+ requireTrue(denied,'SUBSCRIBER_POST_NOT_EXPLICITLY_DENIED_HTTP_'+response.status());
+ return response.status();
+}
+
 const pgrUrl=origin+'/wp-admin/admin.php?page=persian-gravityforms-settings';
 const gppUrl=origin+'/wp-admin/admin.php?page=gf_settings&subview=gravity-presentation-profiles';
 async function login(page,user,password){
@@ -86,17 +190,16 @@ async function warning(page,expected,problem){
  report.cases.push({id:'warning-'+problem+'-'+report.cases.length,status:'PASS',verdict:actual,issue});
 }
 async function main(){
- const originalPgrOption=wp('eval','echo base64_encode(serialize(get_option("pgr_settings",array())));');
- requireTrue(/^[A-Za-z0-9+/=]+$/.test(originalPgrOption),'ORIGINAL_PGR_OPTION_SNAPSHOT_MALFORMED');
- // Restore the exact pre-test admin locale: leaving fa_IR would contaminate
- // later WU008 English G008 timeline assertions even when WPLANG is en_US.
- const originalLocale=JSON.parse(evaluate(`$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Missing synthetic admin');echo wp_json_encode(['exists'=>metadata_exists('user',$u->ID,'locale'),'value'=>get_user_meta($u->ID,'locale',true),'site'=>get_option('WPLANG',null)]);`));
- requireTrue(typeof originalLocale.value==='string'&&(originalLocale.site===null||typeof originalLocale.site==='string'),'ORIGINAL_LOCALE_SNAPSHOT_MALFORMED');
+ const original=storedState();
+ requireTrue(original.keys?.gpp==='gravityformsaddon_gravity-presentation-profiles_settings'&&original.keys?.pgr==='pgr_settings',
+  'GPP_SETTINGS_FORMULA_NOT_QUALIFIED');
+ report.cases.push({id:'source-qualified-exact-option-snapshots',status:'PASS',
+  pgr_existed:original.options.pgr.exists,gpp_existed:original.options.gpp.exists,
+  site_option_existed:original.options.site.exists,locale_existed:original.locale.exists});
  const browser=await chromium.launch({headless:true});
  report.chromium=browser.version();
  const context=await browser.newContext({viewport:{width:1280,height:800}});
  const page=await context.newPage();
- let gppActive=true,flowActive=true;
  try{
   locales('fa_IR','fa_IR');
   await login(page,'runtime_admin',process.env.WU008_ADMIN_PASSWORD);
@@ -144,16 +247,16 @@ async function main(){
   checks('invalid-nonce-no-pgr-write','on',snapshot().pgr.requested);
 
   // Missing/inactive provider must give UNKNOWN without fatal or foreign writes.
-  wp('plugin','deactivate','gravity-presentation-profiles');gppActive=false;
+  wp('plugin','deactivate','gravity-presentation-profiles');
   checks('inactive-gpp-removed','absent',snapshot().gpp===null?'absent':'present');
   await warning(page,'unknown','none');
-  wp('plugin','activate','gravity-presentation-profiles');gppActive=true;
+  wp('plugin','activate','gravity-presentation-profiles');
   checks('gpp-recovered','supported',snapshot().gpp?.capability);
 
   // Unsupported Flow version/presence is UNKNOWN even with GPP ON.
-  wp('plugin','deactivate','gravityflow');flowActive=false;
+  wp('plugin','deactivate','gravityflow');
   await warning(page,'unknown','none');
-  wp('plugin','activate','gravityflow');flowActive=true;
+  wp('plugin','activate','gravityflow');
   checks('flow-host-recovered','admitted',snapshot().pgr.host);
 
   // WordPress must reject settings for a subscriber, not only an anonymous user.
@@ -173,32 +276,58 @@ async function main(){
     checks('subscriber-pgr-settings-denied',0,await viewer.locator('#pgr-g014-gpp-warning, #pgr-g014-rtl-checkbox').count());
     await viewer.goto(gppUrl,{waitUntil:'domcontentloaded'});
     checks('subscriber-gpp-settings-denied',0,await viewer.locator('select[name="_gform_setting_inbox_axis_ltr"]').count());
+    // These are REAL Subscriber POSTs with valid nonces for that session.
+    // Admin saves above are the positive controls for both endpoints.
+    const pgrNonce=await subscriberNonce(viewerContext,'pgr_settings_group-options');
+    checks('subscriber-pgr-session-nonce-valid',true,pgrNonce.length===10);
+    const beforePgr=storedState().options;
+    requireTrue(snapshot().pgr.requested==='on','UNMEANINGFUL_PGR_NEGATIVE_WRITE');
+    const pgrHttp=await subscriberPost(viewerContext,origin+'/wp-admin/options.php',{
+     action:'update',option_page:'pgr_settings_group',_wpnonce:pgrNonce,
+     'pgr_settings[gravity_flow_inbox_rtl]':'0','pgr_settings[default_force_english]':'0',
+    },'id="pgr-g014-gpp-warning"');
+    requireTrue(JSON.stringify(storedState().options)===JSON.stringify(beforePgr),'SUBSCRIBER_PGR_CHANGED_OPTIONS');
+    report.cases.push({id:'subscriber-valid-nonce-pgr-write-denied',status:'PASS',http_status:pgrHttp});
+    const gppNonce=await subscriberNonce(viewerContext,'gform_settings_save');
+    checks('subscriber-gpp-session-nonce-valid',true,gppNonce.length===10);
+    const beforeGpp=storedState().options;
+    requireTrue(snapshot().gpp?.effective==='on','UNMEANINGFUL_GPP_NEGATIVE_WRITE');
+    const gppHttp=await subscriberPost(viewerContext,gppUrl,{
+     'gform-settings-save':'save',gform_settings_save_nonce:gppNonce,
+     _gform_setting_inbox_axis_ltr:'off',
+    },'name="_gform_setting_inbox_axis_ltr"');
+    requireTrue(JSON.stringify(storedState().options)===JSON.stringify(beforeGpp),'SUBSCRIBER_GPP_CHANGED_OPTIONS');
+    report.cases.push({id:'subscriber-valid-nonce-gpp-write-denied',status:'PASS',http_status:gppHttp});
+
    }finally{await viewerContext.close();}
   }else throw Error('ENVIRONMENT_VIEWER_PASSWORD_MISSING');
   report.cases.push({id:'source-read-only-and-independent-switches',status:'PASS'});
   report.status='PASS';
  }catch(e){report.status='FAIL';report.failure=String(e.message||e).slice(0,900);process.exitCode=1;}
- finally{
-  try{if(!gppActive)wp('plugin','activate','gravity-presentation-profiles');}catch{}
-  try{if(!flowActive)wp('plugin','activate','gravityflow');}catch{}
 
+ finally{
   const cleanupFailures=[];
-  try{wp('eval',`update_option("pgr_settings",unserialize(base64_decode("${originalPgrOption}"),["allowed_classes"=>false]));`);}catch(e){cleanupFailures.push('pgr_settings');}
+  // Never swallow a plugin/option/locale restoration failure.
+  try{restorePlugins(original);report.cases.push({id:'original-plugin-activation-restored',status:'PASS'});}
+  catch(e){cleanupFailures.push('plugins:'+String(e.message||e).slice(0,130));}
+  try{restoreStored(original);}catch(e){cleanupFailures.push('store:'+String(e.message||e).slice(0,130));}
   try{
-   const stored=Buffer.from(originalLocale.value,'utf8').toString('base64');
-   evaluate(`$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Admin disappeared');if(${originalLocale.exists?'true':'false'}){update_user_meta($u->ID,'locale',base64_decode('${stored}'));}else{delete_user_meta($u->ID,'locale');}`);
-   if(originalLocale.site===null)wp('option','delete','WPLANG');
-   else wp('option','update','WPLANG',originalLocale.site);
-   const restored=JSON.parse(evaluate(`$u=get_user_by('login','runtime_admin');echo wp_json_encode(['exists'=>metadata_exists('user',$u->ID,'locale'),'value'=>get_user_meta($u->ID,'locale',true),'site'=>get_option('WPLANG',null)]);`));
-   if(restored.exists!==originalLocale.exists||restored.value!==originalLocale.value||restored.site!==originalLocale.site)
-    throw Error('Original locale restore readback mismatch');
+   const after=storedState();
+   requireTrue(JSON.stringify(after.options.pgr)===JSON.stringify(original.options.pgr),'PGR_EXACT_OPTION_READBACK_FAILED');
+   report.cases.push({id:'original-pgr-option-existence-value-restored',status:'PASS'});
+   requireTrue(JSON.stringify(after.options.gpp)===JSON.stringify(original.options.gpp),'GPP_EXACT_OPTION_READBACK_FAILED');
+   report.cases.push({id:'original-gpp-option-existence-value-restored',status:'PASS'});
+   requireTrue(JSON.stringify(after.options.site)===JSON.stringify(original.options.site)&&
+    JSON.stringify(after.locale)===JSON.stringify(original.locale),'LOCALE_EXACT_READBACK_FAILED');
    report.cases.push({id:'original-admin-locale-and-site-restored',status:'PASS'});
-  }catch(e){cleanupFailures.push('locale_restore_'+String(e.message||e).slice(0,90));}
-  if(cleanupFailures.length){report.status='FAIL';report.failure='TEST_CLEANUP_NOT_PROVEN: '+cleanupFailures.join(',');process.exitCode=1;}
-  await context.close();await browser.close();
+   requireTrue(JSON.stringify(after.plugins)===JSON.stringify(original.plugins),'PLUGIN_EXACT_READBACK_FAILED');
+  }catch(e){cleanupFailures.push('readback:'+String(e.message||e).slice(0,140));}
+  try{await context.close();await browser.close();}catch(e){cleanupFailures.push('close:'+String(e.message||e).slice(0,100));}
+  if(cleanupFailures.length){report.status='FAIL';report.failure='TEST_CLEANUP_NOT_PROVEN: '+cleanupFailures.join(' | ');process.exitCode=1;}
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
   if(report.status!=='PASS')console.error('PGR_G014_RECIPROCAL_BROWSER_FAIL '+report.failure);
   else console.log('PGR_G014_RECIPROCAL_BROWSER_PASS cases='+report.cases.length);
  }
+
 }
 await main();
