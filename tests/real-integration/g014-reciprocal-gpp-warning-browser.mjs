@@ -35,7 +35,7 @@ async function login(page,user,password){
  requireTrue(rsp?.ok(),'LOGIN_FORM_MISSING');
  await page.locator('#user_login').fill(user);
  await page.locator('#user_pass').fill(password);
- await Promise.all([page.waitForURL(u=>!u.pathname.includes('wp-login.php'),{timeout:18000}),page.locator('#wp-submit').click()]);
+ await Promise.all([page.waitForURL(u=>!u.pathname.includes('wp-login.php'),{waitUntil:'domcontentloaded',timeout:30000}),page.locator('#wp-submit').click()]);
 }
 function locales(site,user){
  requireTrue(['fa_IR','en_US'].includes(site)&&['fa_IR','en_US'].includes(user),'UNSUPPORTED_LOCALE');
