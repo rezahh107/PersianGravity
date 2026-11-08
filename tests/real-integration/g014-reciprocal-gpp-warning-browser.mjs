@@ -88,6 +88,10 @@ async function warning(page,expected,problem){
 async function main(){
  const originalPgrOption=wp('eval','echo base64_encode(serialize(get_option("pgr_settings",array())));');
  requireTrue(/^[A-Za-z0-9+/=]+$/.test(originalPgrOption),'ORIGINAL_PGR_OPTION_SNAPSHOT_MALFORMED');
+ // Restore the exact pre-test admin locale: leaving fa_IR would contaminate
+ // later WU008 English G008 timeline assertions even when WPLANG is en_US.
+ const originalLocale=JSON.parse(evaluate(`$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Missing synthetic admin');echo wp_json_encode(['exists'=>metadata_exists('user',$u->ID,'locale'),'value'=>get_user_meta($u->ID,'locale',true),'site'=>get_option('WPLANG',null)]);`));
+ requireTrue(typeof originalLocale.value==='string'&&(originalLocale.site===null||typeof originalLocale.site==='string'),'ORIGINAL_LOCALE_SNAPSHOT_MALFORMED');
  const browser=await chromium.launch({headless:true});
  report.chromium=browser.version();
  const context=await browser.newContext({viewport:{width:1280,height:800}});
@@ -177,8 +181,20 @@ async function main(){
  finally{
   try{if(!gppActive)wp('plugin','activate','gravity-presentation-profiles');}catch{}
   try{if(!flowActive)wp('plugin','activate','gravityflow');}catch{}
-  try{wp('eval',`update_option("pgr_settings",unserialize(base64_decode("${originalPgrOption}"),["allowed_classes"=>false]));`);}catch{}
-  try{locales('fa_IR','fa_IR');}catch{}
+
+  const cleanupFailures=[];
+  try{wp('eval',`update_option("pgr_settings",unserialize(base64_decode("${originalPgrOption}"),["allowed_classes"=>false]));`);}catch(e){cleanupFailures.push('pgr_settings');}
+  try{
+   const stored=Buffer.from(originalLocale.value,'utf8').toString('base64');
+   evaluate(`$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Admin disappeared');if(${originalLocale.exists?'true':'false'}){update_user_meta($u->ID,'locale',base64_decode('${stored}'));}else{delete_user_meta($u->ID,'locale');}`);
+   if(originalLocale.site===null)wp('option','delete','WPLANG');
+   else wp('option','update','WPLANG',originalLocale.site);
+   const restored=JSON.parse(evaluate(`$u=get_user_by('login','runtime_admin');echo wp_json_encode(['exists'=>metadata_exists('user',$u->ID,'locale'),'value'=>get_user_meta($u->ID,'locale',true),'site'=>get_option('WPLANG',null)]);`));
+   if(restored.exists!==originalLocale.exists||restored.value!==originalLocale.value||restored.site!==originalLocale.site)
+    throw Error('Original locale restore readback mismatch');
+   report.cases.push({id:'original-admin-locale-and-site-restored',status:'PASS'});
+  }catch(e){cleanupFailures.push('locale_restore_'+String(e.message||e).slice(0,90));}
+  if(cleanupFailures.length){report.status='FAIL';report.failure='TEST_CLEANUP_NOT_PROVEN: '+cleanupFailures.join(',');process.exitCode=1;}
   await context.close();await browser.close();
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2)+'\n');
   if(report.status!=='PASS')console.error('PGR_G014_RECIPROCAL_BROWSER_FAIL '+report.failure);
