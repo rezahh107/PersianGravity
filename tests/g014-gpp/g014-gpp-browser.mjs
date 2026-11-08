@@ -164,15 +164,28 @@ async function moveScroll(page,rtl,width){
     b.scrollLeft=rtl?-Math.min(160,range):Math.min(160,range);
     await pause();let moved=b.scrollLeft;
     if(Math.abs(moved-start)<4){b.scrollLeft=rtl?Math.min(160,range):-Math.min(160,range);await pause();moved=b.scrollLeft;}
-    const after=(()=>{const h=document.querySelector('[data-js="gflow-inbox"]');const vis=n=>n.getBoundingClientRect().width>1;
+    const offsets=()=>{const h=document.querySelector('[data-js="gflow-inbox"]');const vis=n=>n.getBoundingClientRect().width>1;
       const headers=[...h.querySelectorAll('.ag-header-cell[col-id]')].filter(vis);
       const cells=[...h.querySelectorAll('.ag-center-cols-container .ag-row:first-child .ag-cell[col-id]')].filter(vis);
-      return headers.map(x=>{const y=cells.find(c=>c.getAttribute('col-id')===x.getAttribute('col-id'));return y?Math.abs(x.getBoundingClientRect().x-y.getBoundingClientRect().x):null;}).filter(x=>x!==null);})();
-    b.scrollLeft=start;await pause();return {start,moved,restored:b.scrollLeft,range,offsets:after};
+      return headers.map(x=>{const y=cells.find(c=>c.getAttribute('col-id')===x.getAttribute('col-id'));return y?Math.abs(x.getBoundingClientRect().x-y.getBoundingClientRect().x):null;}).filter(x=>x!==null);};
+    // Observe any transient scroll-sync discrepancy without weakening the
+    // initial/final alignment contract. This isolates a delayed Grid callback
+    // from a persistent GPP/native RTL coordinate-axis conflict.
+    const series=[{after_ms:0,offsets:offsets()}];
+    for (const ms of [120,360,720]){
+      await new Promise(done=>setTimeout(done,ms-series[series.length-1].after_ms));
+      series.push({after_ms:ms,offsets:offsets()});
+    }
+    b.scrollLeft=start;await pause();
+    return {start,moved,restored:b.scrollLeft,range,offsets:series[0].offsets,series};
   },rtl);
   if(width===390&&(outcome.range<=20||Math.abs(outcome.moved-outcome.start)<8||Math.abs(outcome.restored-outcome.start)>2))
     fail('Mobile scroll did not move and restore: '+JSON.stringify(outcome));
-  if(outcome.offsets.some(v=>v>4))fail('Header/row diverged during scroll: '+JSON.stringify(outcome));
+  if(outcome.offsets.some(v=>v>4)){
+    const latest=outcome.series.at(-1).offsets;
+    const persistence=latest.some(v=>v>4)?'PERSISTENT_AFTER_720MS':'TRANSIENT_BEFORE_720MS';
+    fail('Header/row diverged during scroll ['+persistence+']: '+JSON.stringify(outcome));
+  }
   return outcome;
 }
 async function keyboard(page){
@@ -265,7 +278,8 @@ async function resizeForTransition(page){
   if(!Number.isFinite(grown)||grown-chosen.width<15)fail('Native transition resize did not change width');
   await page.reload({waitUntil:'domcontentloaded'});await settled(page);await sleep(650);
   const afterReload=(await page.evaluate(observe)).columns.find(v=>v.id===chosen.id)?.w;
-  if(!Number.isFinite(afterReload)||Math.abs(afterReload-grown)>4)fail('Native saved width not restored in OFF same-mode control');
+  if(!Number.isFinite(afterReload)||Math.abs(afterReload-grown)>4)
+    fail('Native saved width not restored in OFF same-mode control: '+JSON.stringify({column:chosen.id,initial:chosen.width,expanded:grown,afterReload,viewport:await page.evaluate(()=>document.documentElement.clientWidth)}));
   return {id:chosen.id,original:chosen.width,stored:grown,afterReload};
 }
 
