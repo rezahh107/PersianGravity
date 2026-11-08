@@ -63,17 +63,17 @@ final class PGR_GPP_Inbox_RTL_Compatibility {
 	 * @return array<string,mixed>
 	 */
 	public static function facts() {
-		$pgr = pgr_gravity_flow_inbox_rtl_status();
-		$gpp = self::gpp_axis_status();
+		$pgr         = pgr_gravity_flow_inbox_rtl_status();
+		$gpp         = self::gpp_axis_status();
 		$site_locale = function_exists( 'get_locale' ) ? get_locale() : null;
-		$problem = 'none';
+		$problem     = 'none';
 
 		if ( 'admitted' === $pgr['host'] &&
 			in_array( $pgr['requested'], array( 'on', 'off' ), true ) &&
 			'supported' === $gpp['interface'] &&
 			in_array( $gpp['requested'], array( 'on', 'off' ), true ) ) {
 			$fa_frontend = 'fa_IR' === $site_locale;
-			$fa_admin = true === $pgr['request_rtl'];
+			$fa_admin    = true === $pgr['request_rtl'];
 
 			if ( 'on' === $pgr['requested'] && $fa_frontend ) {
 				$problem = 'on' === $gpp['effective'] ? 'rtl_with_ltr_axis' : 'rtl_column_order_without_axis';
@@ -90,14 +90,14 @@ final class PGR_GPP_Inbox_RTL_Compatibility {
 			? 'unknown' : ( 'rtl_with_ltr_axis' === $problem ? 'incompatible' : 'known_failure' );
 
 		return array(
-			'pgr' => $pgr,
-			'gpp' => $gpp,
-			'site_locale' => is_string( $site_locale ) ? $site_locale : 'unknown',
+			'pgr'           => $pgr,
+			'gpp'           => $gpp,
+			'site_locale'   => is_string( $site_locale ) ? $site_locale : 'unknown',
 			'compatibility' => $compatibility,
-			'problem' => $problem,
-			'grid_mode' => 'not_observed',
+			'problem'       => $problem,
+			'grid_mode'     => 'not_observed',
 			// Scope of the observed defect, NOT a runtime plugin-version claim.
-			'evidence' => 'none' === $problem ? 'none_for_this_combination'
+			'evidence'      => 'none' === $problem ? 'none_for_this_combination'
 				: 'GPP_PR174_RUN_42469384530__GPP_c8cf9fd__PGR_311c2f5d__FLOW_3.1.0__GF_3.1.1.1__WP_6.8.3__CHROMIUM_140.0.7339.16',
 		);
 	}
