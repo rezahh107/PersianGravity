@@ -225,18 +225,19 @@ final class PGR_Admin {
 			return;
 		}
 
-		$status = pgr_gravity_flow_inbox_rtl_status();
-		$fa     = is_rtl();
-		$facts  = PGR_GPP_Inbox_RTL_Compatibility::facts();
-		$gpp    = $facts['gpp'];
+		$status           = pgr_gravity_flow_inbox_rtl_status();
+		$fa               = is_rtl();
+		$facts            = PGR_GPP_Inbox_RTL_Compatibility::facts();
+		$gpp              = $facts['gpp'];
 		$problem_messages = array(
-			'rtl_with_ltr_axis' => 'PersianGravity ON + GPP ON: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون واقعی معکوس شد. چهار قانون اجباری LTR در GPP نیز با موتور ag-rtl می‌توانند تداخل داشته باشند؛ در موبایل ۳۹۰ پیکسل مشکلات جداگانهٔ اسکرول/لمس دیده شد.',
+			'rtl_with_ltr_axis'             => 'PersianGravity ON + GPP ON: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون واقعی معکوس شد. چهار قانون اجباری LTR در GPP نیز با موتور ag-rtl می‌توانند تداخل داشته باشند؛ در موبایل ۳۹۰ پیکسل مشکلات جداگانهٔ اسکرول/لمس دیده شد.',
 			'rtl_column_order_without_axis' => 'PersianGravity ON + GPP OFF: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون با وجود حذف هر چهار قانون LTR همچنان معکوس شد؛ در ۳۹۰ پیکسل مشکل لمس نیز مشاهده شد.',
-			'ltr_grid_without_axis' => 'PersianGravity OFF + GPP OFF: در Frontend فارسی با Grid از نوع ag-ltr، حذف چهار قانون LTR باعث اختلاف Header و ردیف هنگام اسکرول در عرض ۳۹۰ پیکسل شد؛ این خطا مخصوص حالت و محیط آزموده‌شده است.',
-			'native_admin_mobile_scroll' => 'PersianGravity OFF در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل اختلاف حرکت Header و ردیف دیده شد. نمونه‌های Native بدون سطح نمایشی GPP نیز همین خانواده خطا را داشته‌اند؛ علت آن را نمی‌توان فقط به GPP نسبت داد.',
-			'native_admin_mobile_touch' => 'PersianGravity ON در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل کشیدن لمسی به حرکت افقی مورد انتظار منجر نشد. این مشاهده مستقل از روشن یا خاموش بودن چهار قانون GPP است.',
+			'ltr_grid_without_axis'         => 'PersianGravity OFF + GPP OFF: در Frontend فارسی با Grid از نوع ag-ltr، حذف چهار قانون LTR باعث اختلاف Header و ردیف هنگام اسکرول در عرض ۳۹۰ پیکسل شد؛ این خطا مخصوص حالت و محیط آزموده‌شده است.',
+			'native_admin_mobile_scroll'    => 'PersianGravity OFF در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل اختلاف حرکت Header و ردیف دیده شد. نمونه‌های Native بدون سطح نمایشی GPP نیز همین خانواده خطا را داشته‌اند؛ علت آن را نمی‌توان فقط به GPP نسبت داد.',
+			'native_admin_mobile_touch'     => 'PersianGravity ON در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل کشیدن لمسی به حرکت افقی مورد انتظار منجر نشد. این مشاهده مستقل از روشن یا خاموش بودن چهار قانون GPP است.',
 		);
-		$known_failure = isset( $problem_messages[ $facts['problem'] ] );
+		$known_failure    = isset( $problem_messages[ $facts['problem'] ] );
+		$warning_message  = $known_failure ? $problem_messages[ $facts['problem'] ] : 'برای این ترکیب، در محیط و زبان فعلی شاهد کافی برای اعلام سازگاری یا ناسازگاری وجود ندارد؛ نبودن یا ناقص‌بودن رابط GPP نیز به معنی سازگاری نیست.';
 		?>
 		<label for="pgr-g014-rtl-checkbox">
 			<input id="pgr-g014-rtl-checkbox" type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[gravity_flow_inbox_rtl]" value="1" <?php checked( 'on' === $status['requested'] ); ?> />
@@ -252,9 +253,7 @@ final class PGR_Admin {
 			role="status" data-pgr-gpp-compatibility="<?php echo esc_attr( $facts['compatibility'] ); ?>"
 			data-pgr-gpp-problem="<?php echo esc_attr( $facts['problem'] ); ?>">
 			<p><strong><?php echo esc_html( $known_failure ? 'هشدار سازگاری Inbox 1 بر اساس آزمون واقعی' : 'وضعیت سازگاری Inbox 1: UNKNOWN (تأییدنشده)' ); ?></strong></p>
-			<p><?php echo esc_html( $known_failure
-				? $problem_messages[ $facts['problem'] ]
-				: 'برای این ترکیب، در محیط و زبان فعلی شاهد کافی برای اعلام سازگاری یا ناسازگاری وجود ندارد؛ نبودن یا ناقص‌بودن رابط GPP نیز به معنی سازگاری نیست.' ); ?></p>
+			<p><?php echo esc_html( $warning_message ); ?></p>
 			<p>
 				<?php echo esc_html( 'کلید RTL بومی PersianGravity:' ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>؛
 				<?php echo esc_html( 'کلید مستقل محور LTR در GPP (تنظیم / اثر):' ); ?>
