@@ -105,8 +105,13 @@ if($initial['locale']['exists'])foreach($values as $value)add_user_meta($u->ID,'
 }
 /** Native WP nonce in the Subscriber's ACTUAL logged-in browser session. */
 async function subscriberNonce(context,action){
- const cookie=(await context.cookies(origin)).find(c=>c.name.startsWith('wordpress_logged_in_'));
- requireTrue(cookie&&cookie.value.includes('|'),'SUBSCRIBER_LOGGED_IN_COOKIE_MISSING');
+ const cookies=await context.cookies(); // Include wp-admin-scoped auth cookies.
+ const cookie=cookies.find(c=>c.name.startsWith('wordpress_logged_in_'))||
+  cookies.find(c=>c.name.startsWith('wordpress_sec_'))||
+  cookies.find(c=>c.name.startsWith('wordpress_'));
+ // Never expose cookie values, session tokens or user information in evidence.
+ requireTrue(cookie&&cookie.value.split('|').length>=4,
+  'SUBSCRIBER_SESSION_COOKIE_MISSING_'+cookies.map(c=>c.name.startsWith('wordpress')?'wordpress':'other').join('_'));
  const encoded=Buffer.from(cookie.value,'utf8').toString('base64');
  const php=String.raw`
 $u=get_user_by('login','g014_reciprocal_viewer');
