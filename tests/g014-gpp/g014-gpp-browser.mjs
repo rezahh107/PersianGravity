@@ -93,7 +93,8 @@ function observe(){
     gpp_surface:!!host?.closest('.gpp-inbox-surface'),
     gpp_css_count:[...document.querySelectorAll('link[rel="stylesheet"]')].filter(el=>/\/plugins\/gravity-presentation-profiles\/assets\/css\/srwf-gravity-flow-inbox/.test(el.href)).length,
     axis,viewport_width:document.documentElement.clientWidth,document_width:document.documentElement.scrollWidth,
-    loading:!!visible(host?.querySelector('.ag-overlay-loading-center')),
+    loading:!!visible(host?.querySelector('.ag-overlay-loading-center'))||
+      !!host?.closest('.gflow-inbox')?.querySelector('[data-js="gflow-inbox-loader"]'),
     config_rows:Array.isArray(cfg?.rowData)?cfg.rowData.length:null,
     source_locale:document.documentElement.lang,
   };
@@ -104,9 +105,13 @@ async function settled(page){
       const h=document.querySelector('[data-js="gflow-inbox"]');
       const r=h?.querySelector('.ag-root-wrapper');
       const cfg=window.gflow_config?.grids?.[h?.dataset.gridId]?.grid_options;
+      // The real Flow 3.1.0 JS removes its loader only after the Grid's
+      // 300ms reveal + 200ms cleanup. Populated rows can exist *before*
+      // that lifecycle boundary, so rows alone are not readiness.
+      const vendorLoader=h?.closest('.gflow-inbox')?.querySelector('[data-js="gflow-inbox-loader"]');
       return Boolean(r&&(r.classList.contains('ag-rtl')||r.classList.contains('ag-ltr'))&&
         cfg&&Array.isArray(cfg.rowData)&&cfg.rowData.length>=20&&h.querySelectorAll('.ag-header-cell[col-id]').length>=1&&
-        h.querySelectorAll('.ag-center-cols-container .ag-row').length>0);
+        h.querySelectorAll('.ag-center-cols-container .ag-row').length>0&&!vendorLoader);
     },null,{timeout:25000});
   } catch (error) {
     // A timeout is not a product defect until the native Grid's actual state
@@ -125,10 +130,14 @@ async function settled(page){
         paginationPageSize:opts?.paginationPageSize??null,
         headerIds:[...h?.querySelectorAll('.ag-header-cell[col-id]')||[]].map(n=>n.getAttribute('col-id')).slice(0,15),
         loadingOverlays:h?.querySelectorAll('.ag-overlay-loading-wrapper').length??0,
+        vendorLoaderPresent:!!h?.closest('.gflow-inbox')?.querySelector('[data-js="gflow-inbox-loader"]'),
         emptyOverlays:h?.querySelectorAll('.ag-overlay-no-rows-center').length??0};
     }).catch(e=>({probeFailure:String(e.name||'Error')}));
     fail('Native Grid readiness not established: '+JSON.stringify(diagnostic),'RUNTIME_READINESS_NOT_PROVEN');
   }
+  // Two paint frames after the vendor removed the loader avoid sampling
+  // reveal/layout transitions; subsequent geometry assertions stay strict.
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
   return page.evaluate(observe);
 }
 function checkOrder(state){
