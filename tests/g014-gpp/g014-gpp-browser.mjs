@@ -393,7 +393,7 @@ async function run(){
                 if(!Number.isFinite(currentWidth)||Math.abs(currentWidth-carriedColumn.stored)>4)
                   fail('OFF→ON→OFF native saved-width transition broke: '+JSON.stringify({carriedColumn,currentWidth,mode,index}));
               }
-              const order=(surface==='admin'?user:site)==='fa_IR'?checkOrder(state):state.columns.map(x=>x.label);
+              const order=surface==='frontend'&&site==='fa_IR'?checkOrder(state):state.columns.map(x=>x.label);
               const aligned=alignment(state);
               const scroll=await moveScroll(page,expectedRtl,width);
               const key=await keyboard(page);
@@ -427,7 +427,7 @@ async function run(){
               if(errors.length||network.length)fail('Browser errors: '+JSON.stringify({errors,network}));
               const file=`${id}.jpg`;
               await page.screenshot({path:path.join(out,file),type:'jpeg',quality:67,fullPage:false});
-              add(id,'PASS',{...info,grid:state,order,aligned,scroll,key,touch,advanced,image:file});
+              add(id,'PASS',{...info,column_contract:surface==='frontend'?'GPP_FORM_SCOPED_FIVE':'NATIVE_AGGREGATE_ADMIN',grid:state,order,aligned,scroll,key,touch,advanced,image:file});
             }catch(e){
               const classification=e.category||(/ENVIRONMENT:/.test(String(e))?'ENVIRONMENT':'PRODUCT_OR_HARNESS_UNDETERMINED');
               const failureImage=`${id}-failure.jpg`;
