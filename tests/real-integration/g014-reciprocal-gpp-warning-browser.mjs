@@ -81,7 +81,7 @@ async function warning(page,expected,problem){
  requireTrue(actual===expected&&issue===problem,'RECIPROCAL_WARNING_WRONG_'+JSON.stringify({actual,issue,expected,problem}));
  requireTrue(await box.locator('details summary').count()===1,'ACCESSIBLE_EVIDENCE_DETAIL_MISSING');
  requireTrue(await page.locator('#pgr-g014-compatibility [role="group"][aria-label]').count()===2,'ORIGINAL_MODE_SCHEMATICS_MISSING');
- const details=await box.innerText();
+ const details=await box.textContent(); // Includes collapsed accessible <details> copy.
  requireTrue(details.includes('Inbox 1')&&details.includes('Inbox 2'),'INBOX1_INBOX2_DISTINCTION_MISSING');
  report.cases.push({id:'warning-'+problem+'-'+report.cases.length,status:'PASS',verdict:actual,issue});
 }
