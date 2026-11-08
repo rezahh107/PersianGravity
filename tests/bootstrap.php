@@ -65,6 +65,7 @@ function wp_add_inline_style( $handle, $data ) { $GLOBALS['pgr_test_inline_style
 function wp_style_is( $handle, $status = 'enqueued' ) { return ! empty( $GLOBALS['pgr_test_style_states'][ $handle ][ $status ] ); }
 function did_action( $hook ) { return $GLOBALS['pgr_test_fired_actions'][ $hook ] ?? 0; }
 function determine_locale() { return $GLOBALS['pgr_test_locale']; }
+function get_locale() { return $GLOBALS['pgr_test_site_locale'] ?? $GLOBALS['pgr_test_locale']; }
 function is_rtl() { return (bool) $GLOBALS['pgr_test_is_rtl']; }
 function wp_timezone() { return new DateTimeZone( $GLOBALS['pgr_test_timezone'] ); }
 function delete_option( $key ) { unset( $GLOBALS['pgr_test_options'][ $key ], $GLOBALS['pgr_test_option_autoload'][ $key ] ); }
