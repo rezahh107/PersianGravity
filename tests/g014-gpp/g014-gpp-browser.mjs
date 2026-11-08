@@ -246,7 +246,7 @@ async function resizeForTransition(page){
     for(let px=r.left+.5;px<r.right;px+=.5){const hit=document.elementFromPoint(px,y);if(hit===n||n.contains(hit))return px;}
     return null;
   },{id:chosen.id,y});
-  if(x===null)fail('Native resize handle is not pointer-hit-testable');
+  if(x===null)fail('Native resize handle not pointer-hit-testable: '+JSON.stringify({chosen,cell,handle,expectedSide:side}), 'INTERACTION_HIT_TEST_NOT_PROVEN');
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+side*65,y,{steps:12});await page.mouse.up();await sleep(450);
   const grown=(await page.evaluate(observe)).columns.find(v=>v.id===chosen.id)?.w;
   if(!Number.isFinite(grown)||grown-chosen.width<15)fail('Native transition resize did not change width');
@@ -282,7 +282,7 @@ async function resizeAndDrag(page){
     for(let x=r.left+.5;x<r.right;x+=.5){const target=document.elementFromPoint(x,y);if(target===h||h.contains(target))return x;}
     return null;
   },{id:source.id,y:sy});
-  if(sx===null)fail('Real native resize handle is not pointer-hit-testable');
+  if(sx===null)fail('Real native resize handle not pointer-hit-testable: '+JSON.stringify({source,hbox,cbox}), 'INTERACTION_HIT_TEST_NOT_PROVEN');
   await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(sx+sign*60,sy,{steps:12});await page.mouse.up();await sleep(450);
   const newWidth=(await page.evaluate(observe)).columns.find(x=>x.id===source.id)?.w;
   if(!Number.isFinite(newWidth)||newWidth-source.width<15)fail('Real native resize was a no-op: '+JSON.stringify({source,newWidth}));
@@ -433,10 +433,14 @@ async function run(){
               const failureImage=`${id}-failure.jpg`;
               try{await page.screenshot({path:path.join(out,failureImage),type:'jpeg',quality:60,fullPage:false,timeout:3500});}
               catch{/* A missing screenshot must never mask the original failure. */}
-              add(id,'FAIL',{...info,classification,reason:String(e.message||e).slice(0,1400),errors,network,
+              const failureGrid=await page.evaluate(observe).catch(()=>null);
+              add(id,'FAIL',{...info,classification,reason:String(e.message||e).slice(0,1400),
+                grid:failureGrid,errors,network,
                 failure_image:fs.existsSync(path.join(out,failureImage))?failureImage:null});
-              // Fail hard and retain partial evidence; do not silently skip cells.
-              throw e;
+              // Independent cases must still run after a product/interaction
+              // failure. Only a broken environment invalidates the next case.
+              if(classification==='ENVIRONMENT')throw e;
+              continue;
             }finally{
               page.off('pageerror',onError);page.off('console',onConsole);page.off('requestfailed',onFailed);page.off('response',onResponse);
             }
@@ -445,6 +449,11 @@ async function run(){
       }
       await context.close();
     }
+    // Never let a later successful case erase earlier FAIL evidence.
+    if(report.scenarios.length!==48||report.scenarios.some(s=>s.status!=='PASS'))
+      fail('Incomplete G014/GPP acceptance matrix: '+JSON.stringify({
+        total:report.scenarios.length,failed:report.scenarios.filter(s=>s.status==='FAIL').map(s=>s.id)}),
+        'QUALIFICATION_INCOMPLETE');
     report.status='PASS';
   }catch(e){
     report.status='FAIL';
