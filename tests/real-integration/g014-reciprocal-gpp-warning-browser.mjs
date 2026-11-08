@@ -104,14 +104,20 @@ if($initial['locale']['exists'])foreach($values as $value)add_user_meta($u->ID,'
  evaluate(php.replace('INITIAL_STATE_B64',encoded));
 }
 /** Native WP nonce in the Subscriber's ACTUAL logged-in browser session. */
+function cookiePartsValid(value){return value.split('|').length===4;}
 async function subscriberNonce(context,action){
  const cookies=await context.cookies(); // Include wp-admin-scoped auth cookies.
- const cookie=cookies.find(c=>c.name.startsWith('wordpress_logged_in_'))||
-  cookies.find(c=>c.name.startsWith('wordpress_sec_'))||
-  cookies.find(c=>c.name.startsWith('wordpress_'));
- // Never expose cookie values, session tokens or user information in evidence.
- requireTrue(cookie&&cookie.value.split('|').length>=4,
-  'SUBSCRIBER_SESSION_COOKIE_MISSING_'+cookies.map(c=>c.name.startsWith('wordpress')?'wordpress':'other').join('_'));
+ const candidates=cookies.filter(c=>c.name.startsWith('wordpress_logged_in_')||
+  c.name.startsWith('wordpress_sec_')||
+  (c.name.startsWith('wordpress_')&&c.name!=='wordpress_test_cookie'));
+ // PHP setcookie URL-encodes pipe delimiters. Browser cookie APIs expose
+ // the wire value; PHP's $_COOKIE normally gives WordPress the decoded value.
+ const parsed=candidates.map(c=>({name:c.name,value:decodeURIComponent(c.value)}));
+ const cookie=parsed.find(c=>cookiePartsValid(c.value));
+ // Never expose cookie values, tokens or hashed cookie names in evidence.
+ requireTrue(cookie,
+  'SUBSCRIBER_AUTH_COOKIE_UNAVAILABLE_'+candidates.length+'_encoded_'+
+  candidates.some(c=>/%7C/i.test(c.value)));
  const encoded=Buffer.from(cookie.value,'utf8').toString('base64');
  const php=String.raw`
 $u=get_user_by('login','g014_reciprocal_viewer');
