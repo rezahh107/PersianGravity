@@ -39,7 +39,9 @@ function status(){
 }
 function locales(site,user){
   if(!['fa_IR','en_US'].includes(site)||!['fa_IR','en_US'].includes(user))fail('Unadmitted locale','ENVIRONMENT');
-  wp('option','update','WPLANG',site);
+  // WU008 uses absent WPLANG for the default en_US locale; updating to en_US is not reliable.
+  if(site==='en_US')wp('option','delete','WPLANG');
+  else wp('option','update','WPLANG',site);
   evalWp(`$u=get_user_by('login','bootstrap_admin');if(!$u)throw new RuntimeException('Synthetic operator absent');update_user_meta($u->ID,'locale','${user}');`);
   const x=JSON.parse(evalWp(`echo wp_json_encode(['site'=>get_locale(),'user'=>get_user_locale(get_user_by('login','bootstrap_admin'))]);`));
   if(x.site!==site||x.user!==user)fail('Locale readback mismatch '+JSON.stringify(x),'ENVIRONMENT');
@@ -136,8 +138,9 @@ function checkOrder(state){
     fail('Owner five-column order mismatch: '+JSON.stringify({rightToLeft,expected}));
   return rightToLeft;
 }
-function alignment(state){
-  if(state.alignment.filter(x=>x.cell).length<4)fail('Insufficient header/body pairs for meaningful alignment');
+function alignment(state,width){
+  // AG Grid virtualizes horizontally outside the 390px viewport.
+  if(state.alignment.filter(x=>x.cell).length<(width===390?1:4))fail('Insufficient header/body pairs for meaningful alignment');
   const mismatch=state.alignment.filter(x=>x.cell&&Math.abs(x.x-x.cell.x)>4);
   if(mismatch.length)fail('Header/body columns horizontally misaligned: '+JSON.stringify(mismatch));
   return {checked:state.alignment.filter(x=>x.cell).length,max_px:Math.max(0,...state.alignment.filter(x=>x.cell).map(x=>Math.abs(x.x-x.cell.x)))};
@@ -236,6 +239,7 @@ async function resizeForTransition(page){
   });
   const chosen=options[0];if(!chosen)fail('No native resizable column for cross-mode state test');
   const col=page.locator(`[data-js="gflow-inbox"] .ag-header-cell[col-id="${chosen.id}"]`).first();
+  await col.scrollIntoViewIfNeeded();
   const cell=await col.boundingBox();const handle=await col.locator('.ag-header-cell-resize').first().boundingBox();
   if(!cell||!handle)fail('Native resize affordance has no layout');
   const side=handle.x+handle.width/2<cell.x+cell.width/2?-1:1;
@@ -271,6 +275,7 @@ async function resizeAndDrag(page){
   const dest=candidates.find(x=>x.id!==source?.id&&x.movable);
   if(!source||!dest)fail('No authentic resize/drag candidates: '+JSON.stringify(candidates));
   const src=page.locator(`${scope} .ag-header-cell[col-id="${source.id}"]`).first();
+  await src.scrollIntoViewIfNeeded();
   const handle=src.locator('.ag-header-cell-resize').first();
   const hbox=await handle.boundingBox(),cbox=await src.boundingBox();
   if(!hbox||!cbox)fail('Resize handle lacks geometry');
@@ -387,14 +392,15 @@ async function run(){
               if(mode==='off'&&state.has_option)fail('OFF unexpectedly wrote enableRtl');
               if(state.row_count<1||state.config_rows<20)fail('Native synthetic populated tasks not present');
               if(surface==='frontend'&&(!state.gpp_surface||state.gpp_css_count<1))fail('GPP presentation/css not active; cannot claim coexistence');
-              if(state.columns.length!==5)fail('Exactly five visible native columns are required: '+JSON.stringify(state.columns));
+              if(width===1280&&state.columns.length!==5)fail('Exactly five native desktop columns are required: '+JSON.stringify(state.columns));
+              if(width===390&&state.columns.length<1)fail('No native mobile columns rendered');
               if(site==='fa_IR'&&user==='fa_IR'&&surface==='frontend'&&width===1280&&carriedColumn){
                 const currentWidth=state.columns.find(x=>x.id===carriedColumn.id)?.w;
                 if(!Number.isFinite(currentWidth)||Math.abs(currentWidth-carriedColumn.stored)>4)
                   fail('OFF→ON→OFF native saved-width transition broke: '+JSON.stringify({carriedColumn,currentWidth,mode,index}));
               }
-              const order=surface==='frontend'&&site==='fa_IR'?checkOrder(state):state.columns.map(x=>x.label);
-              const aligned=alignment(state);
+              const order=surface==='frontend'&&site==='fa_IR'&&width===1280?checkOrder(state):state.columns.map(x=>x.label);
+              const aligned=alignment(state,width);
               const scroll=await moveScroll(page,expectedRtl,width);
               const key=await keyboard(page);
               const touch=width===390?await touchScroll(page,width):null;
@@ -427,7 +433,8 @@ async function run(){
               if(errors.length||network.length)fail('Browser errors: '+JSON.stringify({errors,network}));
               const file=`${id}.jpg`;
               await page.screenshot({path:path.join(out,file),type:'jpeg',quality:67,fullPage:false});
-              add(id,'PASS',{...info,column_contract:surface==='frontend'?'GPP_FORM_SCOPED_FIVE':'NATIVE_AGGREGATE_ADMIN',grid:state,order,aligned,scroll,key,touch,advanced,image:file});
+              const mobileCoverage=width===390&&state.columns.length<5?'NOT_PROVEN':'PASS';
+              add(id,mobileCoverage,{...info,mobile_column_coverage:mobileCoverage,column_contract:surface==='frontend'?'GPP_FORM_SCOPED_FIVE':'NATIVE_AGGREGATE_ADMIN',grid:state,order,aligned,scroll,key,touch,advanced,image:file});
             }catch(e){
               const classification=e.category||(/ENVIRONMENT:/.test(String(e))?'ENVIRONMENT':'PRODUCT_OR_HARNESS_UNDETERMINED');
               const failureImage=`${id}-failure.jpg`;
