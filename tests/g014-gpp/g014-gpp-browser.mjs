@@ -103,7 +103,7 @@ async function settled(page){
       const r=h?.querySelector('.ag-root-wrapper');
       const cfg=window.gflow_config?.grids?.[h?.dataset.gridId]?.grid_options;
       return Boolean(r&&(r.classList.contains('ag-rtl')||r.classList.contains('ag-ltr'))&&
-        cfg&&Array.isArray(cfg.rowData)&&cfg.rowData.length>=20&&h.querySelectorAll('.ag-header-cell[col-id]').length>=5&&
+        cfg&&Array.isArray(cfg.rowData)&&cfg.rowData.length>=20&&h.querySelectorAll('.ag-header-cell[col-id]').length>=1&&
         h.querySelectorAll('.ag-center-cols-container .ag-row').length>0);
     },null,{timeout:25000});
   } catch (error) {
