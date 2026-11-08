@@ -97,14 +97,36 @@ function observe(){
   };
 }
 async function settled(page){
-  await page.waitForFunction(()=>{
-    const h=document.querySelector('[data-js="gflow-inbox"]');
-    const r=h?.querySelector('.ag-root-wrapper');
-    const cfg=window.gflow_config?.grids?.[h?.dataset.gridId]?.grid_options;
-    return Boolean(r&&(r.classList.contains('ag-rtl')||r.classList.contains('ag-ltr'))&&
-      cfg&&Array.isArray(cfg.rowData)&&cfg.rowData.length>=20&&h.querySelectorAll('.ag-header-cell[col-id]').length>=5&&
-      h.querySelectorAll('.ag-center-cols-container .ag-row').length>0);
-  },null,{timeout:25000});
+  try {
+    await page.waitForFunction(()=>{
+      const h=document.querySelector('[data-js="gflow-inbox"]');
+      const r=h?.querySelector('.ag-root-wrapper');
+      const cfg=window.gflow_config?.grids?.[h?.dataset.gridId]?.grid_options;
+      return Boolean(r&&(r.classList.contains('ag-rtl')||r.classList.contains('ag-ltr'))&&
+        cfg&&Array.isArray(cfg.rowData)&&cfg.rowData.length>=20&&h.querySelectorAll('.ag-header-cell[col-id]').length>=5&&
+        h.querySelectorAll('.ag-center-cols-container .ag-row').length>0);
+    },null,{timeout:25000});
+  } catch (error) {
+    // A timeout is not a product defect until the native Grid's actual state
+    // is inspected. Never collect request bodies, cookies, tokens or row values.
+    const diagnostic=await page.evaluate(()=>{
+      const h=document.querySelector('[data-js="gflow-inbox"]');
+      const id=h?.dataset.gridId||null;
+      const opts=id?window.gflow_config?.grids?.[id]?.grid_options:null;
+      const root=h?.querySelector('.ag-root-wrapper');
+      return {path:location.pathname,loginForm:!!document.querySelector('#user_login'),
+        documentState:document.readyState,hostCount:document.querySelectorAll('[data-js="gflow-inbox"]').length,
+        gridIdPresent:!!id,gridsInConfig:Object.keys(window.gflow_config?.grids||{}).length,
+        hasMatchingOptions:!!opts,mode:root?.classList.contains('ag-rtl')?'ag-rtl':root?.classList.contains('ag-ltr')?'ag-ltr':'missing',
+        rowCount:h?.querySelectorAll('.ag-center-cols-container .ag-row[row-id]').length??0,
+        configuredRows:Array.isArray(opts?.rowData)?opts.rowData.length:null,
+        paginationPageSize:opts?.paginationPageSize??null,
+        headerIds:[...h?.querySelectorAll('.ag-header-cell[col-id]')||[]].map(n=>n.getAttribute('col-id')).slice(0,15),
+        loadingOverlays:h?.querySelectorAll('.ag-overlay-loading-wrapper').length??0,
+        emptyOverlays:h?.querySelectorAll('.ag-overlay-no-rows-center').length??0};
+    }).catch(e=>({probeFailure:String(e.name||'Error')}));
+    fail('Native Grid readiness not established: '+JSON.stringify(diagnostic),'RUNTIME_READINESS_NOT_PROVEN');
+  }
   return page.evaluate(observe);
 }
 function checkOrder(state){
@@ -302,8 +324,9 @@ async function nativeControlWithoutGpp(browser){
   locales('fa_IR','fa_IR');
   const context=await browser.newContext({viewport:{width:1280,height:900}});
   let deactivated=false;
+  const page=await context.newPage();
   try{
-    const page=await context.newPage();await login(page);
+    await login(page);
     await save(page,'on');
     wp('plugin','deactivate','gravity-presentation-profiles');deactivated=true;
     const rsp=await page.goto(fixture.frontend_url,{waitUntil:'domcontentloaded'});
@@ -315,6 +338,13 @@ async function nativeControlWithoutGpp(browser){
     await save(page,'off');
     report.controls.push({id:'native-on-with-gpp-absent',status:'PASS',mode:state.native_mode,
       enableRtl:state.enableRtl,gpp_surface:state.gpp_surface,restored:status().requested});
+  }catch(e){
+    const filename='native-on-no-gpp-diagnostic.jpg';
+    try{await page.screenshot({path:path.join(out,filename),type:'jpeg',quality:65,fullPage:false,timeout:5000});}catch{}
+    report.controls.push({id:'native-on-with-gpp-absent',status:'NOT_PROVEN',
+      category:e.category||'RUNTIME_NOT_PROVEN',reason:String(e.message||e).slice(0,1700),
+      image:fs.existsSync(path.join(out,filename))?filename:null});
+    throw e;
   }finally{
     if(deactivated)wp('plugin','activate','gravity-presentation-profiles');
     await context.close();
