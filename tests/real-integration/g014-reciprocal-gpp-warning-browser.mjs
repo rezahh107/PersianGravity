@@ -205,11 +205,15 @@ async function guidance(page,language,id){
  const r=await page.goto(pgrUrl,{waitUntil:'domcontentloaded'});
  requireTrue(r?.ok(),'G014_GUIDANCE_SETTINGS_NOT_LOADED_'+id);
  const warning=await page.locator('#pgr-g014-gpp-warning').textContent();
+ // The general safe-action warning is a separate sibling BEFORE the reciprocal
+ // notice. Scope to that sibling rather than matching unrelated admin notices.
+ const generalWarning=await page.locator('#pgr-g014-gpp-warning')
+  .evaluate(el=>el.previousElementSibling?.textContent||'');
  const technical=await page.locator('#pgr-g014-compatibility').textContent();
  const labels=await page.locator('#pgr-g014-compatibility [role="group"][aria-label]')
    .evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-label')).join(' '));
  const checkbox=await page.locator('label[for="pgr-g014-rtl-checkbox"]').textContent();
- const content=[warning,technical,labels,checkbox].join(' ');
+ const content=[generalWarning,warning,technical,labels,checkbox].join(' ');
  if(language==='fa_IR'){
   requireTrue(content.includes('هشدار سازگاری')&&content.includes('محدودهٔ شواهد')&&
    content.includes('فعال‌سازی RTL')&&/[؀-ۿ]/.test(labels),'G014_PERSIAN_WARNING_INCOMPLETE_'+id);
