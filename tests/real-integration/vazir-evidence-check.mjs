@@ -228,8 +228,21 @@ export function validateEvidence(dir,head,{comparison=true,files=true}={}) {
         'fabricated/inconsistent paired measurement '+key);
     }
   }
-  if(comparison)expect([...docs.values()].every(d=>d.grid_acceptance==='PASS'),
-    'actual native RTL/LTR Grid behavior is FAIL or NOT_PROVEN; evidence not green');
+  // G-014 owns optional native Grid RTL and defaults OFF. Keep each native
+  // fa_IR Grid FAIL visible, but require the paired Vazir experiment not to
+  // change a measured native mode. Missing modes remain a real blocker.
+  for (const locale of ['fa_IR','en_US']) {
+    const baseline=docs.get('baseline-'+locale),withFont=docs.get('with-vazir-'+locale);
+    for (const name of ['gravity-flow','flow-frontend']) for (const width of WIDTHS) {
+      const b=baseline.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+      const v=withFont.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+      expect(b?.actual!==null&&b?.actual!==undefined&&v?.actual!==null&&
+        v?.actual!==undefined&&b.actual===v.actual,
+        'missing or WITH_VAZIR-changed native Grid mode '+locale+'/'+name+'/'+width);
+      if(locale==='en_US')expect(b.actual==='ltr',
+        'English native Grid control is not LTR '+name+'/'+width);
+    }
+  }
   if(files)validateFiles(dir,fs.readFileSync(file(dir,'README.md'),'utf8'),head);
   return expected;
 }

@@ -401,7 +401,8 @@ node "$TEST_PRODUCER" "$WU008_ARTIFACT_DIR/vazir-coexistence-evidence" check
       assert.equal(stage.status,0,stage.stderr);
       const run=shell(runtimeScript);
       assert.equal(run.stdout+run.stderr,'');
-      assert.equal(run.status,runtimeExit|| (outcome==='PASS'?0:1));
+      assert.equal(run.status,runtimeExit||
+        (['PASS','PAIR_PASS_NATIVE_RTL_FAIL'].includes(outcome)?0:1));
       const result=shell(reportScript,{G013_HEAD:HEAD,G013_OUTCOME:run.status===0?'success':'failure',
         G013_RTL:fs.readFileSync(stepOutput,'utf8').match(/^rtl=(PASS|FAIL)\n$/)?.[1]??''});
       const line=`G013 head=${HEAD} qualification=${outcome} fa_IR_RTL=${rtl}\n`;
@@ -440,8 +441,28 @@ isolationScenario('sensitive G013 JSON and diagnostics cannot enter public outpu
   doc.options.password=markerText;
   write(f,'vazir-settings.json',doc);
 },{outcome:'FAIL'});
-isolationScenario('G013 fa_IR native ag-ltr fails without uploading any raw G013 evidence',
-  nativeGridFailure,{outcome:'FAIL',rtl:'FAIL'});
+test('matched pre-existing Persian ag-ltr stays FAIL in both profiles while the font pair is valid',()=>{
+  const f=makeFixture();
+  try {
+    nativeGridFailure(f);
+    assert.equal(read(f,'baseline-fa_IR.json').grid_acceptance,'FAIL');
+    assert.equal(read(f,'with-vazir-fa_IR.json').grid_acceptance,'FAIL');
+    assert.equal(validateEvidence(f.dir,HEAD).length,36);
+    assert.equal(publish(f).status,0,'independent publisher must retain the paired pre-existing finding');
+  }finally{remove(f);}
+});
+isolationScenario('G013 paired fa_IR ag-ltr is reported, never mislabeled as native RTL PASS',
+  nativeGridFailure,{outcome:'PAIR_PASS_NATIVE_RTL_FAIL',rtl:'FAIL'});
+expectReject('same incorrect English native Grid mode cannot count as a valid LTR control',f=>{
+  for(const key of ['baseline-en_US','with-vazir-en_US']){
+    const d=read(f,key+'.json');
+    for(const p of d.pages)if(p.grid_mode){p.grid_mode.actual='rtl';p.grid_mode.status='FAIL';}
+    d.grid_acceptance='FAIL';write(f,key+'.json',d);
+  }
+  const d=read(f,'comparison.json');
+  d.grid_acceptance['baseline-en_US']='FAIL';
+  d.grid_acceptance['with-vazir-en_US']='FAIL';write(f,'comparison.json',d);
+});
 isolationScenario('malformed G013 evidence fails without raw fallback',f=>{
   fs.writeFileSync(path.join(f.dir,'comparison.json'),'{'+markerText);
 },{outcome:'FAIL'});

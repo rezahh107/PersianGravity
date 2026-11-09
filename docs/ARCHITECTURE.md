@@ -30,6 +30,14 @@ persian-gravityforms.php
 
 This remains one canonical `PGR_*` runtime. There is no service container, generic plugin framework, remote registry, runtime third-party registration API, custom table, CPT, REST toggle endpoint, or SPA.
 
+## G-014 — optional native RTL / reciprocal warning
+
+**G-014 (PR #114 candidate, not merged/released):** An independent, optional `pgr_settings[gravity_flow_inbox_rtl]` setting defaults **OFF**; it is not a Module Registry switch. With strict integer ON and the canonical Gravity Flow 3.1.0 host, the `gform_loaded` adapter registers `gravityflow_js_config_shared` at priority 11 after the native priority-10 producer and adds `enableRtl` **only if missing** on genuine producer-verified Inbox grids, based on `is_rtl()`. It never overwrites a host/integration value. Gravity Flow owns Inbox 1 task membership, permissions, data, operations, sorting, pagination, AG Grid construction and persisted column state. GPP independently owns its four-selector physical-LTR-axis preference; neither plugin writes the other's option.
+
+`pgr_gravity_flow_inbox_rtl_status()` v1 is an optional, public **read-only** seam reporting requested state, admitted host and request direction, with `grid_mode=not_observed` (not a browser observation). The administrator-only warning consumes GPP's validated public status v1 and attributes documented Persian browser failures **only** to site `fa_IR` Frontend or effective `fa_IR` Admin locale; other RTL languages alone are insufficient. G-014 warnings, instructions and accessible descriptions use WordPress gettext in the `persian-gravityforms` domain: English primary except for `fa_IR`, which uses the bundled Persian catalog. This is a warning system, not a Grid repair, compatibility guarantee, Settings migration or private-option bridge.
+
+The source owner is PersianGravity only for the missing Grid initialization bit; GPP owns presentation axis, and the authentic browser owns observable mode. See [G-014](G014_OPTIONAL_GRAVITY_FLOW_INBOX_RTL.md) and [validation](VALIDATION.md).
+
 ## Module Registry
 
 `PGR_Module_Registry` is a bounded code-owned catalog for exactly:

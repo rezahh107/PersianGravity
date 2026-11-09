@@ -246,7 +246,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$WU008_WP_CLI" https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar
+          curl -L --fail --retry 4 --retry-all-errors --retry-delay 2 -o "$WU008_WP_CLI" https://raw.githubusercontent.com/wp-cli/builds/ad68e4ad3b29c3d3bdb361e5ed9b37e709123a9b/phar/wp-cli.phar
           echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $WU008_WP_CLI" | sha256sum -c -
           php "$WU008_WP_CLI" core download --path="$WU008_WP_PATH" --version=6.8.3 --force --skip-content
           php "$WU008_WP_CLI" config create --path="$WU008_WP_PATH" --dbname=wordpress --dbuser=root --dbpass=wu008-root --dbhost=127.0.0.1:3306 --skip-check
@@ -432,6 +432,71 @@ jobs:
           done
           cat /tmp/wu008-wp-server.log >&2
           exit 1
+
+      # Reciprocal notices only: reuse this existing licensed WU008 host, not
+      # the historical 96-case native Grid/browser harness.
+      - name: Checkout exact read-only GPP #174 candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: rezahh107/Gravity-Presentation-Profiles
+          ref: c8cf9fd7bb615075402b78eaa1f01dd33d855d28
+          path: .g014-gpp-readonly
+          persist-credentials: false
+
+      - name: Exercise reciprocal settings warning and nonce/permissions in actual WordPress
+        shell: bash
+        env:
+          PGR_G014_GPP_REF: c8cf9fd7bb615075402b78eaa1f01dd33d855d28
+        run: |
+          set -euo pipefail
+          test "$(git -C .g014-gpp-readonly rev-parse HEAD)" = "$PGR_G014_GPP_REF"
+          git -C .g014-gpp-readonly diff --quiet HEAD --
+          node --check tests/real-integration/g014-reciprocal-gpp-warning-browser.mjs
+          test "$WU008_WP_PATH" = /tmp/wu008-wordpress
+          target="$WU008_WP_PATH/wp-content/plugins/gravity-presentation-profiles"
+          test ! -e "$target"
+          mkdir -p "$target"
+          rsync -a --exclude=.git --exclude=.github .g014-gpp-readonly/ "$target/"
+          cmp .g014-gpp-readonly/gravity-presentation-profiles.php "$target/gravity-presentation-profiles.php"
+          test "$(php "$WU008_WP_CLI" plugin get gravity-presentation-profiles --field=version --path="$WU008_WP_PATH")" = 0.0.0-dev
+          viewer_password="$(openssl rand -hex 20)"
+          echo "::add-mask::$viewer_password"
+          php "$WU008_WP_CLI" user create g014_reciprocal_viewer g014-viewer@example.invalid --role=subscriber --user_pass="$viewer_password" --path="$WU008_WP_PATH"
+          cleanup_reciprocal() {
+            php "$WU008_WP_CLI" plugin deactivate gravity-presentation-profiles --path="$WU008_WP_PATH" || true
+            php "$WU008_WP_CLI" user delete g014_reciprocal_viewer --yes --path="$WU008_WP_PATH" || true
+            test "$WU008_WP_PATH" = /tmp/wu008-wordpress
+            test ! -L "$target"
+            rm -rf -- "$target"
+          }
+          trap cleanup_reciprocal EXIT
+          php "$WU008_WP_CLI" plugin activate gravity-presentation-profiles --path="$WU008_WP_PATH"
+          WU008_VIEWER_PASSWORD="$viewer_password" node tests/real-integration/g014-reciprocal-gpp-warning-browser.mjs
+          node <<'RECIPROCAL_EVIDENCE_GATE'
+          const fs=require('node:fs'),path=require('node:path');
+          const f=path.join(process.env.WU008_ARTIFACT_DIR,'g014-reciprocal-warning-evidence/report.json');
+          if(!fs.existsSync(f))throw Error('Missing real-browser reciprocal evidence');
+          const d=JSON.parse(fs.readFileSync(f,'utf8'));
+          const known=['rtl_with_ltr_axis','rtl_column_order_without_axis','ltr_grid_without_axis','native_admin_mobile_scroll','native_admin_mobile_touch','none'];
+          if(d.schema!=='pgr-g014-reciprocal-warning-v1'||d.data_class!=='SYNTHETIC_NON_PII'||
+            d.test_class!=='REAL_WORDPRESS_SETTINGS_BROWSER'||d.source_pgr!==process.env.WU008_PGR_SHA||
+            d.source_gpp!==process.env.PGR_G014_GPP_REF||d.gravityflow!=='3.1.0'||d.status!=='PASS'||
+            d.cases?.length!==35||!d.cases.every(x=>x.status==='PASS')||
+            !['source-qualified-exact-option-snapshots','subscriber-pgr-session-nonce-valid',
+               'subscriber-valid-nonce-pgr-write-denied','subscriber-gpp-session-nonce-valid',
+               'subscriber-valid-nonce-gpp-write-denied','original-plugin-activation-restored',
+               'original-pgr-option-existence-value-restored','original-gpp-option-existence-value-restored',
+               'original-admin-locale-and-site-restored'].every(id=>d.cases.some(x=>x.id===id&&x.status==='PASS'))||
+            !['fa-site-fa-admin','en-site-en-admin','en-site-fa-admin',
+                'fa-site-en-admin','en-site-ar-admin','en-site-he-admin'].every(id=>
+                  d.cases.some(x=>x.id==='g014-safety-copy-'+id&&x.status==='PASS'))||
+             d.cases.filter(x=>x.id.startsWith('warning-none-')).length<3||
+             !known.every(key=>d.cases.some(x=>x.id.startsWith('warning-'+key+'-'))))
+            throw Error('Incomplete/failed reciprocal warning browser controls');
+          console.log('PGR_G014_RECIPROCAL_LICENSED_EVIDENCE_PASS controls=35');
+          RECIPROCAL_EVIDENCE_GATE
+          cleanup_reciprocal
+          trap - EXIT
 
       - name: Validate G012 Help in licensed authenticated WordPress admin Chromium
         shell: bash
@@ -1476,6 +1541,20 @@ jobs:
           }
           ok(pubNames.length===pubNamesExpected.size&&pubNames.every(n=>pubNamesExpected.has(n)),
             'unexpected/missing G013 publication file');
+          // Native G-014 RTL defaults OFF; reject only an unobserved native
+          // mode, a WITH_VAZIR-only mode shift, or broken en_US LTR control.
+          // Individual fa_IR ag-ltr findings remain recorded as native FAIL.
+          for(const locale of ['fa_IR','en_US']){
+            const baseline=pubDocs.get('baseline-'+locale),withFont=pubDocs.get('with-vazir-'+locale);
+            for(const name of ['gravity-flow','flow-frontend'])for(const width of widths){
+              const b=baseline.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              const v=withFont.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              ok(b?.actual!==null&&b?.actual!==undefined&&v?.actual!==null&&
+                v?.actual!==undefined&&b.actual===v.actual,
+                'missing or WITH_VAZIR-changed native Grid '+locale+'/'+name+'/'+width);
+              if(locale==='en_US')ok(b.actual==='ltr','en_US Grid LTR control');
+            }
+          }
           // G013_PUBLISHER_SEMANTIC_END
 
           ok(release.status==='PASS'&&release.version==='1.5.0'&&release.release_tag==='v1.5.0'&&
@@ -1532,8 +1611,11 @@ jobs:
             const nativeGrids=d.pages.filter(p=>['gravity-flow','flow-frontend'].includes(p.name));
             ok(nativeGrids.length===4 && nativeGrids.every(p=>{
               const g=p.grid_mode,expected=locale==='fa_IR'?'rtl':'ltr';
-              return g&&g.expected===expected&&g.actual===expected&&g.status==='PASS';
-            })&&d.grid_acceptance==='PASS','unproven/failed actual native AG Grid RTL '+key);
+              return g&&g.expected===expected&&['rtl','ltr',null].includes(g.actual)&&
+                g.status===(g.actual===null?'NOT_PROVEN':g.actual===expected?'PASS':'FAIL');
+            })&&d.grid_acceptance===(nativeGrids.some(p=>p.grid_mode.status==='FAIL')?'FAIL':
+              nativeGrids.some(p=>p.grid_mode.status==='NOT_PROVEN')?'NOT_PROVEN':'PASS'),
+              'misrepresented native AG Grid state '+key);
             ok(/^[a-f0-9]{64}$/.test(d.environment.db_snapshot_sha256||''),
               'missing actual profile database snapshot hash '+key);
             docs.set(key,d);
@@ -1541,6 +1623,17 @@ jobs:
           ok(new Set([...docs.values()].map(d=>d.persiangravity_version)).size===1,'runtime drift');
           ok(new Set([...docs.values()].map(d=>d.environment.db_snapshot_sha256)).size===1,
             'profile DB snapshot identity drift');
+          for(const locale of ['fa_IR','en_US']){
+            const baseline=docs.get('baseline-'+locale),withFont=docs.get('with-vazir-'+locale);
+            for(const name of ['gravity-flow','flow-frontend'])for(const width of widths){
+              const b=baseline.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              const v=withFont.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              ok(b?.actual!==null&&b?.actual!==undefined&&v?.actual!==null&&
+                v?.actual!==undefined&&b.actual===v.actual,
+                'native Grid unmeasured or WITH_VAZIR-changed '+locale+'/'+name+'/'+width);
+              if(locale==='en_US')ok(b.actual==='ltr','English native Grid not LTR');
+            }
+          }
           // report already parsed and semantically checked before the legacy gate.
           ok(report.schema==='g013-vazir-compare-v1'&&report.status==='PASS'&&report.exact_head===head&&
             report.vazir_version==='1.5.0'&&report.vazir_sha256===sha&&
@@ -1635,12 +1728,20 @@ jobs:
           ) >"$private_dir/diagnostics.log" 2>&1
           qualification_rc=$?
           set -e
-          if (( qualification_rc == 0 )); then
-            printf 'rtl=PASS\n' >> "$GITHUB_OUTPUT"
-          elif rtl_result="$(node tests/real-integration/g013-public-evidence-contract.mjs rtl-failed \
+          if rtl_result="$(node tests/real-integration/g013-public-evidence-contract.mjs rtl-failed \
             "$private_dir/artifacts/vazir-coexistence-evidence" "$WU008_PGR_SHA" \
             2>>"$private_dir/diagnostics.log")" && [[ "$rtl_result" == FAIL ]]; then
             printf 'rtl=FAIL\n' >> "$GITHUB_OUTPUT"
+          elif (( qualification_rc == 0 )); then
+            printf 'rtl=PASS\n' >> "$GITHUB_OUTPUT"
+          fi
+          # Only fixed phase identifiers may escape the runner-private log.
+          if [[ -f "$private_dir/packages/g013-stage" ]]; then
+            phase_marker="$(< "$private_dir/packages/g013-stage")"
+            case "$phase_marker" in
+              PRECHECK|BASELINE_fa_IR|BASELINE_en_US|RELEASE_DOWNLOAD|RELEASE_VERIFIED|WITH_VAZIR_fa_IR|WITH_VAZIR_en_US|PAIR_COMPARISON|INDEPENDENT_GATE|PACKAGE_INTEGRITY|COMPLETE)
+                printf 'G013 stage=%s\n' "$phase_marker" | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            esac
           fi
           exit "$qualification_rc"
 
@@ -1658,10 +1759,10 @@ jobs:
           rtl=NOT_PROVEN
           case "$G013_OUTCOME" in
             success)
-              if [[ "$G013_RTL" == PASS ]]; then
-                qualification=PASS
-                rtl=PASS
-              fi
+              case "$G013_RTL" in
+                PASS) qualification=PASS; rtl=PASS ;;
+                FAIL) qualification=PAIR_PASS_NATIVE_RTL_FAIL; rtl=FAIL ;;
+              esac
               ;;
             failure)
               qualification=FAIL

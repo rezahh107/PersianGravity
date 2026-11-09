@@ -6,6 +6,9 @@ set -euo pipefail
 wp() { php "$WU008_WP_CLI" --path="$WU008_WP_PATH" "$@"; }
 evidence_dir="$WU008_ARTIFACT_DIR/vazir-coexistence-evidence"
 mkdir -p "$evidence_dir" "$WU008_PACKAGE_DIR"
+# Fail closed, but disclose only a fixed phase enum in the Actions summary.
+phase() { printf '%s\n' "$1" > "$WU008_PACKAGE_DIR/g013-stage"; }
+phase PRECHECK
 snapshot="$WU008_PACKAGE_DIR/g013-isolated-baseline.sql"
 uploads="$WU008_PACKAGE_DIR/g013-isolated-uploads.tar"
 test ! -e "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
@@ -73,16 +76,24 @@ restore_profile() {
       $state["stored_user"]!==$want)
       throw new RuntimeException("G013 fresh-request locale restore/isolation mismatch");
   '
+  # G-014's independently owned native Grid RTL switch must remain OFF.
+  wp eval '
+    $s=get_option("pgr_settings",array());
+    if (!is_array($s) || !empty($s["gravity_flow_inbox_rtl"]))
+      throw new RuntimeException("G013 requires G014 native RTL OFF");
+  '
   if wp plugin is-active vazir-font-wp >/dev/null 2>&1; then
     echo "Restored profile is unexpectedly WITH_VAZIR" >&2
     exit 1
   fi
 }
 for locale in fa_IR en_US; do
+  phase "BASELINE_$locale"
   restore_profile "$locale"
   test ! -d "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
   node tests/real-integration/vazir-coexistence-browser.mjs BASELINE "$locale"
 done
+phase RELEASE_DOWNLOAD
 release=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
 for asset in vazir-font-wp-1.5.0.zip vazir-font-wp-1.5.0.zip.sha256 release-manifest.json; do
   if ! curl --fail --location --retry 4 --retry-delay 2 --connect-timeout 20 --max-time 180 \
@@ -93,8 +104,10 @@ for asset in vazir-font-wp-1.5.0.zip vazir-font-wp-1.5.0.zip.sha256 release-mani
 done
 node tests/real-integration/vazir-release-verify.mjs "$WU008_PACKAGE_DIR" > "$evidence_dir/official-release.json"
 test -s "$evidence_dir/official-release.json"
+phase RELEASE_VERIFIED
 unzip -q "$WU008_PACKAGE_DIR/vazir-font-wp-1.5.0.zip" -d "$WU008_WP_PATH/wp-content/plugins"
 for locale in fa_IR en_US; do
+  phase "WITH_VAZIR_$locale"
   restore_profile "$locale"
   wp plugin activate vazir-font-wp
   test "$(wp plugin get vazir-font-wp --field=version)" = 1.5.0
@@ -121,11 +134,16 @@ for locale in fa_IR en_US; do
   fi
   node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR "$locale"
 done
+phase PAIR_COMPARISON
 node tests/real-integration/vazir-evidence-check.mjs "$evidence_dir" compare
-# Full publication/qualification gate is deliberately allowed to fail if the
-# native Grid is still ag-ltr in fa_IR; never launder it as an RTL PASS.
+phase INDEPENDENT_GATE
+# Record native RTL failures accurately; the paired font gate rejects an
+# unobserved mode or a new WITH_VAZIR-only mode change, not an existing ag-ltr.
 node tests/real-integration/vazir-evidence-check.mjs "$evidence_dir" check
+phase PACKAGE_INTEGRITY
 if unzip -Z1 "dist/$WU008_PGR_ZIP_NAME" | grep -Ei '(vazir-font-wp|vazirmatn.*\.woff2)'; then
   echo 'Vazir font payload contaminated the PGR production ZIP' >&2
   exit 1
 fi
+
+phase COMPLETE
