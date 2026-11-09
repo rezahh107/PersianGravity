@@ -68,6 +68,32 @@ try {
       // Existing exact-vendor fixtures are already created by earlier WU008 steps.
       // Exercise their actual dynamic controls rather than asserting static CSS only.
       let interaction=null;
+      if(spec.name==='gravity-form'){
+        // Actual GF 3.1.1.1 server validation on the same page used for
+        // BASELINE/WITH_VAZIR captures. This is not a synthetic DOM error.
+        const id=Number(manifest.form_id);
+        if(!Number.isSafeInteger(id)||id<1)
+          throw Error('Missing real Gravity Forms required-field fixture');
+        const field=page.locator('#input_'+id+'_1');
+        const submit=page.locator('#gform_submit_button_'+id);
+        await field.waitFor({state:'visible',timeout:15000});
+        await submit.waitFor({state:'visible',timeout:15000});
+        if(await field.inputValue()!=='')
+          throw Error('GF required-field negative control was not empty');
+        await field.focus();
+        if(!await field.evaluate(el=>document.activeElement===el))
+          throw Error('GF required field did not receive real keyboard focus');
+        await page.keyboard.press('Tab');
+        if(!await submit.evaluate(el=>document.activeElement===el))
+          throw Error('GF Tab order did not reach the submit control');
+        await page.keyboard.press('Enter');
+        const error=page.locator('#field_'+id+'_1.gfield_error, #gform_wrapper_'+id+' .gform_validation_errors');
+        await error.first().waitFor({state:'visible',timeout:20000});
+        if(await field.inputValue()!=='' || await error.count()===0)
+          throw Error('GF server-side required-field validation not observed');
+        // No valid submission/entry is created; the page is deliberately
+        // captured in its authentic failed-validation state for both profiles.
+      }
       if(spec.name==='gravityview'){
         const tokens=manifest.g008_gravityview.entries.map(x=>x.token);
         await page.waitForFunction(
