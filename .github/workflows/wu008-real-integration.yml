@@ -1755,6 +1755,18 @@ jobs:
                 printf 'G013 stage=%s\n' "$phase_marker" | tee -a "$GITHUB_STEP_SUMMARY" ;;
             esac
           fi
+          # Private G013 scenes never enter public artifacts. Disclose only
+          # fixed case identities and enum status after validating the entire line.
+          expanded_dir="$private_dir/artifacts/g013-acceptance-private"
+          if [[ -d "$expanded_dir" ]]; then
+            safe_expanded="$private_dir/g013-expanded-safe.txt"
+            permitted='(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)(@(perks-admin|fup-crop|gv-block-editor)-(1280|390))?'
+            if node tests/real-integration/g013-expanded-check.mjs safe "$expanded_dir" >"$safe_expanded" 2>>"$private_dir/diagnostics.log" &&
+              [[ "$(wc -l < "$safe_expanded")" -eq 1 ]] &&
+              grep -Eq "^G013 expanded baseline-fa_IR=${permitted} baseline-en_US=${permitted} with-vazir-fa_IR=${permitted} with-vazir-en_US=${permitted}$" "$safe_expanded"; then
+              cat "$safe_expanded" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
           if (( qualification_rc != 0 )); then
             # Optional diagnostics cannot change the original qualification
             # exit code. Capture first, publish only a complete allowlisted
@@ -1796,11 +1808,6 @@ jobs:
           esac
           printf 'G013 head=%s qualification=%s fa_IR_RTL=%s\n' \
             "$G013_HEAD" "$qualification" "$rtl" | tee -a "$GITHUB_STEP_SUMMARY"
-          # Sanitized closed-enum values only; the publisher job never reads private G013 data.
-          if [[ -d /tmp/wu008-artifacts/g013-acceptance-private ]]; then
-            node tests/real-integration/g013-expanded-check.mjs safe \
-              /tmp/wu008-artifacts/g013-acceptance-private | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
 
       - name: Upload bounded runtime evidence only
         if: always()

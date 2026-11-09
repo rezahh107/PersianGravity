@@ -45,6 +45,9 @@ export function validateReport(doc,key,head,{files=false,dir=null}={}){
       'missing measured font '+key+'/'+k);
     if(key.startsWith('baseline-'))must(!c.font.loadedFace&&!c.font.hasVazir,
       'contaminated baseline font '+key+'/'+k);
+    if(key.startsWith('with-vazir-')&&key.endsWith('fa_IR'))
+      must(c.font.loadedFace&&c.font.hasVazir,
+        'missing authentic WITH_VAZIR Persian font '+key+'/'+k);
     must(Array.isArray(c.geometry)&&c.geometry.length>=2,
       'missing nested geometry '+key+'/'+k);
     for(const g of c.geometry){
@@ -112,7 +115,9 @@ export function safeSummary(dir){
           v.includes('FAIL')?'FAIL':'NOT_PROVEN';
       }
     }catch{}
-    return key+'='+kind;
+    const failed=d?.cases?.find?.(c=>isObj(c)&&names.includes(c.name)&&widths.includes(c.width)&&c.status!=='PASS');
+    const bounded=failed?'@'+failed.name+'-'+failed.width:'';
+    return key+'='+kind+bounded;
   }).join(' ');
 }
 if(import.meta.url===new URL('file://'+process.argv[1]).href){

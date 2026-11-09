@@ -69,6 +69,8 @@ async function runCase(name,width,body){
     guard(!errors.length,'Real browser page exception');
     entry.font=await verifyFont(page);
     if(profile==='BASELINE')guard(!entry.font.loadedFace&&!entry.font.hasVazir,'Baseline font contamination');
+    if(profile==='WITH_VAZIR'&&locale==='fa_IR')
+      guard(entry.font.loadedFace&&entry.font.hasVazir,'Authentic Persian Vazirmatn not computed and loaded');
     entry.status='PASS';
     const image=key+'-'+name+'-'+width+'.jpg';
     await page.screenshot({path:path.join(dir,image),type:'jpeg',quality:75,fullPage:true});

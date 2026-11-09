@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,claims,names} from './g013-expanded-check.mjs';
+import {validateReport,claims,names,safeSummary} from './g013-expanded-check.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const head='a'.repeat(40),snapshot='b'.repeat(64);
 const key='baseline-fa_IR';
@@ -40,3 +43,22 @@ for(const [name,mutate] of [
     assert.throws(()=>validateReport(d,key,head),/G013_EXTENDED_EVIDENCE_REJECTED/);
   });
 }
+
+test('real Persian WITH_VAZIR scenarios reject missing computed or loaded Vazirmatn',()=>{
+  const d=valid();d.profile='WITH_VAZIR';
+  for(const c of d.cases){c.font.hasVazir=true;c.font.loadedFace=true;}
+  assert.doesNotThrow(()=>validateReport(d,'with-vazir-fa_IR',head));
+  d.cases[0].font.loadedFace=false;
+  assert.throws(()=>validateReport(d,'with-vazir-fa_IR',head),/G013_EXTENDED_EVIDENCE_REJECTED/);
+});
+test('sanitized failure output exposes only an allowlisted scenario identity',()=>{
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'g013-safe-'));
+  try{
+    const d=valid();d.status='NOT_PROVEN';d.cases[0].status='NOT_PROVEN';
+    d.cases[0].observed=['secret-token-never-print'];
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    const line=safeSummary(tmp);
+    assert.match(line,/baseline-fa_IR=NOT_PROVEN@perks-admin-1280/);
+    assert.ok(!line.includes('secret-token-never-print'));
+  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+});
