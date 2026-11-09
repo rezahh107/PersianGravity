@@ -139,6 +139,7 @@ for locale in fa_IR en_US; do
   node tests/real-integration/g013-expanded-browser.mjs WITH_VAZIR "$locale"
 done
 phase PAIR_COMPARISON
+node tests/real-integration/g013-expanded-check.mjs check "$WU008_ARTIFACT_DIR/g013-acceptance-private" "$WU008_PGR_SHA"
 node tests/real-integration/vazir-evidence-check.mjs "$evidence_dir" compare
 phase INDEPENDENT_GATE
 # Record native RTL failures accurately; the paired font gate rejects an
