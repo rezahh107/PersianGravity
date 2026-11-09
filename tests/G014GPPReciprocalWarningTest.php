@@ -186,11 +186,16 @@ final class G014GPPReciprocalWarningTest extends TestCase {
 		$GLOBALS['pgr_test_options']['pgr_settings'] = array( 'gravity_flow_inbox_rtl' => 1 );
 		$this->gpp( 'off' );
 		$GLOBALS['pgr_test_site_locale'] = 'en_US';
+		$GLOBALS['pgr_test_locale'] = 'en_US';
 		$GLOBALS['pgr_test_is_rtl'] = false;
 		$this->assertSame( 'unknown', PGR_GPP_Inbox_RTL_Compatibility::facts()['compatibility'] );
+		$GLOBALS['pgr_test_locale'] = 'ar';
 		$GLOBALS['pgr_test_is_rtl'] = true;
+		$this->assertSame( 'unknown', PGR_GPP_Inbox_RTL_Compatibility::facts()['compatibility'] );
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
 		$this->assertSame( 'native_admin_mobile_touch', PGR_GPP_Inbox_RTL_Compatibility::facts()['problem'] );
 		$GLOBALS['pgr_test_site_locale'] = 'fa_IR';
+		$GLOBALS['pgr_test_locale'] = 'en_US';
 		$GLOBALS['pgr_test_is_rtl'] = false;
 		$this->assertSame( 'rtl_column_order_without_axis', PGR_GPP_Inbox_RTL_Compatibility::facts()['problem'] );
 		$this->gpp( 'on' );

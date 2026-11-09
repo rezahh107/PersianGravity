@@ -153,7 +153,7 @@ async function login(page,user,password){
  await Promise.all([page.waitForURL(u=>!u.pathname.includes('wp-login.php'),{waitUntil:'domcontentloaded',timeout:30000}),page.locator('#wp-submit').click()]);
 }
 function locales(site,user){
- requireTrue(['fa_IR','en_US'].includes(site)&&['fa_IR','en_US'].includes(user),'UNSUPPORTED_LOCALE');
+ requireTrue(['fa_IR','en_US'].includes(site)&&['fa_IR','en_US','ar','he_IL'].includes(user),'UNSUPPORTED_LOCALE');
  if(site==='fa_IR')wp('option','update','WPLANG','fa_IR');
  else wp('option','delete','WPLANG');
  evaluate(`$u=get_user_by('login','runtime_admin');if(!$u)throw new RuntimeException('Admin unavailable');update_user_meta($u->ID,'locale','${user}');`);
@@ -200,6 +200,26 @@ async function warning(page,expected,problem){
  requireTrue(details.includes('Inbox 1')&&details.includes('Inbox 2'),'INBOX1_INBOX2_DISTINCTION_MISSING');
  report.cases.push({id:'warning-'+problem+'-'+report.cases.length,status:'PASS',verdict:actual,issue});
 }
+
+async function guidance(page,language,id){
+ const r=await page.goto(pgrUrl,{waitUntil:'domcontentloaded'});
+ requireTrue(r?.ok(),'G014_GUIDANCE_SETTINGS_NOT_LOADED_'+id);
+ const warning=await page.locator('#pgr-g014-gpp-warning').textContent();
+ const technical=await page.locator('#pgr-g014-compatibility').textContent();
+ const labels=await page.locator('#pgr-g014-compatibility [role="group"][aria-label]')
+   .evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-label')).join(' '));
+ const checkbox=await page.locator('label[for="pgr-g014-rtl-checkbox"]').textContent();
+ const content=[warning,technical,labels,checkbox].join(' ');
+ if(language==='fa_IR'){
+  requireTrue(content.includes('هشدار سازگاری')&&content.includes('محدودهٔ شواهد')&&
+   content.includes('فعال‌سازی RTL')&&/[؀-ۿ]/.test(labels),'G014_PERSIAN_WARNING_INCOMPLETE_'+id);
+ }else{
+  requireTrue(content.includes('RTL compatibility warning:')&&content.includes('Evidence scope')&&
+   content.includes('Enable native Inbox RTL')&&!/[؀-ۿ]/.test(content),
+   'G014_ENGLISH_WARNING_INCOMPLETE_OR_PERSIAN_LEAK_'+id);
+ }
+ report.cases.push({id:'g014-safety-copy-'+id,status:'PASS',language});
+}
 async function main(){
  const original=storedState();
  requireTrue(original.keys?.gpp==='gravityformsaddon_gravity-presentation-profiles_settings'&&original.keys?.pgr==='pgr_settings',
@@ -227,13 +247,24 @@ async function main(){
    requireTrue(s.pgr.host==='admitted'&&s.gpp?.api_version===1&&s.gpp?.capability==='supported'&&s.gpp?.scope==='gravity_flow.inbox_1','STATUS_CONTRACT_UNSUPPORTED');
    await warning(page,verdict,issue);
   }
-  // Mixed language: effective request locale must not be confused with site.
+  // Actual site/admin language + accessible text, not PHP-only API assertions.
+  await guidance(page,'fa_IR','fa-site-fa-admin');
   locales('en_US','en_US');
   await warning(page,'unknown','none');
+  await guidance(page,'en_US','en-site-en-admin');
   locales('en_US','fa_IR');
   await warning(page,'known_failure','native_admin_mobile_touch');
+  await guidance(page,'fa_IR','en-site-fa-admin');
   locales('fa_IR','en_US');
   await warning(page,'incompatible','rtl_with_ltr_axis');
+  await guidance(page,'en_US','fa-site-en-admin');
+  locales('en_US','ar');
+  await warning(page,'unknown','none');
+  await guidance(page,'en_US','en-site-ar-admin');
+  locales('en_US','he_IL');
+  await warning(page,'unknown','none');
+  await guidance(page,'en_US','en-site-he-admin');
+  locales('fa_IR','en_US');
 
   // GPP's native Add-On settings nonce must also reject a forged request.
   await page.goto(gppUrl,{waitUntil:'domcontentloaded'});

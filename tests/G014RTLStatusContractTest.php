@@ -93,7 +93,7 @@ final class G014RTLStatusContractTest extends TestCase {
 		ob_start();
 		$admin->render_gravity_flow_inbox_rtl();
 		$html = ob_get_clean();
-		foreach ( array( 'هشدار سازگاری RTL:', 'جزئیات فنی و روش بررسی', 'not_observed', 'حالت A', 'حالت B', 'فعلاً فعال نکن' ) as $expected ) {
+		foreach ( array( 'RTL compatibility warning:', 'Technical details and verification', 'not_observed', 'Mode A', 'Mode B', 'Keep OFF' ) as $expected ) {
 			$this->assertStringContainsString( $expected, $html );
 		}
 		$this->assertStringNotContainsString( 'checked="checked"', $html );
