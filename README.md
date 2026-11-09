@@ -24,6 +24,16 @@ The Module Manager is not decorative. Disabled modules do not register their own
 
 `jalali_date` and `jalali_presentation` are intentionally separate. The first owns true Jalali-domain user data; the second only presents known Gregorian/system dates and cannot be activated by the presence of a `pgr_jalali_date` field.
 
+## G-014 — optional native Gravity Flow Inbox RTL (PR #114 candidate)
+
+**G-014 (PR #114 candidate, not merged/released):** An independent, optional `pgr_settings[gravity_flow_inbox_rtl]` setting defaults **OFF**; it is not a Module Registry switch. With strict integer ON and the canonical Gravity Flow 3.1.0 host, the `gform_loaded` adapter registers `gravityflow_js_config_shared` at priority 11 after the native priority-10 producer and adds `enableRtl` **only if missing** on genuine producer-verified Inbox grids, based on `is_rtl()`. It never overwrites a host/integration value. Gravity Flow owns Inbox 1 task membership, permissions, data, operations, sorting, pagination, AG Grid construction and persisted column state. GPP independently owns its four-selector physical-LTR-axis preference; neither plugin writes the other's option.
+
+`pgr_gravity_flow_inbox_rtl_status()` v1 is an optional, public **read-only** seam reporting requested state, admitted host and request direction, with `grid_mode=not_observed` (not a browser observation). The administrator-only warning consumes GPP's validated public status v1 and attributes documented Persian browser failures **only** to site `fa_IR` Frontend or effective `fa_IR` Admin locale; other RTL languages alone are insufficient. G-014 warnings, instructions and accessible descriptions use WordPress gettext in the `persian-gravityforms` domain: English primary except for `fa_IR`, which uses the bundled Persian catalog. This is a warning system, not a Grid repair, compatibility guarantee, Settings migration or private-option bridge.
+
+[WU008 run 42517920199](https://github.com/rezahh107/PersianGravity/actions/runs/42517920199) had **27 PASS authentic reciprocal Settings controls** at source Head `8d84c1e9462a8d544d90491887907dabb750ec80` versus exact GPP Head `c8cf9fd7bb615075402b78eaa1f01dd33d855d28`; this is historical relative to the code-review repairs. The separate historical native GPP run [42469384530](https://github.com/rezahh107/Gravity-Presentation-Profiles/actions/runs/42469384530) exercised *older* PGR `311c2f5d...`: **40 PASS, 28 FAIL and 28 NOT_PROVEN**. Its Grid scroll, touch, column-order and persisted-state failures do not establish 28 independent product causes. Current-Head native Mode B compatibility, production activation, merge and public release are **NOT_PROVEN / not authorized**. Verify exact final Head via its own CI, translation and licensed browser jobs.
+
+More details: [G-014 evidence and warnings](docs/G014_OPTIONAL_GRAVITY_FLOW_INBOX_RTL.md), [architecture](docs/ARCHITECTURE.md), [validation](docs/VALIDATION.md).
+
 ## Scanner failed-save Edit identity — merged PR #110 (not released)
 
 Scanner Profiles Create/Edit uses the existing native WordPress screen POST and same-request recovery of rejected saves. After a rejected **Edit**, the retry form derives its immutable profile ID and hidden `existing_id` from the original nonce/capability-checked request identity, **not** from a potentially mismatched submitted `profile[id]`. The original revision and incarnation are retained; submitted editable labels, outputs, and parser choices remain editable. The Registry v2 immutable-ID, immutable-contract, and compare-and-swap (CAS) guards still decide all writes: a rejected Edit never becomes a Create and a stale retry cannot overwrite a newer revision. Successful saves continue to redirect. No session, transient, alternate persistence, automatic rebase, or Registry migration is introduced.
@@ -53,7 +63,7 @@ In the **Registry v2 implementation merged into `main` via PR #106 on 2026-11-01
 ## Persistence
 
 - `pgr_modules` — schema version plus boolean state for seven bounded modules; source-default merging keeps pre-G-008 states intact and leaves the new presentation module disabled until opt-in.
-- `pgr_settings` — current plugin settings, including `default_force_english`.
+- `pgr_settings` — current plugin settings, including `default_force_english` and optional G-014 `gravity_flow_inbox_rtl` (default OFF).
 - `pgr_scanner_profiles` — canonical non-autoloaded Scanner Profiles option; merged-source schema v2 retains public IDs and records immutable per-create incarnation plus revision. Existing v1 data requires explicit guarded migration before mutation.
 - `pgr_normalize_digits`, field types, Scanner mappings and other field configuration — Gravity Forms form metadata.
 
