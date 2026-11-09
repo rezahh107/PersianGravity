@@ -18,6 +18,9 @@ define( 'PGR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PGR_URL', plugin_dir_url( __FILE__ ) );
 define( 'PGR_MIN_GF_VERSION', '3.0' );
 
+// Public G-014 read-only capability status is available even when the switch is OFF.
+require_once PGR_PATH . 'includes/pgr-gravity-flow-inbox-rtl-status.php';
+
 // Resolver registration is immediate; registration performs no foreign load.
 require_once PGR_PATH . 'includes/class-pgr-localization.php';
 ( new PGR_Localization(
@@ -131,6 +134,13 @@ function pgr_initialize() {
 
 	require_once PGR_PATH . 'includes/class-pgr-core.php';
 	PGR_Core::init();
+
+	// G-014: opt-in only. No hook, vendor option or Grid write while OFF/unknown.
+	if ( 'on' === pgr_gravity_flow_inbox_rtl_status()['requested'] ) {
+		require_once PGR_PATH . 'includes/class-pgr-gravity-flow-inbox-rtl.php';
+		( new PGR_Gravity_Flow_Inbox_RTL() )->hooks();
+	}
+
 	$initialized = true;
 }
 add_action( 'gform_loaded', 'pgr_initialize', 5 );

@@ -37,6 +37,16 @@ Overview always presents capability names and concise descriptions in Persian an
 
 The complete Help & Documentation Center ships locally with Persian and English content and native WordPress contextual help links.
 
+= G-014 optional native Inbox RTL (PR #114 candidate) =
+
+**G-014 (PR #114 candidate, not merged/released):** An independent, optional `pgr_settings[gravity_flow_inbox_rtl]` setting defaults **OFF**; it is not a Module Registry switch. With strict integer ON and the canonical Gravity Flow 3.1.0 host, the `gform_loaded` adapter registers `gravityflow_js_config_shared` at priority 11 after the native priority-10 producer and adds `enableRtl` **only if missing** on genuine producer-verified Inbox grids, based on `is_rtl()`. It never overwrites a host/integration value. Gravity Flow owns Inbox 1 task membership, permissions, data, operations, sorting, pagination, AG Grid construction and persisted column state. GPP independently owns its four-selector physical-LTR-axis preference; neither plugin writes the other's option.
+
+`pgr_gravity_flow_inbox_rtl_status()` v1 is an optional, public **read-only** seam reporting requested state, admitted host and request direction, with `grid_mode=not_observed` (not a browser observation). The administrator-only warning consumes GPP's validated public status v1 and attributes documented Persian browser failures **only** to site `fa_IR` Frontend or effective `fa_IR` Admin locale; other RTL languages alone are insufficient. G-014 warnings, instructions and accessible descriptions use WordPress gettext in the `persian-gravityforms` domain: English primary except for `fa_IR`, which uses the bundled Persian catalog. This is a warning system, not a Grid repair, compatibility guarantee, Settings migration or private-option bridge.
+
+[WU008 run 42517920199](https://github.com/rezahh107/PersianGravity/actions/runs/42517920199) had **27 PASS authentic reciprocal Settings controls** at source Head `8d84c1e9462a8d544d90491887907dabb750ec80` versus exact GPP Head `c8cf9fd7bb615075402b78eaa1f01dd33d855d28`; this is historical relative to the code-review repairs. The separate historical native GPP run [42469384530](https://github.com/rezahh107/Gravity-Presentation-Profiles/actions/runs/42469384530) exercised *older* PGR `311c2f5d...`: **40 PASS, 28 FAIL and 28 NOT_PROVEN**. Its Grid scroll, touch, column-order and persisted-state failures do not establish 28 independent product causes. Current-Head native Mode B compatibility, production activation, merge and public release are **NOT_PROVEN / not authorized**. Verify exact final Head via its own CI, translation and licensed browser jobs.
+
+The feature is unmerged and unreleased; see docs/G014_OPTIONAL_GRAVITY_FLOW_INBOX_RTL.md and docs/VALIDATION.md.
+
 = Jalali System-Date Presentation =
 
 `jalali_presentation` is separate from the dedicated `pgr_jalali_date` field. The field keeps true Jalali-domain storage semantics; the presentation module converts only explicitly known Gregorian/system sources for display.

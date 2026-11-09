@@ -852,3 +852,159 @@ msgstr "محل ذخیرهٔ پروفایل‌های اسکنر برای تغیی
 #: admin/class-pgr-admin.php
 msgid "The profile was not saved. Your entries remain editable below. Check the ID, labels, parser settings and outputs, then correct them and try again."
 msgstr "پروفایل ذخیره نشد. اطلاعات واردشده در فرم زیر قابل ویرایش باقی مانده‌اند. شناسه، عنوان‌ها، تنظیمات تجزیه‌گر و خروجی‌ها را بررسی و اصلاح کنید و دوباره تلاش کنید."
+
+#: admin/class-pgr-admin.php
+msgid "Gravity Flow Inbox — RTL"
+msgstr "صندوق ورودی Gravity Flow — راست‌به‌چپ"
+
+#: admin/class-pgr-admin.php
+msgid "Enable native right-to-left Gravity Flow Inbox tables"
+msgstr "فعال‌سازی راست‌به‌چپ بومی جدول‌های Gravity Flow"
+
+#: admin/class-pgr-admin.php
+msgid "Enable native Inbox RTL (default: off)"
+msgstr "فعال‌سازی RTL بومی جدول (پیش‌فرض: خاموش)"
+
+#: admin/class-pgr-admin.php
+msgid "Only the identified Gravity Flow 3.1.0 host is admitted. ON does not prove GPP compatibility."
+msgstr "فقط Gravity Flow 3.1.0 با شناسهٔ رسمی پشتیبانی می‌شود. روشن‌بودن گزینه به معنی سازگاری اثبات‌شده با GPP نیست."
+
+#: admin/class-pgr-admin.php
+msgid "Check compatibility"
+msgstr "بررسی سازگاری"
+
+#: admin/class-pgr-admin.php
+msgid "GPP verification guide"
+msgstr "راهنمای بررسی در GPP"
+
+#: admin/class-pgr-admin.php
+msgid "Keep OFF (uncheck, then save)"
+msgstr "فعلاً فعال نکن (تیک را بردارید و ذخیره کنید)"
+
+#: admin/class-pgr-admin.php
+msgid "Requested:"
+msgstr "وضعیت درخواست:"
+
+#: admin/class-pgr-admin.php
+msgid "— Host:"
+msgstr "— پشتیبانی میزبان:"
+
+#: admin/class-pgr-admin.php
+msgid "— Browser Grid:"
+msgstr "— حالت واقعی مرورگر:"
+
+#: admin/class-pgr-admin.php
+msgid "This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP."
+msgstr "وضعیت بالا فقط تنظیم درخواستی و نسخهٔ میزبان را گزارش می‌کند؛ باید در مرورگر، پس از بارگذاری جدول، ag-rtl یا ag-ltr و سازگاری GPP جداگانه آزموده شود."
+
+#: admin/class-pgr-admin.php
+msgid "In GPP, verify actual Grid mode, five-column order, scroll, saved layout, search and paging in both OFF and ON. Keep OFF until qualified."
+msgstr "در GPP، ابتدا حالت واقعی جدول و ترتیب پنج ستون را بررسی کنید؛ سپس پیمایش افقی، بازگردانی چیدمان، جستجو و صفحه‌بندی را در حالت OFF و ON جداگانه بیازمایید. تا زمان تأیید، گزینه را خاموش نگه دارید."
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON + GPP ON: at Persian Frontend 1280px, the five-column order reversed. GPP's four enforced LTR-axis rules may conflict with ag-rtl; separate mobile scroll/touch issues were observed at 390px."
+msgstr "PersianGravity ON + GPP ON: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون واقعی معکوس شد. چهار قانون اجباری LTR در GPP نیز با موتور ag-rtl می‌توانند تداخل داشته باشند؛ در موبایل ۳۹۰ پیکسل مشکلات جداگانهٔ اسکرول/لمس دیده شد."
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON + GPP OFF: at Persian Frontend 1280px, five-column order reversed even without the four LTR rules; touch also failed at 390px."
+msgstr "PersianGravity ON + GPP OFF: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون با وجود حذف هر چهار قانون LTR همچنان معکوس شد؛ در ۳۹۰ پیکسل مشکل لمس نیز مشاهده شد."
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity OFF + GPP OFF: Persian Frontend ag-ltr Grid without the four LTR rules showed header/row divergence during scrolling at 390px. This is specific to the tested conditions."
+msgstr "PersianGravity OFF + GPP OFF: در Frontend فارسی با Grid از نوع ag-ltr، حذف چهار قانون LTR باعث اختلاف Header و ردیف هنگام اسکرول در عرض ۳۹۰ پیکسل شد؛ این خطا مخصوص حالت و محیط آزموده‌شده است."
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity OFF on Persian Admin Inbox: header and rows diverged at 390px. Native-only cases showed related failures, so the cause cannot be attributed solely to GPP."
+msgstr "PersianGravity OFF در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل اختلاف حرکت Header و ردیف دیده شد. نمونه‌های Native بدون سطح نمایشی GPP نیز همین خانواده خطا را داشته‌اند؛ علت آن را نمی‌توان فقط به GPP نسبت داد."
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON on Persian Admin Inbox: touch did not produce expected horizontal movement at 390px, with either GPP axis setting."
+msgstr "PersianGravity ON در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل کشیدن لمسی به حرکت افقی مورد انتظار منجر نشد. این مشاهده مستقل از روشن یا خاموش بودن چهار قانون GPP است."
+
+#: admin/class-pgr-admin.php
+msgid "There is insufficient evidence to confirm compatibility or incompatibility in the current environment and locale. Missing or incomplete GPP status does not mean compatible."
+msgstr "برای این ترکیب، در محیط و زبان فعلی شاهد کافی برای اعلام سازگاری یا ناسازگاری وجود ندارد؛ نبودن یا ناقص‌بودن رابط GPP نیز به معنی سازگاری نیست."
+
+#: admin/class-pgr-admin.php
+msgid "RTL compatibility warning: this option changes actual Gravity Flow Grid direction, not only Persian text alignment. An unqualified GPP version may cause header/row scrolling divergence, reversed five-column order or lost saved layout. Check compatibility before enabling; keep the default OFF until qualified."
+msgstr "هشدار سازگاری RTL: این گزینه فقط متن فارسی را راست‌چین نمی‌کند؛ جهت واقعی موتور جدول Gravity Flow را نیز تغییر می‌دهد. اگر نسخهٔ GPP نصب‌شده با RTL بومی سازگار نباشد، ممکن است عنوان و ردیف‌ها هنگام اسکرول از هم جدا شوند، ترتیب پنج ستون جابه‌جا شود یا چیدمان ذخیره‌شده درست بازگردانی نشود. پیش از فعال‌سازی، وضعیت سازگاری GPP را بررسی کنید. اگر سازگاری تأیید نشده است، حالت پیش‌فرض خاموش را حفظ کنید."
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 compatibility warning based on real browser tests"
+msgstr "هشدار سازگاری Inbox 1 بر اساس آزمون واقعی"
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 compatibility: UNKNOWN (not qualified)"
+msgstr "وضعیت سازگاری Inbox 1: UNKNOWN (تأییدنشده)"
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity native RTL setting:"
+msgstr "کلید RTL بومی PersianGravity:"
+
+#: admin/class-pgr-admin.php
+msgid "GPP independent LTR axis setting (requested / effective):"
+msgstr "کلید مستقل محور LTR در GPP (تنظیم / اثر):"
+
+#: admin/class-pgr-admin.php
+msgid "GPP status interface:"
+msgstr "وضعیت رابط GPP:"
+
+#: admin/class-pgr-admin.php
+msgid "Actual Grid mode:"
+msgstr "حالت واقعی Grid:"
+
+#: admin/class-pgr-admin.php
+msgid "Change each setting only in its own plugin. Turning either OFF does not necessarily fix column order, scroll, touch or saved layout; no setting or Grid state is automatically reset."
+msgstr "می‌توانید هر کلید را فقط در تنظیمات افزونهٔ خودش تغییر دهید. خاموش‌کردن یکی از کلیدها لزوماً ترتیب پنج ستون، اسکرول، لمس یا حالت ذخیره‌شده را درست نمی‌کند؛ هیچ State یا گزینه‌ای خودکار بازنشانی نمی‌شود."
+
+#: admin/class-pgr-admin.php
+msgid "Evidence scope and safe action"
+msgstr "محدودهٔ شواهد و اقدام ایمن"
+
+#: admin/class-pgr-admin.php
+msgid "Historical Grid evidence is from WordPress 6.8.3, Gravity Forms 3.1.1.1, Gravity Flow 3.1.0, PGR PR #114 (311c2f5d), GPP PR #174 (c8cf9fd), Chromium 140.0.7339.16, run 42469384530. The status interface does not observe installed Grid mode. Site and Admin request locales can differ."
+msgstr "شواهد فقط از WordPress 6.8.3، Gravity Forms 3.1.1.1، Gravity Flow 3.1.0، PersianGravity PR #114 (311c2f5d)، GPP PR #174 (c8cf9fd) و Chromium 140.0.7339.16 در اجرای 42469384530 هستند؛ رابط وضعیت GPP نسخهٔ نصب‌شدهٔ واقعی Grid را مشاهده نمی‌کند. زبان سایت و زبان درخواست مدیر ممکن است متفاوت باشند."
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 is native Gravity Flow AG Grid. Inbox 2 is experimental GPP cards; this warning does not cover card layout. Check the real Inbox 1 in Persian/English at 1280/390px: five-column order, header/body scrolling and persisted Grid state after reload."
+msgstr "Inbox 1 همان جدول AG Grid بومی Gravity Flow است؛ Inbox 2 کارت‌های مستقل و آزمایشی GPP است و این هشدار دربارهٔ چیدمان کارت‌ها نیست. پیش از تغییر، Inbox 1 واقعی را در فارسی/انگلیسی، عرض ۱۲۸۰/۳۹۰، ترتیب پنج ستون، اسکرول Header/Body و بازیابی State پس از Reload بررسی کنید."
+
+#: admin/class-pgr-admin.php
+msgid "Technical details and verification"
+msgstr "جزئیات فنی و روش بررسی"
+
+#: admin/class-pgr-admin.php
+msgid "The schematic is educational, not a real screenshot. Experimental GPP Inbox 2 uses independent cards and is not an automatic AG Grid fix."
+msgstr "شمای بالا آموزشی است، نه اسکرین‌شات واقعی. Inbox 2 آزمایشی GPP از کارت‌های مستقل استفاده می‌کند و راه‌حل خودکار ناسازگاری AG Grid نیست."
+
+#: admin/class-pgr-admin.php
+msgid "Mode A (intended): an LTR Grid engine with RTL Persian text and a right-to-left five-column presentation. Header/row scroll alignment and saved-layout recovery are goals to verify, not proven guarantees."
+msgstr "حالت A (هدف طراحی): موتور جدول LTR با متن فارسی RTL و نمایش پنج‌ستونهٔ راست‌به‌چپ. هم‌راستایی عنوان و ردیف هنگام اسکرول و بازیابی چیدمان ذخیره‌شده اهداف نیازمند آزمون هستند، نه تضمین‌های اثبات‌شده."
+
+#: admin/class-pgr-admin.php
+msgid "Mode B: the Grid engine is right-to-left but older GPP LTR-axis rules may misalign headers and rows. Column order and saved layout need separate qualification."
+msgstr "حالت B: موتور جدول راست‌به‌چپ شده، اما قواعد قدیمی محور LTR در GPP می‌توانند عنوان و ردیف‌ها را ناهم‌راستا کنند؛ ترتیب ستون‌ها و بازیابی حالت ذخیره‌شده نیازمند آزمون سازگاری است."
+
+#: admin/class-pgr-admin.php
+msgid "Mode A — LTR engine, RTL Persian text"
+msgstr "حالت A — موتور LTR، متن فارسی RTL"
+
+#: admin/class-pgr-admin.php
+msgid "Mode B — native RTL before GPP qualification"
+msgstr "حالت B — RTL بومی پیش از تأیید GPP"
+
+#: admin/class-pgr-admin.php
+msgid "Student name | National ID | School and grade | Submitted at | Actions"
+msgstr "نام دانش‌آموز | کد ملی | مدرسه و پایه | تاریخ و ساعت ثبت | عملیات"
+
+#: admin/class-pgr-admin.php
+msgid "Intended behavior: aligned headers/rows and recoverable saved layout. This is not verified across all settings, viewports or reloads (schematic only)."
+msgstr "رفتار مطلوب: هم‌راستایی عنوان و ردیف و امکان بازیابی چیدمان ذخیره‌شده. این موارد در همهٔ تنظیمات، اندازه‌های صفحه یا بارگذاری‌های مجدد اثبات نشده‌اند (فقط طرح شماتیک)."
+
+#: admin/class-pgr-admin.php
+msgid "Possible conflict with GPP's four LTR-axis rules"
+msgstr "امکان ناسازگاری با چهار قاعدهٔ محور LTR در GPP"
+
+#: admin/class-pgr-admin.php
+msgid "Header/row scrolling, column order or saved layout may differ. This is a schematic, not an actual screenshot."
+msgstr "ممکن است پیمایش عنوان/ردیف، ترتیب پنج ستون یا بازیابی چیدمان ذخیره‌شده متفاوت شود؛ این یک طرح شماتیک است، نه تصویر واقعی آزمون."
