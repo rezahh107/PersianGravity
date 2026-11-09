@@ -46,7 +46,10 @@ for(const [name,mutate] of [
 
 test('real Persian WITH_VAZIR scenarios reject missing computed or loaded Vazirmatn',()=>{
   const d=valid();d.profile='WITH_VAZIR';
-  for(const c of d.cases){c.font.hasVazir=true;c.font.loadedFace=true;}
+  for(const c of d.cases){
+    c.font.hasVazir=true;c.font.loadedFace=true;
+    c.screenshot='with-vazir-fa_IR-'+c.name+'-'+c.width+'.jpg';
+  }
   assert.doesNotThrow(()=>validateReport(d,'with-vazir-fa_IR',head));
   d.cases[0].font.loadedFace=false;
   assert.throws(()=>validateReport(d,'with-vazir-fa_IR',head),/G013_EXTENDED_EVIDENCE_REJECTED/);
