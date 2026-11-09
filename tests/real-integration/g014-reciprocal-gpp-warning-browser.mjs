@@ -214,9 +214,15 @@ async function guidance(page,language,id){
   requireTrue(content.includes('هشدار سازگاری')&&content.includes('محدودهٔ شواهد')&&
    content.includes('فعال‌سازی RTL')&&/[؀-ۿ]/.test(labels),'G014_PERSIAN_WARNING_INCOMPLETE_'+id);
  }else{
-  requireTrue(content.includes('RTL compatibility warning:')&&content.includes('Evidence scope')&&
-   content.includes('Enable native Inbox RTL')&&!/[؀-ۿ]/.test(content),
-   'G014_ENGLISH_WARNING_INCOMPLETE_OR_PERSIAN_LEAK_'+id);
+  const checks=[
+   content.includes('RTL compatibility warning:'),
+   content.includes('Evidence scope'),
+   content.includes('Enable native Inbox RTL'),
+   !/[\u0600-\u06ff]/.test(content),
+   !/[\u0600-\u06ff]/.test(labels)
+  ];
+  requireTrue(checks.every(Boolean),
+   'G014_ENGLISH_WARNING_INCOMPLETE_OR_PERSIAN_LEAK_'+id+'_signals_'+checks.map(Number).join(''));
  }
  report.cases.push({id:'g014-safety-copy-'+id,status:'PASS',language});
 }
