@@ -216,14 +216,19 @@ async function guidance(page,language,id){
  const content=[generalWarning,warning,technical,labels,checkbox].join(' ');
  if(language==='fa_IR'){
   requireTrue(content.includes('هشدار سازگاری')&&content.includes('محدودهٔ شواهد')&&
-   content.includes('فعال‌سازی RTL')&&/[؀-ۿ]/.test(labels),'G014_PERSIAN_WARNING_INCOMPLETE_'+id);
+   content.includes('فعال‌سازی RTL')&&/[؀-ۿ]/.test(labels)&&
+   content.includes('اهداف نیازمند آزمون هستند، نه تضمین‌های اثبات‌شده')&&
+   content.includes('در همهٔ تنظیمات، اندازه‌های صفحه یا بارگذاری‌های مجدد اثبات نشده‌اند'),'G014_PERSIAN_WARNING_INCOMPLETE_'+id);
  }else{
   const checks=[
    content.includes('RTL compatibility warning:'),
    content.includes('Evidence scope'),
    content.includes('Enable native Inbox RTL'),
    !/[\u0600-\u06ff]/.test(content),
-   !/[\u0600-\u06ff]/.test(labels)
+   !/[\u0600-\u06ff]/.test(labels),
+   content.includes('goals to verify, not proven guarantees.'),
+   content.includes('not verified across all settings, viewports or reloads'),
+   !content.includes('Header and rows aligned; saved layout preserved in the qualified GPP mode')
   ];
   requireTrue(checks.every(Boolean),
    'G014_ENGLISH_WARNING_INCOMPLETE_OR_PERSIAN_LEAK_'+id+'_signals_'+checks.map(Number).join(''));

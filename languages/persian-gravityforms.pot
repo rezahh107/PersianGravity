@@ -933,7 +933,7 @@ msgid "The schematic is educational, not a real screenshot. Experimental GPP Inb
 msgstr ""
 
 #: admin/class-pgr-admin.php
-msgid "Mode A: the Grid engine is left-to-right while Persian text and five-column presentation are right-to-left; headers and rows align when scrolling."
+msgid "Mode A (intended): an LTR Grid engine with RTL Persian text and a right-to-left five-column presentation. Header/row scroll alignment and saved-layout recovery are goals to verify, not proven guarantees."
 msgstr ""
 
 #: admin/class-pgr-admin.php
@@ -953,7 +953,7 @@ msgid "Student name | National ID | School and grade | Submitted at | Actions"
 msgstr ""
 
 #: admin/class-pgr-admin.php
-msgid "Header and rows aligned; saved layout preserved in the qualified GPP mode (schematic only)."
+msgid "Intended behavior: aligned headers/rows and recoverable saved layout. This is not verified across all settings, viewports or reloads (schematic only)."
 msgstr ""
 
 #: admin/class-pgr-admin.php

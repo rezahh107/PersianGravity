@@ -978,8 +978,8 @@ msgid "The schematic is educational, not a real screenshot. Experimental GPP Inb
 msgstr "شمای بالا آموزشی است، نه اسکرین‌شات واقعی. Inbox 2 آزمایشی GPP از کارت‌های مستقل استفاده می‌کند و راه‌حل خودکار ناسازگاری AG Grid نیست."
 
 #: admin/class-pgr-admin.php
-msgid "Mode A: the Grid engine is left-to-right while Persian text and five-column presentation are right-to-left; headers and rows align when scrolling."
-msgstr "حالت A: جدول از موتور چپ‌به‌راست استفاده می‌کند، ولی نوشته‌های فارسی و ترتیب پنج ستون برای کاربر راست‌به‌چپ‌اند؛ عنوان و ردیف هنگام پیمایش هم‌راستا می‌مانند."
+msgid "Mode A (intended): an LTR Grid engine with RTL Persian text and a right-to-left five-column presentation. Header/row scroll alignment and saved-layout recovery are goals to verify, not proven guarantees."
+msgstr "حالت A (هدف طراحی): موتور جدول LTR با متن فارسی RTL و نمایش پنج‌ستونهٔ راست‌به‌چپ. هم‌راستایی عنوان و ردیف هنگام اسکرول و بازیابی چیدمان ذخیره‌شده اهداف نیازمند آزمون هستند، نه تضمین‌های اثبات‌شده."
 
 #: admin/class-pgr-admin.php
 msgid "Mode B: the Grid engine is right-to-left but older GPP LTR-axis rules may misalign headers and rows. Column order and saved layout need separate qualification."
@@ -998,8 +998,8 @@ msgid "Student name | National ID | School and grade | Submitted at | Actions"
 msgstr "نام دانش‌آموز | کد ملی | مدرسه و پایه | تاریخ و ساعت ثبت | عملیات"
 
 #: admin/class-pgr-admin.php
-msgid "Header and rows aligned; saved layout preserved in the qualified GPP mode (schematic only)."
-msgstr "عنوان و ردیف هم‌راستا؛ وضعیت ذخیره‌شده حفظ می‌شود (در حالت تأییدشدهٔ فعلی GPP)."
+msgid "Intended behavior: aligned headers/rows and recoverable saved layout. This is not verified across all settings, viewports or reloads (schematic only)."
+msgstr "رفتار مطلوب: هم‌راستایی عنوان و ردیف و امکان بازیابی چیدمان ذخیره‌شده. این موارد در همهٔ تنظیمات، اندازه‌های صفحه یا بارگذاری‌های مجدد اثبات نشده‌اند (فقط طرح شماتیک)."
 
 #: admin/class-pgr-admin.php
 msgid "Possible conflict with GPP's four LTR-axis rules"

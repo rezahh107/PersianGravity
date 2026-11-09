@@ -96,6 +96,9 @@ final class G014RTLStatusContractTest extends TestCase {
 		foreach ( array( 'RTL compatibility warning:', 'Technical details and verification', 'not_observed', 'Mode A', 'Mode B', 'Keep OFF' ) as $expected ) {
 			$this->assertStringContainsString( $expected, $html );
 		}
+		$this->assertStringContainsString( 'goals to verify, not proven guarantees.', $html );
+		$this->assertStringContainsString( 'not verified across all settings, viewports or reloads', $html );
+		$this->assertStringNotContainsString( 'Header and rows aligned; saved layout preserved in the qualified GPP mode', $html );
 		$this->assertStringNotContainsString( 'checked="checked"', $html );
 		unset( $GLOBALS['pgr_test_can_manage_options'] );
 	}

@@ -283,10 +283,10 @@ final class PGR_Admin {
 			</p>
 			<p><?php echo esc_html( __( 'This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP.', 'persian-gravityforms' ) ); ?></p>
 			<div class="pgr-card-grid">
-				<section class="pgr-card" role="group" aria-label="<?php echo esc_attr( __( 'Mode A: the Grid engine is left-to-right while Persian text and five-column presentation are right-to-left; headers and rows align when scrolling.', 'persian-gravityforms' ) ); ?>">
+				<section class="pgr-card" role="group" aria-label="<?php echo esc_attr( __( 'Mode A (intended): an LTR Grid engine with RTL Persian text and a right-to-left five-column presentation. Header/row scroll alignment and saved-layout recovery are goals to verify, not proven guarantees.', 'persian-gravityforms' ) ); ?>">
 					<h3><?php echo esc_html( __( 'Mode A — LTR engine, RTL Persian text', 'persian-gravityforms' ) ); ?></h3>
 					<p><code>ag-ltr</code> ← <?php echo esc_html( __( 'Student name | National ID | School and grade | Submitted at | Actions', 'persian-gravityforms' ) ); ?></p>
-					<p><?php echo esc_html( __( 'Header and rows aligned; saved layout preserved in the qualified GPP mode (schematic only).', 'persian-gravityforms' ) ); ?></p>
+					<p><?php echo esc_html( __( 'Intended behavior: aligned headers/rows and recoverable saved layout. This is not verified across all settings, viewports or reloads (schematic only).', 'persian-gravityforms' ) ); ?></p>
 				</section>
 				<section class="pgr-card" role="group" aria-label="<?php echo esc_attr( __( 'Mode B: the Grid engine is right-to-left but older GPP LTR-axis rules may misalign headers and rows. Column order and saved layout need separate qualification.', 'persian-gravityforms' ) ); ?>">
 					<h3><?php echo esc_html( __( 'Mode B — native RTL before GPP qualification', 'persian-gravityforms' ) ); ?></h3>
