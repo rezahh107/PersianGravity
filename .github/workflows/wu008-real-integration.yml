@@ -1191,6 +1191,7 @@ jobs:
           node --check tests/real-integration/vazir-release-verify.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
           node --test tests/real-integration/vazir-evidence-check.test.mjs
+          node --test tests/real-integration/g013-safe-qualification-diagnostic.test.mjs
 
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
@@ -1742,6 +1743,13 @@ jobs:
               PRECHECK|BASELINE_fa_IR|BASELINE_en_US|RELEASE_DOWNLOAD|RELEASE_VERIFIED|WITH_VAZIR_fa_IR|WITH_VAZIR_en_US|PAIR_COMPARISON|INDEPENDENT_GATE|PACKAGE_INTEGRITY|COMPLETE)
                 printf 'G013 stage=%s\n' "$phase_marker" | tee -a "$GITHUB_STEP_SUMMARY" ;;
             esac
+          fi
+          if (( qualification_rc != 0 )); then
+            # The checked-out diagnostic prints only a closed enum and four
+            # exact profile statuses; its original log never leaves the runner.
+            node tests/real-integration/g013-safe-qualification-diagnostic.mjs \
+              "$private_dir/diagnostics.log" 2>>"$private_dir/diagnostics.log" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
           fi
           exit "$qualification_rc"
 

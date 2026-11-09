@@ -64,6 +64,7 @@ jobs:
           node --check tests/real-integration/g013-public-evidence-contract.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs
           node --test tests/real-integration/vazir-evidence-check.test.mjs
+          node --test tests/real-integration/g013-safe-qualification-diagnostic.test.mjs
 
       - name: Check out pinned current WordPress Core
         uses: actions/checkout@v7
