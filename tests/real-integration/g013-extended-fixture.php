@@ -43,8 +43,8 @@ if ( is_wp_error( $form_id ) || (int) $form_id < 1 ) {
 	throw new RuntimeException( 'G013 real Crop GFAPI form creation failed.' );
 }
 $field = GFAPI::get_field( (int) $form_id, 1 );
-if ( ! $field || ! rgar( $field, 'gpfupEnable' ) ||
-	! rgar( $field, 'gpfupEnableCrop' ) || ! rgar( $field, 'gpfupCropRequired' ) ) {
+if ( ! is_object( $field ) || ! rgar( (array) $field, 'gpfupEnable' ) ||
+	! rgar( (array) $field, 'gpfupEnableCrop' ) || ! rgar( (array) $field, 'gpfupCropRequired' ) ) {
 	throw new RuntimeException( 'G013 crop feature flags not persisted in genuine GFAPI.' );
 }
 $crop_post = wp_insert_post(

@@ -212,8 +212,21 @@ async function editor(page,entry){
     return all.some(b=>b.name==='gk-gravityview-blocks/view' && String(b.attributes.viewId)===String(id));
   },fixture.view_id,{timeout:10000});
   entry.observed.push('REAL_REACT_SELECT_PORTAL','GUTENBERG_VIEW_SELECTION');
+  // GravityView 3.3.4 registers its real date controls under the
+  // collapsed "Entries Settings" Gutenberg Inspector PanelBody.
+  // Open actual panels through native UI rather than conjuring the picker.
   const date=page.locator('.react-datepicker__input-container input:visible').first();
-  if(!await date.count())throw Error('Real datepicker in GravityView View-block editor not visible');
+  if(!await date.count()){
+    const toggles=page.locator('button.components-panel__body-toggle');
+    for(let index=0;index<await toggles.count();index++){
+      const toggle=toggles.nth(index);
+      if(await toggle.isVisible() && await toggle.getAttribute('aria-expanded')==='false'){
+        await toggle.click();
+        if(await date.count())break;
+      }
+    }
+  }
+  if(!await date.isVisible())throw Error('Actual GravityView Entries Settings datepicker not reached');
   await date.click();
   await page.locator('.react-datepicker:visible').first().waitFor({state:'visible',timeout:10000});
   await page.keyboard.press('Escape');
