@@ -171,13 +171,13 @@ final class PGR_Admin {
 		);
 		add_settings_section(
 			'pgr_gravity_flow_inbox',
-			'Gravity Flow Inbox — RTL',
+			__( 'Gravity Flow Inbox — RTL', 'persian-gravityforms' ),
 			'__return_false',
 			self::SETTINGS_SLUG
 		);
 		add_settings_field(
 			'gravity_flow_inbox_rtl',
-			'اصلاح راست‌به‌چپ جدول‌های Gravity Flow',
+			__( 'Enable native right-to-left Gravity Flow Inbox tables', 'persian-gravityforms' ),
 			array( $this, 'render_gravity_flow_inbox_rtl' ),
 			self::SETTINGS_SLUG,
 			'pgr_gravity_flow_inbox'
@@ -226,77 +226,76 @@ final class PGR_Admin {
 		}
 
 		$status           = pgr_gravity_flow_inbox_rtl_status();
-		$fa               = is_rtl();
 		$facts            = PGR_GPP_Inbox_RTL_Compatibility::facts();
 		$gpp              = $facts['gpp'];
 		$problem_messages = array(
-			'rtl_with_ltr_axis'             => 'PersianGravity ON + GPP ON: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون واقعی معکوس شد. چهار قانون اجباری LTR در GPP نیز با موتور ag-rtl می‌توانند تداخل داشته باشند؛ در موبایل ۳۹۰ پیکسل مشکلات جداگانهٔ اسکرول/لمس دیده شد.',
-			'rtl_column_order_without_axis' => 'PersianGravity ON + GPP OFF: در Frontend فارسی و عرض ۱۲۸۰ پیکسل، ترتیب پنج ستون با وجود حذف هر چهار قانون LTR همچنان معکوس شد؛ در ۳۹۰ پیکسل مشکل لمس نیز مشاهده شد.',
-			'ltr_grid_without_axis'         => 'PersianGravity OFF + GPP OFF: در Frontend فارسی با Grid از نوع ag-ltr، حذف چهار قانون LTR باعث اختلاف Header و ردیف هنگام اسکرول در عرض ۳۹۰ پیکسل شد؛ این خطا مخصوص حالت و محیط آزموده‌شده است.',
-			'native_admin_mobile_scroll'    => 'PersianGravity OFF در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل اختلاف حرکت Header و ردیف دیده شد. نمونه‌های Native بدون سطح نمایشی GPP نیز همین خانواده خطا را داشته‌اند؛ علت آن را نمی‌توان فقط به GPP نسبت داد.',
-			'native_admin_mobile_touch'     => 'PersianGravity ON در Admin Inbox فارسی: در عرض ۳۹۰ پیکسل کشیدن لمسی به حرکت افقی مورد انتظار منجر نشد. این مشاهده مستقل از روشن یا خاموش بودن چهار قانون GPP است.',
+			'rtl_with_ltr_axis'             => __( 'PersianGravity ON + GPP ON: at Persian Frontend 1280px, the five-column order reversed. GPP\'s four enforced LTR-axis rules may conflict with ag-rtl; separate mobile scroll/touch issues were observed at 390px.', 'persian-gravityforms' ),
+			'rtl_column_order_without_axis' => __( 'PersianGravity ON + GPP OFF: at Persian Frontend 1280px, five-column order reversed even without the four LTR rules; touch also failed at 390px.', 'persian-gravityforms' ),
+			'ltr_grid_without_axis'         => __( 'PersianGravity OFF + GPP OFF: Persian Frontend ag-ltr Grid without the four LTR rules showed header/row divergence during scrolling at 390px. This is specific to the tested conditions.', 'persian-gravityforms' ),
+			'native_admin_mobile_scroll'    => __( 'PersianGravity OFF on Persian Admin Inbox: header and rows diverged at 390px. Native-only cases showed related failures, so the cause cannot be attributed solely to GPP.', 'persian-gravityforms' ),
+			'native_admin_mobile_touch'     => __( 'PersianGravity ON on Persian Admin Inbox: touch did not produce expected horizontal movement at 390px, with either GPP axis setting.', 'persian-gravityforms' ),
 		);
 		$known_failure    = isset( $problem_messages[ $facts['problem'] ] );
-		$warning_message  = $known_failure ? $problem_messages[ $facts['problem'] ] : 'برای این ترکیب، در محیط و زبان فعلی شاهد کافی برای اعلام سازگاری یا ناسازگاری وجود ندارد؛ نبودن یا ناقص‌بودن رابط GPP نیز به معنی سازگاری نیست.';
+		$warning_message  = $known_failure ? $problem_messages[ $facts['problem'] ] : __( 'There is insufficient evidence to confirm compatibility or incompatibility in the current environment and locale. Missing or incomplete GPP status does not mean compatible.', 'persian-gravityforms' );
 		?>
 		<label for="pgr-g014-rtl-checkbox">
 			<input id="pgr-g014-rtl-checkbox" type="checkbox" name="<?php echo esc_attr( self::OPTION ); ?>[gravity_flow_inbox_rtl]" value="1" <?php checked( 'on' === $status['requested'] ); ?> />
-			<?php echo esc_html( $fa ? 'فعال‌سازی RTL بومی جدول (پیش‌فرض: خاموش)' : 'Enable native Inbox RTL (default: off)' ); ?>
+			<?php echo esc_html( __( 'Enable native Inbox RTL (default: off)', 'persian-gravityforms' ) ); ?>
 		</label>
 		<p class="description">
-			<?php echo esc_html( $fa ? 'فقط Gravity Flow 3.1.0 با شناسهٔ رسمی پشتیبانی می‌شود. روشن‌بودن گزینه به معنی سازگاری اثبات‌شده با GPP نیست.' : 'Only the identified Gravity Flow 3.1.0 host is admitted. ON does not prove GPP compatibility.' ); ?>
+			<?php echo esc_html( __( 'Only the identified Gravity Flow 3.1.0 host is admitted. ON does not prove GPP compatibility.', 'persian-gravityforms' ) ); ?>
 		</p>
 		<div class="notice notice-warning inline" role="note">
-			<p><?php echo esc_html( 'هشدار سازگاری RTL: این گزینه فقط متن فارسی را راست‌چین نمی‌کند؛ جهت واقعی موتور جدول Gravity Flow را نیز تغییر می‌دهد. اگر نسخهٔ GPP نصب‌شده با RTL بومی سازگار نباشد، ممکن است عنوان و ردیف‌ها هنگام اسکرول از هم جدا شوند، ترتیب پنج ستون جابه‌جا شود یا چیدمان ذخیره‌شده درست بازگردانی نشود. پیش از فعال‌سازی، وضعیت سازگاری GPP را بررسی کنید. اگر سازگاری تأیید نشده است، حالت پیش‌فرض خاموش را حفظ کنید.' ); ?></p>
+			<p><?php echo esc_html( __( 'RTL compatibility warning: this option changes actual Gravity Flow Grid direction, not only Persian text alignment. An unqualified GPP version may cause header/row scrolling divergence, reversed five-column order or lost saved layout. Check compatibility before enabling; keep the default OFF until qualified.', 'persian-gravityforms' ) ); ?></p>
 		</div>
 		<div id="pgr-g014-gpp-warning" class="notice <?php echo esc_attr( $known_failure ? 'notice-error' : 'notice-info' ); ?> inline"
 			role="status" data-pgr-gpp-compatibility="<?php echo esc_attr( $facts['compatibility'] ); ?>"
 			data-pgr-gpp-problem="<?php echo esc_attr( $facts['problem'] ); ?>">
-			<p><strong><?php echo esc_html( $known_failure ? 'هشدار سازگاری Inbox 1 بر اساس آزمون واقعی' : 'وضعیت سازگاری Inbox 1: UNKNOWN (تأییدنشده)' ); ?></strong></p>
+			<p><strong><?php echo esc_html( $known_failure ? __( 'Inbox 1 compatibility warning based on real browser tests', 'persian-gravityforms' ) : __( 'Inbox 1 compatibility: UNKNOWN (not qualified)', 'persian-gravityforms' ) ); ?></strong></p>
 			<p><?php echo esc_html( $warning_message ); ?></p>
 			<p>
-				<?php echo esc_html( 'کلید RTL بومی PersianGravity:' ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>؛
-				<?php echo esc_html( 'کلید مستقل محور LTR در GPP (تنظیم / اثر):' ); ?>
-				<code><?php echo esc_html( $gpp['requested'] ); ?></code> / <code><?php echo esc_html( $gpp['effective'] ); ?></code>؛
-				<?php echo esc_html( 'وضعیت رابط GPP:' ); ?> <code><?php echo esc_html( $gpp['interface'] ); ?></code>؛
-				<?php echo esc_html( 'حالت واقعی Grid:' ); ?> <code>not_observed</code>.
+				<?php echo esc_html( __( 'PersianGravity native RTL setting:', 'persian-gravityforms' ) ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>;
+				<?php echo esc_html( __( 'GPP independent LTR axis setting (requested / effective):', 'persian-gravityforms' ) ); ?>
+				<code><?php echo esc_html( $gpp['requested'] ); ?></code> / <code><?php echo esc_html( $gpp['effective'] ); ?></code>;
+				<?php echo esc_html( __( 'GPP status interface:', 'persian-gravityforms' ) ); ?> <code><?php echo esc_html( $gpp['interface'] ); ?></code>;
+				<?php echo esc_html( __( 'Actual Grid mode:', 'persian-gravityforms' ) ); ?> <code>not_observed</code>.
 			</p>
-			<p><?php echo esc_html( 'می‌توانید هر کلید را فقط در تنظیمات افزونهٔ خودش تغییر دهید. خاموش‌کردن یکی از کلیدها لزوماً ترتیب پنج ستون، اسکرول، لمس یا حالت ذخیره‌شده را درست نمی‌کند؛ هیچ State یا گزینه‌ای خودکار بازنشانی نمی‌شود.' ); ?></p>
+			<p><?php echo esc_html( __( 'Change each setting only in its own plugin. Turning either OFF does not necessarily fix column order, scroll, touch or saved layout; no setting or Grid state is automatically reset.', 'persian-gravityforms' ) ); ?></p>
 			<details>
-				<summary><?php echo esc_html( 'محدودهٔ شواهد و اقدام ایمن' ); ?></summary>
-				<p><?php echo esc_html( 'شواهد فقط از WordPress 6.8.3، Gravity Forms 3.1.1.1، Gravity Flow 3.1.0، PersianGravity PR #114 (311c2f5d)، GPP PR #174 (c8cf9fd) و Chromium 140.0.7339.16 در اجرای 42469384530 هستند؛ رابط وضعیت GPP نسخهٔ نصب‌شدهٔ واقعی Grid را مشاهده نمی‌کند. زبان سایت و زبان درخواست مدیر ممکن است متفاوت باشند.' ); ?></p>
-				<p><?php echo esc_html( 'Inbox 1 همان جدول AG Grid بومی Gravity Flow است؛ Inbox 2 کارت‌های مستقل و آزمایشی GPP است و این هشدار دربارهٔ چیدمان کارت‌ها نیست. پیش از تغییر، Inbox 1 واقعی را در فارسی/انگلیسی، عرض ۱۲۸۰/۳۹۰، ترتیب پنج ستون، اسکرول Header/Body و بازیابی State پس از Reload بررسی کنید.' ); ?></p>
+				<summary><?php echo esc_html( __( 'Evidence scope and safe action', 'persian-gravityforms' ) ); ?></summary>
+				<p><?php echo esc_html( __( 'Historical Grid evidence is from WordPress 6.8.3, Gravity Forms 3.1.1.1, Gravity Flow 3.1.0, PGR PR #114 (311c2f5d), GPP PR #174 (c8cf9fd), Chromium 140.0.7339.16, run 42469384530. The status interface does not observe installed Grid mode. Site and Admin request locales can differ.', 'persian-gravityforms' ) ); ?></p>
+				<p><?php echo esc_html( __( 'Inbox 1 is native Gravity Flow AG Grid. Inbox 2 is experimental GPP cards; this warning does not cover card layout. Check the real Inbox 1 in Persian/English at 1280/390px: five-column order, header/body scrolling and persisted Grid state after reload.', 'persian-gravityforms' ) ); ?></p>
 			</details>
 		</div>
 		<p>
-			<a href="#pgr-g014-compatibility"><?php echo esc_html( $fa ? 'بررسی سازگاری' : 'Check compatibility' ); ?></a>
+			<a href="#pgr-g014-compatibility"><?php echo esc_html( __( 'Check compatibility', 'persian-gravityforms' ) ); ?></a>
 			<span aria-hidden="true"> | </span>
-			<a href="#pgr-g014-gpp-guide"><?php echo esc_html( $fa ? 'راهنمای بررسی در GPP' : 'GPP verification guide' ); ?></a>
+			<a href="#pgr-g014-gpp-guide"><?php echo esc_html( __( 'GPP verification guide', 'persian-gravityforms' ) ); ?></a>
 			<span aria-hidden="true"> | </span>
-			<a href="#pgr-g014-rtl-checkbox"><?php echo esc_html( $fa ? 'فعلاً فعال نکن (تیک را بردارید و ذخیره کنید)' : 'Keep OFF (uncheck, then save)' ); ?></a>
+			<a href="#pgr-g014-rtl-checkbox"><?php echo esc_html( __( 'Keep OFF (uncheck, then save)', 'persian-gravityforms' ) ); ?></a>
 		</p>
 		<details id="pgr-g014-compatibility" open>
-			<summary><?php echo esc_html( 'جزئیات فنی و روش بررسی' ); ?></summary>
+			<summary><?php echo esc_html( __( 'Technical details and verification', 'persian-gravityforms' ) ); ?></summary>
 			<p>
-				<?php echo esc_html( $fa ? 'وضعیت درخواست:' : 'Requested:' ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>
-				<?php echo esc_html( $fa ? '— پشتیبانی میزبان:' : '— Host:' ); ?> <code><?php echo esc_html( $status['host'] ); ?></code>
-				<?php echo esc_html( $fa ? '— حالت واقعی مرورگر:' : '— Browser Grid:' ); ?> <code><?php echo esc_html( $status['grid_mode'] ); ?></code>
+				<?php echo esc_html( __( 'Requested:', 'persian-gravityforms' ) ); ?> <code><?php echo esc_html( $status['requested'] ); ?></code>
+				<?php echo esc_html( __( '— Host:', 'persian-gravityforms' ) ); ?> <code><?php echo esc_html( $status['host'] ); ?></code>
+				<?php echo esc_html( __( '— Browser Grid:', 'persian-gravityforms' ) ); ?> <code><?php echo esc_html( $status['grid_mode'] ); ?></code>
 			</p>
-			<p><?php echo esc_html( $fa ? 'وضعیت بالا فقط تنظیم درخواستی و نسخهٔ میزبان را گزارش می‌کند؛ باید در مرورگر، پس از بارگذاری جدول، ag-rtl یا ag-ltr و سازگاری GPP جداگانه آزموده شود.' : 'This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP.' ); ?></p>
+			<p><?php echo esc_html( __( 'This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP.', 'persian-gravityforms' ) ); ?></p>
 			<div class="pgr-card-grid">
-				<section class="pgr-card" role="group" aria-label="حالت A: جدول از موتور چپ‌به‌راست استفاده می‌کند، ولی نوشته‌های فارسی و ترتیب پنج ستون برای کاربر راست‌به‌چپ‌اند؛ عنوان و ردیف هنگام پیمایش هم‌راستا می‌مانند.">
-					<h3>حالت A — موتور LTR، متن فارسی RTL</h3>
-					<p><code>ag-ltr</code> ← نام دانش‌آموز | کد ملی | مدرسه و پایه | تاریخ و ساعت ثبت | عملیات</p>
-					<p>عنوان و ردیف هم‌راستا؛ وضعیت ذخیره‌شده حفظ می‌شود (در حالت تأییدشدهٔ فعلی GPP).</p>
+				<section class="pgr-card" role="group" aria-label="<?php echo esc_attr( __( 'Mode A: the Grid engine is left-to-right while Persian text and five-column presentation are right-to-left; headers and rows align when scrolling.', 'persian-gravityforms' ) ); ?>">
+					<h3><?php echo esc_html( __( 'Mode A — LTR engine, RTL Persian text', 'persian-gravityforms' ) ); ?></h3>
+					<p><code>ag-ltr</code> ← <?php echo esc_html( __( 'Student name | National ID | School and grade | Submitted at | Actions', 'persian-gravityforms' ) ); ?></p>
+					<p><?php echo esc_html( __( 'Header and rows aligned; saved layout preserved in the qualified GPP mode (schematic only).', 'persian-gravityforms' ) ); ?></p>
 				</section>
-				<section class="pgr-card" role="group" aria-label="حالت B: موتور جدول راست‌به‌چپ شده، اما قواعد قدیمی محور LTR در GPP می‌توانند عنوان و ردیف‌ها را ناهم‌راستا کنند؛ ترتیب ستون‌ها و بازیابی حالت ذخیره‌شده نیازمند آزمون سازگاری است.">
-					<h3>حالت B — RTL بومی پیش از تأیید GPP</h3>
-					<p><code>ag-rtl</code> ← امکان ناسازگاری با چهار قاعدهٔ محور LTR در GPP</p>
-					<p>ممکن است پیمایش عنوان/ردیف، ترتیب پنج ستون یا بازیابی چیدمان ذخیره‌شده متفاوت شود؛ این یک طرح شماتیک است، نه تصویر واقعی آزمون.</p>
+				<section class="pgr-card" role="group" aria-label="<?php echo esc_attr( __( 'Mode B: the Grid engine is right-to-left but older GPP LTR-axis rules may misalign headers and rows. Column order and saved layout need separate qualification.', 'persian-gravityforms' ) ); ?>">
+					<h3><?php echo esc_html( __( 'Mode B — native RTL before GPP qualification', 'persian-gravityforms' ) ); ?></h3>
+					<p><code>ag-rtl</code> ← <?php echo esc_html( __( 'Possible conflict with GPP\'s four LTR-axis rules', 'persian-gravityforms' ) ); ?></p>
+					<p><?php echo esc_html( __( 'Header/row scrolling, column order or saved layout may differ. This is a schematic, not an actual screenshot.', 'persian-gravityforms' ) ); ?></p>
 				</section>
 			</div>
-			<p id="pgr-g014-gpp-guide"><?php echo esc_html( $fa ? 'در GPP، ابتدا حالت واقعی جدول و ترتیب پنج ستون را بررسی کنید؛ سپس پیمایش افقی، بازگردانی چیدمان، جستجو و صفحه‌بندی را در حالت OFF و ON جداگانه بیازمایید. تا زمان تأیید، گزینه را خاموش نگه دارید.' : 'In GPP, verify actual Grid mode, five-column order, scroll, saved layout, search and paging in both OFF and ON. Keep OFF until qualified.' ); ?></p>
-			<p><?php echo esc_html( 'شمای بالا آموزشی است، نه اسکرین‌شات واقعی. Inbox 2 آزمایشی GPP از کارت‌های مستقل استفاده می‌کند و راه‌حل خودکار ناسازگاری AG Grid نیست.' ); ?></p>
+			<p id="pgr-g014-gpp-guide"><?php echo esc_html( __( 'In GPP, verify actual Grid mode, five-column order, scroll, saved layout, search and paging in both OFF and ON. Keep OFF until qualified.', 'persian-gravityforms' ) ); ?></p>
+			<p><?php echo esc_html( __( 'The schematic is educational, not a real screenshot. Experimental GPP Inbox 2 uses independent cards and is not an automatic AG Grid fix.', 'persian-gravityforms' ) ); ?></p>
 		</details>
 		<?php
 	}

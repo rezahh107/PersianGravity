@@ -807,3 +807,159 @@ msgstr ""
 #: admin/class-pgr-admin.php
 msgid "The profile was not saved. Your entries remain editable below. Check the ID, labels, parser settings and outputs, then correct them and try again."
 msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Gravity Flow Inbox — RTL"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Enable native right-to-left Gravity Flow Inbox tables"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Enable native Inbox RTL (default: off)"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Only the identified Gravity Flow 3.1.0 host is admitted. ON does not prove GPP compatibility."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Check compatibility"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "GPP verification guide"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Keep OFF (uncheck, then save)"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Requested:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "— Host:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "— Browser Grid:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "This reports intent and host identity only. Inspect the loaded browser ag-rtl/ag-ltr and separately qualify GPP."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "In GPP, verify actual Grid mode, five-column order, scroll, saved layout, search and paging in both OFF and ON. Keep OFF until qualified."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON + GPP ON: at Persian Frontend 1280px, the five-column order reversed. GPP's four enforced LTR-axis rules may conflict with ag-rtl; separate mobile scroll/touch issues were observed at 390px."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON + GPP OFF: at Persian Frontend 1280px, five-column order reversed even without the four LTR rules; touch also failed at 390px."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity OFF + GPP OFF: Persian Frontend ag-ltr Grid without the four LTR rules showed header/row divergence during scrolling at 390px. This is specific to the tested conditions."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity OFF on Persian Admin Inbox: header and rows diverged at 390px. Native-only cases showed related failures, so the cause cannot be attributed solely to GPP."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity ON on Persian Admin Inbox: touch did not produce expected horizontal movement at 390px, with either GPP axis setting."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "There is insufficient evidence to confirm compatibility or incompatibility in the current environment and locale. Missing or incomplete GPP status does not mean compatible."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "RTL compatibility warning: this option changes actual Gravity Flow Grid direction, not only Persian text alignment. An unqualified GPP version may cause header/row scrolling divergence, reversed five-column order or lost saved layout. Check compatibility before enabling; keep the default OFF until qualified."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 compatibility warning based on real browser tests"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 compatibility: UNKNOWN (not qualified)"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "PersianGravity native RTL setting:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "GPP independent LTR axis setting (requested / effective):"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "GPP status interface:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Actual Grid mode:"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Change each setting only in its own plugin. Turning either OFF does not necessarily fix column order, scroll, touch or saved layout; no setting or Grid state is automatically reset."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Evidence scope and safe action"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Historical Grid evidence is from WordPress 6.8.3, Gravity Forms 3.1.1.1, Gravity Flow 3.1.0, PGR PR #114 (311c2f5d), GPP PR #174 (c8cf9fd), Chromium 140.0.7339.16, run 42469384530. The status interface does not observe installed Grid mode. Site and Admin request locales can differ."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Inbox 1 is native Gravity Flow AG Grid. Inbox 2 is experimental GPP cards; this warning does not cover card layout. Check the real Inbox 1 in Persian/English at 1280/390px: five-column order, header/body scrolling and persisted Grid state after reload."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Technical details and verification"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "The schematic is educational, not a real screenshot. Experimental GPP Inbox 2 uses independent cards and is not an automatic AG Grid fix."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Mode A: the Grid engine is left-to-right while Persian text and five-column presentation are right-to-left; headers and rows align when scrolling."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Mode B: the Grid engine is right-to-left but older GPP LTR-axis rules may misalign headers and rows. Column order and saved layout need separate qualification."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Mode A — LTR engine, RTL Persian text"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Mode B — native RTL before GPP qualification"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Student name | National ID | School and grade | Submitted at | Actions"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Header and rows aligned; saved layout preserved in the qualified GPP mode (schematic only)."
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Possible conflict with GPP's four LTR-axis rules"
+msgstr ""
+
+#: admin/class-pgr-admin.php
+msgid "Header/row scrolling, column order or saved layout may differ. This is a schematic, not an actual screenshot."
+msgstr ""

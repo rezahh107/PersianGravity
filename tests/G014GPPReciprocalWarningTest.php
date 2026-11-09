@@ -68,7 +68,7 @@ final class G014GPPReciprocalWarningTest extends TestCase {
 		$html = ob_get_clean();
 		$this->assertStringContainsString( 'data-pgr-gpp-compatibility="unknown"', $html );
 		$this->assertStringContainsString( 'Inbox 2', $html );
-		$this->assertStringContainsString( 'جزئیات فنی و روش بررسی', $html );
+		$this->assertStringContainsString( 'Technical details and verification', $html );
 		$this->assertStringNotContainsString( 'checked="checked"', $html );
 	}
 
@@ -79,10 +79,10 @@ final class G014GPPReciprocalWarningTest extends TestCase {
 		$this->admitted_host();
 		$this->fake_gpp();
 		$cases = array(
-			array( 0, 'off', 'ltr_grid_without_axis', 'known_failure', '۳۹۰' ),
-			array( 0, 'on', 'native_admin_mobile_scroll', 'known_failure', '۳۹۰' ),
-			array( 1, 'off', 'rtl_column_order_without_axis', 'known_failure', '۱۲۸۰' ),
-			array( 1, 'on', 'rtl_with_ltr_axis', 'incompatible', '۱۲۸۰' ),
+			array( 0, 'off', 'ltr_grid_without_axis', 'known_failure', '390' ),
+			array( 0, 'on', 'native_admin_mobile_scroll', 'known_failure', '390' ),
+			array( 1, 'off', 'rtl_column_order_without_axis', 'known_failure', '1280' ),
+			array( 1, 'on', 'rtl_with_ltr_axis', 'incompatible', '1280' ),
 		);
 		$admin = new PGR_Admin();
 		foreach ( $cases as $case ) {
