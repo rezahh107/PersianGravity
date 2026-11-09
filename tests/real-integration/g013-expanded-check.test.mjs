@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,claims,names,safeSummary} from './g013-expanded-check.mjs';
+import {validateReport,validateAll,claims,names,safeSummary} from './g013-expanded-check.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -80,4 +80,28 @@ test('real crop phase is a closed enum and cannot reflect private errors',()=>{
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     assert.ok(!safeSummary(tmp).includes('SECRET_RAW_BROWSER_PATH'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+});
+
+test('independent matched 24-scene gate rejects WITH_VAZIR-only document overflow',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-pair-overflow-'));
+  try{
+    for(const locale of ['fa_IR','en_US'])for(const withFont of [false,true]){
+      const k=(withFont?'with-vazir-':'baseline-')+locale;
+      const d=valid();d.profile=withFont?'WITH_VAZIR':'BASELINE';d.locale=locale;
+      for(const c of d.cases){
+        c.screenshot=k+'-'+c.name+'-'+c.width+'.jpg';
+        if(withFont&&locale==='fa_IR'){
+          c.font.hasVazir=true;c.font.loadedFace=true;
+        }
+      }
+      fs.writeFileSync(path.join(dir,k+'.json'),JSON.stringify(d));
+    }
+    assert.deepEqual(validateAll(dir,head,{files:false}),{profiles:4,scenarios:24});
+    const p=path.join(dir,'with-vazir-fa_IR.json');
+    const d=JSON.parse(fs.readFileSync(p,'utf8'));
+    d.cases.find(c=>c.name==='fup-crop'&&c.width===390).font.documentWidth=405;
+    fs.writeFileSync(p,JSON.stringify(d));
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: WITH_VAZIR-only document overflow/);
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

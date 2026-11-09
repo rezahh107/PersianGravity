@@ -47,7 +47,7 @@ export function validateReport(doc,key,head,{files=false,dir=null}={}){
     must(c.status==='PASS','scenario did not genuinely pass '+key+'/'+k);
     must(Array.isArray(c.observed)&&claims[c.name].every(x=>c.observed.includes(x)),
       'missing authentic interaction proof '+key+'/'+k);
-    must(isObj(c.font)&&Number.isFinite(c.font.documentWidth)&&
+    must(isObj(c.font)&&Number.isFinite(c.font.documentWidth)&&c.font.documentWidth>=1&&c.font.documentWidth<=200000&&
       typeof c.font.loadedFace==='boolean'&&typeof c.font.hasVazir==='boolean',
       'missing measured font '+key+'/'+k);
     if(key.startsWith('baseline-'))must(!c.font.loadedFace&&!c.font.hasVazir,
@@ -97,6 +97,8 @@ export function validateAll(dir,head,{files=true}={}){
     for(const c of b.cases){
       const other=v.cases.find(x=>caseKey(x)===caseKey(c));
       must(other,'missing paired browser scene');
+      must(!(other.font.documentWidth>c.width&&c.font.documentWidth<=c.width),
+        'WITH_VAZIR-only document overflow '+locale+'/'+caseKey(c));
       const o=new Map(other.geometry.map(x=>[x.id,x]));
       for(const old of c.geometry){
         const now=o.get(old.id);
