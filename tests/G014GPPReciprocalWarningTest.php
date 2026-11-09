@@ -22,6 +22,7 @@ final class G014GPPReciprocalWarningTest extends TestCase {
 		$GLOBALS['pgr_test_fired_actions']['plugins_loaded'] = 1;
 		$GLOBALS['pgr_test_fired_actions']['init'] = 1;
 		$GLOBALS['pgr_test_site_locale'] = 'fa_IR';
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
 		$GLOBALS['pgr_test_is_rtl'] = true;
 	}
 
@@ -195,5 +196,48 @@ final class G014GPPReciprocalWarningTest extends TestCase {
 		$this->gpp( 'on' );
 		$GLOBALS['pgr_test_gpp_response']['requested'] = 'unknown';
 		$this->assertSame( 'unknown', PGR_GPP_Inbox_RTL_Compatibility::facts()['compatibility'] );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_arabic_and_hebrew_rtl_admin_are_not_persian_evidence() {
+		$this->boot();
+		$this->admitted_host();
+		$this->fake_gpp();
+		$GLOBALS['pgr_test_site_locale'] = 'en_US';
+		$GLOBALS['pgr_test_is_rtl'] = true;
+		foreach ( array( 'ar', 'he_IL', 'ur' ) as $admin_locale ) {
+			$GLOBALS['pgr_test_locale'] = $admin_locale;
+			foreach ( array( 0, 1 ) as $pgr ) {
+				$GLOBALS['pgr_test_options']['pgr_settings'] = array( 'gravity_flow_inbox_rtl' => $pgr );
+				foreach ( array( 'off', 'on' ) as $gpp ) {
+					$this->gpp( $gpp );
+					$facts = PGR_GPP_Inbox_RTL_Compatibility::facts();
+					$this->assertSame( 'unknown', $facts['compatibility'], $admin_locale );
+					$this->assertSame( 'none', $facts['problem'], $admin_locale );
+					$this->assertSame( 'not_observed', $facts['grid_mode'] );
+				}
+			}
+		}
+		$GLOBALS['pgr_test_locale'] = 'fa_IR';
+		$GLOBALS['pgr_test_options']['pgr_settings'] = array( 'gravity_flow_inbox_rtl' => 1 );
+		$this->gpp( 'on' );
+		$this->assertSame( 'native_admin_mobile_touch', PGR_GPP_Inbox_RTL_Compatibility::facts()['problem'] );
+	}
+
+	#[RunInSeparateProcess]
+	#[PreserveGlobalState( false )]
+	public function test_persian_frontend_provenance_survives_non_persian_admin_locale() {
+		$this->boot();
+		$this->admitted_host();
+		$this->fake_gpp();
+		$GLOBALS['pgr_test_site_locale'] = 'fa_IR';
+		$GLOBALS['pgr_test_options']['pgr_settings'] = array( 'gravity_flow_inbox_rtl' => 1 );
+		$this->gpp( 'off' );
+		foreach ( array( 'en_US', 'ar', 'he_IL' ) as $admin_locale ) {
+			$GLOBALS['pgr_test_locale'] = $admin_locale;
+			$GLOBALS['pgr_test_is_rtl'] = true;
+			$this->assertSame( 'rtl_column_order_without_axis', PGR_GPP_Inbox_RTL_Compatibility::facts()['problem'] );
+		}
 	}
 }

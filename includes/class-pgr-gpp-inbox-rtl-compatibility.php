@@ -57,8 +57,9 @@ final class PGR_GPP_Inbox_RTL_Compatibility {
 	/**
 	 * Classify only actual pinned browser failure evidence.
 	 *
-	 * A request's is_rtl() controls Admin locale, get_locale() site Frontend
-	 * locale. Neither means the browser Grid has been observed.
+	 * determine_locale() identifies the effective Admin/request locale; get_locale()
+	 * identifies the site Frontend locale. Right-to-left direction alone is not
+	 * evidence of the qualified fa_IR Admin Grid. Neither observes the Grid.
 	 *
 	 * @return array<string,mixed>
 	 */
@@ -73,7 +74,7 @@ final class PGR_GPP_Inbox_RTL_Compatibility {
 			'supported' === $gpp['interface'] &&
 			in_array( $gpp['requested'], array( 'on', 'off' ), true ) ) {
 			$fa_frontend = 'fa_IR' === $site_locale;
-			$fa_admin    = true === $pgr['request_rtl'];
+			$fa_admin    = function_exists( 'determine_locale' ) && 'fa_IR' === determine_locale();
 
 			if ( 'on' === $pgr['requested'] && $fa_frontend ) {
 				$problem = 'on' === $gpp['effective'] ? 'rtl_with_ltr_axis' : 'rtl_column_order_without_axis';
