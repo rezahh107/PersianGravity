@@ -1537,6 +1537,8 @@ jobs:
               'paired browser measurements drift');
           }
           ok(pubPairKeys.size===36,'incomplete paired coverage');
+          ok(!pubPairs.some(p=>p.classification==='WITH_VAZIR_ONLY_OVERFLOW'),
+            'new Vazir-only document overflow');
           const pubNames=fs.readdirSync(dir),pubNamesExpected=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
           for(const p of profiles){pubNamesExpected.add(p+'.json');
             for(const w of widths)for(const n of screens)pubNamesExpected.add(p+'-'+n+'-'+w+'.jpg');
@@ -1662,6 +1664,10 @@ jobs:
                 'fabricated/inconsistent paired result '+k);
             }
           }
+          // This is a second independently recomputed overflow check, not
+          // acceptance solely because the source comparison self-reported PASS.
+          ok(!report.comparisons.some(p=>p.classification==='WITH_VAZIR_ONLY_OVERFLOW'),
+            'new Vazir-only document overflow');
           function jpegDimensions(bytes,name) {
             ok(bytes.length>=100 && bytes[0]===255 && bytes[1]===216, 'corrupt JPEG SOI '+name);
             let pos=2,frame=null,scan=false,ended=false;

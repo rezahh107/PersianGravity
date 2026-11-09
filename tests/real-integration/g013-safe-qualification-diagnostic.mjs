@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 // language is a closed enum; no raw browser/user/vendor text can reach Actions.
 const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
 const reasonCodes=[
+  [/new Vazir-only document overflow/, 'NEW_DOCUMENT_OVERFLOW'],
   [/missing or WITH_VAZIR-changed native Grid mode|unobserved or WITH_VAZIR-changed native Grid mode/, 'GRID_MODE_DIFFERENCE'],
   [/English native Grid control is not LTR/, 'ENGLISH_GRID_MODE'],
   [/profile database snapshots differ|environment drift|runtime environment drift/, 'PROFILE_ENVIRONMENT_DIFFERENCE'],

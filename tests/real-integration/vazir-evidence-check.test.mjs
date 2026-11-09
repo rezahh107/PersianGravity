@@ -42,7 +42,7 @@ function makeFixture() {
       const body={family:positive?'Vazirmatn, Arial':'Arial',direction:locale==='fa_IR'?'rtl':'ltr',
         width,height:800,weight:'400',overflowX:'visible'};
       const image=SCREENSHOTS.includes(name)?key+'-'+name+'-'+width+'.jpg':undefined;
-      pages.push({name,width,viewport:width,document_width:width+(withFont&&name==='settings'?12:0),
+      pages.push({name,width,viewport:width,document_width:width,
         direction:locale==='fa_IR'?'rtl':'ltr',body,headline:null,label:null,input:null,button:null,
         faces:positive?[{family:'Vazirmatn',weight:'400',status:'loaded'}]:[],
         font_network:positive?[{url:'vazirmatn-400.woff2',status:200}]:[],
@@ -120,6 +120,17 @@ expectReject('extra browser case',f=>{
 expectReject('fabricated comparison array with correct length',f=>{
   const d=read(f,'comparison.json');d.comparisons=Array(36).fill({...d.comparisons[0]});
   write(f,'comparison.json',d);
+});
+expectReject('genuine newly induced Vazir-only document overflow is review-required, not PASS',f=>{
+  const name='with-vazir-fa_IR',d=read(f,name+'.json');
+  const p=d.pages.find(x=>x.name==='settings'&&x.width===390);
+  p.document_width=402;
+  write(f,name+'.json',d);
+  const report=read(f,'comparison.json');
+  const pair=report.comparisons.find(x=>x.locale==='fa_IR'&&x.page==='settings'&&x.width===390);
+  pair.with_vazir_document_width=402;
+  pair.classification='WITH_VAZIR_ONLY_OVERFLOW';
+  write(f,'comparison.json',report);
 });
 expectReject('changed classification inconsistent with numbers',f=>{
   const d=read(f,'comparison.json');d.comparisons[0].classification='PRESENT_IN_BOTH';

@@ -207,6 +207,10 @@ export function validateEvidence(dir,head,{comparison=true,files=true}={}) {
   expect(new Set([...docs.values()].map(d=>d.environment.db_snapshot_sha256)).size===1,
     'profile database snapshots differ');
   const expected=expectedPairs(docs);
+  // A new Vazir-only page-level horizontal overflow is not a harmless font
+  // change: require review, never silently promote a paired PASS.
+  expect(!expected.some(p=>p.classification==='WITH_VAZIR_ONLY_OVERFLOW'),
+    'new Vazir-only document overflow');
   if(comparison) {
     const report=read(dir,'comparison.json');
     expect(record(report) && report.schema==='g013-vazir-compare-v1' &&
