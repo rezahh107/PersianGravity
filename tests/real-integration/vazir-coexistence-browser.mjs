@@ -95,6 +95,10 @@ try {
         await page.locator(fileRoot+' .gpfup__filename').first().waitFor({state:'visible',timeout:15000});
         const search=page.locator(selectRoot+' .ts-control input').first();
         await search.focus();
+        // The previous .ts-control count() checked existence, not focus.
+        // Verify that an actual editable control received keyboard focus.
+        const focusedBefore=await search.evaluate(el=>document.activeElement===el);
+        if(!focusedBefore)throw Error('Advanced Select did not receive focus');
         await search.fill('');
         await search.pressSequentially('Beta');
         await page.locator(selectRoot+' .ts-dropdown .option:visible').first().waitFor({timeout:10000});
@@ -102,9 +106,16 @@ try {
         await page.keyboard.press('Enter');
         const selected=await page.locator('#input_'+formId+'_'+selectId).inputValue();
         if(!selected)throw Error('Advanced Select interaction did not synchronize native value');
+        // Pressing ArrowDown/Enter must not strand focus outside Tom Select.
+        const focusedAfter=await page.evaluate(selector=>{
+          const root=document.querySelector(selector);
+          return Boolean(root&&root.contains(document.activeElement)&&
+            getComputedStyle(document.activeElement).visibility!=='hidden');
+        },selectRoot+' .ts-wrapper');
+        if(!focusedAfter)throw Error('Advanced Select lost focus after keyboard selection');
         interaction={type:'authentic-file-upload-and-tom-select',
           file_preview:true,selected_value: selected ? 'NONEMPTY' : 'EMPTY',
-          focus_verified:await page.locator(selectRoot+' .ts-control').count()>0};
+          focus_verified:focusedBefore&&focusedAfter};
       }
       if(['gravity-flow','flow-frontend'].includes(spec.name)) {
         // A visible shell does not prove AG Grid initialization completed.

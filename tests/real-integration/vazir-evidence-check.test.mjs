@@ -514,6 +514,19 @@ expectReject('pinned Gravity Forms version mixed with unapproved text',f=>{
  d.environment.gravity={gravityforms:'3.1.1.1 SENSITIVE_TOKEN_MARKER_20261105'};
  write(f,key+'.json',d);
 });
+test('G013 keyboard focus oracle checks actual activeElement, not a surviving Tom Select wrapper',()=>{
+  const producer=fs.readFileSync(new URL('./vazir-coexistence-browser.mjs',import.meta.url),'utf8');
+  assert.match(producer,/document\.activeElement===el/);
+  assert.match(producer,/root\.contains\(document\.activeElement\)/);
+  assert.doesNotMatch(producer,/focus_verified:\s*await\s+page\.locator\([^\n]*\.count\(\)/);
+});
+expectReject('forged Advanced Select focus result cannot pass both evidence boundaries',f=>{
+  const key='with-vazir-fa_IR',d=read(f,key+'.json');
+  const p=d.pages.find(p=>p.name==='gravityperks'&&p.width===390);
+  p.interaction={type:'authentic-file-upload-and-tom-select',
+    file_preview:true,selected_value:'NONEMPTY',focus_verified:false};
+  write(f,key+'.json',d);
+});
 expectReject('unapproved activeElement tag',f=>{
  const key='baseline-en_US',d=read(f,key+'.json');
  d.pages[0].active_control='HIDDENTOKEN1234';write(f,key+'.json',d);
