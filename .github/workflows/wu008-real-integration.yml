@@ -1187,6 +1187,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check tests/real-integration/vazir-coexistence-browser.mjs
+          node --check tests/real-integration/g013-expanded-browser.mjs
+          php -l tests/real-integration/g013-extended-fixture.php
           node --check tests/real-integration/vazir-evidence-check.mjs
           node --check tests/real-integration/vazir-release-verify.mjs
           node --test tests/real-integration/vazir-release-verify.test.mjs

@@ -9,6 +9,8 @@ mkdir -p "$evidence_dir" "$WU008_PACKAGE_DIR"
 # Fail closed, but disclose only a fixed phase enum in the Actions summary.
 phase() { printf '%s\n' "$1" > "$WU008_PACKAGE_DIR/g013-stage"; }
 phase PRECHECK
+wp eval-file tests/real-integration/g013-extended-fixture.php
+test -s "$WU008_ARTIFACT_DIR/g013-extended-fixture.json"
 snapshot="$WU008_PACKAGE_DIR/g013-isolated-baseline.sql"
 uploads="$WU008_PACKAGE_DIR/g013-isolated-uploads.tar"
 test ! -e "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
@@ -92,6 +94,7 @@ for locale in fa_IR en_US; do
   restore_profile "$locale"
   test ! -d "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
   node tests/real-integration/vazir-coexistence-browser.mjs BASELINE "$locale"
+  node tests/real-integration/g013-expanded-browser.mjs BASELINE "$locale"
 done
 phase RELEASE_DOWNLOAD
 release=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
@@ -133,6 +136,7 @@ for locale in fa_IR en_US; do
     cmp "$settings_file" "$evidence_dir/vazir-settings.json"
   fi
   node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR "$locale"
+  node tests/real-integration/g013-expanded-browser.mjs WITH_VAZIR "$locale"
 done
 phase PAIR_COMPARISON
 node tests/real-integration/vazir-evidence-check.mjs "$evidence_dir" compare
