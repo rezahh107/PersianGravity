@@ -106,9 +106,9 @@ export function validateAll(dir,head,{files=true}={}){
 }
 export function safeSummary(dir){
   return profiles.map(key=>{
-    let kind='NOT_CAPTURED';
+    let kind='NOT_CAPTURED',d=null;
     try{
-      const d=JSON.parse(fs.readFileSync(path.join(dir,key+'.json'),'utf8'));
+      d=JSON.parse(fs.readFileSync(path.join(dir,key+'.json'),'utf8'));
       if(d.schema==='g013-extended-browser-v1'&&Array.isArray(d.cases)){
         const v=d.cases.map(x=>x.status);
         kind=d.status==='PASS'&&v.length===6&&v.every(x=>x==='PASS')?'PASS':
