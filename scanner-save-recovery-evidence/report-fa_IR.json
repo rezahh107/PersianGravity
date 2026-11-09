@@ -1,0 +1,202 @@
+{
+  "evidence_class": "AUTHENTIC_SCANNER_SAVE_RECOVERY",
+  "head": "0aeae9802f62bc626282f252a4d17b1364f3f9a3",
+  "mode": "repaired",
+  "locale": "fa_IR",
+  "wordpress": "6.8.3",
+  "gravityforms": "3.1.1.1",
+  "scenarios": [
+    {
+      "name": "invalid_create_after",
+      "registry_before": "85e5a0f368b489efd2a76875b49eac54090bc44489f1d504ea1f2aead3bc8c06",
+      "registry_after": "85e5a0f368b489efd2a76875b49eac54090bc44489f1d504ea1f2aead3bc8c06",
+      "gf_mapping_unchanged": true,
+      "observed": "INLINE_EDITABLE_RETAINED_VALUES_AND_ERROR"
+    },
+    {
+      "name": "corrected_create_retry",
+      "registry_before": "85e5a0f368b489efd2a76875b49eac54090bc44489f1d504ea1f2aead3bc8c06",
+      "registry_after": "8021d5b37dce1fc3fc54d2806d35b1d511c77498c9c62a6b302179416be34113",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_SAVED"
+    },
+    {
+      "name": "invalid_edit_retention",
+      "registry_before": "8021d5b37dce1fc3fc54d2806d35b1d511c77498c9c62a6b302179416be34113",
+      "registry_after": "8021d5b37dce1fc3fc54d2806d35b1d511c77498c9c62a6b302179416be34113",
+      "gf_mapping_unchanged": true,
+      "observed": "IMMUTABLE_CONTRACT_REJECTED_WITH_EDITABLE_VALUES"
+    },
+    {
+      "name": "corrected_edit_retry",
+      "registry_before": "8021d5b37dce1fc3fc54d2806d35b1d511c77498c9c62a6b302179416be34113",
+      "registry_after": "1a7da73ba216fb2ad49b066b3d6f6049343ebf22fe0032e0c5de6701d50b36bd",
+      "gf_mapping_unchanged": true,
+      "observed": "RETRY_EDIT_SAVED"
+    },
+    {
+      "name": "mismatched_edit_id_retains_original_identity",
+      "registry_before": "1a7da73ba216fb2ad49b066b3d6f6049343ebf22fe0032e0c5de6701d50b36bd",
+      "registry_after": "1a7da73ba216fb2ad49b066b3d6f6049343ebf22fe0032e0c5de6701d50b36bd",
+      "gf_mapping_unchanged": true,
+      "observed": "REJECTED_IMMUTABLE_ID_RESTORED_ORIGINAL_EDIT_ID_REVISION_AND_INCARNATION"
+    },
+    {
+      "name": "mismatched_edit_id_corrected_retry",
+      "registry_before": "1a7da73ba216fb2ad49b066b3d6f6049343ebf22fe0032e0c5de6701d50b36bd",
+      "registry_after": "e5df5815a4ffdc72b8de97f90da871a633eea5aa7a6a1da2dc2771fa75585c42",
+      "gf_mapping_unchanged": true,
+      "observed": "ORIGINAL_PROFILE_EDIT_ONLY_REVISION_INCREMENTED_ONCE"
+    },
+    {
+      "name": "stale_edit_conflict",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "REFUSED_STALE_CAS_SAVED_NEWER_VERSION_UNCHANGED"
+    },
+    {
+      "name": "controlled_write_failure",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "PRE_UPDATE_FILTER_REJECTED_WRITE_AND_FORM_RETAINED"
+    },
+    {
+      "name": "cancel_create_1280",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"pointer GET\",\"tabIndex\":0,\"label\":\"لغو بدون ذخیره\",\"direction\":\"rtl\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":1280,\"viewportWidth\":1280}"
+    },
+    {
+      "name": "cancel_create_390",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"tabIndex\":0,\"label\":\"لغو بدون ذخیره\",\"direction\":\"rtl\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":390,\"viewportWidth\":390}"
+    },
+    {
+      "name": "cancel_create_320",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"tabIndex\":0,\"label\":\"لغو بدون ذخیره\",\"direction\":\"rtl\",\"dpr\":1,\"zoom\":1,\"scrollWidth\":320,\"viewportWidth\":320}"
+    },
+    {
+      "name": "cancel_edit_1280",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":1280,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    },
+    {
+      "name": "cancel_edit_390",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":390,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    },
+    {
+      "name": "cancel_edit_320",
+      "registry_before": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "registry_after": "b992295ba5e9b1788466c0ed9ba34ee2383c15da3898929bbd92ad5f525ba1cd",
+      "gf_mapping_unchanged": true,
+      "observed": "{\"method\":\"keyboard Enter GET\",\"width\":320,\"originalId\":\"wu008_ui_long_label\",\"protectedIdentityPreserved\":true}"
+    }
+  ],
+  "persisting_registry_data": "DISPOSABLE_WU008_ONLY",
+  "screenshots": [
+    {
+      "filename": "fa_IR-after-invalid-create-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-create-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-invalid-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-immutable-id-mismatch-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-immutable-id-mismatch-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-immutable-id-mismatch-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-stale-edit-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-1280.png",
+      "width": 1280,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-390.png",
+      "width": 390,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    },
+    {
+      "filename": "fa_IR-after-write-failure-320.png",
+      "width": 320,
+      "direction": "rtl",
+      "horizontalOverflow": false
+    }
+  ],
+  "status": "PASS"
+}
