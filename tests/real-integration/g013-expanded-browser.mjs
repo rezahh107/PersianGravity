@@ -117,8 +117,10 @@ async function crop(page,entry){
   const text=page.locator('#input_'+id+'_2');
   await page.locator(root+' .gpfup__droparea').waitFor({state:'visible',timeout:15000});
   await text.waitFor({state:'visible'});
+  entry.stage='CROP_PAGE_READY';
   const input=page.locator(root+' input[type=file]').first();
   const portal='#gpfup-cropper-portal-'+id+'-1';
+  entry.stage='PORTAL_LOOKUP';
   guard(await page.locator(portal).count()===1,'Authentic FUP crop portal absent');
   const image=await page.evaluate(()=>{
     const canvas=document.createElement('canvas');
@@ -129,40 +131,54 @@ async function crop(page,entry){
     return canvas.toDataURL('image/png').split(',')[1];
   });
   const source={name:'g013-disposable.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')};
+  entry.stage='IMAGE_PREPARED';
   async function open(){
+    entry.stage='MODAL_OPENING';
     await input.setInputFiles(source);
     const modal=page.locator(portal+' .cropper__lightbox');
     await modal.waitFor({state:'visible',timeout:20000});
+    entry.stage='CROP_MODAL_SHOWN';
     await page.locator(portal+' .vue-advanced-cropper').first().waitFor({state:'visible',timeout:15000});
+    entry.stage='CROPPER_RENDERED';
     const cancel=page.locator(portal+' button.gpfup__cancel');
     const save=page.locator(portal+' button.gpfup__crop');
     await cancel.waitFor({state:'visible'});
     await save.waitFor({state:'visible'});
+    entry.stage='ACTIONS_VISIBLE';
     const cg=await measure(page,portal+' button.gpfup__cancel');
     const sg=await measure(page,portal+' button.gpfup__crop');
     guard(isOnscreen(cg)&&isOnscreen(sg),'Cropper action clipped at viewport');
+    entry.stage='ACTIONS_REACHABLE';
     entry.geometry.push({id:'crop_cancel',...cg},{id:'crop_save',...sg});
     return {modal,cancel,save};
   }
   let controls=await open();
+  entry.stage='ESCAPE_DISMISS';
   await page.keyboard.press('Escape');
   await controls.modal.waitFor({state:'hidden',timeout:12000});
+  entry.stage='ESCAPE_CLOSED';
   await page.locator(root+' .gpfup__filename').first().waitFor({state:'detached',timeout:20000}).catch(async()=>{
     guard(await page.locator(root+' .gpfup__filename').count()===0,'Canceled crop was not discarded');
   });
   entry.observed.push('REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS');
+  entry.stage='CROP_RETRY';
   controls=await open();
+  entry.stage='CROP_SAVE';
   await controls.save.click();
   await controls.modal.waitFor({state:'hidden',timeout:15000});
   await page.locator(root+' .gpfup__progress-container').first().waitFor({state:'hidden',timeout:40000});
+  entry.stage='UPLOAD_COMPLETE';
   await page.locator(root+' .gpfup__filename').first().waitFor({state:'visible',timeout:20000});
+  entry.stage='FILE_VISIBLE';
   guard((await page.locator(root+' .gpfup__filename').first().innerText()).includes('g013-disposable.png'),
     'Genuine cropped upload filename missing');
+  entry.stage='REEDIT_OPENING';
   await page.locator(root+' .gpfup__edit').first().click();
   await page.locator(portal+' .cropper__lightbox').waitFor({state:'visible',timeout:12000});
   await page.locator(portal+' button.gpfup__cancel').click();
   await page.locator(portal+' .cropper__lightbox').waitFor({state:'hidden',timeout:12000});
   entry.observed.push('REAL_CROP_SAVED_AND_UPLOADED','RERENDERED_PREVIEW_REEDIT');
+  entry.stage='VALIDATION_SUBMIT';
   guard((await text.inputValue())==='','G013 real invalid-control text already nonempty');
   await page.locator('#gform_submit_button_'+id).click();
   const validation=page.locator('#field_'+id+'_2.gfield_error,#gform_wrapper_'+id+' .gform_validation_errors');
@@ -170,6 +186,7 @@ async function crop(page,entry){
   guard(await page.locator(root+' .gpfup__filename').count()>0,
     'Cropped image did not survive real validation rerender');
   entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
+  entry.stage='VALIDATION_RERENDERED';
 }
 async function editor(page,entry){
   await goto(page,fixture.editor_url);

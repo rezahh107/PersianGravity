@@ -4,6 +4,13 @@ import path from 'node:path';
 export const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
 export const names=['perks-admin','fup-crop','gv-block-editor'];
 export const widths=[1280,390];
+const allowedCropStages=new Set([
+  'CROP_PAGE_READY','PORTAL_LOOKUP','IMAGE_PREPARED','MODAL_OPENING',
+  'CROP_MODAL_SHOWN','CROPPER_RENDERED','ACTIONS_VISIBLE','ACTIONS_REACHABLE',
+  'ESCAPE_DISMISS','ESCAPE_CLOSED','CROP_RETRY','CROP_SAVE',
+  'UPLOAD_COMPLETE','FILE_VISIBLE','REEDIT_OPENING','VALIDATION_SUBMIT',
+  'VALIDATION_RERENDERED'
+]);
 export const claims={
   'perks-admin':['REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED'],
   'fup-crop':['REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS',
@@ -117,7 +124,8 @@ export function safeSummary(dir){
     }catch{}
     const failed=d?.cases?.find?.(c=>isObj(c)&&names.includes(c.name)&&widths.includes(c.width)&&c.status!=='PASS');
     const bounded=failed?'@'+failed.name+'-'+failed.width:'';
-    return key+'='+kind+bounded;
+    const stage=failed?.name==='fup-crop'&&allowedCropStages.has(failed?.stage)?':'+failed.stage:'';
+    return key+'='+kind+bounded+stage;
   }).join(' ');
 }
 if(import.meta.url===new URL('file://'+process.argv[1]).href){

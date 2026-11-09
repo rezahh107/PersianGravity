@@ -59,9 +59,25 @@ test('sanitized failure output exposes only an allowlisted scenario identity',()
   try{
     const d=valid();d.status='NOT_PROVEN';d.cases[0].status='NOT_PROVEN';
     d.cases[0].observed=['secret-token-never-print'];
+    d.cases[0].stage='UNTRUSTED_OR_SENSITIVE_VALUE';
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const line=safeSummary(tmp);
     assert.match(line,/baseline-fa_IR=NOT_PROVEN@perks-admin-1280/);
     assert.ok(!line.includes('secret-token-never-print'));
+  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+});
+
+test('real crop phase is a closed enum and cannot reflect private errors',()=>{
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'g013-crop-safe-'));
+  try{
+    const d=valid();d.status='NOT_PROVEN';d.cases[2].status='NOT_PROVEN';
+    d.cases[2].stage='PORTAL_LOOKUP';d.cases[2].failure_class='token-secret-must-not-print';
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    const line=safeSummary(tmp);
+    assert.match(line,/baseline-fa_IR=NOT_PROVEN@fup-crop-1280:PORTAL_LOOKUP/);
+    assert.ok(!line.includes('token-secret-must-not-print'));
+    d.cases[2].stage='SECRET_RAW_BROWSER_PATH';
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    assert.ok(!safeSummary(tmp).includes('SECRET_RAW_BROWSER_PATH'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 });
