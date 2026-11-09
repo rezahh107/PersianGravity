@@ -1745,11 +1745,17 @@ jobs:
             esac
           fi
           if (( qualification_rc != 0 )); then
-            # The checked-out diagnostic prints only a closed enum and four
-            # exact profile statuses; its original log never leaves the runner.
-            node tests/real-integration/g013-safe-qualification-diagnostic.mjs \
-              "$private_dir/diagnostics.log" 2>>"$private_dir/diagnostics.log" \
-              | tee -a "$GITHUB_STEP_SUMMARY"
+            # Optional diagnostics cannot change the original qualification
+            # exit code. Capture first, publish only a complete allowlisted
+            # one-line summary, and never print the private failure log.
+            safe_result="$private_dir/g013-safe-result.txt"
+            if node tests/real-integration/g013-safe-qualification-diagnostic.mjs \
+              "$private_dir/diagnostics.log" >"$safe_result" 2>>"$private_dir/diagnostics.log"; then
+              if [[ "$(wc -l < "$safe_result")" -eq 1 ]] &&
+                grep -Eq '^G013 safe_diagnostic=[A-Z_]+ captured_profiles=[0-4]/4 baseline-fa_IR=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) baseline-en_US=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) with-vazir-fa_IR=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) with-vazir-en_US=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)$' "$safe_result"; then
+                cat "$safe_result" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
+            fi
           fi
           exit "$qualification_rc"
 
