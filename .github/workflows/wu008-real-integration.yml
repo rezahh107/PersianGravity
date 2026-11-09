@@ -1290,6 +1290,7 @@ jobs:
           const pubFamilies=new Set(['vazirmatn','tahoma','arial','sans-serif','serif','monospace',
             'times new roman','-apple-system','blinkmacsystemfont','segoe ui',
             'roboto','oxygen-sans','ubuntu','cantarell','helvetica neue','inter',
+            'noto sans','liberation sans',
             'gflow-icons-common','dashicons','fontawesome','font awesome 5 free','material icons','system-ui']);
           const pubFamily=(s,label)=>{
             pubText(s,label,/^[a-zA-Z0-9 _.,'"()\-]+$/);

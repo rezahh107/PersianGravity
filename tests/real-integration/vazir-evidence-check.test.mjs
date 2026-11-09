@@ -305,6 +305,25 @@ expectReject('additional sensitive marker in official release JSON rejected',f=>
   const d=read(f,'official-release.json');d.private_key='SENSITIVE_MARKER_DO_NOT_PUBLISH';
   write(f,'official-release.json',d);
 });
+test('exact v1.5.0 Vazir default CSS fallback stack is admissible at both independent boundaries',()=>{
+  const f=makeFixture();
+  try {
+    const name='with-vazir-fa_IR';
+    const d=read(f,name+'.json');
+    d.pages.find(p=>p.name==='overview'&&p.width===1280).body.family=
+      "'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif";
+    write(f,name+'.json',d);
+    writeComparison(f.dir,HEAD);
+    assert.equal(validateEvidence(f.dir,HEAD).length,36);
+    const published=publish(f);
+    assert.equal(published.status,0,published.stderr);
+  }finally{remove(f);}
+});
+expectReject('unattributed custom CSS font stays rejected after pinned fallback admission',f=>{
+  const name='with-vazir-fa_IR',d=read(f,name+'.json');
+  d.pages[0].body.family="'Vazirmatn', UnattributedCustomFamily, Arial";
+  write(f,name+'.json',d);
+});
 expectReject('unsafe free-text font family in complete profile rejected',f=>{
   const key='baseline-en_US',d=read(f,key+'.json');
   d.pages[0].body.family='Arial; token=SENSITIVE_MARKER_DO_NOT_PUBLISH';write(f,key+'.json',d);

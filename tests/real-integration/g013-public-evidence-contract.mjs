@@ -53,6 +53,8 @@ const allowedFamilies = new Set([
   'vazirmatn','tahoma','arial','sans-serif','serif','monospace',
   'times new roman','-apple-system','blinkmacsystemfont','segoe ui',
   'roboto','oxygen-sans','ubuntu','cantarell','helvetica neue','inter',
+  // Exact released Vazir v1.5.0 default font stack fallback identities.
+  'noto sans','liberation sans',
   'gflow-icons-common','dashicons','fontawesome','font awesome 5 free',
   'material icons','system-ui'
 ]);
