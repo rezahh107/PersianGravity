@@ -81,8 +81,10 @@ export function inspectCropSurfaceInPage({formId,fieldId}){
 export function classifyCropSurface(o){
   if(!o||o.initialized!==true)return 'CROP_UNINITIALIZED';
   if(o.required!==true)return 'CROP_NOT_REQUIRED';
-  if(o.mountCount!==1||o.targetConnected!==true)return 'CROP_MOUNT_UNAVAILABLE';
+  if(o.mountCount!==1)return 'CROP_MOUNT_UNAVAILABLE';
+  // target-slim legitimately has no element root until the modal is open.
   if(!Number.isInteger(o.activeCount)||o.activeCount===0)return 'CROP_MODAL_ABSENT';
+  if(o.targetConnected!==true)return 'CROP_MOUNT_UNAVAILABLE';
   if(o.activeCount!==1)return 'CROP_MODAL_DUPLICATE';
   if(o.ownerMatched!==true)return 'CROP_WRONG_FIELD';
   if(o.cropperVisible!==true)return 'CROP_SURFACE_HIDDEN';
@@ -90,6 +92,16 @@ export function classifyCropSurface(o){
   return 'READY';
 }
 
+/** Verify the authoritative Gravity Forms completed-upload hidden field. */
+export function classifyNativeUpload(state,expected){
+  if(!state||state.present!==true||!Number.isInteger(state.count)||state.count<0)
+    return 'UPLOAD_INPUT_INVALID';
+  if(expected==='EMPTY')
+    return state.count===0?'PASS':'CANCEL_STILL_UPLOADED';
+  if(expected==='CONFIRMED')
+    return state.count===1&&state.confirmed===true?'PASS':'UPLOAD_UNCONFIRMED';
+  return 'UPLOAD_EXPECTATION_INVALID';
+}
 export const claims={
   'perks-admin':['REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED'],
   'fup-crop':['REAL_MULTI_FIELD_MODAL_ISOLATION','CANCEL_BUTTON_DISCARDS',

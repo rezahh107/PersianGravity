@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
-import { classifyPortalProbe, inspectCropSurfaceInPage, classifyCropSurface } from './g013-expanded-check.mjs';
+import { classifyPortalProbe, inspectCropSurfaceInPage, classifyCropSurface, classifyNativeUpload } from './g013-expanded-check.mjs';
 
 const profile=process.argv[2], locale=process.argv[3];
 if(!['BASELINE','WITH_VAZIR'].includes(profile)||!['fa_IR','en_US'].includes(locale))
@@ -192,12 +192,29 @@ async function crop(page,entry){
     return classifyCropSurface(await page.evaluate(inspectCropSurfaceInPage,
       {formId:id,fieldId}));
   }
+  async function uploaded(fieldId){
+    // GF 3.1.1.1 writes this field only after a server-acknowledged upload.
+    // Report counts/booleans only, never stored paths, URLs or file names.
+    return page.evaluate(({formId,fieldId})=>{
+      const el=document.querySelector('#gform_uploaded_files_'+formId);
+      if(!el)return {present:false,count:-1,confirmed:false};
+      try{
+        const data=JSON.parse(el.value||'{}');
+        const list=data['input_'+fieldId];
+        const valid=Array.isArray(list)?list:[];
+        return {present:true,count:valid.length,confirmed:valid.some(f=>
+          f&&typeof f.uploaded_filename==='string'&&f.uploaded_filename.length>0)};
+      }catch{return {present:true,count:-1,confirmed:false};}
+    },{formId:id,fieldId});
+  }
   async function checkClosed(fieldId){
     await page.locator('.cropper__lightbox:visible').first().waitFor({state:'hidden',timeout:12000});
     guard((await page.locator('.cropper__lightbox:visible').count())===0,
       'Cropper still visible after dismissal');
     guard((await page.locator('#field_'+id+'_'+fieldId+' .gpfup__filename').count())===0,
       'Canceled required crop was uploaded');
+    guard(classifyNativeUpload(await uploaded(fieldId),'EMPTY')==='PASS',
+      'Canceled required crop still has authoritative GF uploaded-file record');
   }
   async function verifyOpen(fieldId){
     const modal=page.locator('.cropper__lightbox:visible');
@@ -281,6 +298,8 @@ async function crop(page,entry){
   entry.stage='FILE_VISIBLE';
   guard((await page.locator(root+' .gpfup__filename').first().innerText()).includes('g013-disposable.png'),
     'Genuine cropped upload filename missing');
+  guard(classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS',
+    'Genuine upload was not confirmed by native GF uploaded-files state');
   entry.stage='REEDIT_OPENING';
   await page.locator(root+' .gpfup__edit').first().click();
   let reedit=await verifyOpen(1);
@@ -296,6 +315,8 @@ async function crop(page,entry){
   await validation.first().waitFor({state:'visible',timeout:20000});
   guard(await page.locator(root+' .gpfup__filename').count()>0,
     'Cropped image did not survive real validation rerender');
+  guard(classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS',
+    'Native GF record did not survive validation rerender');
   entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
   // Re-edit after the genuine server validation rerender, not just before it.
   await page.locator(root+' .gpfup__edit').first().click();
@@ -304,6 +325,8 @@ async function crop(page,entry){
   await reedit.modal.waitFor({state:'hidden',timeout:12000});
   guard(await page.locator(root+' .gpfup__filename').count()>0,
     'Post-validation reedit lost the saved image');
+  guard(classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS',
+    'Post-validation reedit lost native GF upload confirmation');
   entry.stage='VALIDATION_RERENDERED';
 }
 async function editor(page,entry){

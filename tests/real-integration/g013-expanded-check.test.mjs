@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe,classifyCropSurface} from './g013-expanded-check.mjs';
+import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe,classifyCropSurface,classifyNativeUpload} from './g013-expanded-check.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -160,4 +160,23 @@ test('crop report validator rejects missing two-field and Cancel-button proof',(
     d.cases[2].observed=d.cases[2].observed.filter(x=>x!==missing);
     assert.throws(()=>validateReport(d,key,head),/G013_EXTENDED_EVIDENCE_REJECTED/);
   }
+});
+
+test('unopened target-slim portal has no modal without requiring an element root',()=>{
+  const pre={initialized:true,required:true,mountCount:1,targetConnected:false,
+    activeCount:0,ownerMatched:false,cropperVisible:false,
+    cancelAccessible:false,saveAccessible:false};
+  assert.equal(classifyCropSurface(pre),'CROP_MODAL_ABSENT');
+});
+test('native upload proof rejects failed cancellation, failed upload and lost validation file',()=>{
+  assert.equal(classifyNativeUpload({present:true,count:0,confirmed:false},'EMPTY'),'PASS');
+  assert.equal(classifyNativeUpload({present:true,count:1,confirmed:true},'CONFIRMED'),'PASS');
+  assert.equal(classifyNativeUpload({present:true,count:1,confirmed:true},'EMPTY'),
+    'CANCEL_STILL_UPLOADED');
+  assert.equal(classifyNativeUpload({present:true,count:0,confirmed:false},'CONFIRMED'),
+    'UPLOAD_UNCONFIRMED');
+  assert.equal(classifyNativeUpload({present:true,count:1,confirmed:false},'CONFIRMED'),
+    'UPLOAD_UNCONFIRMED');
+  assert.equal(classifyNativeUpload({present:false,count:-1,confirmed:false},'CONFIRMED'),
+    'UPLOAD_INPUT_INVALID');
 });
