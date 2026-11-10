@@ -127,7 +127,8 @@ const permittedStages=['CROP_SAVE_CANVAS_UNREADY_AT_CLICK','CROP_SAVE_CANVAS_UNR
   'CROP_SAVE_MORE_FILES_PENDING','CROP_SAVE_UNRESOLVED',
   'CROP_SAVE_MODAL_WAIT','UPLOAD_PROGRESS_WAIT','UPLOAD_FILE_WAIT','UPLOAD_FILE_NAME_CHECK',
   'UPLOAD_NATIVE_CHECK','UPLOAD_COMPLETE','FILE_VISIBLE','REEDIT_OPENING',
-  'VALIDATION_SUBMIT','VALIDATION_RERENDERED'];
+  'VALIDATION_SUBMIT','VALIDATION_RERENDERED','VALIDATION_TEXT_PRECHECK',
+  'VALIDATION_CLICK','VALIDATION_ERROR_WAIT','VALIDATION_PREVIEW_CHECK','VALIDATION_NATIVE_CHECK'];
 const stage=permittedStages.includes(item?.stage)?item.stage:'OTHER';
 const observed=Array.isArray(item?.observed)?item.observed:[];
 const failure= ['WAIT_OR_UNAVAILABLE','UNSATISFIED_REAL_BEHAVIOR'].includes(item?.failure_class)?
@@ -156,7 +157,11 @@ console.log('G013_AB_SAFE mode='+mode+' outcome='+status+
   ' editAfterHover='+bool(d.editVisibleAfterHover)+
   ' postEditPresent='+bool(d.postValidationEditPresent)+
   ' postEditBeforeHover='+bool(d.postValidationEditVisibleBeforeHover)+
-  ' postEditAfterHover='+bool(d.postValidationEditVisibleAfterHover));
+  ' postEditAfterHover='+bool(d.postValidationEditVisibleAfterHover)+
+  ' inputEmpty='+bool(d.validationTextEmpty)+
+  ' errorVisible='+bool(d.validationErrorVisible)+
+  ' previewPresent='+bool(d.validationPreviewPresent)+
+  ' nativeAfterValidation='+bool(d.validationNativeValid));
 G013_AB_SAFE_GATE
   done
   restore_profile fa_IR
