@@ -187,6 +187,7 @@ async function crop(page,entry){
   entry.stage='IMAGE_PREPARED';
   const siblings='#field_'+id+'_3';
   const siblingInput=page.locator(siblings+' input[type=file]').first();
+  entry.stage='SIBLING_INPUT_WAIT';
   await page.locator(siblings+' .gpfup__droparea').waitFor({state:'visible',timeout:15000});
   async function inspect(fieldId){
     return classifyCropSurface(await page.evaluate(inspectCropSurfaceInPage,
@@ -217,16 +218,22 @@ async function crop(page,entry){
       'Canceled required crop still has authoritative GF uploaded-file record');
   }
   async function verifyOpen(fieldId){
+    const which=fieldId===3?'SIBLING':'PRIMARY';
     const modal=page.locator('.cropper__lightbox:visible');
+    entry.stage=which+'_MODAL_WAIT';
     await modal.first().waitFor({state:'visible',timeout:20000});
+    entry.stage=which+'_MODAL_VISIBLE';
     // This is the real Vue-mounted modal; the original portal ID is never used.
     // Multiple active modals fail before any first()/nth() can disguise them.
     guard((await modal.count())===1,'More than one active Crop modal');
+    entry.stage=which+'_CROPPER_WAIT';
     await modal.locator('.vue-advanced-cropper').waitFor({state:'visible',timeout:15000});
+    entry.stage=which+'_ACTIONS_WAIT';
     const cancel=modal.locator('button.gpfup__cancel');
     const save=modal.locator('button.gpfup__crop');
     await cancel.waitFor({state:'visible'});
     await save.waitFor({state:'visible'});
+    entry.stage=which+'_OWNER_CHECK';
     const outcome=await inspect(fieldId);
     guard(outcome==='READY','Wrong/incomplete real Cropper: '+outcome);
     const cg=await measure(page,'.cropper__lightbox:visible button.gpfup__cancel');
@@ -239,6 +246,7 @@ async function crop(page,entry){
   // be accepted as field 1. No vendor code or live site state is modified.
   entry.stage='MODAL_OPENING';
   guard((await inspect(1))==='CROP_MODAL_ABSENT','Missing-modal negative control failed');
+  entry.stage='SIBLING_SELECT_FILE';
   await siblingInput.setInputFiles(source);
   const sibling=await verifyOpen(3);
   guard((await inspect(1))==='CROP_WRONG_FIELD',
@@ -265,7 +273,7 @@ async function crop(page,entry){
   entry.observed.push('REAL_MULTI_FIELD_MODAL_ISOLATION');
 
   async function open(){
-    entry.stage='MODAL_OPENING';
+    entry.stage='PRIMARY_SELECT_FILE';
     await input.setInputFiles(source);
     const controls=await verifyOpen(1);
     entry.stage='CROP_MODAL_SHOWN';

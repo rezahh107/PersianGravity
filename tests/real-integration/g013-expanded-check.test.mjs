@@ -186,3 +186,18 @@ test('native upload proof rejects failed cancellation, failed upload and lost va
   assert.equal(classifyNativeUpload({present:false,count:-1,confirmed:false},'CONFIRMED'),
     'UPLOAD_INPUT_INVALID');
 });
+
+test('fine-grained crop phases are privacy-safe allowlisted statuses',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-mount-phases-'));
+  try{
+    for(const stage of ["SIBLING_INPUT_WAIT","SIBLING_SELECT_FILE","SIBLING_MODAL_WAIT","SIBLING_MODAL_VISIBLE","SIBLING_CROPPER_WAIT","SIBLING_ACTIONS_WAIT","SIBLING_OWNER_CHECK","PRIMARY_SELECT_FILE","PRIMARY_MODAL_WAIT","PRIMARY_MODAL_VISIBLE","PRIMARY_CROPPER_WAIT","PRIMARY_ACTIONS_WAIT","PRIMARY_OWNER_CHECK"]){
+      const report=valid();report.status='NOT_PROVEN';
+      report.cases[2].status='NOT_PROVEN';report.cases[2].stage=stage;
+      report.cases[2].private_error='NEVER_PRINT_PRIVATE_RUNTIME_DATA';
+      fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(report));
+      const out=safeSummary(dir);
+      assert.match(out,new RegExp('baseline-fa_IR=NOT_PROVEN@fup-crop-1280:'+stage));
+      assert.ok(!out.includes('NEVER_PRINT_PRIVATE_RUNTIME_DATA'));
+    }
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
