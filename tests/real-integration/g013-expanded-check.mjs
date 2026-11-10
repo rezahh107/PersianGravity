@@ -65,11 +65,19 @@ export function inspectCropSurfaceInPage({formId,fieldId}){
   }
   result.mountCount=Math.min(100,mounts.length);
   if(mounts.length!==1)return result;
-  const target=mounts[0].portalTarget?.$el;
-  result.targetConnected=target?.nodeType===1&&target.isConnected===true;
+  // The vendor uses target-slim. PortalTarget.$el can remain a Vue comment
+  // even when its transported child transitions into a visible modal.
+  // The exact GPFUPCropper instance, not the disposable mount/target root,
+  // owns the real final element and carries authoritative field props.
+  const crops=[...seen].filter(child=>child.$options?.name==='GPFUPCropper'&&
+    String(child.formId)===String(formId)&&String(child.fieldId)===String(fieldId));
+  result.ownerComponentCount=Math.min(100,crops.length);
+  if(crops.length!==1)return result;
+  const finalElement=crops[0].$el;
+  result.targetConnected=finalElement?.nodeType===1&&finalElement.isConnected===true;
   if(active.length!==1)return result;
   const modal=active[0];
-  result.ownerMatched=result.targetConnected&&(target===modal||target.contains(modal));
+  result.ownerMatched=result.targetConnected&&finalElement===modal;
   const cropper=modal.querySelector('.vue-advanced-cropper');
   result.cropperVisible=visible(cropper);
   const cancel=modal.querySelectorAll('button.gpfup__cancel');

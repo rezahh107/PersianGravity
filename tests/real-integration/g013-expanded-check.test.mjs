@@ -168,6 +168,14 @@ test('crop report validator rejects missing two-field and Cancel-button proof',(
   }
 });
 
+test('field ownership is not inferred from a replaced PortalTarget mount ID',()=>{
+  const good={initialized:true,required:true,mountCount:1,targetConnected:true,
+    activeCount:1,ownerMatched:true,cropperVisible:true,
+    cancelAccessible:true,saveAccessible:true};
+  assert.equal(classifyCropSurface(good),'READY');
+  assert.equal(classifyCropSurface({...good,ownerMatched:false}),'CROP_WRONG_FIELD');
+  assert.equal(classifyCropSurface({...good,activeCount:2}),'CROP_MODAL_DUPLICATE');
+});
 test('unopened target-slim portal has no modal without requiring an element root',()=>{
   const pre={initialized:true,required:true,mountCount:1,targetConnected:false,
     activeCount:0,ownerMatched:false,cropperVisible:false,
