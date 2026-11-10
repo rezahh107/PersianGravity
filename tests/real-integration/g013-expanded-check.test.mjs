@@ -284,3 +284,26 @@ test('Save timeout classifications cannot expose private browser state',()=>{
     }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('Crop/Save timeout distinguishes legitimate pending batch and unreadied canvas',()=>{
+  const original={instanceFound:true,storeFound:true,editorOpen:true,currentFilePresent:true,
+    addedCount:1,currentIndex:1,canvasReady:true,preCanvasReady:true,modalStillVisible:true};
+  for(const [mutation,want] of [
+    [{addedCount:2,currentIndex:1},'CROP_SAVE_MORE_FILES_PENDING'],
+    [{preCanvasReady:false},'CROP_SAVE_CANVAS_UNREADY_AT_CLICK'],
+    [{canvasReady:false},'CROP_SAVE_CANVAS_UNREADY_AFTER_CLICK'],
+    [{},'CROP_SAVE_EDITOR_REMAINED_OPEN']
+  ])assert.equal(classifyCropSaveTimeout({...original,...mutation}),want);
+});
+test('Crop/Save canvas readiness diagnostics are strictly sanitized',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-canvas-stage-'));
+  try{
+    for(const stage of ["CROP_SAVE_MORE_FILES_PENDING","CROP_SAVE_CANVAS_UNREADY_AT_CLICK","CROP_SAVE_CANVAS_UNREADY_AFTER_CLICK"]){
+      const d=valid();d.status='NOT_PROVEN';d.cases[2].status='NOT_PROVEN';
+      d.cases[2].stage=stage;d.cases[2].private_error='NEVER_PUBLISH_IMAGE_DATA';
+      fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(d));
+      assert.ok(safeSummary(dir).includes('@fup-crop-1280:'+stage));
+      assert.ok(!safeSummary(dir).includes('NEVER_PUBLISH_IMAGE_DATA'));
+    }
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

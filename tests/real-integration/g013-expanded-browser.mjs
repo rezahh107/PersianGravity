@@ -323,7 +323,45 @@ async function crop(page,entry){
   await checkClosed(1);
   entry.observed.push('CANCEL_BUTTON_DISCARDS');
   controls=await open();
+  // Diagnostic-only: read the genuine vue-advanced-cropper result and
+  // vendor's batch index; do not alter vendor state or expose image bytes.
+  async function inspectSaveState(){
+    return page.evaluate(({formId,fieldId})=>{
+      const instance=window['GPFUP_'+formId+'_'+fieldId],store=instance?.$store;
+      const queue=instance?.vm?[instance.vm]:[],seen=new Set();
+      let editor=null;
+      while(queue.length&&seen.size<64){
+        const item=queue.shift();if(!item||seen.has(item))continue;
+        seen.add(item);
+        if(item.$options?.name==='GPFUPCropper'&&
+          String(item.formId)===String(formId)&&
+          String(item.fieldId)===String(fieldId))editor=item;
+        for(const child of item.$children||[])queue.push(child);
+      }
+      const cropper=editor?.$refs?.cropper;
+      let canvasReady=false;
+      if(cropper&&typeof cropper.getResult==='function'){
+        try{const canvas=cropper.getResult()?.canvas;
+          canvasReady=!!canvas&&canvas.width>0&&canvas.height>0;
+        }catch{}
+      }
+      const added=store?.getters?.currentAddedFiles;
+      const index=store?.getters?.currentImageIndex;
+      const modal=document.querySelector('.cropper__lightbox');
+      const style=modal&&getComputedStyle(modal);
+      return {instanceFound:!!instance,storeFound:!!store,
+        editorOpen:store?.state?.editor?.open===true,
+        currentFilePresent:!!store?.state?.editor?.currentFile,
+        addedCount:Array.isArray(added)?Math.min(100,added.length):-1,
+        currentIndex:Number.isInteger(index)?Math.max(-1,Math.min(100,index)):-1,
+        cropperRefPresent:!!cropper,canvasReady,
+        modalStillVisible:!!modal?.isConnected&&modal?.getBoundingClientRect().width>0&&
+          style?.display!=='none'&&style?.visibility!=='hidden'&&Number(style?.opacity)>0};
+    },{formId:id,fieldId:1});
+  }
   entry.stage='CROP_SAVE';
+  const preSave=await inspectSaveState();
+  entry.crop_save_preflight=preSave; // private report only
   await controls.save.click();
   entry.stage='CROP_SAVE_MODAL_WAIT';
   try{
@@ -331,26 +369,9 @@ async function crop(page,entry){
   }catch(err){
     // Read only bounded properties from the genuine field's Vuex store.
     // Never serialize files, page HTML, URLs, credentials or vendor instances.
-    const probe=await page.evaluate(({formId,fieldId})=>{
-      const instance=window['GPFUP_'+formId+'_'+fieldId],store=instance?.$store;
-      const added=store?.getters?.currentAddedFiles;
-      const index=store?.getters?.currentImageIndex;
-      const modal=document.querySelector('.cropper__lightbox');
-      const modalStyle=modal&&getComputedStyle(modal);
-      const visible=!!modal?.isConnected&&modal?.getBoundingClientRect().width>0&&
-        modalStyle?.display!=='none'&&modalStyle?.visibility!=='hidden'&&
-        Number(modalStyle?.opacity)>0;
-      return {
-        instanceFound:!!instance,storeFound:!!store,
-        editorOpen:store?.state?.editor?.open===true,
-        currentFilePresent:!!store?.state?.editor?.currentFile,
-        addedCount:Array.isArray(added)?Math.min(100,added.length):-1,
-        currentIndex:Number.isInteger(index)?Math.max(-1,Math.min(100,index)):-1,
-        modalStillVisible:visible,
-      };
-    },{formId:id,fieldId:1});
+    const probe=await inspectSaveState();
     entry.crop_save_probe=probe; // stays in the private per-run report
-    entry.stage=classifyCropSaveTimeout(probe);
+    entry.stage=classifyCropSaveTimeout({...probe,preCanvasReady:preSave.canvasReady});
     throw err; // Preserve original functional failure, never turn it into PASS.
   }
   entry.stage='UPLOAD_PROGRESS_WAIT';
