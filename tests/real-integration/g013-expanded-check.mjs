@@ -6,11 +6,27 @@ export const names=['perks-admin','fup-crop','gv-block-editor'];
 export const widths=[1280,390];
 const allowedCropStages=new Set([
   'CROP_PAGE_READY','PORTAL_LOOKUP','IMAGE_PREPARED','MODAL_OPENING',
+  'PORTAL_DUPLICATE','PORTAL_INIT_MISSING','PORTAL_CROP_DISABLED',
+  'PORTAL_VUE_UNMOUNTED','PORTAL_TARGET_REPLACED','PORTAL_STATE_UNRESOLVED',
   'CROP_MODAL_SHOWN','CROPPER_RENDERED','ACTIONS_VISIBLE','ACTIONS_REACHABLE',
   'ESCAPE_DISMISS','ESCAPE_CLOSED','CROP_RETRY','CROP_SAVE',
   'UPLOAD_COMPLETE','FILE_VISIBLE','REEDIT_OPENING','VALIDATION_SUBMIT',
   'VALIDATION_RERENDERED'
 ]);
+// Closed, test-only classifier. No DOM values or vendor text are returned.
+export function classifyPortalProbe(s){
+  if(!s||!Number.isInteger(s.selectorCount)||s.selectorCount<0||s.selectorCount>100)
+    return 'PORTAL_STATE_UNRESOLVED';
+  if(s.selectorCount>1)return 'PORTAL_DUPLICATE';
+  if(s.localizedCrop!==true||s.instanceFound!==true)return 'PORTAL_INIT_MISSING';
+  if(s.instanceCrop!==true||s.instanceCropRequired!==true)return 'PORTAL_CROP_DISABLED';
+  if(s.vueMounted!==true)return 'PORTAL_VUE_UNMOUNTED';
+  if(s.selectorCount===0&&Number.isInteger(s.added)&&s.added>0&&
+    Number.isInteger(s.removed)&&s.removed>0&&s.mountTarget===true&&
+    s.targetConnected===true&&s.targetRetainsId===false)
+    return 'PORTAL_TARGET_REPLACED';
+  return 'PORTAL_STATE_UNRESOLVED';
+}
 export const claims={
   'perks-admin':['REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED'],
   'fup-crop':['REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS',

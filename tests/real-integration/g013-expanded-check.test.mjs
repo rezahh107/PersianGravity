@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,validateAll,claims,names,safeSummary} from './g013-expanded-check.mjs';
+import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe} from './g013-expanded-check.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -103,5 +103,32 @@ test('independent matched 24-scene gate rejects WITH_VAZIR-only document overflo
     fs.writeFileSync(p,JSON.stringify(d));
     assert.throws(()=>validateAll(dir,head,{files:false}),
       /G013_EXTENDED_EVIDENCE_REJECTED: WITH_VAZIR-only document overflow/);
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('portal replacement requires authentic prior mount and removal observations',()=>{
+  const v={selectorCount:0,added:1,removed:1,localizedCrop:true,
+    instanceFound:true,instanceCrop:true,instanceCropRequired:true,
+    vueMounted:true,mountTarget:true,targetConnected:true,targetRetainsId:false};
+  assert.equal(classifyPortalProbe(v),'PORTAL_TARGET_REPLACED');
+  for(const variant of [{added:0},{removed:0},{mountTarget:false},
+    {targetConnected:false},{vueMounted:false},{instanceCrop:false},
+    {localizedCrop:false},{instanceFound:false},{selectorCount:101}]){
+    assert.notEqual(classifyPortalProbe({...v,...variant}),'PORTAL_TARGET_REPLACED');
+  }
+  assert.equal(classifyPortalProbe({...v,selectorCount:2}),'PORTAL_DUPLICATE');
+});
+test('portal stage summary excludes private probe strings and rejects unlisted stages',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-portal-'));
+  try{
+    const d=valid();d.status='NOT_PROVEN';d.cases[2].status='NOT_PROVEN';
+    d.cases[2].stage='PORTAL_TARGET_REPLACED';
+    d.cases[2].portal_probe={private:'SECRET_DO_NOT_OUTPUT'};
+    fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(d));
+    assert.match(safeSummary(dir),/NOT_PROVEN@fup-crop-1280:PORTAL_TARGET_REPLACED/);
+    assert.ok(!safeSummary(dir).includes('SECRET_DO_NOT_OUTPUT'));
+    d.cases[2].stage='SECRET_DO_NOT_OUTPUT';
+    fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(d));
+    assert.ok(!safeSummary(dir).includes('SECRET_DO_NOT_OUTPUT'));
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

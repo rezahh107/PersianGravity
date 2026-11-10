@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { classifyPortalProbe } from './g013-expanded-check.mjs';
 
 const profile=process.argv[2], locale=process.argv[3];
 if(!['BASELINE','WITH_VAZIR'].includes(profile)||!['fa_IR','en_US'].includes(locale))
@@ -111,17 +112,67 @@ async function perks(page,entry){
   entry.observed.push('REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED');
 }
 async function crop(page,entry){
-  await goto(page,fixture.crop_url);
   const id=fixture.crop_form_id;
+  const portalId='gpfup-cropper-portal-'+id+'-1';
+  // Observe only the exact portal element's creation/removal. No DOM serialization.
+  await page.addInitScript(targetId=>{
+    const counters={added:0,removed:0},selector='#'+targetId;
+    const has=node=>node.nodeType===1&&
+      (node.id===targetId||!!node.querySelector?.(selector));
+    new MutationObserver(records=>{
+      for(const record of records){
+        for(const node of record.addedNodes)if(has(node))counters.added=Math.min(100,counters.added+1);
+        for(const node of record.removedNodes)if(has(node))counters.removed=Math.min(100,counters.removed+1);
+      }
+    }).observe(document,{subtree:true,childList:true});
+    Object.defineProperty(window,'__g013PortalWitness',{value:counters,configurable:false});
+  },portalId);
+  await goto(page,fixture.crop_url);
   const root='#field_'+id+'_1';
   const text=page.locator('#input_'+id+'_2');
   await page.locator(root+' .gpfup__droparea').waitFor({state:'visible',timeout:15000});
   await text.waitFor({state:'visible'});
   entry.stage='CROP_PAGE_READY';
   const input=page.locator(root+' input[type=file]').first();
-  const portal='#gpfup-cropper-portal-'+id+'-1';
+  const portal='#'+portalId;
   entry.stage='PORTAL_LOOKUP';
-  guard(await page.locator(portal).count()===1,'Authentic FUP crop portal absent');
+  // The original exact-one selector remains the acceptance oracle.
+  const portalCount=await page.locator(portal).count();
+  if(portalCount!==1){
+    const witness=await page.evaluate(({formId,fieldId,portalId,portalCount})=>{
+      const init=window['GPFUP_FORM_INIT_'+formId];
+      const configs=Array.isArray(init)?init.filter(x=>
+        String(x.formId)===String(formId)&&String(x.fieldId)===String(fieldId)):[];
+      const instance=window['GPFUP_'+formId+'_'+fieldId];
+      const queue=instance?.vm?[instance.vm]:[],seen=new Set();
+      let mount=null;
+      while(queue.length&&seen.size<64){
+        const item=queue.shift();
+        if(!item||seen.has(item))continue;
+        seen.add(item);
+        if(item.$options?.name==='MountingPortal'){mount=item;break;}
+        for(const child of (item.$children||[]))queue.push(child);
+      }
+      const target=mount?.portalTarget?.$el,counts=window.__g013PortalWitness;
+      return {
+        selectorCount:Math.min(100,portalCount),
+        added:Number.isInteger(counts?.added)?Math.min(100,counts.added):0,
+        removed:Number.isInteger(counts?.removed)?Math.min(100,counts.removed):0,
+        localizedCrop:configs.length===1&&configs[0].enableCrop===true,
+        instanceFound:!!instance,
+        instanceCrop:instance?.enableCrop===true,
+        instanceCropRequired:instance?.cropRequired===true,
+        vueMounted:!!instance?.vm,
+        mountTarget:!!mount?.portalTarget,
+        targetConnected:target?.isConnected===true,
+        targetRetainsId:target?.id===portalId,
+        otherPortalCount:Math.min(100,document.querySelectorAll('[id^="gpfup-cropper-portal-"]').length)
+      };
+    },{formId:id,fieldId:1,portalId,portalCount});
+    entry.portal_probe=witness; // Private runner-only file, never public.
+    entry.stage=classifyPortalProbe(witness);
+  }
+  guard(portalCount===1,'Authentic FUP crop portal absent');
   const image=await page.evaluate(()=>{
     const canvas=document.createElement('canvas');
     canvas.width=240;canvas.height=180;
