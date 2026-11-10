@@ -233,6 +233,19 @@ async function crop(page,entry){
     const save=modal.locator('button.gpfup__crop');
     await cancel.waitFor({state:'visible'});
     await save.waitFor({state:'visible'});
+    // Playwright considers opacity:0 "visible", while the vendor's real Vue
+    // transition begins at opacity:0 and our functional oracle rejects it.
+    // Wait for the *actual painted modal*, never skip the owning-field check.
+    entry.stage=which+'_TRANSITION_WAIT';
+    await page.waitForFunction(()=>{
+      const painted=[...document.querySelectorAll('.cropper__lightbox')]
+        .filter(el=>{
+          const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+          return el.isConnected&&r.width>0&&r.height>0&&
+            s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)>0;
+        });
+      return painted.length===1;
+    },null,{timeout:5000,polling:50});
     entry.stage=which+'_OWNER_CHECK';
     const observation=await page.evaluate(inspectCropSurfaceInPage,{formId:id,fieldId});
     const outcome=classifyCropSurface(observation);

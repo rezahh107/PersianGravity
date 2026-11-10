@@ -224,3 +224,17 @@ test('crop ownership failure codes are allowlisted and exclude private DOM state
   }
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('crop transition wait phases expose only closed status tokens',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-transition-'));
+  try{
+    for(const stage of ['SIBLING_TRANSITION_WAIT','PRIMARY_TRANSITION_WAIT']){
+      const doc=valid();doc.status='NOT_PROVEN';doc.cases[2].status='NOT_PROVEN';
+      doc.cases[2].stage=stage;doc.cases[2].private='SECRET_NEVER_PUBLIC';
+      fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(doc));
+      const value=safeSummary(dir);
+      assert.ok(value.includes('@fup-crop-1280:'+stage));
+      assert.ok(!value.includes('SECRET_NEVER_PUBLIC'));
+    }
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
