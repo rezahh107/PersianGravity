@@ -1828,7 +1828,7 @@ jobs:
   publish-admin-ui-evidence:
     name: Publish validated screenshots to a run-attempt-scoped evidence branch
     needs: real-integration
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref != 'test/wu008-crop-ab-private-20261110' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
