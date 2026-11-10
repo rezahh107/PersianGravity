@@ -150,7 +150,13 @@ console.log('G013_AB_SAFE mode='+mode+' outcome='+status+
   ' stage='+stage+' failure='+failure+
   ' reedit='+bool(observed.includes('RERENDERED_PREVIEW_REEDIT'))+
   ' validation='+bool(observed.includes('AUTHENTIC_GF_SERVER_VALIDATION'))+
-  ' postPersist='+bool(observed.includes('POST_VALIDATION_FILE_REHYDRATED')));
+  ' postPersist='+bool(observed.includes('POST_VALIDATION_FILE_REHYDRATED'))+
+  ' editPresent='+bool(d.editControlPresent)+
+  ' editBeforeHover='+bool(d.editVisibleBeforeHover)+
+  ' editAfterHover='+bool(d.editVisibleAfterHover)+
+  ' postEditPresent='+bool(d.postValidationEditPresent)+
+  ' postEditBeforeHover='+bool(d.postValidationEditVisibleBeforeHover)+
+  ' postEditAfterHover='+bool(d.postValidationEditVisibleAfterHover));
 G013_AB_SAFE_GATE
   done
   restore_profile fa_IR
