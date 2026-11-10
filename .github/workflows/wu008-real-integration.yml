@@ -1182,11 +1182,27 @@ jobs:
           trap - EXIT
           node tests/real-integration/module-disable-decision-summary.mjs
 
+      - name: G013 independent release and publisher falsification tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tests/real-integration/vazir-coexistence-browser.mjs
+          node --check tests/real-integration/g013-expanded-browser.mjs
+          node --check tests/real-integration/g013-expanded-check.mjs
+          node --test tests/real-integration/g013-expanded-check.test.mjs
+          php -l tests/real-integration/g013-extended-fixture.php
+          node --check tests/real-integration/vazir-evidence-check.mjs
+          node --check tests/real-integration/vazir-release-verify.mjs
+          node --test tests/real-integration/vazir-release-verify.test.mjs
+          node --test tests/real-integration/vazir-evidence-check.test.mjs
+          node --test tests/real-integration/g013-safe-qualification-diagnostic.test.mjs
+
       - name: Stage privacy-checked bounded evidence for upload
         if: always()
         shell: bash
         run: |
           set -euo pipefail
+          # Snapshot before G013 can append to the shared HTTP log or write evidence.
           upload_dir=/tmp/wu008-upload
           rm -rf "$upload_dir"
           if test -f "$WU008_ARTIFACT_DIR/g008-gravityview-source-probe.json"; then
@@ -1194,11 +1210,605 @@ jobs:
           fi
           mkdir -p "$upload_dir"
           if test -d "$WU008_ARTIFACT_DIR"; then
-            cp -a "$WU008_ARTIFACT_DIR/." "$upload_dir/"
+            tar -C "$WU008_ARTIFACT_DIR" --exclude='./vazir-coexistence-evidence' -cf - . | tar -C "$upload_dir" -xf -
           fi
           if test -f /tmp/wu008-wp-server.log; then
             cp /tmp/wu008-wp-server.log "$upload_dir/"
           fi
+
+      - name: G013 real official Vazir v1.5.0 isolated profile qualification
+        id: g013
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          private_dir="$(mktemp -d "$RUNNER_TEMP/g013.XXXXXXXX")"
+          # WU008 artifacts and its shared HTTP log were staged before this step.
+          # Capture both output streams and deny access to Actions command files.
+          set +e
+          (
+          set -euo pipefail
+          unset GITHUB_ENV GITHUB_OUTPUT GITHUB_PATH GITHUB_STEP_SUMMARY GITHUB_STATE
+          export WU008_ARTIFACT_DIR="$private_dir/artifacts"
+          export WU008_PACKAGE_DIR="$private_dir/packages"
+          bash tests/real-integration/g013-run-licensed.sh
+          export WU008_VAZIR_EVIDENCE="$WU008_ARTIFACT_DIR/vazir-coexistence-evidence"
+          export WU008_VAZIR_HEAD="$WU008_PGR_SHA"
+          node --input-type=module <<'G013_EVIDENCE_GATE'
+          // G013_EVIDENCE_GATE_BEGIN
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const dir=process.env.WU008_VAZIR_EVIDENCE,head=process.env.WU008_VAZIR_HEAD;
+          const fail=m=>{throw Error('G013_PUBLISH_REJECTED: '+m);};
+          const ok=(yes,m)=>{if(!yes)fail(m);};
+          const sha='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5';
+          const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
+          const surfaces=['overview','settings','scanner','system-status','gravity-form','gravity-flow','flow-frontend','gravityview','gravityperks'];
+          const screens=['overview','gravity-form','gravityview','gravityperks'];
+          const widths=[1280,390],json=n=>{
+            try{return JSON.parse(fs.readFileSync(path.join(dir,n),'utf8'));}
+            catch{fail('unparseable G013 JSON document '+n);}
+          };
+          const finite=n=>typeof n==='number'&&Number.isFinite(n);
+          const identity=p=>p.name+'@'+p.width;
+          const classification=(b,v,w)=>v>w?(b>w?'PRESENT_IN_BOTH':'WITH_VAZIR_ONLY_OVERFLOW'):
+            b>w?'PREEXISTING_BASELINE_ONLY':'NO_DOCUMENT_OVERFLOW_OBSERVED';
+          ok(/^[a-f0-9]{40}$/.test(head||'')&&dir&&fs.existsSync(dir)&&
+            fs.lstatSync(dir).isDirectory()&&!fs.lstatSync(dir).isSymbolicLink(),'unsafe exact Head/root');
+          const release=json('official-release.json'),settings=json('vazir-settings.json');
+          const report=json('comparison.json');
+          // G013_PUBLISHER_SEMANTIC_BEGIN
+          // G013 independent publisher defense-in-depth: validate all data shapes before cp -a.
+          // Untrusted files are parsed as data, never evaluated. Keep independent of producer code.
+          const pubClosed=(v,names,label,required=[])=>{
+            ok(v!==null&&typeof v==='object'&&!Array.isArray(v),'invalid object '+label);
+            // Never echo attacker-controlled keys or values into public Actions logs.
+            for(const n of Object.keys(v))ok(names.includes(n),'unexpected G013 public field '+label);
+            for(const n of required)ok(Object.hasOwn(v,n),'missing required G013 public field '+label);
+          };
+          const pubChoice=(v,values,label)=>ok(values.includes(v),'unapproved G013 enum '+label);
+          const pubNumber=(v,label,lo=0,hi=200000)=>ok(finite(v)&&v>=lo&&v<=hi,'invalid G013 number '+label);
+          const pubEqual=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+          const pubHead=/^[a-f0-9]{40}$/;
+          const pubDigest=/^[a-f0-9]{64}$/;
+          const pubZipSha='95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5';
+          const pubArray=(v,label,max)=>{ok(Array.isArray(v)&&v.length<=max,'invalid array '+label);return v;};
+          const pubText=(s,label,re,max=250)=>ok(typeof s==='string'&&s.length>0&&s.length<=max&&
+            !/[\x00-\x1f\x7f]/.test(s)&&re.test(s),'unsafe string '+label);
+          // Independent semantic check, intentionally not importing producer-side code.
+          const pubVersion=(v,label)=>pubText(v,label,/^[0-9]{1,7}(?:\.[0-9]{1,7}){1,3}$/,35);
+          const pubNumericWeight=v=>/^(?:1000|[1-9][0-9]{0,2})(?:\.[0-9]{1,3})?$/.test(v)&&
+            Number(v)>=1&&Number(v)<=1000;
+          const pubWeight=(v,label,{range=false,relative=false}={})=>{
+            ok(typeof v==='string'&&v.length>0&&v.length<=22&&
+              !/[^\x20-\x7e]/.test(v),'unsafe weight '+label);
+            if(v==='normal'||v==='bold'||relative&&['lighter','bolder'].includes(v))return;
+            const values=v.split(' ');
+            ok(values.length<=(range?2:1)&&values.every(pubNumericWeight)&&
+              (values.length!==2||Number(values[0])<=Number(values[1])),'unsafe weight '+label);
+          };
+          const pubTagNames=new Set(['BODY','HTML','INPUT','BUTTON','SELECT','TEXTAREA','A','DIV',
+            'IFRAME','OPTION','SUMMARY','SPAN','LABEL','H1','H2','H3','P','LI','IMG','FORM','TD','TH']);
+          const pubPinnedGravity=Object.freeze({gravityforms:'3.1.1.1',gravityflow:'3.1.0',
+            gravityview:'3.3.4',gravityperks:'2.3.16',gpfileuploadpro:'1.5.13',gpadvancedselect:'1.1.21'});
+          const pubFamilies=new Set(['vazirmatn','tahoma','arial','sans-serif','serif','monospace',
+            'times new roman','-apple-system','blinkmacsystemfont','segoe ui',
+            'roboto','oxygen-sans','ubuntu','cantarell','helvetica neue','inter',
+            'noto sans','liberation sans',
+            'gflow-icons-common','dashicons','fontawesome','font awesome 5 free','material icons','system-ui']);
+          const pubFamily=(s,label)=>{
+            pubText(s,label,/^[a-zA-Z0-9 _.,'"()\-]+$/);
+            const members=s.split(',').map(x=>x.trim().replace(/^["']|["']$/g,'').toLowerCase());
+            ok(members.length>0&&members.length<=18&&members.every(x=>pubFamilies.has(x)),'unknown family '+label);
+          };
+          const pubStylesheets=new Set([
+            '/wp-admin/load-styles.php',
+            'assets/css/dist/admin-components.min.css','assets/css/dist/admin-css-utilities.min.css',
+            'assets/css/dist/admin-icons.min.css','assets/css/dist/admin.min.css',
+            'assets/css/dist/common-css-utilities.min.css','assets/css/dist/font-awesome.min.css',
+            'assets/css/dist/gravity-forms-common-icons.min.css','assets/css/dist/gravity-forms-orbital-theme.min.css',
+            'assets/css/dist/gravity-forms-theme-foundation.min.css','assets/css/dist/gravity-forms-theme-framework.min.css',
+            'assets/css/dist/gravity-forms-theme-reset.min.css','assets/css/dist/theme.min.css',
+            'gravityview/assets/css/admin-global.css','gravityview/assets/css/font.css',
+            'gravityview/templates/css/gv-default-styles-rtl.css','gravityview/templates/css/gv-default-styles.css',
+            'gravityview/templates/css/table-view.css','includes/integrations/css/gravity-view-flow-fields.css',
+            'includes/locking/css/locking-list.min.css','includes/locking/css/locking.min.css',
+            'lib/fancybox/dist/fancybox.css','persian-gravityforms/assets/css/pgr-admin.css',
+            'plugins/gravityflow/css/entry-detail.min.css','plugins/gravityflow/css/frontend.min.css',
+            'plugins/gravityflow/css/gravityflow-icon.css','plugins/gravityflow/css/inbox.min.css',
+            'plugins/gravityflow/css/status.min.css','query-filters/assets/css/date-range-picker.css',
+            'vazir-font-wp/assets/css/vazir-fonts.css','vazir-font-wp/assets/css/admin.css']);
+          const pubSelectors=new Set(['.dashicons','.menu-icon','.menu-image',
+            '[class^="dashicons-"]','[class*=" dashicons-"]','[class^="fa-"]','[class*=" fa-"]',
+            '.material-icons','[data-icon]:before']);
+          const pubStyle=(s,label)=>{
+            if(s===null||s===undefined)return;
+            pubClosed(s,['family','weight','direction','width','height','overflowX'],label,
+              ['family','weight','direction','width','height','overflowX']);
+            pubFamily(s.family,label+'.family');
+            pubWeight(s.weight,label+'.weight',{relative:true});
+            pubChoice(s.direction,['rtl','ltr'],label+'.direction');
+            pubNumber(s.width,label+'.width');pubNumber(s.height,label+'.height');
+            pubChoice(s.overflowX,['visible','hidden','clip','auto','scroll'],label+'.overflowX');
+          };
+          const pubRect=(r,label)=>{
+            pubClosed(r,['x','y','width','height'],label,['x','y','width','height']);
+            pubNumber(r.x,label+'.x',-200000);pubNumber(r.y,label+'.y',-200000);
+            pubNumber(r.width,label+'.width');pubNumber(r.height,label+'.height');
+          };
+          const pubDiagnostic=(d,label,locale,width)=>{
+            pubClosed(d,['html','body','visible_inbox','grid_mode','grid_nodes','loaded_stylesheets','viewport','document_width','body_width','html_root_ltr_anomaly'],label,
+              ['html','body','visible_inbox','grid_mode','grid_nodes','loaded_stylesheets','viewport','document_width','body_width']);
+            for(const part of ['html','body']){
+              pubClosed(d[part],part==='html'?['lang','dir_attr','computed']:['dir_attr','computed'],label+'.'+part,
+                part==='html'?['lang','dir_attr','computed']:['dir_attr','computed']);
+              pubChoice(d[part].dir_attr,['rtl','ltr',null],label+'.'+part+'.dir_attr');
+              pubChoice(d[part].computed,['rtl','ltr',null],label+'.'+part+'.computed');
+            }
+            pubChoice(d.html.lang,[locale==='fa_IR'?'fa-IR':'en-US'],label+'.html.lang');
+            pubChoice(d.grid_mode,['rtl','ltr',null],label+'.grid_mode');
+            pubNumber(d.grid_nodes,label+'.grid_nodes',0,30);
+            pubNumber(d.document_width,label+'.document_width',1);
+            pubNumber(d.body_width,label+'.body_width');
+            pubClosed(d.viewport,['width','height'],label+'.viewport',['width','height']);
+            pubChoice(d.viewport.width,[width],label+'.viewport.width');
+            pubNumber(d.viewport.height,label+'.viewport.height',1,5000);
+            if(Object.hasOwn(d,'html_root_ltr_anomaly'))ok(d.html_root_ltr_anomaly===true,'root anomaly');
+            for(const p of pubArray(d.visible_inbox,label+'.visible_inbox',5)){
+              pubClosed(p,['selector','direction','css_direction','rect','scroll_width','client_width'],label+'.visible_inbox',
+                ['selector','direction','css_direction','rect','scroll_width','client_width']);
+              pubChoice(p.selector,['[data-js="gflow-inbox"]','.gravityflow-inbox','.ag-root-wrapper','.wrap','#wpbody-content'],label+'.selector');
+              pubChoice(p.direction,['rtl','ltr'],label+'.direction');
+              pubChoice(p.css_direction,['rtl','ltr'],label+'.css_direction');
+              pubNumber(p.scroll_width,label+'.scroll_width');
+              pubNumber(p.client_width,label+'.client_width');
+              pubRect(p.rect,label+'.rect');
+            }
+            for(const s of pubArray(d.loaded_stylesheets,label+'.loaded_stylesheets',100))
+              ok(pubStylesheets.has(s),'unapproved loaded CSS');
+          };
+          const pubProfile=(d,label,key)=>{
+            const locale=key.endsWith('fa_IR')?'fa_IR':'en_US',withVazir=key.startsWith('with-vazir');
+            pubClosed(d,['schema','exact_head','persiangravity_version','profile','locale','vazir_version','expected_vazir_sha256','environment','status','grid_acceptance','pages','known_preexisting','limitations'],label,
+              ['schema','exact_head','persiangravity_version','profile','locale','vazir_version','expected_vazir_sha256','environment','status','grid_acceptance','pages']);
+            ok(d.schema==='g013-vazir-coexistence-v1'&&d.exact_head===head&&d.status==='PASS'&&
+              d.profile===(withVazir?'WITH_VAZIR':'BASELINE')&&d.locale===locale&&
+              d.vazir_version===(withVazir?'1.5.0':null)&&
+              d.expected_vazir_sha256===(withVazir?pubZipSha:null),'profile identity '+key);
+            pubVersion(d.persiangravity_version,label+'.persiangravity_version');
+            pubClosed(d.environment,['wordpress','php','gravity','chromium','playwright','db_snapshot_sha256'],label+'.environment',
+              ['wordpress','chromium','db_snapshot_sha256']);
+            const snapshotDigest=d.environment.db_snapshot_sha256;
+            ok(typeof snapshotDigest==='string'&&pubDigest.test(snapshotDigest),'DB snapshot identity');
+            for(const n of ['wordpress','php','chromium','playwright'])if(Object.hasOwn(d.environment,n))
+              pubVersion(d.environment[n],'env '+n);
+            if(Object.hasOwn(d.environment,'gravity')){
+              pubClosed(d.environment.gravity,['gravityforms','gravityflow','gravityview','persiangravity','gravityperks','gpfileuploadpro','gpadvancedselect'],'gravity versions');
+              for(const [vendor,v] of Object.entries(d.environment.gravity)){
+                pubVersion(v,'gravity version '+vendor);
+                if(Object.hasOwn(pubPinnedGravity,vendor))ok(v===pubPinnedGravity[vendor],'unpinned gravity version '+vendor);
+              }
+              if(Object.hasOwn(d.environment.gravity,'persiangravity'))
+                ok(d.environment.gravity.persiangravity===d.persiangravity_version,'PGR version mismatch');
+            }
+            if(Object.hasOwn(d,'known_preexisting'))ok(pubEqual(d.known_preexisting,['PR #96 historical six System Status overflow findings']),'unsafe known_preexisting');
+            if(Object.hasOwn(d,'limitations'))ok(pubEqual(d.limitations,[
+              'Same disposable WordPress host; profiles run sequentially with plugin activation and state restoration.',
+              'Not proof of Owner deployed Vazir settings, screen-reader speech, all possible GravityView editor portals or third-party frontends.'
+            ]),'unsafe limitations');
+            const pages=pubArray(d.pages,label+'.pages',18);
+            ok(pages.length===18,'complete 18-case profile');
+            const seen=new Set();
+            let assessment='PASS';
+            for(const p of pages){
+              pubClosed(p,['name','width','rtl_diagnostic','direction','viewport','document_width','body','headline','label','input','button','icon','faces','active_control','interaction','font_network','page_errors','console_errors','image','grid_mode'],label+'.page',
+                ['name','width','direction','viewport','document_width','body','headline','label','input','button','faces','font_network','page_errors','console_errors']);
+              pubChoice(p.name,surfaces,label+'.page.name');pubChoice(p.width,widths,label+'.page.width');
+              const caseId=p.name+'@'+p.width;
+              ok(!seen.has(caseId),'duplicate page case');seen.add(caseId);
+              pubChoice(p.viewport,[p.width],label+'.page.viewport');
+              pubNumber(p.document_width,label+'.page.document_width',1);
+              pubChoice(p.direction,['rtl','ltr'],label+'.page.direction');
+              pubClosed(p.body,['family','weight','direction','width','height','overflowX'],label+'.body',
+                ['family','weight','direction','width','height','overflowX']);
+              for(const n of ['body','headline','label','input','button','icon'])if(Object.hasOwn(p,n))pubStyle(p[n],label+'.'+n);
+              if(Object.hasOwn(p,'rtl_diagnostic'))pubDiagnostic(p.rtl_diagnostic,label+'.rtl',locale,p.width);
+              if(Object.hasOwn(p,'active_control')&&p.active_control!==null)ok(pubTagNames.has(p.active_control),'unapproved DOM tag');
+              if(Object.hasOwn(p,'interaction')&&p.interaction!==null){
+                pubClosed(p.interaction,['type','tokens_seen','file_preview','selected_value','focus_verified'],'interaction',['type']);
+                if(p.interaction.type==='authentic-gravityview'){
+                  pubClosed(p.interaction,['type','tokens_seen'],'gravityview interaction',['type','tokens_seen']);
+                  pubNumber(p.interaction.tokens_seen,'gravityview tokens',1,100);
+                }else if(p.interaction.type==='authentic-file-upload-and-tom-select'){
+                  pubClosed(p.interaction,['type','file_preview','selected_value','focus_verified'],'perks interaction',
+                    ['type','file_preview','selected_value','focus_verified']);
+                  ok(p.interaction.file_preview===true&&p.interaction.focus_verified===true,'perks flags');
+                  pubChoice(p.interaction.selected_value,['NONEMPTY','EMPTY'],'perks selection');
+                }else fail('unapproved interaction');
+              }
+              for(const f of pubArray(p.faces,'font faces',50)){
+                pubClosed(f,['family','weight','status'],'font face',['family','weight','status']);
+                ok(typeof f.family==='string'&&/^(?:Vazirmatn|'Vazirmatn'|"Vazirmatn")$/i.test(f.family)&&
+                  !/[^\x20-\x7e]/.test(f.family),'unapproved font face');
+                pubWeight(f.weight,'font face weight',{range:true});
+                pubChoice(f.status,['unloaded','loading','loaded','error'],'font face status');
+              }
+              for(const n of pubArray(p.font_network,'font network',100)){
+                pubClosed(n,['url','status'],'font network',['url','status']);
+                pubText(n.url,'woff2 url',/^vazirmatn-(?:300|400|500|700|900)\.woff2$/i,125);
+                ok(n.status==='FAILED'||Number.isInteger(n.status)&&n.status>=100&&n.status<=599,'invalid font network HTTP status');
+                ok(n.status===200,'font network request not HTTP 200');
+              }
+              ok(pubArray(p.page_errors,'page errors',0).length===0 &&
+                pubArray(p.console_errors,'console errors',0).length===0,'untrusted browser error text');
+              const image=screens.includes(p.name)?key+'-'+p.name+'-'+p.width+'.jpg':null;
+              ok((p.image??null)===image,'incorrect image binding');
+              if(['gravity-flow','flow-frontend'].includes(p.name)){
+                pubClosed(p.grid_mode,['expected','actual','status'],'native grid',['expected','actual','status']);
+                const expected=locale==='fa_IR'?'rtl':'ltr';
+                pubChoice(p.grid_mode.expected,[expected],'native grid expected');
+                pubChoice(p.grid_mode.actual,['rtl','ltr',null],'native grid actual');
+                const state=p.grid_mode.actual===null?'NOT_PROVEN':p.grid_mode.actual===expected?'PASS':'FAIL';
+                pubChoice(p.grid_mode.status,[state],'native grid status');
+                if(state==='FAIL')assessment='FAIL';
+                else if(state==='NOT_PROVEN'&&assessment!=='FAIL')assessment='NOT_PROVEN';
+              } else ok(!Object.hasOwn(p,'grid_mode'),'unapproved grid mode outside native Grid');
+              if(!withVazir){
+                ok(!p.faces.some(x=>/vazirmatn/i.test(x.family)&&x.status==='loaded')&&
+                  !p.font_network.some(x=>x.status===200)&&
+                  ![p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family)),
+                  'BASELINE font contamination');
+              }
+            }
+            ok(seen.size===18&&surfaces.every(s=>widths.every(w=>seen.has(s+'@'+w))),'missing browser case');
+            pubChoice(d.grid_acceptance,[assessment],'native grid assessment');
+            if(withVazir&&locale==='fa_IR')for(const w of widths){
+              const scoped=pages.filter(p=>p.width===w);
+              ok(scoped.some(p=>p.faces.some(x=>/vazirmatn/i.test(x.family)&&x.status==='loaded')&&
+                p.font_network.some(x=>x.status===200)&&
+                [p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family))),
+                'same-page Vazirmatn font proof');
+            }
+          };
+          // Independently validate everything read from downloaded JSON before the
+          // historical publisher traverses it. Do not trust Producer or staging alone.
+          ok(pubHead.test(head||''),'exact Head identity');
+          pubClosed(release,['status','version','release_tag','name','zip_sha256','bytes','entrypoint','source'],'official-release',
+            ['status','version','release_tag','zip_sha256','entrypoint']);
+          ok(release.status==='PASS'&&release.version==='1.5.0'&&release.release_tag==='v1.5.0'&&
+            release.zip_sha256===pubZipSha&&release.entrypoint==='vazir-font-wp/vazir-font-wp.php','release identity');
+          if(Object.hasOwn(release,'name'))ok(release.name==='vazir-font-wp-1.5.0.zip','release name');
+          if(Object.hasOwn(release,'bytes'))ok(release.bytes===300139,'release size');
+          if(Object.hasOwn(release,'source'))ok(release.source==='https://github.com/rezahh107/Vazir/releases/tag/v1.5.0','release source');
+          pubClosed(settings,['version','active','options'],'vazir-settings',['version','active','options']);
+          ok(settings.version==='1.5.0'&&settings.active===true,'Vazir active version');
+          pubClosed(settings.options,['enable_frontend','enable_admin','enable_gravity_forms','font_weights','exclude_selectors'],
+            'vazir-settings.options',['enable_frontend','enable_admin','enable_gravity_forms','font_weights']);
+          ok(['enable_frontend','enable_admin','enable_gravity_forms'].every(k=>settings.options[k]===true),'Vazir settings enabled');
+          const pubWeights=pubArray(settings.options.font_weights,'vazir-settings.font_weights',5);
+          ok(pubWeights.length===5&&new Set(pubWeights).size===5&&
+            ['300','400','500','700','900'].every(w=>pubWeights.includes(w)),
+            'Vazir five official font weights exclusively');
+          if(settings.options.exclude_selectors!==undefined)
+            for(const v of pubArray(settings.options.exclude_selectors,'excluded selectors',50))
+              ok(pubSelectors.has(v),'unapproved exclusion selector');
+          const pubDocs=new Map();let pubSharedEnvironment=null,pubSharedPgrVersion=null;
+          for(const key of profiles){
+            const d=json(key+'.json');
+            pubProfile(d,'profile.'+key,key);pubDocs.set(key,d);
+            if(pubSharedEnvironment===null){pubSharedEnvironment=d.environment;pubSharedPgrVersion=d.persiangravity_version;}
+            else{
+              ok(d.persiangravity_version===pubSharedPgrVersion,'PGR version drift');
+              for(const part of ['wordpress','php','gravity','chromium','playwright','db_snapshot_sha256'])
+                ok(pubEqual(d.environment[part],pubSharedEnvironment[part]),'environment drift '+part);
+            }
+          }
+          pubClosed(report,['schema','exact_head','status','profiles','vazir_version','vazir_sha256','comparisons','interpretation','grid_acceptance','historic_system_status','unproven'],'comparison',
+            ['schema','exact_head','status','profiles','vazir_version','vazir_sha256','comparisons','interpretation','grid_acceptance','historic_system_status','unproven']);
+          ok(report.schema==='g013-vazir-compare-v1'&&report.status==='PASS'&&report.exact_head===head&&
+            report.vazir_version==='1.5.0'&&report.vazir_sha256===pubZipSha&&
+            pubEqual(report.profiles,profiles),'comparison identity');
+          pubClosed(report.grid_acceptance,profiles,'comparison.grid_acceptance',profiles);
+          for(const key of profiles){
+            pubChoice(report.grid_acceptance[key],['PASS','FAIL','NOT_PROVEN'],'comparison grid status');
+            ok(report.grid_acceptance[key]===pubDocs.get(key).grid_acceptance,'comparison/profile grid mismatch');
+          }
+          ok(report.interpretation==='Measured observations only; font differences are expected, not automatically defects.','comparison.interpretation');
+          ok(report.historic_system_status==='PR #96 historical findings predate PR #97 responsive repair.','comparison.historic_system_status');
+          ok(pubEqual(report.unproven,['Owner live settings','unreached vendor portals','screen-reader speech','other vendor versions']),'comparison.unproven');
+          const pubPairs=pubArray(report.comparisons,'comparison.comparisons',36);
+          ok(pubPairs.length===36,'complete 36 pairs');
+          const pubPairKeys=new Set();
+          for(const item of pubPairs){
+            pubClosed(item,['locale','page','width','baseline_document_width','with_vazir_document_width','baseline_family','with_vazir_family','classification'],
+              'comparison.pair',['locale','page','width','baseline_document_width','with_vazir_document_width','baseline_family','with_vazir_family','classification']);
+            pubChoice(item.locale,['fa_IR','en_US'],'comparison locale');
+            pubChoice(item.page,surfaces,'comparison page');pubChoice(item.width,widths,'comparison width');
+            const pairId=item.locale+'@'+item.page+'@'+item.width;
+            ok(!pubPairKeys.has(pairId),'duplicate comparison');pubPairKeys.add(pairId);
+            pubNumber(item.baseline_document_width,'baseline document width',1);
+            pubNumber(item.with_vazir_document_width,'Vazir document width',1);
+            pubFamily(item.baseline_family,'baseline family');pubFamily(item.with_vazir_family,'Vazir family');
+            const classification=item.with_vazir_document_width>item.width
+              ?item.baseline_document_width>item.width?'PRESENT_IN_BOTH':'WITH_VAZIR_ONLY_OVERFLOW'
+              :item.baseline_document_width>item.width?'PREEXISTING_BASELINE_ONLY':'NO_DOCUMENT_OVERFLOW_OBSERVED';
+            pubChoice(item.classification,[classification],'comparison classification');
+            const base=pubDocs.get('baseline-'+item.locale).pages.find(p=>p.name===item.page&&p.width===item.width);
+            const withFont=pubDocs.get('with-vazir-'+item.locale).pages.find(p=>p.name===item.page&&p.width===item.width);
+            ok(base&&withFont&&item.baseline_document_width===base.document_width&&
+              item.with_vazir_document_width===withFont.document_width&&
+              item.baseline_family===base.body.family&&item.with_vazir_family===withFont.body.family,
+              'paired browser measurements drift');
+          }
+          ok(pubPairKeys.size===36,'incomplete paired coverage');
+          ok(!pubPairs.some(p=>p.classification==='WITH_VAZIR_ONLY_OVERFLOW'),
+            'new Vazir-only document overflow');
+          const pubNames=fs.readdirSync(dir),pubNamesExpected=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
+          for(const p of profiles){pubNamesExpected.add(p+'.json');
+            for(const w of widths)for(const n of screens)pubNamesExpected.add(p+'-'+n+'-'+w+'.jpg');
+          }
+          ok(pubNames.length===pubNamesExpected.size&&pubNames.every(n=>pubNamesExpected.has(n)),
+            'unexpected/missing G013 publication file');
+          // Native G-014 RTL defaults OFF; reject only an unobserved native
+          // mode, a WITH_VAZIR-only mode shift, or broken en_US LTR control.
+          // Individual fa_IR ag-ltr findings remain recorded as native FAIL.
+          for(const locale of ['fa_IR','en_US']){
+            const baseline=pubDocs.get('baseline-'+locale),withFont=pubDocs.get('with-vazir-'+locale);
+            for(const name of ['gravity-flow','flow-frontend'])for(const width of widths){
+              const b=baseline.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              const v=withFont.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              ok(b?.actual!==null&&b?.actual!==undefined&&v?.actual!==null&&
+                v?.actual!==undefined&&b.actual===v.actual,
+                'missing or WITH_VAZIR-changed native Grid '+locale+'/'+name+'/'+width);
+              if(locale==='en_US')ok(b.actual==='ltr','en_US Grid LTR control');
+            }
+          }
+          // G013_PUBLISHER_SEMANTIC_END
+
+          ok(release.status==='PASS'&&release.version==='1.5.0'&&release.release_tag==='v1.5.0'&&
+            release.entrypoint==='vazir-font-wp/vazir-font-wp.php'&&release.zip_sha256===sha,'release identity');
+          ok(settings.version==='1.5.0'&&settings.active===true&&
+            ['enable_frontend','enable_admin','enable_gravity_forms'].every(k=>settings.options?.[k]===true)&&
+            Array.isArray(settings.options?.font_weights)&&
+            ['300','400','500','700','900'].every(w=>settings.options.font_weights.includes(w)),'settings');
+          const docs=new Map(),expectedKeys=new Set(surfaces.flatMap(p=>widths.map(w=>p+'@'+w)));
+          for(const key of profiles){
+            const d=json(key+'.json'),withFont=key.startsWith('with-vazir'),locale=key.endsWith('fa_IR')?'fa_IR':'en_US';
+            ok(d.schema==='g013-vazir-coexistence-v1'&&d.status==='PASS'&&d.exact_head===head&&
+              d.profile===(withFont?'WITH_VAZIR':'BASELINE')&&d.locale===locale&&
+              (withFont?(d.vazir_version==='1.5.0'&&d.expected_vazir_sha256===sha):
+                (d.vazir_version===null&&d.expected_vazir_sha256===null))&&
+              typeof d.persiangravity_version==='string'&&
+              typeof d.environment?.chromium==='string'&&
+              Array.isArray(d.pages)&&d.pages.length===18,'profile identity '+key);
+            const visited=new Set();
+            for(const p of d.pages){
+              const id=identity(p),screen=screens.includes(p.name)?key+'-'+p.name+'-'+p.width+'.jpg':null;
+              ok(expectedKeys.has(id)&&!visited.has(id)&&p.viewport===p.width&&
+                finite(p.document_width)&&p.document_width>=1&&p.document_width<=200000&&
+                ['rtl','ltr'].includes(p.direction)&&
+                typeof p.body?.family==='string'&&p.body.family.length>0&&
+                ['rtl','ltr'].includes(p.body.direction)&&finite(p.body.width)&&finite(p.body.height)&&
+                p.body.width>=0&&p.body.height>=0&&
+                Array.isArray(p.font_network)&&Array.isArray(p.page_errors)&&
+                Array.isArray(p.console_errors)&&Array.isArray(p.faces)&&
+                p.font_network.every(x=>(x.status==='FAILED'||Number.isInteger(x.status)&&x.status>=100&&x.status<=599)&&
+                  typeof x.url==='string'&&/^[a-z0-9_.-]+\.woff2$/i.test(x.url))&&
+                p.page_errors.every(x=>typeof x==='string'&&x.length<=170)&&
+                p.console_errors.every(x=>typeof x==='string'&&x.length<=170)&&
+                p.page_errors.length===0&&p.console_errors.length===0&&
+                p.font_network.every(x=>x.status===200)&&
+                p.faces.every(x=>typeof x.family==='string'&&typeof x.weight==='string'&&
+                  ['unloaded','loading','loaded','error'].includes(x.status))&&
+                (p.image||null)===screen,'invalid case '+key+'/'+id);
+              if(!withFont)ok(!p.faces.some(x=>/vazirmatn/i.test(x.family)&&x.status==='loaded')&&
+                !p.font_network.some(x=>x.status===200)&&
+                ![p.body,p.headline,p.label,p.input,p.button].some(x=>x&&/vazirmatn/i.test(x.family)),
+                'contaminated BASELINE '+key+'/'+id);
+              visited.add(id);
+            }
+            ok(visited.size===18,'missing cases '+key);
+            if(withFont&&locale==='fa_IR')for(const w of widths){
+              const list=d.pages.filter(p=>p.width===w);
+              ok(list.some(p=>
+                p.faces.some(f=>/vazirmatn/i.test(f.family)&&f.status==='loaded')&&
+                p.font_network.some(f=>f.status===200)&&
+                [p.body,p.headline,p.label,p.input,p.button].some(f=>f&&/vazirmatn/i.test(f.family))),
+                'missing same-page real font evidence '+key+'/'+w);
+            }
+            const nativeGrids=d.pages.filter(p=>['gravity-flow','flow-frontend'].includes(p.name));
+            ok(nativeGrids.length===4 && nativeGrids.every(p=>{
+              const g=p.grid_mode,expected=locale==='fa_IR'?'rtl':'ltr';
+              return g&&g.expected===expected&&['rtl','ltr',null].includes(g.actual)&&
+                g.status===(g.actual===null?'NOT_PROVEN':g.actual===expected?'PASS':'FAIL');
+            })&&d.grid_acceptance===(nativeGrids.some(p=>p.grid_mode.status==='FAIL')?'FAIL':
+              nativeGrids.some(p=>p.grid_mode.status==='NOT_PROVEN')?'NOT_PROVEN':'PASS'),
+              'misrepresented native AG Grid state '+key);
+            ok(/^[a-f0-9]{64}$/.test(d.environment.db_snapshot_sha256||''),
+              'missing actual profile database snapshot hash '+key);
+            docs.set(key,d);
+          }
+          ok(new Set([...docs.values()].map(d=>d.persiangravity_version)).size===1,'runtime drift');
+          ok(new Set([...docs.values()].map(d=>d.environment.db_snapshot_sha256)).size===1,
+            'profile DB snapshot identity drift');
+          for(const locale of ['fa_IR','en_US']){
+            const baseline=docs.get('baseline-'+locale),withFont=docs.get('with-vazir-'+locale);
+            for(const name of ['gravity-flow','flow-frontend'])for(const width of widths){
+              const b=baseline.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              const v=withFont.pages.find(p=>p.name===name&&p.width===width)?.grid_mode;
+              ok(b?.actual!==null&&b?.actual!==undefined&&v?.actual!==null&&
+                v?.actual!==undefined&&b.actual===v.actual,
+                'native Grid unmeasured or WITH_VAZIR-changed '+locale+'/'+name+'/'+width);
+              if(locale==='en_US')ok(b.actual==='ltr','English native Grid not LTR');
+            }
+          }
+          // report already parsed and semantically checked before the legacy gate.
+          ok(report.schema==='g013-vazir-compare-v1'&&report.status==='PASS'&&report.exact_head===head&&
+            report.vazir_version==='1.5.0'&&report.vazir_sha256===sha&&
+            JSON.stringify(report.profiles)===JSON.stringify(profiles)&&
+            Array.isArray(report.comparisons)&&report.comparisons.length===36,'comparison identity');
+          const comparisons=new Map();
+          for(const c of report.comparisons){
+            ok(['fa_IR','en_US'].includes(c.locale)&&surfaces.includes(c.page)&&widths.includes(c.width),
+              'unknown comparison');
+            const k=c.locale+'@'+c.page+'@'+c.width;
+            ok(!comparisons.has(k),'duplicate comparison '+k);comparisons.set(k,c);
+          }
+          for(const locale of ['fa_IR','en_US']){
+            const b=docs.get('baseline-'+locale),v=docs.get('with-vazir-'+locale);
+            const mapped=new Map(v.pages.map(p=>[identity(p),p]));
+            for(const p of b.pages){
+              const paired=mapped.get(identity(p)),k=locale+'@'+p.name+'@'+p.width;
+              ok(paired&&comparisons.has(k),'missing pair '+k);
+              const expected={locale,page:p.name,width:p.width,
+                baseline_document_width:p.document_width,with_vazir_document_width:paired.document_width,
+                baseline_family:p.body.family,with_vazir_family:paired.body.family,
+                classification:classification(p.document_width,paired.document_width,p.width)};
+              ok(JSON.stringify(comparisons.get(k))===JSON.stringify(expected),
+                'fabricated/inconsistent paired result '+k);
+            }
+          }
+          // This is a second independently recomputed overflow check, not
+          // acceptance solely because the source comparison self-reported PASS.
+          ok(!report.comparisons.some(p=>p.classification==='WITH_VAZIR_ONLY_OVERFLOW'),
+            'new Vazir-only document overflow');
+          function jpegDimensions(bytes,name) {
+            ok(bytes.length>=100 && bytes[0]===255 && bytes[1]===216, 'corrupt JPEG SOI '+name);
+            let pos=2,frame=null,scan=false,ended=false;
+            while(pos<bytes.length) {
+              ok(bytes[pos]===255, 'corrupt JPEG marker '+name);
+              while(bytes[pos]===255)pos++;
+              const marker=bytes[pos++];
+              if(marker===0xd9){ended=true;break;}
+              if(marker===0x01 || marker>=0xd0&&marker<=0xd7)continue;
+              ok(pos+2<=bytes.length,'truncated JPEG segment '+name);
+              const length=bytes.readUInt16BE(pos);
+              ok(length>=2 && pos+length<=bytes.length,'bad JPEG segment '+name);
+              if([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+                ok(length>=8 && !frame,'bad JPEG frame '+name);
+                frame={height:bytes.readUInt16BE(pos+3),width:bytes.readUInt16BE(pos+5)};
+                ok(frame.height>0 && frame.width>0,'empty JPEG frame '+name);
+              }
+              pos+=length;
+              if(marker===0xda) {
+                scan=true;
+                while(pos<bytes.length-1){
+                  if(bytes[pos]!==255){pos++;continue;}
+                  const next=bytes[pos+1];
+                  if(next===0 || next>=0xd0&&next<=0xd7){pos+=2;continue;}
+                  if(next===255){pos++;continue;}
+                  break;
+                }
+              }
+            }
+            ok(frame && scan && ended && pos===bytes.length,'incomplete/corrupt JPEG '+name);
+            return frame;
+          }
+          const required=new Set(['README.md','comparison.json','official-release.json','vazir-settings.json']);
+          for(const key of profiles){required.add(key+'.json');
+            for(const w of widths)for(const name of screens)required.add(key+'-'+name+'-'+w+'.jpg');
+          }
+          const actual=fs.readdirSync(dir,{withFileTypes:true}),sheet=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+          // README itself is untrusted publisher input; reject extra links/content.
+          const expectedSheet=['# G013 real Vazir coexistence — browser evidence','',
+            'Exact PersianGravity Head: '+head,'Official Vazir v1.5.0: '+sha,
+            'Four authenticated profiles, nine surfaces, two viewports: 72 observations / 36 paired comparisons.','',
+            'Screenshots (1280px and 390px):',''];
+          for(const key of profiles)for(const width of widths)for(const name of screens){
+            const image=key+'-'+name+'-'+width+'.jpg';
+            expectedSheet.push('- ['+image+']('+image+')');
+          }
+          expectedSheet.push('','Measurements: comparison.json. These files do not prove browser authenticity independently.');
+          ok(sheet===expectedSheet.join('\n')+'\n','untrusted README content/links');
+          const links=[...sheet.matchAll(/\]\(([a-z0-9_-]+\.jpg)\)/gi)].map(x=>x[1]);
+          ok(actual.length===required.size&&links.length===32&&new Set(links).size===32,'file/link coverage');
+          for(const entry of actual){
+            ok(required.has(entry.name)&&entry.isFile()&&!entry.isSymbolicLink(),'unsafe artifact '+entry.name);
+            const data=fs.readFileSync(path.join(dir,entry.name));
+            ok(data.length>=50&&data.length<=4000000,'file size '+entry.name);
+            if(entry.name.endsWith('.jpg')){
+              ok(links.includes(entry.name),'unlinked JPEG '+entry.name);
+              const dimensions=jpegDimensions(data,entry.name);
+              const viewport=Number(entry.name.match(/-(1280|390)\.jpg$/)?.[1]);
+              ok(dimensions.width>=viewport&&dimensions.height>0,'JPEG geometry '+entry.name);
+            }
+          }
+
+          console.log('G013_INDEPENDENT_GATE_PASS exact Head, 72 cases, 36 recomputed comparisons, 32 JPEGs');
+          // G013_EVIDENCE_GATE_END
+          G013_EVIDENCE_GATE
+          ) >"$private_dir/diagnostics.log" 2>&1
+          qualification_rc=$?
+          set -e
+          if rtl_result="$(node tests/real-integration/g013-public-evidence-contract.mjs rtl-failed \
+            "$private_dir/artifacts/vazir-coexistence-evidence" "$WU008_PGR_SHA" \
+            2>>"$private_dir/diagnostics.log")" && [[ "$rtl_result" == FAIL ]]; then
+            printf 'rtl=FAIL\n' >> "$GITHUB_OUTPUT"
+          elif (( qualification_rc == 0 )); then
+            printf 'rtl=PASS\n' >> "$GITHUB_OUTPUT"
+          fi
+          # Only fixed phase identifiers may escape the runner-private log.
+          if [[ -f "$private_dir/packages/g013-stage" ]]; then
+            phase_marker="$(< "$private_dir/packages/g013-stage")"
+            case "$phase_marker" in
+              PRECHECK|BASELINE_fa_IR|BASELINE_en_US|RELEASE_DOWNLOAD|RELEASE_VERIFIED|WITH_VAZIR_fa_IR|WITH_VAZIR_en_US|PAIR_COMPARISON|INDEPENDENT_GATE|PACKAGE_INTEGRITY|COMPLETE)
+                printf 'G013 stage=%s\n' "$phase_marker" | tee -a "$GITHUB_STEP_SUMMARY" ;;
+            esac
+          fi
+          # Private G013 scenes never enter public artifacts. Disclose only
+          # fixed case identities and enum status after validating the entire line.
+          expanded_dir="$private_dir/artifacts/g013-acceptance-private"
+          if [[ -d "$expanded_dir" ]]; then
+            safe_expanded="$private_dir/g013-expanded-safe.txt"
+            stages='(PORTAL_DUPLICATE|PORTAL_INIT_MISSING|PORTAL_CROP_DISABLED|PORTAL_VUE_UNMOUNTED|PORTAL_TARGET_REPLACED|SIBLING_INPUT_WAIT|SIBLING_SELECT_FILE|SIBLING_MODAL_WAIT|SIBLING_MODAL_VISIBLE|SIBLING_CROPPER_WAIT|SIBLING_ACTIONS_WAIT|SIBLING_OWNER_UNINITIALIZED|SIBLING_OWNER_NOT_REQUIRED|SIBLING_OWNER_MOUNT_COUNT|SIBLING_OWNER_TARGET_DETACHED|SIBLING_OWNER_MODAL_ABSENT|SIBLING_OWNER_MODAL_DUPLICATE|SIBLING_OWNER_FIELD_MISMATCH|SIBLING_OWNER_CROPPER_HIDDEN|SIBLING_OWNER_ACTION_UNREACHABLE|PRIMARY_OWNER_UNINITIALIZED|PRIMARY_OWNER_NOT_REQUIRED|PRIMARY_OWNER_MOUNT_COUNT|PRIMARY_OWNER_TARGET_DETACHED|PRIMARY_OWNER_MODAL_ABSENT|PRIMARY_OWNER_MODAL_DUPLICATE|PRIMARY_OWNER_FIELD_MISMATCH|PRIMARY_OWNER_CROPPER_HIDDEN|PRIMARY_OWNER_ACTION_UNREACHABLE|SIBLING_OWNER_CHECK|PRIMARY_SELECT_FILE|PRIMARY_MODAL_WAIT|PRIMARY_MODAL_VISIBLE|PRIMARY_CROPPER_WAIT|PRIMARY_ACTIONS_WAIT|SIBLING_TRANSITION_WAIT|PRIMARY_TRANSITION_WAIT|PRIMARY_OWNER_CHECK|PORTAL_STATE_UNRESOLVED|CROP_PAGE_READY|PORTAL_LOOKUP|IMAGE_PREPARED|MODAL_OPENING|CROP_MODAL_SHOWN|CROPPER_RENDERED|ACTIONS_VISIBLE|ACTIONS_REACHABLE|ESCAPE_DISMISS|ESCAPE_CLOSED|CROP_RETRY|CROP_SAVE|CROP_SAVE_MORE_FILES_PENDING|CROP_SAVE_CANVAS_UNREADY_AT_CLICK|CROP_SAVE_CANVAS_UNREADY_AFTER_CLICK|CROP_SAVE_RUNTIME_UNAVAILABLE|CROP_SAVE_CURRENT_FILE_MISSING|CROP_SAVE_BATCH_INDEX_MISMATCH|CROP_SAVE_EDITOR_REMAINED_OPEN|CROP_SAVE_MODAL_REMAINED_VISIBLE|CROP_SAVE_UNRESOLVED|CROP_SAVE_MODAL_WAIT|UPLOAD_PROGRESS_WAIT|UPLOAD_FILE_WAIT|UPLOAD_FILE_NAME_CHECK|UPLOAD_NATIVE_CHECK|UPLOAD_COMPLETE|FILE_VISIBLE|REEDIT_OPENING|VALIDATION_SUBMIT|VALIDATION_RERENDERED)'
+            permitted="(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)(@(perks-admin|fup-crop|gv-block-editor)-(1280|390)(:${stages})?)?"
+            if node tests/real-integration/g013-expanded-check.mjs safe "$expanded_dir" >"$safe_expanded" 2>>"$private_dir/diagnostics.log" &&
+              [[ "$(wc -l < "$safe_expanded")" -eq 1 ]] &&
+              grep -Eq "^G013 expanded baseline-fa_IR=${permitted} baseline-en_US=${permitted} with-vazir-fa_IR=${permitted} with-vazir-en_US=${permitted}$" "$safe_expanded"; then
+              cat "$safe_expanded" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+          if (( qualification_rc != 0 )); then
+            # Optional diagnostics cannot change the original qualification
+            # exit code. Capture first, publish only a complete allowlisted
+            # one-line summary, and never print the private failure log.
+            safe_result="$private_dir/g013-safe-result.txt"
+            if node tests/real-integration/g013-safe-qualification-diagnostic.mjs \
+              "$private_dir/diagnostics.log" >"$safe_result" 2>>"$private_dir/diagnostics.log"; then
+              if [[ "$(wc -l < "$safe_result")" -eq 1 ]] &&
+                grep -Eq '^G013 safe_diagnostic=[A-Z_]+ captured_profiles=[0-4]/4 baseline-fa_IR=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) baseline-en_US=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) with-vazir-fa_IR=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED) with-vazir-en_US=(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)$' "$safe_result"; then
+                cat "$safe_result" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
+            fi
+          fi
+          exit "$qualification_rc"
+
+      - name: Report sanitized G013 result
+        if: always()
+        shell: bash
+        env:
+          G013_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          G013_OUTCOME: ${{ steps.g013.outcome }}
+          G013_RTL: ${{ steps.g013.outputs.rtl }}
+        run: |
+          set -euo pipefail
+          [[ "$G013_HEAD" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          qualification=NOT_PROVEN
+          rtl=NOT_PROVEN
+          case "$G013_OUTCOME" in
+            success)
+              case "$G013_RTL" in
+                PASS) qualification=PASS; rtl=PASS ;;
+                FAIL) qualification=PAIR_PASS_NATIVE_RTL_FAIL; rtl=FAIL ;;
+              esac
+              ;;
+            failure)
+              qualification=FAIL
+              if [[ "$G013_RTL" == FAIL ]]; then rtl=FAIL; fi
+              ;;
+          esac
+          printf 'G013 head=%s qualification=%s fa_IR_RTL=%s\n' \
+            "$G013_HEAD" "$qualification" "$rtl" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload bounded runtime evidence only
         if: always()
