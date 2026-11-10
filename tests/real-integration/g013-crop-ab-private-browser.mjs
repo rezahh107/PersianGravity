@@ -32,7 +32,7 @@ function guard(ok,msg){if(!ok)throw Error(msg);}
 
 // Test-only observation. Nothing returned contains image bytes, private paths,
 // user records, file names, URLs, DOM HTML, or vendor objects.
-function inspectDiagnosticCropStateInPage({formId,fieldId,readyOnly=false}){
+function inspectDiagnosticCropStateInPage({formId,fieldId,readyOnly=false,skipCanvas=false}){
   const instance=window['GPFUP_'+formId+'_'+fieldId];
   const store=instance?.$store;
   const queue=instance?.vm?[instance.vm]:[],seen=new Set();
@@ -47,7 +47,7 @@ function inspectDiagnosticCropStateInPage({formId,fieldId,readyOnly=false}){
   }
   const ref=editor?.$refs?.cropper;
   let canvasState=!ref?'REF_MISSING':'METHOD_MISSING';
-  if(ref&&typeof ref.getResult==='function'){
+  if(!skipCanvas&&ref&&typeof ref.getResult==='function'){
     try{
       const canvas=ref.getResult()?.canvas;
       canvasState=!canvas?'CANVAS_MISSING':
@@ -394,10 +394,13 @@ async function crop(page,entry){
       }
       const cropper=editor?.$refs?.cropper;
       let canvasReady=false;
+      let canvasState=!cropper?'REF_MISSING':'METHOD_MISSING';
       if(cropper&&typeof cropper.getResult==='function'){
-        try{const canvas=cropper.getResult()?.canvas;
+        try{
+          const canvas=cropper.getResult()?.canvas;
           canvasReady=!!canvas&&canvas.width>0&&canvas.height>0;
-        }catch{}
+          canvasState=!canvas?'CANVAS_MISSING':canvasReady?'CANVAS_READY':'CANVAS_INVALID';
+        }catch{canvasState='GET_RESULT_EXCEPTION';}
       }
       const added=store?.getters?.currentAddedFiles;
       const index=store?.getters?.currentImageIndex;
@@ -409,6 +412,7 @@ async function crop(page,entry){
         addedCount:Array.isArray(added)?Math.min(100,added.length):-1,
         currentIndex:Number.isInteger(index)?Math.max(-1,Math.min(100,index)):-1,
         cropperRefPresent:!!cropper,canvasReady,
+        imageLoaded:cropper?.imageLoaded===true,canvasState,
         modalStillVisible:!!modal?.isConnected&&modal?.getBoundingClientRect().width>0&&
           style?.display!=='none'&&style?.visibility!=='hidden'&&Number(style?.opacity)>0};
     },{formId:id,fieldId:1});
@@ -421,7 +425,7 @@ async function crop(page,entry){
   }
   if(diagMode){
     entry.diagnostic.before=await page.evaluate(inspectDiagnosticCropStateInPage,
-      {formId:id,fieldId:1});
+      {formId:id,fieldId:1,skipCanvas:true});
     // Native capture listener observes the real click before Vue's Save handler.
     // It never calls getResult(), mutates the editor, or intercepts the event.
     await controls.save.evaluate((button,{formId,fieldId})=>{
