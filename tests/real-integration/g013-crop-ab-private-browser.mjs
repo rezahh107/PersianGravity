@@ -491,6 +491,17 @@ async function crop(page,entry){
   entry.stage='UPLOAD_COMPLETE';
   entry.stage='FILE_VISIBLE';
   entry.stage='REEDIT_OPENING';
+  if(diagMode==='B'){
+    // Vendor ImagePreview.vue hides the edit control unless its file card is
+    // hovered or focused. Observe the real owner-scoped CSS before/after hover.
+    const edit=page.locator(root+' .gpfup__edit').first();
+    entry.diagnostic.editControlPresent=(await edit.count())>0;
+    entry.diagnostic.editVisibleBeforeHover=await edit.isVisible();
+    await page.locator(root+' .gpfup__file').first().hover();
+    entry.diagnostic.editVisibleAfterHover=await edit.isVisible();
+    guard(entry.diagnostic.editVisibleAfterHover,
+      'Native owner-scoped Edit control not visible after genuine hover');
+  }
   await page.locator(root+' .gpfup__edit').first().click();
   let reedit=await verifyOpen(1);
   await reedit.cancel.click();
@@ -509,6 +520,15 @@ async function crop(page,entry){
     'Native GF record did not survive validation rerender');
   entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
   // Re-edit after the genuine server validation rerender, not just before it.
+  if(diagMode==='B'){
+    const edit=page.locator(root+' .gpfup__edit').first();
+    entry.diagnostic.postValidationEditPresent=(await edit.count())>0;
+    entry.diagnostic.postValidationEditVisibleBeforeHover=await edit.isVisible();
+    await page.locator(root+' .gpfup__file').first().hover();
+    entry.diagnostic.postValidationEditVisibleAfterHover=await edit.isVisible();
+    guard(entry.diagnostic.postValidationEditVisibleAfterHover,
+      'Post-validation owner-scoped Edit control not visible after hover');
+  }
   await page.locator(root+' .gpfup__edit').first().click();
   reedit=await verifyOpen(1);
   await reedit.cancel.click();
