@@ -121,6 +121,17 @@ const allowed=['REF_MISSING','METHOD_MISSING','CANVAS_MISSING','CANVAS_INVALID',
 const state=s=>allowed.includes(s)?s:'NOT_CAPTURED';
 const bool=v=>v===true?'Y':v===false?'N':'U';
 const status=rc===0&&item?.status==='PASS'?'PASS':item?'FAIL':'NOT_CAPTURED';
+const permittedStages=['CROP_SAVE_CANVAS_UNREADY_AT_CLICK','CROP_SAVE_CANVAS_UNREADY_AFTER_CLICK',
+  'CROP_SAVE_EDITOR_REMAINED_OPEN','CROP_SAVE_RUNTIME_UNAVAILABLE','CROP_SAVE_MODAL_REMAINED_VISIBLE',
+  'CROP_SAVE_CURRENT_FILE_MISSING','CROP_SAVE_BATCH_INDEX_MISMATCH',
+  'CROP_SAVE_MORE_FILES_PENDING','CROP_SAVE_UNRESOLVED',
+  'CROP_SAVE_MODAL_WAIT','UPLOAD_PROGRESS_WAIT','UPLOAD_FILE_WAIT','UPLOAD_FILE_NAME_CHECK',
+  'UPLOAD_NATIVE_CHECK','UPLOAD_COMPLETE','FILE_VISIBLE','REEDIT_OPENING',
+  'VALIDATION_SUBMIT','VALIDATION_RERENDERED'];
+const stage=permittedStages.includes(item?.stage)?item.stage:'OTHER';
+const observed=Array.isArray(item?.observed)?item.observed:[];
+const failure= ['WAIT_OR_UNAVAILABLE','UNSATISFIED_REAL_BEHAVIOR'].includes(item?.failure_class)?
+  item.failure_class:'NONE';
 const before=d.preflight||{};
 const after=d.afterTimeout||d.afterModalClosed||{};
 const click=d.clickBoundary||{};
@@ -135,7 +146,11 @@ console.log('G013_AB_SAFE mode='+mode+' outcome='+status+
   ' clickImage='+bool(click.imageLoaded)+
   ' postCanvas='+state(after.canvasState)+
   ' postOpen='+bool(after.editorOpen)+
-  ' nativeUpload='+bool(d.nativeUploadConfirmed));
+  ' nativeUpload='+bool(d.nativeUploadConfirmed)+
+  ' stage='+stage+' failure='+failure+
+  ' reedit='+bool(observed.includes('RERENDERED_PREVIEW_REEDIT'))+
+  ' validation='+bool(observed.includes('AUTHENTIC_GF_SERVER_VALIDATION'))+
+  ' postPersist='+bool(observed.includes('POST_VALIDATION_FILE_REHYDRATED')));
 G013_AB_SAFE_GATE
   done
   restore_profile fa_IR
