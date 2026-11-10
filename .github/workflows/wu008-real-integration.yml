@@ -1750,7 +1750,7 @@ jobs:
           if [[ "${WU008_CROP_AB_DIAG:-}" == 1 ]]; then
             ab_summary="$private_dir/g013-ab-summary.txt"
             if grep '^G013_AB_SAFE mode=' "$private_dir/diagnostics.log" > "$ab_summary"; then
-              ab_re='^G013_AB_SAFE mode=(A|B) outcome=(PASS|FAIL|NOT_CAPTURED) negative=[YNU] readiness=[YNU] preRef=[YNU] preImage=[YNU] preCanvas=(REF_MISSING|METHOD_MISSING|CANVAS_MISSING|CANVAS_INVALID|GET_RESULT_EXCEPTION|CANVAS_READY|NOT_CAPTURED) click=[YNU] clickRef=[YNU] clickImage=[YNU] postCanvas=(REF_MISSING|METHOD_MISSING|CANVAS_MISSING|CANVAS_INVALID|GET_RESULT_EXCEPTION|CANVAS_READY|NOT_CAPTURED) postOpen=[YNU] nativeUpload=[YNU]$'
+              ab_re='^G013_AB_SAFE mode=(A|B) outcome=(PASS|FAIL|NOT_CAPTURED) negative=[YNU] readiness=[YNU] preRef=[YNU] preImage=[YNU] preCanvas=(REF_MISSING|METHOD_MISSING|CANVAS_MISSING|CANVAS_INVALID|GET_RESULT_EXCEPTION|CANVAS_READY|NOT_CAPTURED) click=[YNU] clickRef=[YNU] clickImage=[YNU] postCanvas=(REF_MISSING|METHOD_MISSING|CANVAS_MISSING|CANVAS_INVALID|GET_RESULT_EXCEPTION|CANVAS_READY|NOT_CAPTURED) postOpen=[YNU] nativeUpload=[YNU] stage=(CROP_SAVE_[A-Z_]+|UPLOAD_[A-Z_]+|FILE_VISIBLE|REEDIT_OPENING|VALIDATION_SUBMIT|VALIDATION_RERENDERED|OTHER) failure=(NONE|WAIT_OR_UNAVAILABLE|UNSATISFIED_REAL_BEHAVIOR) reedit=[YNU] validation=[YNU] postPersist=[YNU]$'
               if [[ "$(wc -l < "$ab_summary")" -eq 2 ]] &&
                 [[ "$(grep -Ec "$ab_re" "$ab_summary")" -eq 2 ]] &&
                 [[ "$(sed -n '1p' "$ab_summary")" == "G013_AB_SAFE mode=A "* ]] &&
