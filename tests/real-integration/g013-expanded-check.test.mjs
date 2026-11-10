@@ -201,3 +201,18 @@ test('fine-grained crop phases are privacy-safe allowlisted statuses',()=>{
     }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('crop ownership failure codes are allowlisted and exclude private DOM state',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-ownership-diagnostic-'));
+ try{
+  for(const stage of ["SIBLING_OWNER_UNINITIALIZED","SIBLING_OWNER_NOT_REQUIRED","SIBLING_OWNER_MOUNT_COUNT","SIBLING_OWNER_TARGET_DETACHED","SIBLING_OWNER_MODAL_ABSENT","SIBLING_OWNER_MODAL_DUPLICATE","SIBLING_OWNER_FIELD_MISMATCH","SIBLING_OWNER_CROPPER_HIDDEN","SIBLING_OWNER_ACTION_UNREACHABLE","PRIMARY_OWNER_UNINITIALIZED","PRIMARY_OWNER_NOT_REQUIRED","PRIMARY_OWNER_MOUNT_COUNT","PRIMARY_OWNER_TARGET_DETACHED","PRIMARY_OWNER_MODAL_ABSENT","PRIMARY_OWNER_MODAL_DUPLICATE","PRIMARY_OWNER_FIELD_MISMATCH","PRIMARY_OWNER_CROPPER_HIDDEN","PRIMARY_OWNER_ACTION_UNREACHABLE"]){
+   const report=valid();report.status='NOT_PROVEN';
+   report.cases[2].status='NOT_PROVEN';report.cases[2].stage=stage;
+   report.cases[2].private_payload='SENSITIVE_DOM_NEVER_PUBLIC';
+   fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(report));
+   const result=safeSummary(dir);
+   assert.ok(result.includes('@fup-crop-1280:'+stage));
+   assert.ok(!result.includes('SENSITIVE_DOM_NEVER_PUBLIC'));
+  }
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

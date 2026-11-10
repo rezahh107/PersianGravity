@@ -234,7 +234,20 @@ async function crop(page,entry){
     await cancel.waitFor({state:'visible'});
     await save.waitFor({state:'visible'});
     entry.stage=which+'_OWNER_CHECK';
-    const outcome=await inspect(fieldId);
+    const observation=await page.evaluate(inspectCropSurfaceInPage,{formId:id,fieldId});
+    const outcome=classifyCropSurface(observation);
+    if(outcome!=='READY'){
+      // Only fixed classification codes, not raw DOM or runtime objects.
+      const issue=outcome==='CROP_UNINITIALIZED'?'UNINITIALIZED':
+        outcome==='CROP_NOT_REQUIRED'?'NOT_REQUIRED':
+        outcome==='CROP_MOUNT_UNAVAILABLE'?
+          (observation.mountCount!==1?'MOUNT_COUNT':'TARGET_DETACHED'):
+        outcome==='CROP_MODAL_ABSENT'?'MODAL_ABSENT':
+        outcome==='CROP_MODAL_DUPLICATE'?'MODAL_DUPLICATE':
+        outcome==='CROP_WRONG_FIELD'?'FIELD_MISMATCH':
+        outcome==='CROP_SURFACE_HIDDEN'?'CROPPER_HIDDEN':'ACTION_UNREACHABLE';
+      entry.stage=which+'_OWNER_'+issue;
+    }
     guard(outcome==='READY','Wrong/incomplete real Cropper: '+outcome);
     const cg=await measure(page,'.cropper__lightbox:visible button.gpfup__cancel');
     const sg=await measure(page,'.cropper__lightbox:visible button.gpfup__crop');
