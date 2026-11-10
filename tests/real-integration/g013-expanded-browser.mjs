@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
-import { classifyPortalProbe } from './g013-expanded-check.mjs';
+import { classifyPortalProbe, inspectCropSurfaceInPage, classifyCropSurface } from './g013-expanded-check.mjs';
 
 const profile=process.argv[2], locale=process.argv[3];
 if(!['BASELINE','WITH_VAZIR'].includes(profile)||!['fa_IR','en_US'].includes(locale))
@@ -172,7 +172,8 @@ async function crop(page,entry){
     entry.portal_probe=witness; // Private runner-only file, never public.
     entry.stage=classifyPortalProbe(witness);
   }
-  guard(portalCount===1,'Authentic FUP crop portal absent');
+  // The old ID check is diagnostics only: target-slim replaces this node.
+  // Functional acceptance below must validate the mounted field-owned surface.
   const image=await page.evaluate(()=>{
     const canvas=document.createElement('canvas');
     canvas.width=240;canvas.height=180;
@@ -181,38 +182,95 @@ async function crop(page,entry){
     context.fillStyle='#333';context.fillRect(30,30,180,120);
     return canvas.toDataURL('image/png').split(',')[1];
   });
+
   const source={name:'g013-disposable.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')};
   entry.stage='IMAGE_PREPARED';
+  const siblings='#field_'+id+'_3';
+  const siblingInput=page.locator(siblings+' input[type=file]').first();
+  await page.locator(siblings+' .gpfup__droparea').waitFor({state:'visible',timeout:15000});
+  async function inspect(fieldId){
+    return classifyCropSurface(await page.evaluate(inspectCropSurfaceInPage,
+      {formId:id,fieldId}));
+  }
+  async function checkClosed(fieldId){
+    await page.locator('.cropper__lightbox:visible').first().waitFor({state:'hidden',timeout:12000});
+    guard((await page.locator('.cropper__lightbox:visible').count())===0,
+      'Cropper still visible after dismissal');
+    guard((await page.locator('#field_'+id+'_'+fieldId+' .gpfup__filename').count())===0,
+      'Canceled required crop was uploaded');
+  }
+  async function verifyOpen(fieldId){
+    const modal=page.locator('.cropper__lightbox:visible');
+    await modal.first().waitFor({state:'visible',timeout:20000});
+    // This is the real Vue-mounted modal; the original portal ID is never used.
+    // Multiple active modals fail before any first()/nth() can disguise them.
+    guard((await modal.count())===1,'More than one active Crop modal');
+    await modal.locator('.vue-advanced-cropper').waitFor({state:'visible',timeout:15000});
+    const cancel=modal.locator('button.gpfup__cancel');
+    const save=modal.locator('button.gpfup__crop');
+    await cancel.waitFor({state:'visible'});
+    await save.waitFor({state:'visible'});
+    const outcome=await inspect(fieldId);
+    guard(outcome==='READY','Wrong/incomplete real Cropper: '+outcome);
+    const cg=await measure(page,'.cropper__lightbox:visible button.gpfup__cancel');
+    const sg=await measure(page,'.cropper__lightbox:visible button.gpfup__crop');
+    guard(isOnscreen(cg)&&isOnscreen(sg),'Real Cropper actions clipped at viewport');
+    entry.geometry.push({id:'crop_cancel',...cg},{id:'crop_save',...sg});
+    return {modal,cancel,save};
+  }
+  // Independent second real upload field: a modal owned by field 3 must not
+  // be accepted as field 1. No vendor code or live site state is modified.
+  entry.stage='MODAL_OPENING';
+  guard((await inspect(1))==='CROP_MODAL_ABSENT','Missing-modal negative control failed');
+  await siblingInput.setInputFiles(source);
+  const sibling=await verifyOpen(3);
+  guard((await inspect(1))==='CROP_WRONG_FIELD',
+    'Cross-field modal was incorrectly attributed to field 1');
+  // A temporary duplicate inside this disposable browser is a negative
+  // control only. It must never be used as a successful vendor interaction.
+  const duplicate=page.locator('[data-g013-duplicate-probe]');
+  await page.evaluate(()=>{
+    const el=document.createElement('div');
+    el.className='cropper__lightbox';
+    el.dataset.g013DuplicateProbe='';
+    el.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px';
+    document.body.appendChild(el);
+  });
+  try{
+    guard((await inspect(3))==='CROP_MODAL_DUPLICATE',
+      'Duplicate-modal negative control was accepted');
+  }finally{
+    await duplicate.evaluateAll(nodes=>nodes.forEach(el=>el.remove()));
+  }
+  guard((await inspect(3))==='READY','Real modal not restored after negative control');
+  await sibling.cancel.click();
+  await checkClosed(3);
+  entry.observed.push('REAL_MULTI_FIELD_MODAL_ISOLATION');
+
   async function open(){
     entry.stage='MODAL_OPENING';
     await input.setInputFiles(source);
-    const modal=page.locator(portal+' .cropper__lightbox');
-    await modal.waitFor({state:'visible',timeout:20000});
+    const controls=await verifyOpen(1);
     entry.stage='CROP_MODAL_SHOWN';
-    await page.locator(portal+' .vue-advanced-cropper').first().waitFor({state:'visible',timeout:15000});
     entry.stage='CROPPER_RENDERED';
-    const cancel=page.locator(portal+' button.gpfup__cancel');
-    const save=page.locator(portal+' button.gpfup__crop');
-    await cancel.waitFor({state:'visible'});
-    await save.waitFor({state:'visible'});
     entry.stage='ACTIONS_VISIBLE';
-    const cg=await measure(page,portal+' button.gpfup__cancel');
-    const sg=await measure(page,portal+' button.gpfup__crop');
-    guard(isOnscreen(cg)&&isOnscreen(sg),'Cropper action clipped at viewport');
     entry.stage='ACTIONS_REACHABLE';
-    entry.geometry.push({id:'crop_cancel',...cg},{id:'crop_save',...sg});
-    return {modal,cancel,save};
+    return controls;
   }
   let controls=await open();
   entry.stage='ESCAPE_DISMISS';
   await page.keyboard.press('Escape');
   await controls.modal.waitFor({state:'hidden',timeout:12000});
   entry.stage='ESCAPE_CLOSED';
-  await page.locator(root+' .gpfup__filename').first().waitFor({state:'detached',timeout:20000}).catch(async()=>{
-    guard(await page.locator(root+' .gpfup__filename').count()===0,'Canceled crop was not discarded');
-  });
+  await checkClosed(1);
   entry.observed.push('REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS');
+
+  // Cancel button is an independent route from Escape.
   entry.stage='CROP_RETRY';
+  controls=await open();
+  await controls.cancel.click();
+  await checkClosed(1);
+  entry.observed.push('CANCEL_BUTTON_DISCARDS');
   controls=await open();
   entry.stage='CROP_SAVE';
   await controls.save.click();
@@ -225,9 +283,11 @@ async function crop(page,entry){
     'Genuine cropped upload filename missing');
   entry.stage='REEDIT_OPENING';
   await page.locator(root+' .gpfup__edit').first().click();
-  await page.locator(portal+' .cropper__lightbox').waitFor({state:'visible',timeout:12000});
-  await page.locator(portal+' button.gpfup__cancel').click();
-  await page.locator(portal+' .cropper__lightbox').waitFor({state:'hidden',timeout:12000});
+  let reedit=await verifyOpen(1);
+  await reedit.cancel.click();
+  await reedit.modal.waitFor({state:'hidden',timeout:12000});
+  guard((await page.locator(root+' .gpfup__filename').count())>0,
+    'Canceling reedit discarded an already uploaded image');
   entry.observed.push('REAL_CROP_SAVED_AND_UPLOADED','RERENDERED_PREVIEW_REEDIT');
   entry.stage='VALIDATION_SUBMIT';
   guard((await text.inputValue())==='','G013 real invalid-control text already nonempty');
@@ -237,6 +297,13 @@ async function crop(page,entry){
   guard(await page.locator(root+' .gpfup__filename').count()>0,
     'Cropped image did not survive real validation rerender');
   entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
+  // Re-edit after the genuine server validation rerender, not just before it.
+  await page.locator(root+' .gpfup__edit').first().click();
+  reedit=await verifyOpen(1);
+  await reedit.cancel.click();
+  await reedit.modal.waitFor({state:'hidden',timeout:12000});
+  guard(await page.locator(root+' .gpfup__filename').count()>0,
+    'Post-validation reedit lost the saved image');
   entry.stage='VALIDATION_RERENDERED';
 }
 async function editor(page,entry){

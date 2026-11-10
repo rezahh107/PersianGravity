@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe} from './g013-expanded-check.mjs';
+import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe,classifyCropSurface} from './g013-expanded-check.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -131,4 +131,33 @@ test('portal stage summary excludes private probe strings and rejects unlisted s
     fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(d));
     assert.ok(!safeSummary(dir).includes('SECRET_DO_NOT_OUTPUT'));
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('functional cropper oracle rejects disabled, absent, duplicate and other-field modal',()=>{
+  const ok={initialized:true,required:true,mountCount:1,targetConnected:true,
+    activeCount:1,ownerMatched:true,cropperVisible:true,
+    cancelAccessible:true,saveAccessible:true};
+  assert.equal(classifyCropSurface(ok),'READY');
+  for(const [name,change,result] of [
+    ['uninitialized',{initialized:false},'CROP_UNINITIALIZED'],
+    ['disabled required crop',{required:false},'CROP_NOT_REQUIRED'],
+    ['unmounted',{mountCount:0},'CROP_MOUNT_UNAVAILABLE'],
+    ['duplicate mount',{mountCount:2},'CROP_MOUNT_UNAVAILABLE'],
+    ['detached target',{targetConnected:false},'CROP_MOUNT_UNAVAILABLE'],
+    ['missing modal',{activeCount:0},'CROP_MODAL_ABSENT'],
+    ['duplicate active modal',{activeCount:2},'CROP_MODAL_DUPLICATE'],
+    ['wrong field',{ownerMatched:false},'CROP_WRONG_FIELD'],
+    ['hidden cropper',{cropperVisible:false},'CROP_SURFACE_HIDDEN'],
+    ['clipped cancel',{cancelAccessible:false},'CROP_ACTION_UNREACHABLE'],
+    ['clipped save',{saveAccessible:false},'CROP_ACTION_UNREACHABLE'],
+  ]){
+    assert.equal(classifyCropSurface({...ok,...change}),result,name);
+  }
+});
+test('crop report validator rejects missing two-field and Cancel-button proof',()=>{
+  for(const missing of ['REAL_MULTI_FIELD_MODAL_ISOLATION','CANCEL_BUTTON_DISCARDS']){
+    const d=valid();
+    d.cases[2].observed=d.cases[2].observed.filter(x=>x!==missing);
+    assert.throws(()=>validateReport(d,key,head),/G013_EXTENDED_EVIDENCE_REJECTED/);
+  }
 });

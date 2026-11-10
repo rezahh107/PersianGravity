@@ -27,9 +27,73 @@ export function classifyPortalProbe(s){
     return 'PORTAL_TARGET_REPLACED';
   return 'PORTAL_STATE_UNRESOLVED';
 }
+
+/**
+ * This is the real vendor field's mounted portal, not its disposable ID.
+ * Called inside authenticated Chromium. Return fixed-shape booleans/counts
+ * only; no DOM, credentials, image bytes, labels, or URLs escape the page.
+ */
+export function inspectCropSurfaceInPage({formId,fieldId}){
+  const instance=window['GPFUP_'+formId+'_'+fieldId];
+  const result={initialized:!!instance,required:instance?.enableCrop===true&&
+    instance?.cropRequired===true,mountCount:0,targetConnected:false,
+    activeCount:0,ownerMatched:false,cropperVisible:false,
+    cancelAccessible:false,saveAccessible:false};
+  const visible=el=>{
+    if(!el||el.nodeType!==1||!el.isConnected)return false;
+    const style=getComputedStyle(el),r=el.getBoundingClientRect();
+    return style.display!=='none'&&style.visibility!=='hidden'&&
+      Number(style.opacity)!==0&&r.width>0&&r.height>0;
+  };
+  const accessible=el=>{
+    if(!visible(el)||el.disabled)return false;
+    const r=el.getBoundingClientRect();
+    return r.left>=-1&&r.right<=innerWidth+1&&r.top>=-1&&r.bottom<=innerHeight+1;
+  };
+  const active=[...document.querySelectorAll('.cropper__lightbox')].filter(visible);
+  result.activeCount=Math.min(100,active.length);
+  const queue=instance?.vm?[instance.vm]:[],seen=new Set(),mounts=[];
+  const mountTo='#gpfup-cropper-portal-'+formId+'-'+fieldId;
+  while(queue.length&&seen.size<64){
+    const child=queue.shift();
+    if(!child||seen.has(child))continue;
+    seen.add(child);
+    if(child.$options?.name==='MountingPortal'&&child.mountTo===mountTo)mounts.push(child);
+    for(const nested of (child.$children||[]))queue.push(nested);
+  }
+  result.mountCount=Math.min(100,mounts.length);
+  if(mounts.length!==1)return result;
+  const target=mounts[0].portalTarget?.$el;
+  result.targetConnected=target?.nodeType===1&&target.isConnected===true;
+  if(active.length!==1)return result;
+  const modal=active[0];
+  result.ownerMatched=result.targetConnected&&(target===modal||target.contains(modal));
+  const cropper=modal.querySelector('.vue-advanced-cropper');
+  result.cropperVisible=visible(cropper);
+  const cancel=modal.querySelectorAll('button.gpfup__cancel');
+  const save=modal.querySelectorAll('button.gpfup__crop');
+  result.cancelAccessible=cancel.length===1&&accessible(cancel[0]);
+  result.saveAccessible=save.length===1&&accessible(save[0]);
+  return result;
+}
+
+/** Closed functional oracle. Independent unit tests falsify every gate. */
+export function classifyCropSurface(o){
+  if(!o||o.initialized!==true)return 'CROP_UNINITIALIZED';
+  if(o.required!==true)return 'CROP_NOT_REQUIRED';
+  if(o.mountCount!==1||o.targetConnected!==true)return 'CROP_MOUNT_UNAVAILABLE';
+  if(!Number.isInteger(o.activeCount)||o.activeCount===0)return 'CROP_MODAL_ABSENT';
+  if(o.activeCount!==1)return 'CROP_MODAL_DUPLICATE';
+  if(o.ownerMatched!==true)return 'CROP_WRONG_FIELD';
+  if(o.cropperVisible!==true)return 'CROP_SURFACE_HIDDEN';
+  if(o.cancelAccessible!==true||o.saveAccessible!==true)return 'CROP_ACTION_UNREACHABLE';
+  return 'READY';
+}
+
 export const claims={
   'perks-admin':['REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED'],
-  'fup-crop':['REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS',
+  'fup-crop':['REAL_MULTI_FIELD_MODAL_ISOLATION','CANCEL_BUTTON_DISCARDS',
+    'REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS',
     'REAL_CROP_SAVED_AND_UPLOADED','RERENDERED_PREVIEW_REEDIT',
     'AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED'],
   'gv-block-editor':['REAL_GV_GUTENBERG_BLOCK',

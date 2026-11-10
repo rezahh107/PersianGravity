@@ -35,6 +35,13 @@ $crop = array(
 			'id' => 2, 'label' => 'Required validation control',
 			'type' => 'text', 'isRequired' => true,
 		),
+		array(
+			'id' => 3, 'label' => 'Independent second upload field',
+			'type' => 'fileupload', 'multipleFiles' => true,
+			'gpfupEnable' => true, 'gpfupEnableCrop' => true,
+			'gpfupCropRequired' => true, 'allowedExtensions' => 'png,jpg,jpeg',
+			'isRequired' => false,
+		),
 	),
 	'button' => array( 'type' => 'text', 'text' => 'Submit' ),
 );
@@ -46,6 +53,12 @@ $field = GFAPI::get_field( (int) $form_id, 1 );
 if ( ! is_object( $field ) || ! rgar( (array) $field, 'gpfupEnable' ) ||
 	! rgar( (array) $field, 'gpfupEnableCrop' ) || ! rgar( (array) $field, 'gpfupCropRequired' ) ) {
 	throw new RuntimeException( 'G013 crop feature flags not persisted in genuine GFAPI.' );
+}
+$second_field = GFAPI::get_field( (int) $form_id, 3 );
+if ( ! is_object( $second_field ) || ! rgar( (array) $second_field, 'gpfupEnable' ) ||
+	! rgar( (array) $second_field, 'gpfupEnableCrop' ) ||
+	! rgar( (array) $second_field, 'gpfupCropRequired' ) ) {
+	throw new RuntimeException( 'G013 independent second crop field not persisted.' );
 }
 $crop_post = wp_insert_post(
 	array(
