@@ -14,6 +14,7 @@ const allowedCropStages=new Set([
   'CROP_MODAL_SHOWN','CROPPER_RENDERED','ACTIONS_VISIBLE','ACTIONS_REACHABLE',
   'ESCAPE_DISMISS','ESCAPE_CLOSED','CROP_RETRY','CROP_SAVE',
   'CROP_SAVE_MODAL_WAIT','UPLOAD_PROGRESS_WAIT','UPLOAD_FILE_WAIT','UPLOAD_FILE_NAME_CHECK','UPLOAD_NATIVE_CHECK',
+  'CROP_SAVE_RUNTIME_UNAVAILABLE','CROP_SAVE_CURRENT_FILE_MISSING','CROP_SAVE_BATCH_INDEX_MISMATCH','CROP_SAVE_EDITOR_REMAINED_OPEN','CROP_SAVE_MODAL_REMAINED_VISIBLE','CROP_SAVE_UNRESOLVED',
   'UPLOAD_COMPLETE','FILE_VISIBLE','REEDIT_OPENING','VALIDATION_SUBMIT',
   'VALIDATION_RERENDERED'
 ]);
@@ -104,6 +105,24 @@ export function classifyCropSurface(o){
   if(o.cropperVisible!==true)return 'CROP_SURFACE_HIDDEN';
   if(o.cancelAccessible!==true||o.saveAccessible!==true)return 'CROP_ACTION_UNREACHABLE';
   return 'READY';
+}
+
+/**
+ * Diagnostic-only classification of a timed-out Crop/Save. The oracle still
+ * fails. Never publish the underlying (private) browser state.
+ */
+export function classifyCropSaveTimeout(s){
+  if(!s||s.instanceFound!==true||s.storeFound!==true)return 'CROP_SAVE_RUNTIME_UNAVAILABLE';
+  if(s.editorOpen===true){
+    if(s.currentFilePresent!==true)return 'CROP_SAVE_CURRENT_FILE_MISSING';
+    if(Number.isInteger(s.addedCount)&&s.addedCount>0&&
+      (!Number.isInteger(s.currentIndex)||s.currentIndex<1||s.currentIndex>s.addedCount))
+      return 'CROP_SAVE_BATCH_INDEX_MISMATCH';
+    return 'CROP_SAVE_EDITOR_REMAINED_OPEN';
+  }
+  if(s.editorOpen===false&&s.modalStillVisible===true)
+    return 'CROP_SAVE_MODAL_REMAINED_VISIBLE';
+  return 'CROP_SAVE_UNRESOLVED';
 }
 
 /** Verify the authoritative Gravity Forms completed-upload hidden field. */

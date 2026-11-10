@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
-import { classifyPortalProbe, inspectCropSurfaceInPage, classifyCropSurface, classifyNativeUpload } from './g013-expanded-check.mjs';
+import { classifyPortalProbe, inspectCropSurfaceInPage, classifyCropSurface, classifyNativeUpload, classifyCropSaveTimeout } from './g013-expanded-check.mjs';
 
 const profile=process.argv[2], locale=process.argv[3];
 if(!['BASELINE','WITH_VAZIR'].includes(profile)||!['fa_IR','en_US'].includes(locale))
@@ -326,7 +326,33 @@ async function crop(page,entry){
   entry.stage='CROP_SAVE';
   await controls.save.click();
   entry.stage='CROP_SAVE_MODAL_WAIT';
-  await controls.modal.waitFor({state:'hidden',timeout:15000});
+  try{
+    await controls.modal.waitFor({state:'hidden',timeout:15000});
+  }catch(err){
+    // Read only bounded properties from the genuine field's Vuex store.
+    // Never serialize files, page HTML, URLs, credentials or vendor instances.
+    const probe=await page.evaluate(({formId,fieldId})=>{
+      const instance=window['GPFUP_'+formId+'_'+fieldId],store=instance?.$store;
+      const added=store?.getters?.currentAddedFiles;
+      const index=store?.getters?.currentImageIndex;
+      const modal=document.querySelector('.cropper__lightbox');
+      const modalStyle=modal&&getComputedStyle(modal);
+      const visible=!!modal?.isConnected&&modal?.getBoundingClientRect().width>0&&
+        modalStyle?.display!=='none'&&modalStyle?.visibility!=='hidden'&&
+        Number(modalStyle?.opacity)>0;
+      return {
+        instanceFound:!!instance,storeFound:!!store,
+        editorOpen:store?.state?.editor?.open===true,
+        currentFilePresent:!!store?.state?.editor?.currentFile,
+        addedCount:Array.isArray(added)?Math.min(100,added.length):-1,
+        currentIndex:Number.isInteger(index)?Math.max(-1,Math.min(100,index)):-1,
+        modalStillVisible:visible,
+      };
+    },{formId:id,fieldId:1});
+    entry.crop_save_probe=probe; // stays in the private per-run report
+    entry.stage=classifyCropSaveTimeout(probe);
+    throw err; // Preserve original functional failure, never turn it into PASS.
+  }
   entry.stage='UPLOAD_PROGRESS_WAIT';
   await page.locator(root+' .gpfup__progress-container').first().waitFor({state:'hidden',timeout:40000});
   entry.stage='UPLOAD_FILE_WAIT';

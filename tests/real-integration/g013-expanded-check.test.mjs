@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe,classifyCropSurface,classifyNativeUpload} from './g013-expanded-check.mjs';
+import {validateReport,validateAll,claims,names,safeSummary,classifyPortalProbe,classifyCropSurface,classifyNativeUpload,classifyCropSaveTimeout} from './g013-expanded-check.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -255,5 +255,32 @@ test('fine-grained save stages remain closed and redact private data',()=>{
     doc.cases[2].stage='UNTRUSTED_SAVE_EXCEPTION';
     fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(doc));
     assert.ok(!safeSummary(dir).includes('UNTRUSTED_SAVE_EXCEPTION'));
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('Crop/Save timeout remains a failure with specific root-cause diagnostics',()=>{
+  const base={instanceFound:true,storeFound:true,editorOpen:true,
+    currentFilePresent:true,addedCount:1,currentIndex:1,modalStillVisible:true};
+  for(const [patch,expected] of [
+    [{instanceFound:false},'CROP_SAVE_RUNTIME_UNAVAILABLE'],
+    [{currentFilePresent:false},'CROP_SAVE_CURRENT_FILE_MISSING'],
+    [{currentIndex:0},'CROP_SAVE_BATCH_INDEX_MISMATCH'],
+    [{currentIndex:2},'CROP_SAVE_BATCH_INDEX_MISMATCH'],
+    [{},'CROP_SAVE_EDITOR_REMAINED_OPEN'],
+    [{editorOpen:false},'CROP_SAVE_MODAL_REMAINED_VISIBLE'],
+    [{editorOpen:false,modalStillVisible:false},'CROP_SAVE_UNRESOLVED']
+  ])assert.equal(classifyCropSaveTimeout({...base,...patch}),expected);
+});
+test('Save timeout classifications cannot expose private browser state',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-save-root-'));
+  try{
+    for(const stage of ["CROP_SAVE_RUNTIME_UNAVAILABLE","CROP_SAVE_CURRENT_FILE_MISSING","CROP_SAVE_BATCH_INDEX_MISMATCH","CROP_SAVE_EDITOR_REMAINED_OPEN","CROP_SAVE_MODAL_REMAINED_VISIBLE","CROP_SAVE_UNRESOLVED"]){
+      const doc=valid();doc.status='NOT_PROVEN';doc.cases[2].status='NOT_PROVEN';
+      doc.cases[2].stage=stage;doc.cases[2].crop_save_probe={secret:'SECRET_NO_PUBLIC'};
+      fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(doc));
+      const out=safeSummary(dir);
+      assert.ok(out.includes('@fup-crop-1280:'+stage));
+      assert.ok(!out.includes('SECRET_NO_PUBLIC'));
+    }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
