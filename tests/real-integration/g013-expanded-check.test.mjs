@@ -154,6 +154,12 @@ test('functional cropper oracle rejects disabled, absent, duplicate and other-fi
     assert.equal(classifyCropSurface({...ok,...change}),result,name);
   }
 });
+test('cross-field active modal is rejected even when this target is an unopened comment',()=>{
+  const wrong={initialized:true,required:true,mountCount:1,targetConnected:false,
+    activeCount:1,ownerMatched:false,cropperVisible:true,
+    cancelAccessible:true,saveAccessible:true};
+  assert.equal(classifyCropSurface(wrong),'CROP_WRONG_FIELD');
+});
 test('crop report validator rejects missing two-field and Cancel-button proof',()=>{
   for(const missing of ['REAL_MULTI_FIELD_MODAL_ISOLATION','CANCEL_BUTTON_DISCARDS']){
     const d=valid();

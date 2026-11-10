@@ -84,9 +84,11 @@ export function classifyCropSurface(o){
   if(o.mountCount!==1)return 'CROP_MOUNT_UNAVAILABLE';
   // target-slim legitimately has no element root until the modal is open.
   if(!Number.isInteger(o.activeCount)||o.activeCount===0)return 'CROP_MODAL_ABSENT';
-  if(o.targetConnected!==true)return 'CROP_MOUNT_UNAVAILABLE';
   if(o.activeCount!==1)return 'CROP_MODAL_DUPLICATE';
+  // A different field may have the only active modal while this field's
+  // target-slim root is still a detached comment. Reject field confusion.
   if(o.ownerMatched!==true)return 'CROP_WRONG_FIELD';
+  if(o.targetConnected!==true)return 'CROP_MOUNT_UNAVAILABLE';
   if(o.cropperVisible!==true)return 'CROP_SURFACE_HIDDEN';
   if(o.cancelAccessible!==true||o.saveAccessible!==true)return 'CROP_ACTION_UNREACHABLE';
   return 'READY';
