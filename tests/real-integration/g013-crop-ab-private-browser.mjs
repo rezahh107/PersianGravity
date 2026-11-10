@@ -509,15 +509,24 @@ async function crop(page,entry){
   guard((await page.locator(root+' .gpfup__filename').count())>0,
     'Canceling reedit discarded an already uploaded image');
   entry.observed.push('REAL_CROP_SAVED_AND_UPLOADED','RERENDERED_PREVIEW_REEDIT');
-  entry.stage='VALIDATION_SUBMIT';
-  guard((await text.inputValue())==='','G013 real invalid-control text already nonempty');
+  entry.stage='VALIDATION_TEXT_PRECHECK';
+  const inputEmpty=(await text.inputValue())==='';
+  if(diagMode)entry.diagnostic.validationTextEmpty=inputEmpty;
+  guard(inputEmpty,'G013 real invalid-control text already nonempty');
+  entry.stage='VALIDATION_CLICK';
   await page.locator('#gform_submit_button_'+id).click();
+  entry.stage='VALIDATION_ERROR_WAIT';
   const validation=page.locator('#field_'+id+'_2.gfield_error,#gform_wrapper_'+id+' .gform_validation_errors');
   await validation.first().waitFor({state:'visible',timeout:20000});
-  guard(await page.locator(root+' .gpfup__filename').count()>0,
-    'Cropped image did not survive real validation rerender');
-  guard(classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS',
-    'Native GF record did not survive validation rerender');
+  if(diagMode)entry.diagnostic.validationErrorVisible=true;
+  entry.stage='VALIDATION_PREVIEW_CHECK';
+  const previewPresent=(await page.locator(root+' .gpfup__filename').count())>0;
+  if(diagMode)entry.diagnostic.validationPreviewPresent=previewPresent;
+  guard(previewPresent,'Cropped image did not survive real validation rerender');
+  entry.stage='VALIDATION_NATIVE_CHECK';
+  const nativeValid=classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS';
+  if(diagMode)entry.diagnostic.validationNativeValid=nativeValid;
+  guard(nativeValid,'Native GF record did not survive validation rerender');
   entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
   // Re-edit after the genuine server validation rerender, not just before it.
   if(diagMode==='B'){
