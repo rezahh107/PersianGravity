@@ -1,6 +1,8 @@
 name: WU008 Licensed Real Integration
 
 on:
+  push:
+    branches: [test/wu008-crop-ab-private-20261110]
   pull_request:
     branches: [main]
     paths:
@@ -1188,6 +1190,8 @@ jobs:
           set -euo pipefail
           node --check tests/real-integration/vazir-coexistence-browser.mjs
           node --check tests/real-integration/g013-expanded-browser.mjs
+          node --check tests/real-integration/g013-crop-ab-private-browser.mjs
+          bash -n tests/real-integration/g013-run-licensed.sh
           node --check tests/real-integration/g013-expanded-check.mjs
           node --test tests/real-integration/g013-expanded-check.test.mjs
           php -l tests/real-integration/g013-extended-fixture.php
@@ -1218,6 +1222,8 @@ jobs:
 
       - name: G013 real official Vazir v1.5.0 isolated profile qualification
         id: g013
+        env:
+          WU008_CROP_AB_DIAG: '1'
         shell: bash
         run: |
           set -euo pipefail
