@@ -325,15 +325,20 @@ async function crop(page,entry){
   controls=await open();
   entry.stage='CROP_SAVE';
   await controls.save.click();
+  entry.stage='CROP_SAVE_MODAL_WAIT';
   await controls.modal.waitFor({state:'hidden',timeout:15000});
+  entry.stage='UPLOAD_PROGRESS_WAIT';
   await page.locator(root+' .gpfup__progress-container').first().waitFor({state:'hidden',timeout:40000});
-  entry.stage='UPLOAD_COMPLETE';
+  entry.stage='UPLOAD_FILE_WAIT';
   await page.locator(root+' .gpfup__filename').first().waitFor({state:'visible',timeout:20000});
-  entry.stage='FILE_VISIBLE';
+  entry.stage='UPLOAD_FILE_NAME_CHECK';
   guard((await page.locator(root+' .gpfup__filename').first().innerText()).includes('g013-disposable.png'),
     'Genuine cropped upload filename missing');
+  entry.stage='UPLOAD_NATIVE_CHECK';
   guard(classifyNativeUpload(await uploaded(1),'CONFIRMED')==='PASS',
     'Genuine upload was not confirmed by native GF uploaded-files state');
+  entry.stage='UPLOAD_COMPLETE';
+  entry.stage='FILE_VISIBLE';
   entry.stage='REEDIT_OPENING';
   await page.locator(root+' .gpfup__edit').first().click();
   let reedit=await verifyOpen(1);

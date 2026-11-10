@@ -238,3 +238,22 @@ test('crop transition wait phases expose only closed status tokens',()=>{
     }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('fine-grained save stages remain closed and redact private data',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-save-phases-'));
+  try{
+    for(const stage of ["CROP_SAVE_MODAL_WAIT","UPLOAD_PROGRESS_WAIT","UPLOAD_FILE_WAIT","UPLOAD_FILE_NAME_CHECK","UPLOAD_NATIVE_CHECK"]){
+      const doc=valid();doc.status='NOT_PROVEN';doc.cases[2].status='NOT_PROVEN';
+      doc.cases[2].stage=stage;
+      doc.cases[2].private_error='SECRET_NEVER_PUBLIC';
+      fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(doc));
+      const output=safeSummary(dir);
+      assert.ok(output.includes('@fup-crop-1280:'+stage));
+      assert.ok(!output.includes('SECRET_NEVER_PUBLIC'));
+    }
+    const doc=valid();doc.status='NOT_PROVEN';doc.cases[2].status='NOT_PROVEN';
+    doc.cases[2].stage='UNTRUSTED_SAVE_EXCEPTION';
+    fs.writeFileSync(path.join(dir,'baseline-fa_IR.json'),JSON.stringify(doc));
+    assert.ok(!safeSummary(dir).includes('UNTRUSTED_SAVE_EXCEPTION'));
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
