@@ -89,6 +89,57 @@ restore_profile() {
     exit 1
   fi
 }
+# Disposable A/B probes, each restored from the same DB and upload snapshot.
+# Original release gate and success criteria below remain unchanged.
+# Raw logs and browser evidence are private runner files, never staged for upload.
+if [[ "${WU008_CROP_AB_DIAG:-}" == 1 ]]; then
+  for mode in A B; do
+    restore_profile fa_IR
+    set +e
+    G013_CROP_DIAG_MODE="$mode" node tests/real-integration/g013-crop-ab-private-browser.mjs BASELINE fa_IR \
+      >"$WU008_PACKAGE_DIR/g013-crop-$mode.private.log" 2>&1
+    ab_rc=$?
+    set -e
+    G013_AB_MODE="$mode" G013_AB_RC="$ab_rc" node --input-type=module <<'G013_AB_SAFE_GATE'
+import fs from 'node:fs';
+import path from 'node:path';
+const mode=process.env.G013_AB_MODE;
+const rc=Number(process.env.G013_AB_RC);
+if(!['A','B'].includes(mode)||!Number.isInteger(rc)||rc<0||rc>255)
+  throw Error('Unsafe private diagnostic parameters');
+const file=path.join(process.env.WU008_ARTIFACT_DIR,'g013-acceptance-private','baseline-fa_IR.json');
+let item=null;
+try{
+  const doc=JSON.parse(fs.readFileSync(file,'utf8'));
+  if(doc.head===process.env.WU008_PGR_SHA&&doc.profile==='BASELINE'&&doc.locale==='fa_IR'&&
+    doc.cases.length===1&&doc.cases[0].name==='fup-crop'&&doc.cases[0].width===1280)
+    item=doc.cases[0];
+}catch{}
+const d=item?.diagnostic||{};
+const allowed=['REF_MISSING','METHOD_MISSING','CANVAS_MISSING','CANVAS_INVALID',
+  'GET_RESULT_EXCEPTION','CANVAS_READY'];
+const state=s=>allowed.includes(s)?s:'NOT_CAPTURED';
+const bool=v=>v===true?'Y':v===false?'N':'U';
+const status=rc===0&&item?.status==='PASS'?'PASS':item?'FAIL':'NOT_CAPTURED';
+const before=d.preflight||{};
+const after=d.afterTimeout||d.afterModalClosed||{};
+const click=d.clickBoundary||{};
+console.log('G013_AB_SAFE mode='+mode+' outcome='+status+
+  ' negative='+bool(d.negativeControlRejected)+
+  ' readiness='+bool(d.readinessPassed)+
+  ' preRef='+bool(before.cropperRefPresent)+
+  ' preImage='+bool(before.imageLoaded)+
+  ' preCanvas='+state(before.canvasState)+
+  ' click='+bool(click.observed)+
+  ' clickRef='+bool(click.refPresent)+
+  ' clickImage='+bool(click.imageLoaded)+
+  ' postCanvas='+state(after.canvasState)+
+  ' postOpen='+bool(after.editorOpen)+
+  ' nativeUpload='+bool(d.nativeUploadConfirmed));
+G013_AB_SAFE_GATE
+  done
+  restore_profile fa_IR
+fi
 for locale in fa_IR en_US; do
   phase "BASELINE_$locale"
   restore_profile "$locale"
