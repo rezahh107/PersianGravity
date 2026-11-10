@@ -153,3 +153,8 @@ Separate historical GPP [four-state browser #42469384530](https://github.com/rez
 The Mode A `ag-ltr` engine with Persian RTL text and five-column presentation is an **intended schematic**, not evidence of universal alignment or persistence: header/row scroll synchronization and saved-layout recovery must be tested under actual viewports, locale/setting combinations and reloads. Visible/accessible English and fa_IR gettext guidance now says so explicitly. The public status v1 (`grid_mode=not_observed`), default-OFF option, independent GPP setting, host/vendor/Grid ownership, and security checks remain unchanged. No merge, release or deployment has been authorized.
 
 Older commits remain historical. New guidance-only commits require their own observed CI and real browser results; no Merge, release or deployment was performed.
+
+
+### G-013 public official release prerequisite (2026-11-04)
+
+The Owner has changed `rezahh107/Vazir` from private to public. The published `v1.5.0` release lists `release-manifest.json`, `vazir-font-wp-1.5.0.zip`, and `vazir-font-wp-1.5.0.zip.sha256`. GitHub's release metadata independently lists the official ZIP as **300139 bytes** with SHA-256 **`95fdc3774d6079c34c04331bb8acf980a699e02a215e322742dccbc4109802f5`**. No private credential or rebuilt/source archive is needed as an approved substitute; WU008 still downloads and verifies the exact official release asset before installing in its disposable WordPress lab. Earlier 404 results remain historical and do not count as newly observed accessibility. The release metadata alone does **not** qualify browser coexistence; only a completed matching-Head runtime job and independent runner-local verifier can do that. See `docs/G013_REAL_VAZIR_WU008.md`.
