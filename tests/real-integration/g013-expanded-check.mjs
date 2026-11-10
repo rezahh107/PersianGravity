@@ -229,10 +229,14 @@ export function validateAll(dir,head,{files=true}={}){
       must(other,'missing paired browser scene');
       must(!(other.font.documentWidth>c.width&&c.font.documentWidth<=c.width),
         'WITH_VAZIR-only document overflow '+locale+'/'+caseKey(c));
-      const o=new Map(other.geometry.map(x=>[x.id,x]));
-      for(const old of c.geometry){
-        const now=o.get(old.id);
-        must(now,'missing paired nested control');
+      // Interaction order is part of the real browser evidence: repeated IDs
+      // identify different observations and must never overwrite each other.
+      must(c.geometry.length===other.geometry.length,
+        'mismatched paired geometry count '+locale+'/'+caseKey(c));
+      for(let i=0;i<c.geometry.length;i++){
+        const old=c.geometry[i],now=other.geometry[i];
+        must(old.id===now.id,
+          'mismatched paired geometry identity '+locale+'/'+caseKey(c)+'/'+i);
         const previouslyReachable=old.left>=-1&&old.right<=c.width+1;
         const nowClipped=now.left < -1||now.right > c.width+1 ||
           now.scrollWidth>now.clientWidth&&old.scrollWidth<=old.clientWidth;

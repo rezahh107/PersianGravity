@@ -307,3 +307,79 @@ test('Crop/Save canvas readiness diagnostics are strictly sanitized',()=>{
     }
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+
+// Geometry IDs repeat across Cropper interactions. Pair every occurrence in
+// producer order; an ID-only map would silently discard earlier observations.
+function withRepeatedCropGeometry(run){
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'g013-geometry-occurrences-'));
+  try{
+    for(const locale of ['fa_IR','en_US'])for(const withFont of [false,true]){
+      const k=(withFont?'with-vazir-':'baseline-')+locale;
+      const d=valid();d.profile=withFont?'WITH_VAZIR':'BASELINE';d.locale=locale;
+      for(const c of d.cases){
+        c.screenshot=k+'-'+c.name+'-'+c.width+'.jpg';
+        if(withFont&&locale==='fa_IR'){
+          c.font.hasVazir=true;c.font.loadedFace=true;
+        }
+        if(c.name==='fup-crop')
+          c.geometry.push(...c.geometry.map(g=>({...g})));
+      }
+      fs.writeFileSync(path.join(dir,k+'.json'),JSON.stringify(d));
+    }
+    const change=(f)=>{
+      const p=path.join(dir,'with-vazir-fa_IR.json');
+      const d=JSON.parse(fs.readFileSync(p,'utf8'));
+      const crop=d.cases.find(c=>c.name==='fup-crop'&&c.width===390);
+      f(crop.geometry);
+      fs.writeFileSync(p,JSON.stringify(d));
+    };
+    run({dir,change});
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+}
+test('paired geometry admits legitimate repeated crop measurements',()=>{
+  withRepeatedCropGeometry(({dir})=>
+    assert.deepEqual(validateAll(dir,head,{files:false}),{profiles:4,scenarios:24}));
+});
+test('paired geometry rejects overflow in the first repeated-ID occurrence',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{g[0].scrollWidth=g[0].clientWidth+1;});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: Vazir-only nested control clipping/);
+  });
+});
+test('paired geometry rejects overflow in a later repeated-ID occurrence',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{g[2].scrollWidth=g[2].clientWidth+1;});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: Vazir-only nested control clipping/);
+  });
+});
+test('paired geometry rejects a missing repeated observation',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{g.splice(0,1);});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: mismatched paired geometry count/);
+  });
+});
+test('paired geometry rejects an extra repeated observation',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{g.push({...g[0]});});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: mismatched paired geometry count/);
+  });
+});
+test('paired geometry rejects reordered observation identities',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{[g[0],g[1]]=[g[1],g[0]];});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED: mismatched paired geometry identity/);
+  });
+});
+test('paired geometry rejects malformed repeated observation',()=>{
+  withRepeatedCropGeometry(({dir,change})=>{
+    change(g=>{delete g[0].clientWidth;});
+    assert.throws(()=>validateAll(dir,head,{files:false}),
+      /G013_EXTENDED_EVIDENCE_REJECTED/);
+  });
+});
