@@ -190,6 +190,7 @@ async function editor(page,entry){
     frameKind:'NONE',frameLayouts:0,frameTargets:0,frameVisibleTargets:0,
     frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN',frameParentHit:'UNKNOWN',
     frameParentBox:'UNKNOWN',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
+    dialogDismiss:'NOT_ATTEMPTED',dialogAfter:'UNKNOWN',
     pageErrorSubtype:'NONE',pageErrorOwner:'NONE',frameBlocker:'UNKNOWN',framePointer:'UNKNOWN'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
@@ -294,6 +295,31 @@ async function editor(page,entry){
     }
   }
   if(realBlock){
+    // Real WU008 demonstrated that a Dialog, not a missing block, intercepts
+    // the pointer in all four profiles. Try only a native Escape key; do not
+    // force-click, hide the dialog, or programmatically select the block.
+    if(selectionDiagnostic.frameBlocker==='DIALOG'){
+      entry.stage='EDITOR_DIALOG_DISMISS';
+      selectionDiagnostic.dialogDismiss='ESC_SENT';
+      await page.keyboard.press('Escape');
+      const after=await realBlock.evaluate(el=>new Promise(resolve=>{
+        const started=Date.now();
+        const watch=()=>{
+          const iframe=el.ownerDocument.defaultView?.frameElement;
+          if(!iframe)return resolve('UNKNOWN');
+          const a=iframe.getBoundingClientRect(),b=el.getBoundingClientRect();
+          const top=iframe.ownerDocument.elementFromPoint(a.left+b.left+b.width/2,a.top+b.top+b.height/2);
+          const state=top?.closest('[role="dialog"],[role="alertdialog"],.components-modal__frame')
+            ?'DIALOG':top===iframe||iframe.contains(top)?'FRAME':top?'OTHER':'NONE';
+          if(state!=='DIALOG'||Date.now()-started>=3500)return resolve(state);
+          requestAnimationFrame(watch);
+        };
+        watch();
+      }));
+      selectionDiagnostic.dialogAfter=after;
+      selectionDiagnostic.dialogDismiss=after==='DIALOG'?'BLOCKED':'CLEARED';
+      guard(after!=='DIALOG'&&after!=='UNKNOWN','Real Gutenberg modal not dismissed by Escape');
+    }
     entry.stage='EDITOR_CANVAS_CLICK';
     // An inaccessible canvas element is not a success; try the native List
     // View route below and require its own real selection if click fails.

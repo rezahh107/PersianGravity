@@ -27,6 +27,10 @@ test('editor activation uses a real block click and checks selected state',()=>{
   const source=fs.readFileSync(new URL('./g013-expanded-browser.mjs',import.meta.url),'utf8');
   assert.ok(source.includes("f.url().startsWith('blob:'+origin+'/')"),'only same-origin blob canvas is admitted');
   assert.match(source,/await realBlock\.click\(\{timeout:5000\}\)/);
+  assert.match(source,/selectionDiagnostic\.frameBlocker==='DIALOG'/);
+  assert.match(source,/await page\.keyboard\.press\('Escape'\)/);
+  assert.match(source,/Real Gutenberg modal not dismissed by Escape/);
+  assert.doesNotMatch(source,/wp\.data\.dispatch\('core\/block-editor'\)\.selectBlock/);
   assert.match(source,/keyboard\.press\('Shift\+Alt\+O'\)/);
   assert.match(source,/exactMatches\.count\(\)===1/);
   assert.match(source,/exactMatches\.first\(\)\.click\(\{timeout:8000\}\)/);
@@ -54,6 +58,7 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
       pageErrorSubtype:'UNDEFINED_READ',canvasAction:'INTERCEPTED',listAction:'UNSTABLE',
       frameParentHit:'OTHER',frameParentBox:'PARTIAL',frameBlocker:'POPOVER',
       framePointer:'ENABLED',pageErrorOwner:'GRAVITYVIEW',
+      dialogDismiss:'CLEARED',dialogAfter:'FRAME',
       privateElement:'SECRET_CANARY',clientId:'SECRET_CANARY'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const safe=safeSummary(tmp);
@@ -61,6 +66,7 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     assert.match(safe,/selection=NONE\/NONE\/TARGET/);
     assert.match(safe,/probe=NO\/ZERO\/NONE\/YES\/NONE,ui=0\/0\/1/);
     assert.match(safe,/frame=OWN_BLOB\/OK\/2\/1\/1,hiddenWhy=ARIA,error=TypeError\/UNDEFINED_READ,action=INTERCEPTED\/UNSTABLE,parent=OTHER\/PARTIAL,blocker=POPOVER\/ENABLED,owner=GRAVITYVIEW/);
+    assert.match(safe,/dismiss=CLEARED\/FRAME/);
     assert.ok(!safe.includes('SECRET_CANARY'));
     d.cases[2].selectionDiagnostic.listItems='private DOM';
     d.cases[2].selectionDiagnostic.selectionAfterCanvas='SECRET_CANARY';
@@ -71,12 +77,14 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     d.cases[2].selectionDiagnostic.frameParentHit='PRIVATE_ELEMENT';
     d.cases[2].selectionDiagnostic.frameBlocker='PRIVATE_ELEMENT';
     d.cases[2].selectionDiagnostic.pageErrorOwner='PRIVATE_URL';
+    d.cases[2].selectionDiagnostic.dialogDismiss='PRIVATE_EVENT';
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const negative=safeSummary(tmp);
     assert.match(negative,/items=\?/);
     assert.match(negative,/selection=NONE\/\?\/TARGET/);
     assert.match(negative,/probe=NO\/ZERO\/NONE\/YES\/\?/);
     assert.match(negative,/frame=\?\/OK\/2\/1\/1,hiddenWhy=ARIA,error=\?\/UNDEFINED_READ,action=\?\/UNSTABLE,parent=\?\/PARTIAL,blocker=\?\/ENABLED,owner=\?/);
+    assert.match(negative,/dismiss=\?\/FRAME/);
     assert.ok(!negative.includes('private DOM'));
     assert.ok(!negative.includes('SECRET_CANARY'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
@@ -100,7 +108,8 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
       frameVisibleTargets:0,targetHiddenReason:'ARIA',pageErrorKind:'NONE',
       pageErrorSubtype:'NONE',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
       frameParentHit:'UNKNOWN',frameParentBox:'UNKNOWN',
-      frameBlocker:'UNKNOWN',framePointer:'UNKNOWN',pageErrorOwner:'NONE'};
+      frameBlocker:'UNKNOWN',framePointer:'UNKNOWN',pageErrorOwner:'NONE',
+      dialogDismiss:'CLEARED',dialogAfter:'FRAME'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const summary='G013 expanded '+safeSummary(tmp);
     const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
