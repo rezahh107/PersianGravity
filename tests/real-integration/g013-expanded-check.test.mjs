@@ -61,6 +61,13 @@ test('safe summary never exposes raw browser errors',()=>{
     const line=safeSummary(tmp);
     assert.match(line,/baseline-fa_IR=NOT_PROVEN@perks-admin-1280/);
     assert.ok(!line.includes('private-canary')&&!line.includes('UNTRUSTED_VALUE'));
+    d.cases[0].name='gv-block-editor';d.cases[0].stage='EDITOR_SELECT_LOOKUP';
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    assert.match(safeSummary(tmp),/NOT_PROVEN@gv-block-editor-1280:EDITOR_SELECT_LOOKUP/);
+    d.cases[0].stage='SECRET_INFORMATION';
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    assert.ok(!safeSummary(tmp).includes('SECRET_INFORMATION'));
+    assert.ok(!safeSummary(tmp).includes('EDITOR_SELECT_LOOKUP'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 });
 test('16 real-scope scenes reject WITH_VAZIR-only overflow',()=>{

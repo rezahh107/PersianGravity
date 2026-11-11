@@ -4,6 +4,7 @@ import path from 'node:path';
 export const profiles=['baseline-fa_IR','baseline-en_US','with-vazir-fa_IR','with-vazir-en_US'];
 export const names=['perks-admin','gv-block-editor'];
 export const widths=[1280,390];
+const allowedEditorStages=new Set(["EDITOR_NAVIGATE","EDITOR_BLOCK_WAIT","EDITOR_BLOCK_FOUND","EDITOR_SELECT_LOOKUP","EDITOR_SELECT_FOCUS","EDITOR_DROPDOWN_WAIT","EDITOR_OPTION_WAIT","EDITOR_VIEW_COMMIT","EDITOR_DATEPICKER_LOOKUP","EDITOR_DATEPICKER_CLICK","EDITOR_DATEPICKER_CLOSE","EDITOR_COMPLETE"]);
 export const claims={
   'perks-admin':['REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED'],
   'gv-block-editor':['REAL_GV_GUTENBERG_BLOCK',
@@ -115,7 +116,8 @@ export function safeSummary(dir){
     }catch{}
     const failed=d?.cases?.find?.(c=>isObj(c)&&names.includes(c.name)&&widths.includes(c.width)&&c.status!=='PASS');
     const bounded=failed?'@'+failed.name+'-'+failed.width:'';
-    return key+'='+kind+bounded;
+    const stage=failed?.name==='gv-block-editor'&&allowedEditorStages.has(failed?.stage)?':'+failed.stage:'';
+    return key+'='+kind+bounded+stage;
   }).join(' ');
 }
 if(import.meta.url===new URL('file://'+process.argv[1]).href){

@@ -111,7 +111,9 @@ async function perks(page,entry){
   entry.observed.push('REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED');
 }
 async function editor(page,entry){
+  entry.stage='EDITOR_NAVIGATE';
   await goto(page,fixture.editor_url);
+  entry.stage='EDITOR_BLOCK_WAIT';
   await page.waitForFunction(()=>{
     try{return window.wp?.data?.select('core/block-editor')?.getBlocks()
       ?.some(block=>block.name==='gk-gravityview-blocks/view');}catch{return false;}
@@ -121,7 +123,9 @@ async function editor(page,entry){
     return blocks.some(b=>b.name==='gk-gravityview-blocks/view');
   });
   guard(selected,'Real registered View block not in Gutenberg editor');
+  entry.stage='EDITOR_BLOCK_FOUND';
   entry.observed.push('REAL_GV_GUTENBERG_BLOCK');
+  entry.stage='EDITOR_SELECT_LOOKUP';
   const frame=page.frames().find(f=>f!==page.mainFrame()&&/editor-canvas|post\.php|about:blank/.test(f.url()));
   const scopes=frame?[frame,page]:[page];
   let chosen=null;
@@ -130,8 +134,10 @@ async function editor(page,entry){
     if(await candidate.count() && await candidate.isVisible()){chosen={scope,input:candidate};break;}
   }
   guard(chosen,'Actual detached GravityView React Select not rendered');
+  entry.stage='EDITOR_SELECT_FOCUS';
   await chosen.input.focus();
   guard(await chosen.input.evaluate(el=>el===document.activeElement),'GravityView React Select focus failed');
+  entry.stage='EDITOR_DROPDOWN_WAIT';
   await chosen.input.click();
   const dropdown=chosen.scope.locator('[role="listbox"],[class$="-menu"]').first();
   await dropdown.waitFor({state:'visible',timeout:15000});
@@ -145,8 +151,10 @@ async function editor(page,entry){
       scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};});
   guard(isOnscreen(cg)&&isOnscreen(dg),'GV detached menu clipped outside owning viewport');
   entry.geometry.push({id:'react_select',...cg},{id:'react_portal',...dg});
+  entry.stage='EDITOR_OPTION_WAIT';
   const option=dropdown.locator('[role="option"]').filter({hasText:'WU008 G008 GravityView System Dates'}).first();
   await option.waitFor({state:'visible',timeout:10000});
+  entry.stage='EDITOR_VIEW_COMMIT';
   await option.click();
   await page.waitForFunction(id=>{
     const all=wp.data.select('core/block-editor').getBlocks();
@@ -156,6 +164,7 @@ async function editor(page,entry){
   // GravityView 3.3.4 registers its real date controls under the
   // collapsed "Entries Settings" Gutenberg Inspector PanelBody.
   // Open actual panels through native UI rather than conjuring the picker.
+  entry.stage='EDITOR_DATEPICKER_LOOKUP';
   const date=page.locator('.react-datepicker__input-container input:visible').first();
   if(!await date.count()){
     const toggles=page.locator('button.components-panel__body-toggle');
@@ -168,9 +177,12 @@ async function editor(page,entry){
     }
   }
   if(!await date.isVisible())throw Error('Actual GravityView Entries Settings datepicker not reached');
+  entry.stage='EDITOR_DATEPICKER_CLICK';
   await date.click();
   await page.locator('.react-datepicker:visible').first().waitFor({state:'visible',timeout:10000});
+  entry.stage='EDITOR_DATEPICKER_CLOSE';
   await page.keyboard.press('Escape');
+  entry.stage='EDITOR_COMPLETE';
   entry.observed.push('REAL_GV_DATEPICKER_POPUP');
 }
 try{
