@@ -4,6 +4,7 @@ import {validateReport,validateAll,claims,names,safeSummary} from './g013-expand
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 
 const head='a'.repeat(40),snapshot='b'.repeat(64),key='baseline-fa_IR';
 function valid(){
@@ -57,6 +58,35 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     assert.match(negative,/selection=NONE\/\?\/TARGET/);
     assert.ok(!negative.includes('private DOM'));
     assert.ok(!negative.includes('SECRET_CANARY'));
+  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+});
+test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects private text',()=>{
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'g013-public-gate-'));
+  try{
+    const d=valid();d.status='NOT_PROVEN';d.cases[2].status='NOT_PROVEN';
+    d.cases[2].stage='EDITOR_LIST_ITEM';
+    d.cases[2].selectionDiagnostic={schema:'g013-gutenberg-selection-v1',
+      rootCount:1,targetCount:1,ready:'YES',postType:'PAGE',clientIdValidated:true,
+      candidateFrames:1,canvasMatches:0,canvasVisible:0,canvasPointerHit:0,
+      canvasClick:'NOT_ATTEMPTED',listVisible:true,listItems:3,listRoleTreeitem:3,
+      listRoleButton:1,listRoleGroup:2,listClassItems:3,
+      listExactTargetMatches:1,listTargetTreeitems:1,
+      selectionBefore:'NONE',selectionAfterCanvas:'NONE',selectionAfterList:'NONE',
+      listClick:'NOT_ATTEMPTED'};
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    const summary=safeSummary(tmp);
+    const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
+    const start=source.indexOf("            stages='(EDITOR_NAVIGATE");
+    const end=source.indexOf('            if node tests/real-integration/g013-expanded-check.mjs safe ',start);
+    assert.ok(start>=0&&end>start,'WU008 bounded publish gate missing');
+    const declarations=source.slice(start,end);
+    const gate='grep -Eq "^G013 expanded baseline-fa_IR=${permitted} baseline-en_US=${permitted} with-vazir-fa_IR=${permitted} with-vazir-en_US=${permitted}$"';
+    const admit=line=>spawnSync('bash',['-c',declarations+'\\n'+gate],{input:line,encoding:'utf8'}).status===0;
+    assert.ok(admit(summary+'\\n'),'genuine safe Gutenberg diagnosis must be visible');
+    assert.ok(admit(summary.replace(/\\[blocks=[^\\]]+\\]/,'')+'\\n'),'legacy fixed-status summary must still be admitted');
+    assert.ok(!admit(summary.replace('items=3','items=SECRET_PRIVATE')+'\\n'));
+    assert.ok(!admit(summary.replace('selection=NONE/NONE/NONE','selection=PRIVATE/NONE/NONE')+'\\n'));
+    assert.ok(!admit(summary+' PRIVATE_USER_RECORD\\n'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 });
 test('approved Perks/GV cases are complete without FUP admission',()=>{

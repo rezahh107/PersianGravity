@@ -1761,7 +1761,14 @@ jobs:
           if [[ -d "$expanded_dir" ]]; then
             safe_expanded="$private_dir/g013-expanded-safe.txt"
             stages='(EDITOR_NAVIGATE|EDITOR_BLOCK_WAIT|EDITOR_BLOCK_FOUND|EDITOR_BLOCK_SELECT|EDITOR_CANVAS_LOCATE|EDITOR_CANVAS_CLICK|EDITOR_LIST_OPEN|EDITOR_LIST_ITEM|EDITOR_LIST_CLICK|EDITOR_BLOCK_SELECTED|EDITOR_SIDEBAR_OPEN|EDITOR_SELECT_LOOKUP|EDITOR_SELECT_FOCUS|EDITOR_DROPDOWN_WAIT|EDITOR_OPTION_WAIT|EDITOR_VIEW_COMMIT|EDITOR_DATEPICKER_LOOKUP|EDITOR_DATEPICKER_CLICK|EDITOR_DATEPICKER_CLOSE|EDITOR_COMPLETE)'
-            permitted="(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)(@(perks-admin|gv-block-editor)-(1280|390)(:${stages})?)?"
+            # Only the fixed diagnostic keys and bounded numeric/enum categories
+            # produced by safeSelectionDiagnostic are admitted. Private DOM,
+            # attributes, client IDs, URLs and free text cannot be published.
+            num='([0-9]|1[0-9]|20\+|\?)'
+            sel='(TARGET|OTHER|NONE|UNAVAILABLE|\?)'
+            click='(NOT_ATTEMPTED|COMPLETED|TIMEOUT|ERROR|\?)'
+            diagnostic="(\[blocks=${num}/${num},ready=(YES|NO|UNKNOWN),editor=(PAGE|OTHER|UNKNOWN),id=(VALID|UNKNOWN),frames=${num},canvas=${num}/${num}/${num},canvasClick=${click},list=(VISIBLE|NOT_VISIBLE),items=${num},roles=${num}/${num}/${num},classItems=${num},identity=${num}/${num},selection=${sel}/${sel}/${sel},listClick=${click}\])?"
+            permitted="(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)(@(perks-admin|gv-block-editor)-(1280|390)(:${stages})?${diagnostic})?"
             if node tests/real-integration/g013-expanded-check.mjs safe "$expanded_dir" >"$safe_expanded" 2>>"$private_dir/diagnostics.log" &&
               [[ "$(wc -l < "$safe_expanded")" -eq 1 ]] &&
               grep -Eq "^G013 expanded baseline-fa_IR=${permitted} baseline-en_US=${permitted} with-vazir-fa_IR=${permitted} with-vazir-en_US=${permitted}$" "$safe_expanded"; then
