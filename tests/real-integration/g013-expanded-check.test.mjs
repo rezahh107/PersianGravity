@@ -24,7 +24,10 @@ function valid(){
 }
 test('editor activation uses a real block click and checks selected state',()=>{
   const source=fs.readFileSync(new URL('./g013-expanded-browser.mjs',import.meta.url),'utf8');
-  assert.match(source,/await realBlock\.click\(\)/);
+  assert.match(source,/await realBlock\.click\(\{timeout:5000\}\)/);
+  assert.match(source,/keyboard\.press\('Shift\+Alt\+O'\)/);
+  assert.match(source,/items\.first\(\)\.click\(\)/);
+  assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/isEditorSidebarOpened/);
 });

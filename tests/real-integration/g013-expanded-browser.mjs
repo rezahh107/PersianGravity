@@ -126,9 +126,16 @@ async function editor(page,entry){
   guard(clientId&&/^[a-z0-9-]{8,80}$/i.test(clientId),'Actual GravityView block identity missing');
   entry.stage='EDITOR_BLOCK_FOUND';
   entry.observed.push('REAL_GV_GUTENBERG_BLOCK');
-  const frame=page.frames().find(f=>f!==page.mainFrame()&&/editor-canvas|post\.php|about:blank/.test(f.url()));
-  const scopes=frame?[frame,page]:[page];
-  entry.stage='EDITOR_BLOCK_SELECT';
+  // The editor can render its canvas in an isolated iframe. Do not assume
+  // the first about:blank frame is the actual Gutenberg canvas.
+  const frames=page.frames().filter(f=>f!==page.mainFrame()&&
+    (f.url()==='about:blank'||f.url().startsWith(origin+'/')));
+  const scopes=[page,...frames];
+  const selectedNow=()=>page.evaluate(id=>{
+    try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
+    catch{return false;}
+  },clientId);
+  entry.stage='EDITOR_CANVAS_LOCATE';
   let realBlock=null;
   for(const scope of scopes){
     const candidate=scope.locator('[data-block="'+clientId+'"]').first();
@@ -136,8 +143,25 @@ async function editor(page,entry){
       realBlock=candidate;break;
     }
   }
-  guard(realBlock,'Real GravityView block not visible in Gutenberg canvas');
-  await realBlock.click();
+  if(realBlock){
+    entry.stage='EDITOR_CANVAS_CLICK';
+    // An inaccessible canvas element is not a success; try the native List
+    // View route below and require its own real selection if click fails.
+    try{await realBlock.click({timeout:5000});}catch{/* List View fallback. */}
+  }
+  if(!(await selectedNow())){
+    // This fixture contains exactly one GravityView block. Use WordPress's
+    // built-in List View keyboard shortcut and click its real tree item.
+    entry.stage='EDITOR_LIST_OPEN';
+    await page.keyboard.press('Shift+Alt+O');
+    const tree=page.locator('.block-editor-list-view-tree').first();
+    await tree.waitFor({state:'visible',timeout:10000});
+    entry.stage='EDITOR_LIST_ITEM';
+    const items=tree.locator('[role="treeitem"]');
+    guard(await items.count()===1,'Gutenberg List View must expose the single fixture block');
+    entry.stage='EDITOR_LIST_CLICK';
+    await items.first().click();
+  }
   await page.waitForFunction(id=>{
     try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
     catch{return false;}
@@ -162,7 +186,7 @@ async function editor(page,entry){
   }
   entry.stage='EDITOR_SELECT_LOOKUP';
   let chosen=null;
-  for(const scope of [page,...(frame?[frame]:[])]){
+  for(const scope of scopes){
     const candidate=scope.locator('[class$="-control"] input[role="combobox"]').first();
     try{
       await candidate.waitFor({state:'visible',timeout:5000});
