@@ -67,7 +67,13 @@ async function runCase(name,width,body){
     const subtype=/Cannot read properties of undefined/i.test(msg)?'UNDEFINED_READ':
       /Cannot read properties of null/i.test(msg)?'NULL_READ':
       /is not a function/i.test(msg)?'NOT_FUNCTION':'OTHER';
-    errors.push({name,subtype}); // No raw JS exception text leaves this handler.
+    const firstFrame=String(err?.stack||'').split('\n').find(x=>/https?:\/\/|blob:/i.test(x))||'';
+    const owner=/\/wp-content\/plugins\/gravityview/i.test(firstFrame)?'GRAVITYVIEW':
+      /\/wp-content\/plugins\/persiangravity/i.test(firstFrame)?'PERSIANGRAVITY':
+      /\/wp-includes\//i.test(firstFrame)?'WP_CORE':
+      /\/wp-admin\//i.test(firstFrame)?'WP_ADMIN':
+      /\/wp-content\/plugins\//i.test(firstFrame)?'OTHER_PLUGIN':'UNKNOWN';
+    errors.push({name,subtype,owner}); // Never emit raw JS exception text or URLs.
   });
   const entry={name,width,status:'INCONCLUSIVE',font:null,geometry:[],observed:[],screenshot:null};
   try{
@@ -93,6 +99,7 @@ async function runCase(name,width,body){
       entry.selectionDiagnostic.pageErrors=errors.length;
       entry.selectionDiagnostic.pageErrorKind=errors.length===0?'NONE':errors[0].name;
       entry.selectionDiagnostic.pageErrorSubtype=errors.length===0?'NONE':errors[0].subtype;
+      entry.selectionDiagnostic.pageErrorOwner=errors.length===0?'NONE':errors[0].owner;
     }
     report.cases.push(entry);
     await context.close();
@@ -183,7 +190,7 @@ async function editor(page,entry){
     frameKind:'NONE',frameLayouts:0,frameTargets:0,frameVisibleTargets:0,
     frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN',frameParentHit:'UNKNOWN',
     frameParentBox:'UNKNOWN',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
-    pageErrorSubtype:'NONE'};
+    pageErrorSubtype:'NONE',pageErrorOwner:'NONE',frameBlocker:'UNKNOWN',framePointer:'UNKNOWN'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
@@ -254,20 +261,33 @@ async function editor(page,entry){
           try{
             const parent=await scope.evaluate(id=>{
               const iframe=window.frameElement;
-              if(!iframe)return {hit:'UNKNOWN',box:'UNKNOWN'};
+              if(!iframe)return {hit:'UNKNOWN',box:'UNKNOWN',blocker:'UNKNOWN',pointer:'UNKNOWN'};
               const child=document.querySelector('[data-block="'+id+'"]');
-              if(!child)return {hit:'UNKNOWN',box:'UNKNOWN'};
+              if(!child)return {hit:'UNKNOWN',box:'UNKNOWN',blocker:'UNKNOWN',pointer:'UNKNOWN'};
               const a=iframe.getBoundingClientRect(),b=child.getBoundingClientRect();
               const x=a.left+b.left+b.width/2,y=a.top+b.top+b.height/2;
               const top=iframe.ownerDocument.elementFromPoint(x,y);
               const hit=!top?'NONE':top===iframe||iframe.contains(top)?'FRAME':'OTHER';
+              const host=iframe.ownerDocument.documentElement;
+              const vw=host.clientWidth,vh=host.clientHeight;
               const box=a.width<=0||a.height<=0?'ZERO':
-                a.right<=0||a.bottom<=0||a.left>=innerWidth||a.top>=innerHeight?'OFFSCREEN':
-                a.left<0||a.top<0||a.right>innerWidth||a.bottom>innerHeight?'PARTIAL':'IN_VIEW';
-              return {hit,box};
+                a.right<=0||a.bottom<=0||a.left>=vw||a.top>=vh?'OFFSCREEN':
+                a.left<0||a.top<0||a.right>vw||a.bottom>vh?'PARTIAL':'IN_VIEW';
+              const blocker=!top?'NONE':top===iframe?'IFRAME':
+                top.closest('[role="dialog"],[role="alertdialog"],.components-modal__frame')?'DIALOG':
+                top.closest('.components-popover')?'POPOVER':
+                top.closest('.components-notice')?'NOTICE':
+                top.closest('.interface-interface-skeleton__header,.editor-header')?'HEADER':
+                top.closest('.interface-interface-skeleton__sidebar')?'SIDEBAR':
+                top.closest('#wpadminbar')?'ADMINBAR':
+                top.closest('.edit-post-visual-editor,.block-editor-block-list__layout')?'EDITOR':'OTHER';
+              const pointer=getComputedStyle(iframe).pointerEvents==='none'?'BLOCKED':'ENABLED';
+              return {hit,box,blocker,pointer};
             },clientId);
             selectionDiagnostic.frameParentHit=parent.hit;
             selectionDiagnostic.frameParentBox=parent.box;
+            selectionDiagnostic.frameBlocker=parent.blocker;
+            selectionDiagnostic.framePointer=parent.pointer;
           }catch{/* Bounded unknown if frame introspection is unavailable. */}
         }
       }

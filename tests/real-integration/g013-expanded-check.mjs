@@ -140,7 +140,10 @@ function safeSelectionDiagnostic(value){
     ',action='+cat(value.canvasAction,['UNKNOWN','INTERCEPTED','UNSTABLE','NOT_VISIBLE','OFFSCREEN','DETACHED','SCROLL','UNCLASSIFIED','OTHER'])+'/'+
     cat(value.listAction,['UNKNOWN','INTERCEPTED','UNSTABLE','NOT_VISIBLE','OFFSCREEN','DETACHED','SCROLL','UNCLASSIFIED','OTHER'])+
     ',parent='+cat(value.frameParentHit,['UNKNOWN','NONE','FRAME','OTHER'])+'/'+
-    cat(value.frameParentBox,['UNKNOWN','ZERO','OFFSCREEN','PARTIAL','IN_VIEW'])+']';
+    cat(value.frameParentBox,['UNKNOWN','ZERO','OFFSCREEN','PARTIAL','IN_VIEW'])+
+    ',blocker='+cat(value.frameBlocker,['UNKNOWN','NONE','IFRAME','DIALOG','POPOVER','NOTICE','HEADER','SIDEBAR','ADMINBAR','EDITOR','OTHER'])+'/'+
+    cat(value.framePointer,['UNKNOWN','BLOCKED','ENABLED'])+
+    ',owner='+cat(value.pageErrorOwner,['NONE','GRAVITYVIEW','PERSIANGRAVITY','WP_CORE','WP_ADMIN','OTHER_PLUGIN','UNKNOWN'])+']';
 }
 export function safeSummary(dir){
   return profiles.map(key=>{
