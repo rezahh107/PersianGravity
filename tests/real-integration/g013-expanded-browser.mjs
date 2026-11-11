@@ -118,20 +118,56 @@ async function editor(page,entry){
     try{return window.wp?.data?.select('core/block-editor')?.getBlocks()
       ?.some(block=>block.name==='gk-gravityview-blocks/view');}catch{return false;}
   },null,{timeout:25000,polling:400});
-  const selected=await page.evaluate(()=>{
-    const blocks=wp.data.select('core/block-editor').getBlocks();
-    return blocks.some(b=>b.name==='gk-gravityview-blocks/view');
+  const clientId=await page.evaluate(()=>{
+    const block=wp.data.select('core/block-editor').getBlocks()
+      .find(b=>b.name==='gk-gravityview-blocks/view');
+    return typeof block?.clientId==='string'?block.clientId:null;
   });
-  guard(selected,'Real registered View block not in Gutenberg editor');
+  guard(clientId&&/^[a-z0-9-]{8,80}$/i.test(clientId),'Actual GravityView block identity missing');
   entry.stage='EDITOR_BLOCK_FOUND';
   entry.observed.push('REAL_GV_GUTENBERG_BLOCK');
-  entry.stage='EDITOR_SELECT_LOOKUP';
   const frame=page.frames().find(f=>f!==page.mainFrame()&&/editor-canvas|post\.php|about:blank/.test(f.url()));
   const scopes=frame?[frame,page]:[page];
-  let chosen=null;
+  entry.stage='EDITOR_BLOCK_SELECT';
+  let realBlock=null;
   for(const scope of scopes){
+    const candidate=scope.locator('[data-block="'+clientId+'"]').first();
+    if(await candidate.count()&&await candidate.isVisible()){
+      realBlock=candidate;break;
+    }
+  }
+  guard(realBlock,'Real GravityView block not visible in Gutenberg canvas');
+  await realBlock.click();
+  await page.waitForFunction(id=>{
+    try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
+    catch{return false;}
+  },clientId,{timeout:12000,polling:250});
+  entry.stage='EDITOR_BLOCK_SELECTED';
+  const sidebarOpen=await page.evaluate(()=>{
+    const store=wp.data.select('core/edit-post');
+    return typeof store?.isEditorSidebarOpened==='function'
+      ?store.isEditorSidebarOpened():null;
+  });
+  if(sidebarOpen===false){
+    entry.stage='EDITOR_SIDEBAR_OPEN';
+    const toggle=page.locator(
+      'button.editor-header__settings-toggle,button.edit-post-header__settings,.edit-post-header__settings button'
+    ).first();
+    guard(await toggle.isVisible(),'Real Gutenberg Settings sidebar toggle unavailable');
+    await toggle.click();
+    await page.waitForFunction(()=>{
+      try{return wp.data.select('core/edit-post')?.isEditorSidebarOpened?.()===true;}
+      catch{return false;}
+    },null,{timeout:10000,polling:250});
+  }
+  entry.stage='EDITOR_SELECT_LOOKUP';
+  let chosen=null;
+  for(const scope of [page,...(frame?[frame]:[])]){
     const candidate=scope.locator('[class$="-control"] input[role="combobox"]').first();
-    if(await candidate.count() && await candidate.isVisible()){chosen={scope,input:candidate};break;}
+    try{
+      await candidate.waitFor({state:'visible',timeout:5000});
+      chosen={scope,input:candidate};break;
+    }catch{/* Missing control remains a failing real-browser oracle below. */}
   }
   guard(chosen,'Actual detached GravityView React Select not rendered');
   entry.stage='EDITOR_SELECT_FOCUS';

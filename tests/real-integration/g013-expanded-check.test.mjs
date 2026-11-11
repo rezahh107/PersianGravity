@@ -22,6 +22,12 @@ function valid(){
         gravityperks:'2.3.16',gpadvancedselect:'1.1.21'}},
     cases,status:'PASS'};
 }
+test('editor activation uses a real block click and checks selected state',()=>{
+  const source=fs.readFileSync(new URL('./g013-expanded-browser.mjs',import.meta.url),'utf8');
+  assert.match(source,/await realBlock\.click\(\)/);
+  assert.match(source,/getSelectedBlockClientId\(\)===id/);
+  assert.match(source,/isEditorSidebarOpened/);
+});
 test('approved Perks/GV cases are complete without FUP admission',()=>{
   assert.deepEqual(names,['perks-admin','gv-block-editor']);
   const d=valid();

@@ -89,12 +89,20 @@ restore_profile() {
     exit 1
   fi
 }
+# Keep independent four-profile Vazir results observable even if an approved
+# editor/Perks scene fails. That failure still blocks aggregate acceptance.
+expanded_failed=0
+capture_expanded() {
+  if ! node tests/real-integration/g013-expanded-browser.mjs "$1" "$2"; then
+    expanded_failed=1
+  fi
+}
 for locale in fa_IR en_US; do
   phase "BASELINE_$locale"
   restore_profile "$locale"
   test ! -d "$WU008_WP_PATH/wp-content/plugins/vazir-font-wp"
   node tests/real-integration/vazir-coexistence-browser.mjs BASELINE "$locale"
-  node tests/real-integration/g013-expanded-browser.mjs BASELINE "$locale"
+  capture_expanded BASELINE "$locale"
 done
 phase RELEASE_DOWNLOAD
 release=https://github.com/rezahh107/Vazir/releases/download/v1.5.0
@@ -136,10 +144,9 @@ for locale in fa_IR en_US; do
     cmp "$settings_file" "$evidence_dir/vazir-settings.json"
   fi
   node tests/real-integration/vazir-coexistence-browser.mjs WITH_VAZIR "$locale"
-  node tests/real-integration/g013-expanded-browser.mjs WITH_VAZIR "$locale"
+  capture_expanded WITH_VAZIR "$locale"
 done
 phase PAIR_COMPARISON
-node tests/real-integration/g013-expanded-check.mjs check "$WU008_ARTIFACT_DIR/g013-acceptance-private" "$WU008_PGR_SHA"
 node tests/real-integration/vazir-evidence-check.mjs "$evidence_dir" compare
 phase INDEPENDENT_GATE
 # Record native RTL failures accurately; the paired font gate rejects an
@@ -151,4 +158,10 @@ if unzip -Z1 "dist/$WU008_PGR_ZIP_NAME" | grep -Ei '(vazir-font-wp|vazirmatn.*\.
   exit 1
 fi
 
+phase EXPANDED_VALIDATION
+if (( expanded_failed != 0 )); then
+  echo "G013_APPROVED_EXTENDED_CASE_NOT_PROVEN: independent core checks completed; overall acceptance rejected" >&2
+  exit 1
+fi
+node tests/real-integration/g013-expanded-check.mjs check "$WU008_ARTIFACT_DIR/g013-acceptance-private" "$WU008_PGR_SHA"
 phase COMPLETE
