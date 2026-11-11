@@ -82,6 +82,7 @@ async function runCase(name,width,body){
     const details=key+'-'+name+'-'+width+'.private-error.txt';
     fs.writeFileSync(path.join(dir,details),String(err?.stack||err).slice(0,1500)+'\n');
   }finally{
+    if(entry.selectionDiagnostic)entry.selectionDiagnostic.pageErrors=errors.length;
     report.cases.push(entry);
     await context.close();
   }
@@ -153,7 +154,9 @@ async function editor(page,entry){
     canvasClick:'NOT_ATTEMPTED',listVisible:false,
     listItems:-1,listRoleTreeitem:-1,listRoleButton:-1,listRoleGroup:-1,
     listClassItems:-1,listExactTargetMatches:-1,listTargetTreeitems:-1,
-    listClick:'NOT_ATTEMPTED'};
+    targetVisible:'UNKNOWN',targetBox:'UNKNOWN',targetHit:'UNKNOWN',
+    targetHidden:'UNKNOWN',targetInteractive:'UNKNOWN',canvasLayouts:-1,
+    allFrames:-1,pageErrors:0,listClick:'NOT_ATTEMPTED'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
@@ -161,6 +164,8 @@ async function editor(page,entry){
     (f.url()==='about:blank'||f.url().startsWith(origin+'/')));
   const scopes=[page,...frames];
   selectionDiagnostic.candidateFrames=frames.length;
+  selectionDiagnostic.allFrames=page.frames().length-1;
+  selectionDiagnostic.canvasLayouts=await page.locator('.block-editor-block-list__layout').count();
   const selectedNow=()=>page.evaluate(id=>{
     try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
     catch{return false;}
@@ -226,6 +231,33 @@ async function editor(page,entry){
     // position in a tree that may contain other UI elements.
     const exactMatches=tree.locator('[data-block="'+clientId+'"],[data-block-client-id="'+clientId+'"]');
     guard(await exactMatches.count()===1,'Gutenberg List View lacks a unique identity-matched block item');
+    // Safe, observed geometry/accessibility categories before the genuine
+    // pointer click. No DOM, CSS strings, URLs or clientIds enter reports.
+    const target=exactMatches.first();
+    const probe=await target.evaluate(el=>{
+      const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+      let hidden=false;
+      for(let node=el;node;node=node.parentElement){
+        const c=getComputedStyle(node);
+        if(node.hidden||node.getAttribute('aria-hidden')==='true'||
+          c.display==='none'||c.visibility==='hidden'||c.visibility==='collapse'){
+          hidden=true;break;
+        }
+      }
+      const box=r.width<=0||r.height<=0?'ZERO':
+        (r.right<=0||r.bottom<=0||r.left>=innerWidth||r.top>=innerHeight)?'OFFSCREEN':
+        (r.left<0||r.top<0||r.right>innerWidth||r.bottom>innerHeight)?'PARTIAL':'IN_VIEW';
+      const x=r.left+r.width/2,y=r.top+r.height/2;
+      const top=document.elementFromPoint(x,y);
+      const hit=!top?'NONE':top===el?'SELF':el.contains(top)?'CHILD':'OTHER';
+      const interactive='button,a[href],[role="button"],[role="treeitem"]';
+      const interact=el.matches(interactive)?'SELF':el.closest(interactive)?'PARENT':
+        el.querySelector(interactive)?'CHILD':'NONE';
+      return {targetBox:box,targetHit:hit,targetHidden:hidden?'YES':'NO',
+        targetInteractive:interact};
+    });
+    Object.assign(selectionDiagnostic,probe);
+    selectionDiagnostic.targetVisible=await target.isVisible()?'YES':'NO';
     entry.stage='EDITOR_LIST_CLICK';
     try{
       await exactMatches.first().click({timeout:8000});
