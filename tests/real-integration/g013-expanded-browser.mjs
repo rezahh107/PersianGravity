@@ -166,7 +166,10 @@ async function editor(page,entry){
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
   const frames=page.frames().filter(f=>f!==page.mainFrame()&&
-    (f.url()==='about:blank'||f.url().startsWith(origin+'/')));
+    (f.url()==='about:blank'||f.url().startsWith(origin+'/')||
+      // Authenticated WU008 proved the sole real editor canvas is owned by
+      // this exact-origin blob: frame; foreign blob URLs are NOT admitted.
+      f.url().startsWith('blob:'+origin+'/')));
   const scopes=[page,...frames];
   selectionDiagnostic.candidateFrames=frames.length;
   selectionDiagnostic.allFrames=page.frames().length-1;
