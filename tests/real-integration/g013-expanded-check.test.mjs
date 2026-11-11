@@ -31,6 +31,34 @@ test('editor activation uses a real block click and checks selected state',()=>{
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/isEditorSidebarOpened/);
 });
+test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',()=>{
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'g013-selection-safe-'));
+  try{
+    const d=valid();d.status='NOT_PROVEN';d.cases[2].status='NOT_PROVEN';
+    d.cases[2].stage='EDITOR_LIST_ITEM';
+    d.cases[2].selectionDiagnostic={schema:'g013-gutenberg-selection-v1',
+      rootCount:1,targetCount:1,ready:'YES',postType:'PAGE',clientIdValidated:true,
+      candidateFrames:2,canvasMatches:1,canvasVisible:1,canvasPointerHit:0,
+      canvasClick:'COMPLETED',listVisible:true,listItems:5,listRoleTreeitem:5,
+      listRoleButton:1,listRoleGroup:1,listClassItems:5,
+      listExactTargetMatches:1,listTargetTreeitems:1,
+      selectionBefore:'NONE',selectionAfterCanvas:'NONE',selectionAfterList:'TARGET',
+      listClick:'COMPLETED',privateElement:'SECRET_CANARY',clientId:'SECRET_CANARY'};
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    const safe=safeSummary(tmp);
+    assert.match(safe,/items=5,roles=5\/1\/1,classItems=5,identity=1\/1/);
+    assert.match(safe,/selection=NONE\/NONE\/TARGET/);
+    assert.ok(!safe.includes('SECRET_CANARY'));
+    d.cases[2].selectionDiagnostic.listItems='private DOM';
+    d.cases[2].selectionDiagnostic.selectionAfterCanvas='SECRET_CANARY';
+    fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
+    const negative=safeSummary(tmp);
+    assert.match(negative,/items=\?/);
+    assert.match(negative,/selection=NONE\/\?\/TARGET/);
+    assert.ok(!negative.includes('private DOM'));
+    assert.ok(!negative.includes('SECRET_CANARY'));
+  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
+});
 test('approved Perks/GV cases are complete without FUP admission',()=>{
   assert.deepEqual(names,['perks-admin','gv-block-editor']);
   const d=valid();

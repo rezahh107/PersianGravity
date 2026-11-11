@@ -103,6 +103,29 @@ export function validateAll(dir,head,{files=true}={}){
   }
   return {profiles:4,scenarios:16};
 }
+// No raw DOM, IDs or free-form strings leave the private runner. Only the
+// fixed diagnostic schema and bounded integer/enum values may reach Actions.
+function safeSelectionDiagnostic(value){
+  if(!isObj(value)||value.schema!=='g013-gutenberg-selection-v1')return '';
+  const count=x=>Number.isSafeInteger(x)&&x>=0?String(Math.min(x,20))+(x>20?'+':''):'?';
+  const cat=(x,allowed)=>allowed.includes(x)?x:'?';
+  const sel=x=>cat(x,['TARGET','OTHER','NONE','UNAVAILABLE']);
+  const click=x=>cat(x,['NOT_ATTEMPTED','COMPLETED','TIMEOUT','ERROR']);
+  return '[blocks='+count(value.rootCount)+'/'+count(value.targetCount)+
+    ',ready='+cat(value.ready,['YES','NO','UNKNOWN'])+
+    ',editor='+cat(value.postType,['PAGE','OTHER','UNKNOWN'])+
+    ',id='+String(value.clientIdValidated===true?'VALID':'UNKNOWN')+
+    ',frames='+count(value.candidateFrames)+
+    ',canvas='+count(value.canvasMatches)+'/'+count(value.canvasVisible)+'/'+count(value.canvasPointerHit)+
+    ',canvasClick='+click(value.canvasClick)+
+    ',list='+String(value.listVisible===true?'VISIBLE':'NOT_VISIBLE')+
+    ',items='+count(value.listItems)+
+    ',roles='+count(value.listRoleTreeitem)+'/'+count(value.listRoleButton)+'/'+count(value.listRoleGroup)+
+    ',classItems='+count(value.listClassItems)+
+    ',identity='+count(value.listExactTargetMatches)+'/'+count(value.listTargetTreeitems)+
+    ',selection='+sel(value.selectionBefore)+'/'+sel(value.selectionAfterCanvas)+'/'+sel(value.selectionAfterList)+
+    ',listClick='+click(value.listClick)+']';
+}
 export function safeSummary(dir){
   return profiles.map(key=>{
     let kind='NOT_CAPTURED',d=null;
@@ -117,7 +140,8 @@ export function safeSummary(dir){
     const failed=d?.cases?.find?.(c=>isObj(c)&&names.includes(c.name)&&widths.includes(c.width)&&c.status!=='PASS');
     const bounded=failed?'@'+failed.name+'-'+failed.width:'';
     const stage=failed?.name==='gv-block-editor'&&allowedEditorStages.has(failed?.stage)?':'+failed.stage:'';
-    return key+'='+kind+bounded+stage;
+    const diagnostic=failed?.name==='gv-block-editor'?safeSelectionDiagnostic(failed.selectionDiagnostic):'';
+    return key+'='+kind+bounded+stage+diagnostic;
   }).join(' ');
 }
 if(import.meta.url===new URL('file://'+process.argv[1]).href){

@@ -110,6 +110,16 @@ async function perks(page,entry){
   entry.geometry.push({id:'manage_tab',...mg},{id:'install_tab',...ig});
   entry.observed.push('REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED');
 }
+// Only bounded categories/counts enter diagnostics. The actual clientId is
+// used for same-runtime identity comparisons, never written to diagnostics.
+async function selectedCategory(page,clientId){
+  return page.evaluate(id=>{
+    try{
+      const selected=wp.data.select('core/block-editor').getSelectedBlockClientId();
+      return selected===id?'TARGET':selected?'OTHER':'NONE';
+    }catch{return 'UNAVAILABLE';}
+  },clientId);
+}
 async function editor(page,entry){
   entry.stage='EDITOR_NAVIGATE';
   await goto(page,fixture.editor_url);
@@ -126,11 +136,30 @@ async function editor(page,entry){
   guard(clientId&&/^[a-z0-9-]{8,80}$/i.test(clientId),'Actual GravityView block identity missing');
   entry.stage='EDITOR_BLOCK_FOUND';
   entry.observed.push('REAL_GV_GUTENBERG_BLOCK');
+  const blockState=await page.evaluate(()=>{
+    const editor=wp.data.select('core/editor');
+    const all=wp.data.select('core/block-editor').getBlocks();
+    let ready='UNKNOWN',postType='UNKNOWN';
+    try{ready=editor?.isEditorReady?.()===true?'YES':'NO';}catch{}
+    try{const type=editor?.getCurrentPostType?.();postType=type==='page'?'PAGE':type?'OTHER':'UNKNOWN';}catch{}
+    return {rootCount:all.length,targetCount:all.filter(b=>b.name==='gk-gravityview-blocks/view').length,
+      ready,postType};
+  });
+  const selectionDiagnostic={schema:'g013-gutenberg-selection-v1',...blockState,
+    clientIdValidated:true,selectionBefore:await selectedCategory(page,clientId),
+    selectionAfterCanvas:'UNAVAILABLE',selectionAfterList:'UNAVAILABLE',
+    candidateFrames:0,canvasMatches:0,canvasVisible:0,canvasPointerHit:0,
+    canvasClick:'NOT_ATTEMPTED',listVisible:false,
+    listItems:-1,listRoleTreeitem:-1,listRoleButton:-1,listRoleGroup:-1,
+    listClassItems:-1,listExactTargetMatches:-1,listTargetTreeitems:-1,
+    listClick:'NOT_ATTEMPTED'};
+  entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
   const frames=page.frames().filter(f=>f!==page.mainFrame()&&
     (f.url()==='about:blank'||f.url().startsWith(origin+'/')));
   const scopes=[page,...frames];
+  selectionDiagnostic.candidateFrames=frames.length;
   const selectedNow=()=>page.evaluate(id=>{
     try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
     catch{return false;}
@@ -138,17 +167,36 @@ async function editor(page,entry){
   entry.stage='EDITOR_CANVAS_LOCATE';
   let realBlock=null;
   for(const scope of scopes){
-    const candidate=scope.locator('[data-block="'+clientId+'"]').first();
-    if(await candidate.count()&&await candidate.isVisible()){
-      realBlock=candidate;break;
+    const candidates=scope.locator('[data-block="'+clientId+'"]');
+    const matches=await candidates.count();
+    selectionDiagnostic.canvasMatches+=matches;
+    for(let i=0;i<matches;i++){
+      const candidate=candidates.nth(i);
+      if(!await candidate.isVisible())continue;
+      selectionDiagnostic.canvasVisible++;
+      // Hit test stays inside the matching canvas document, including iframes.
+      try{
+        const hit=await candidate.evaluate(el=>{
+          const r=el.getBoundingClientRect();
+          if(r.width<=0||r.height<=0)return false;
+          const x=Math.max(0,Math.min(innerWidth-1,r.left+r.width/2));
+          const y=Math.max(0,Math.min(innerHeight-1,r.top+r.height/2));
+          const top=document.elementFromPoint(x,y);
+          return !!top&&(top===el||el.contains(top));
+        });
+        if(hit)selectionDiagnostic.canvasPointerHit++;
+      }catch{/* Diagnostic-only; no inferred hit. */}
+      if(!realBlock)realBlock=candidate;
     }
   }
   if(realBlock){
     entry.stage='EDITOR_CANVAS_CLICK';
     // An inaccessible canvas element is not a success; try the native List
     // View route below and require its own real selection if click fails.
-    try{await realBlock.click({timeout:5000});}catch{/* List View fallback. */}
+    try{await realBlock.click({timeout:5000});selectionDiagnostic.canvasClick='COMPLETED';}
+    catch(err){selectionDiagnostic.canvasClick=err?.name==='TimeoutError'?'TIMEOUT':'ERROR';}
   }
+  selectionDiagnostic.selectionAfterCanvas=await selectedCategory(page,clientId);
   if(!(await selectedNow())){
     // This fixture contains exactly one GravityView block. Use WordPress's
     // built-in List View keyboard shortcut and click its real tree item.
@@ -156,12 +204,31 @@ async function editor(page,entry){
     await page.keyboard.press('Shift+Alt+O');
     const tree=page.locator('.block-editor-list-view-tree').first();
     await tree.waitFor({state:'visible',timeout:10000});
+    selectionDiagnostic.listVisible=true;
+    // Observe the actual tree structure before changing selection behavior.
+    // Never print DOM, attributes, labels, post contents or client IDs.
+    const listState=await tree.evaluate((root,id)=>{
+      const count=selector=>root.querySelectorAll(selector).length;
+      const matches=[...root.querySelectorAll('[data-block],[data-block-client-id]')]
+        .filter(el=>el.getAttribute('data-block')===id||el.getAttribute('data-block-client-id')===id);
+      return {listItems:count('[role="treeitem"]'),
+        listRoleTreeitem:count('[role="treeitem"]'),
+        listRoleButton:count('[role="button"]'),listRoleGroup:count('[role="group"]'),
+        listClassItems:count('.block-editor-list-view-tree__item'),
+        listExactTargetMatches:matches.length,
+        listTargetTreeitems:new Set(matches.map(el=>el.closest('[role="treeitem"]')).filter(Boolean)).size};
+    },clientId);
+    Object.assign(selectionDiagnostic,listState);
     entry.stage='EDITOR_LIST_ITEM';
     const items=tree.locator('[role="treeitem"]');
     guard(await items.count()===1,'Gutenberg List View must expose the single fixture block');
     entry.stage='EDITOR_LIST_CLICK';
     await items.first().click();
+    selectionDiagnostic.listClick='COMPLETED';
+    selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);
   }
+  if(selectionDiagnostic.selectionAfterList==='UNAVAILABLE')
+    selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);
   await page.waitForFunction(id=>{
     try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
     catch{return false;}
