@@ -157,7 +157,11 @@ function safeSelectionDiagnostic(value){
     count(value.selectVisibleAfterPage)+'/'+count(value.selectVisibleAfterFrame)+
     ',menuEnd='+count(value.selectVisibleTimeoutPage)+'/'+count(value.selectVisibleTimeoutFrame)+'/'+
     count(value.selectTargetOptionsPage)+'/'+count(value.selectTargetOptionsFrame)+'/'+
-    cat(value.selectFirstVisible,['YES','NO','UNKNOWN'])+']';
+    cat(value.selectFirstVisible,['YES','NO','UNKNOWN'])+
+    ',link='+cat(value.selectLinkVia,['CONTROLS','OWNS','MISSING','INVALID'])+'/'+
+    count(value.selectLinkCount)+'/'+cat(value.selectLinkRole,['LISTBOX','OTHER','MISSING'])+'/'+
+    cat(value.selectLinkVisible,['YES','NO','UNKNOWN'])+'/'+
+    count(value.selectLinkOptions)+'/'+count(value.selectLinkTarget)+']';
 }
 export function safeSummary(dir){
   return profiles.map(key=>{

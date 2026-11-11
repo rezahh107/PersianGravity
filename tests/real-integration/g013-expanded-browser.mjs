@@ -483,7 +483,23 @@ async function editor(page,entry){
   Object.assign(selectionDiagnostic,{selectMenusAfterPage:clicked.main.all,
     selectMenusAfterFrame:clicked.frames.all,selectVisibleAfterPage:clicked.main.shown,
     selectVisibleAfterFrame:clicked.frames.shown});
-  const dropdown=chosen.scope.locator('[role="listbox"],[class$="-menu"]').first();
+  // Authenticated WU008: three visible menus coexisted, but the old .first()
+  // selected an unrelated hidden menu. Bind the popup to the real combobox
+  // via its ARIA relationship, rejecting absent or ambiguous associations.
+  const controls=await chosen.input.getAttribute('aria-controls');
+  const owns=await chosen.input.getAttribute('aria-owns');
+  const linkedId=controls||owns;
+  selectionDiagnostic.selectLinkVia=controls?'CONTROLS':owns?'OWNS':'MISSING';
+  const validLink=typeof linkedId==='string'&&/^[A-Za-z][A-Za-z0-9_-]{0,127}$/.test(linkedId);
+  if(linkedId&&!validLink)selectionDiagnostic.selectLinkVia='INVALID';
+  guard(validLink,'Real React Select lacks a usable ARIA-linked listbox identity');
+  const linked=chosen.scope.locator('[id="'+linkedId+'"]');
+  selectionDiagnostic.selectLinkCount=await linked.count();
+  guard(selectionDiagnostic.selectLinkCount===1,'React Select ARIA listbox association not unique');
+  const dropdown=linked.first();
+  const role=await dropdown.getAttribute('role');
+  selectionDiagnostic.selectLinkRole=role==='listbox'?'LISTBOX':role?'OTHER':'MISSING';
+  guard(selectionDiagnostic.selectLinkRole==='LISTBOX','React Select ARIA target is not a listbox');
   try{await dropdown.waitFor({state:'visible',timeout:15000});}
   finally{
     selectionDiagnostic.selectExpandedTimeout=await expanded();
@@ -493,6 +509,10 @@ async function editor(page,entry){
     selectionDiagnostic.selectTargetOptionsPage=last.main.target;
     selectionDiagnostic.selectTargetOptionsFrame=last.frames.target;
     selectionDiagnostic.selectFirstVisible=await dropdown.count()&&await dropdown.isVisible()?'YES':'NO';
+    selectionDiagnostic.selectLinkVisible=selectionDiagnostic.selectFirstVisible;
+    selectionDiagnostic.selectLinkOptions=await dropdown.locator('[role="option"]').count();
+    selectionDiagnostic.selectLinkTarget=await dropdown.locator('[role="option"]')
+      .filter({hasText:'WU008 G008 GravityView System Dates'}).count();
   }
   const cg=await chosen.input.evaluate(el=>{const r=el.getBoundingClientRect();
     return {left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),

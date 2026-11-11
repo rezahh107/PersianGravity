@@ -38,6 +38,10 @@ test('editor activation uses a real block click and checks selected state',()=>{
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/isEditorSidebarOpened/);
+  assert.match(source,/getAttribute\('aria-controls'\)/);
+  assert.match(source,/selectLinkCount===1/);
+  assert.match(source,/selectLinkRole==='LISTBOX'/);
+  assert.doesNotMatch(source,/chosen\.scope\.locator\('\[role="listbox"\],\[class\$="-menu"\]'\)\.first\(\)/);
 });
 test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',()=>{
   const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'g013-selection-safe-'));
@@ -67,7 +71,9 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
       selectVisibleAfterPage:0,selectVisibleAfterFrame:0,
       selectVisibleTimeoutPage:0,selectVisibleTimeoutFrame:0,
       selectTargetOptionsPage:0,selectTargetOptionsFrame:0,
-      selectFirstVisible:'NO',
+      selectFirstVisible:'NO',selectLinkVia:'CONTROLS',selectLinkCount:1,
+      selectLinkRole:'LISTBOX',selectLinkVisible:'YES',selectLinkOptions:3,
+      selectLinkTarget:1,
       privateElement:'SECRET_CANARY',clientId:'SECRET_CANARY'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const safe=safeSummary(tmp);
@@ -76,7 +82,7 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     assert.match(safe,/probe=NO\/ZERO\/NONE\/YES\/NONE,ui=0\/0\/1/);
     assert.match(safe,/frame=OWN_BLOB\/OK\/2\/1\/1,hiddenWhy=ARIA,error=TypeError\/UNDEFINED_READ,action=INTERCEPTED\/UNSTABLE,parent=OTHER\/PARTIAL,blocker=POPOVER\/ENABLED,owner=GRAVITYVIEW/);
     assert.match(safe,/dismiss=CLEARED\/FRAME,select=MAIN\/YES\/TRUE\/FALSE\/FALSE/);
-    assert.match(safe,/menuFocus=1\/0\/1\/0,menuClick=0\/0\/0\/0,menuEnd=0\/0\/0\/0\/NO/);
+    assert.match(safe,/menuFocus=1\/0\/1\/0,menuClick=0\/0\/0\/0,menuEnd=0\/0\/0\/0\/NO,link=CONTROLS\/1\/LISTBOX\/YES\/3\/1/);
     assert.match(safe,/cases=PPNP/);
     assert.ok(!safe.includes('SECRET_CANARY'));
     d.cases[2].selectionDiagnostic.listItems='private DOM';
@@ -90,6 +96,8 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     d.cases[2].selectionDiagnostic.pageErrorOwner='PRIVATE_URL';
     d.cases[2].selectionDiagnostic.dialogDismiss='PRIVATE_EVENT';
     d.cases[2].selectionDiagnostic.selectExpandedClick='PRIVATE_INPUT';
+    d.cases[2].selectionDiagnostic.selectLinkVia='PRIVATE_ID';
+    d.cases[2].selectionDiagnostic.selectLinkRole='PRIVATE_ROLE';
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const negative=safeSummary(tmp);
     assert.match(negative,/items=\?/);
@@ -97,6 +105,7 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     assert.match(negative,/probe=NO\/ZERO\/NONE\/YES\/\?/);
     assert.match(negative,/frame=\?\/OK\/2\/1\/1,hiddenWhy=ARIA,error=\?\/UNDEFINED_READ,action=\?\/UNSTABLE,parent=\?\/PARTIAL,blocker=\?\/ENABLED,owner=\?/);
     assert.match(negative,/dismiss=\?\/FRAME,select=MAIN\/YES\/TRUE\/\?\/FALSE/);
+    assert.match(negative,/link=\?\/1\/\?\/YES\/3\/1/);
     assert.ok(!negative.includes('private DOM'));
     assert.ok(!negative.includes('SECRET_CANARY'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
@@ -130,7 +139,9 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
       selectVisibleAfterPage:0,selectVisibleAfterFrame:1,
       selectVisibleTimeoutPage:0,selectVisibleTimeoutFrame:1,
       selectTargetOptionsPage:0,selectTargetOptionsFrame:1,
-      selectFirstVisible:'YES'};
+      selectFirstVisible:'YES',selectLinkVia:'CONTROLS',selectLinkCount:1,
+      selectLinkRole:'LISTBOX',selectLinkVisible:'YES',selectLinkOptions:2,
+      selectLinkTarget:1};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const summary='G013 expanded '+safeSummary(tmp);
     const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
