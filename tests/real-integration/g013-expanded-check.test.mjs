@@ -74,7 +74,7 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
       selectionBefore:'NONE',selectionAfterCanvas:'NONE',selectionAfterList:'NONE',
       listClick:'NOT_ATTEMPTED'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
-    const summary=safeSummary(tmp);
+    const summary='G013 expanded '+safeSummary(tmp);
     const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
     const start=source.indexOf("            stages='(EDITOR_NAVIGATE");
     const end=source.indexOf('            if node tests/real-integration/g013-expanded-check.mjs safe ',start);
@@ -82,7 +82,7 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
     const declarations=source.slice(start,end);
     const gate='grep -Eq "^G013 expanded baseline-fa_IR=${permitted} baseline-en_US=${permitted} with-vazir-fa_IR=${permitted} with-vazir-en_US=${permitted}$"';
     const admit=line=>spawnSync('bash',['-c',declarations+'\n'+gate],{input:line,encoding:'utf8'}).status===0;
-    assert.ok(admit(summary+'\n'),'genuine safe Gutenberg diagnosis must be visible: '+JSON.stringify({summary,sourceStart:start,sourceEnd:end,raw:spawnSync('bash',['-c',declarations+'\n'+gate],{input:summary+'\n',encoding:'utf8'}).stderr.slice(0,300)}));
+    assert.ok(admit(summary+'\n'),'genuine safe Gutenberg diagnosis must be visible');
     assert.ok(admit(summary.replace(/\[blocks=[^\]]+\]/,'')+'\n'),'legacy fixed-status summary must still be admitted');
     assert.ok(!admit(summary.replace('items=3','items=SECRET_PRIVATE')+'\n'));
     assert.ok(!admit(summary.replace('selection=NONE/NONE/NONE','selection=PRIVATE/NONE/NONE')+'\n'));
