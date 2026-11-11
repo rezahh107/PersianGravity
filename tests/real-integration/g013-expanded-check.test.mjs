@@ -48,21 +48,27 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
       selectionBefore:'NONE',selectionAfterCanvas:'NONE',selectionAfterList:'TARGET',
       listClick:'COMPLETED',targetVisible:'NO',targetBox:'ZERO',targetHit:'NONE',
       targetHidden:'YES',targetInteractive:'NONE',allFrames:0,canvasLayouts:0,pageErrors:1,
+      frameKind:'OWN_BLOB',frameEvaluation:'OK',frameLayouts:2,frameTargets:1,
+      frameVisibleTargets:1,targetHiddenReason:'ARIA',pageErrorKind:'TypeError',
       privateElement:'SECRET_CANARY',clientId:'SECRET_CANARY'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const safe=safeSummary(tmp);
     assert.match(safe,/items=5,roles=5\/1\/1,classItems=5,identity=1\/1/);
     assert.match(safe,/selection=NONE\/NONE\/TARGET/);
     assert.match(safe,/probe=NO\/ZERO\/NONE\/YES\/NONE,ui=0\/0\/1/);
+    assert.match(safe,/frame=OWN_BLOB\/OK\/2\/1\/1,hiddenWhy=ARIA,error=TypeError/);
     assert.ok(!safe.includes('SECRET_CANARY'));
     d.cases[2].selectionDiagnostic.listItems='private DOM';
     d.cases[2].selectionDiagnostic.selectionAfterCanvas='SECRET_CANARY';
     d.cases[2].selectionDiagnostic.targetInteractive='SECRET_CANARY';
+    d.cases[2].selectionDiagnostic.frameKind='PRIVATE_BLOB_URL';
+    d.cases[2].selectionDiagnostic.pageErrorKind='PRIVATE_ERROR';
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const negative=safeSummary(tmp);
     assert.match(negative,/items=\?/);
     assert.match(negative,/selection=NONE\/\?\/TARGET/);
     assert.match(negative,/probe=NO\/ZERO\/NONE\/YES\/\?/);
+    assert.match(negative,/frame=\?\/OK\/2\/1\/1,hiddenWhy=ARIA,error=\?/);
     assert.ok(!negative.includes('private DOM'));
     assert.ok(!negative.includes('SECRET_CANARY'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
@@ -81,7 +87,9 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
       selectionBefore:'NONE',selectionAfterCanvas:'NONE',selectionAfterList:'NONE',
       listClick:'NOT_ATTEMPTED',targetVisible:'NO',targetBox:'ZERO',
       targetHit:'NONE',targetHidden:'YES',targetInteractive:'NONE',
-      allFrames:0,canvasLayouts:0,pageErrors:0};
+      allFrames:0,canvasLayouts:0,pageErrors:0,
+      frameKind:'ABOUT',frameEvaluation:'OK',frameLayouts:0,frameTargets:0,
+      frameVisibleTargets:0,targetHiddenReason:'ARIA',pageErrorKind:'NONE'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const summary='G013 expanded '+safeSummary(tmp);
     const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');

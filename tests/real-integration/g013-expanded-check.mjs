@@ -130,7 +130,12 @@ function safeSelectionDiagnostic(value){
     cat(value.targetHit,['SELF','CHILD','OTHER','NONE','UNKNOWN'])+'/'+
     cat(value.targetHidden,['YES','NO','UNKNOWN'])+'/'+
     cat(value.targetInteractive,['SELF','PARENT','CHILD','NONE','UNKNOWN'])+
-    ',ui='+count(value.allFrames)+'/'+count(value.canvasLayouts)+'/'+count(value.pageErrors)+']';
+    ',ui='+count(value.allFrames)+'/'+count(value.canvasLayouts)+'/'+count(value.pageErrors)+
+    ',frame='+cat(value.frameKind,['NONE','ABOUT','OWN_BLOB','OWN_HTTP','FOREIGN_BLOB','FOREIGN'])+'/'+
+      cat(value.frameEvaluation,['NONE','OK','ERROR'])+'/'+
+      count(value.frameLayouts)+'/'+count(value.frameTargets)+'/'+count(value.frameVisibleTargets)+
+    ',hiddenWhy='+cat(value.targetHiddenReason,['NONE','HTML','ARIA','CSS','UNKNOWN'])+
+    ',error='+cat(value.pageErrorKind,['NONE','TypeError','ReferenceError','SyntaxError','RangeError','OtherError'])+']';
 }
 export function safeSummary(dir){
   return profiles.map(key=>{

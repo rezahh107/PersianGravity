@@ -61,7 +61,7 @@ async function runCase(name,width,body){
     deviceScaleFactor:1});
   const page=await context.newPage();
   const errors=[];
-  page.on('pageerror',()=>errors.push('PAGE_ERROR'));
+  page.on('pageerror',err=>errors.push(['TypeError','ReferenceError','SyntaxError','RangeError'].includes(err?.name)?err.name:'OtherError'));
   const entry={name,width,status:'INCONCLUSIVE',font:null,geometry:[],observed:[],screenshot:null};
   try{
     await login(page);
@@ -82,7 +82,10 @@ async function runCase(name,width,body){
     const details=key+'-'+name+'-'+width+'.private-error.txt';
     fs.writeFileSync(path.join(dir,details),String(err?.stack||err).slice(0,1500)+'\n');
   }finally{
-    if(entry.selectionDiagnostic)entry.selectionDiagnostic.pageErrors=errors.length;
+    if(entry.selectionDiagnostic){
+      entry.selectionDiagnostic.pageErrors=errors.length;
+      entry.selectionDiagnostic.pageErrorKind=errors.length===0?'NONE':errors[0];
+    }
     report.cases.push(entry);
     await context.close();
   }
@@ -156,7 +159,9 @@ async function editor(page,entry){
     listClassItems:-1,listExactTargetMatches:-1,listTargetTreeitems:-1,
     targetVisible:'UNKNOWN',targetBox:'UNKNOWN',targetHit:'UNKNOWN',
     targetHidden:'UNKNOWN',targetInteractive:'UNKNOWN',canvasLayouts:-1,
-    allFrames:-1,pageErrors:0,listClick:'NOT_ATTEMPTED'};
+    allFrames:-1,pageErrors:0,pageErrorKind:'NONE',listClick:'NOT_ATTEMPTED',
+    frameKind:'NONE',frameLayouts:0,frameTargets:0,frameVisibleTargets:0,
+    frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
@@ -166,6 +171,30 @@ async function editor(page,entry){
   selectionDiagnostic.candidateFrames=frames.length;
   selectionDiagnostic.allFrames=page.frames().length-1;
   selectionDiagnostic.canvasLayouts=await page.locator('.block-editor-block-list__layout').count();
+  // The original admitted scopes exclude blob: frames. Diagnose their real
+  // provenance before deciding whether the owning canvas is being missed.
+  // No frame from an unapproved origin is read or used for interaction.
+  for(const frame of page.frames()){
+    if(frame===page.mainFrame())continue;
+    const u=frame.url();
+    const kind=u==='about:blank'?'ABOUT':u.startsWith('blob:'+origin+'/')?'OWN_BLOB':
+      u.startsWith(origin+'/')?'OWN_HTTP':u.startsWith('blob:')?'FOREIGN_BLOB':'FOREIGN';
+    selectionDiagnostic.frameKind=kind;
+    if(!['ABOUT','OWN_BLOB','OWN_HTTP'].includes(kind))continue;
+    try{
+      const state=await frame.evaluate(id=>({
+        layoutCount:document.querySelectorAll('.block-editor-block-list__layout').length,
+        targets:[...document.querySelectorAll('[data-block]')].filter(el=>el.getAttribute('data-block')===id).length,
+        visible:[...document.querySelectorAll('[data-block]')].filter(el=>el.getAttribute('data-block')===id&&
+          el.getBoundingClientRect().width>0&&el.getBoundingClientRect().height>0&&
+          getComputedStyle(el).display!=='none').length
+      }),clientId);
+      selectionDiagnostic.frameLayouts+=state.layoutCount;
+      selectionDiagnostic.frameTargets+=state.targets;
+      selectionDiagnostic.frameVisibleTargets+=state.visible;
+      selectionDiagnostic.frameEvaluation='OK';
+    }catch{selectionDiagnostic.frameEvaluation='ERROR';}
+  }
   const selectedNow=()=>page.evaluate(id=>{
     try{return wp.data.select('core/block-editor').getSelectedBlockClientId()===id;}
     catch{return false;}
@@ -236,12 +265,13 @@ async function editor(page,entry){
     const target=exactMatches.first();
     const probe=await target.evaluate(el=>{
       const r=el.getBoundingClientRect(),s=getComputedStyle(el);
-      let hidden=false;
+      let hidden=false,hiddenReason='NONE';
       for(let node=el;node;node=node.parentElement){
         const c=getComputedStyle(node);
-        if(node.hidden||node.getAttribute('aria-hidden')==='true'||
-          c.display==='none'||c.visibility==='hidden'||c.visibility==='collapse'){
-          hidden=true;break;
+        if(node.hidden){hidden=true;hiddenReason='HTML';break;}
+        if(node.getAttribute('aria-hidden')==='true'){hidden=true;hiddenReason='ARIA';break;}
+        if(c.display==='none'||c.visibility==='hidden'||c.visibility==='collapse'){
+          hidden=true;hiddenReason='CSS';break;
         }
       }
       const box=r.width<=0||r.height<=0?'ZERO':
@@ -254,7 +284,7 @@ async function editor(page,entry){
       const interact=el.matches(interactive)?'SELF':el.closest(interactive)?'PARENT':
         el.querySelector(interactive)?'CHILD':'NONE';
       return {targetBox:box,targetHit:hit,targetHidden:hidden?'YES':'NO',
-        targetInteractive:interact};
+        targetHiddenReason:hiddenReason,targetInteractive:interact};
     });
     Object.assign(selectionDiagnostic,probe);
     selectionDiagnostic.targetVisible=await target.isVisible()?'YES':'NO';
