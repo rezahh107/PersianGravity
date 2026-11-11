@@ -27,7 +27,9 @@ test('editor activation uses a real block click and checks selected state',()=>{
   const source=fs.readFileSync(new URL('./g013-expanded-browser.mjs',import.meta.url),'utf8');
   assert.match(source,/await realBlock\.click\(\{timeout:5000\}\)/);
   assert.match(source,/keyboard\.press\('Shift\+Alt\+O'\)/);
-  assert.match(source,/items\.first\(\)\.click\(\)/);
+  assert.match(source,/exactMatches\.count\(\)===1/);
+  assert.match(source,/exactMatches\.first\(\)\.click\(\{timeout:8000\}\)/);
+  assert.doesNotMatch(source,/items\.count\(\)===1/);
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/getSelectedBlockClientId\(\)===id/);
   assert.match(source,/isEditorSidebarOpened/);

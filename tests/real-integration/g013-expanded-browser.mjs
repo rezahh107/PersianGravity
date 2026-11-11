@@ -140,7 +140,8 @@ async function editor(page,entry){
     const editor=wp.data.select('core/editor');
     const all=wp.data.select('core/block-editor').getBlocks();
     let ready='UNKNOWN',postType='UNKNOWN';
-    try{ready=editor?.isEditorReady?.()===true?'YES':'NO';}catch{}
+    try{ready=typeof editor?.isEditorReady==='function'
+      ?(editor.isEditorReady()===true?'YES':'NO'):'UNKNOWN';}catch{}
     try{const type=editor?.getCurrentPostType?.();postType=type==='page'?'PAGE':type?'OTHER':'UNKNOWN';}catch{}
     return {rootCount:all.length,targetCount:all.filter(b=>b.name==='gk-gravityview-blocks/view').length,
       ready,postType};
@@ -205,7 +206,8 @@ async function editor(page,entry){
     const tree=page.locator('.block-editor-list-view-tree').first();
     await tree.waitFor({state:'visible',timeout:10000});
     selectionDiagnostic.listVisible=true;
-    // Observe the actual tree structure before changing selection behavior.
+    // The real WP 6.8.3 List View contains an identity-bearing item but
+    // no role=treeitem. Count roles for diagnosis, not selection authority.
     // Never print DOM, attributes, labels, post contents or client IDs.
     const listState=await tree.evaluate((root,id)=>{
       const count=selector=>root.querySelectorAll(selector).length;
@@ -220,12 +222,20 @@ async function editor(page,entry){
     },clientId);
     Object.assign(selectionDiagnostic,listState);
     entry.stage='EDITOR_LIST_ITEM';
-    const items=tree.locator('[role="treeitem"]');
-    guard(await items.count()===1,'Gutenberg List View must expose the single fixture block');
+    // Source of truth is the observed exact clientId, not a guessed role or
+    // position in a tree that may contain other UI elements.
+    const exactMatches=tree.locator('[data-block="'+clientId+'"],[data-block-client-id="'+clientId+'"]');
+    guard(await exactMatches.count()===1,'Gutenberg List View lacks a unique identity-matched block item');
     entry.stage='EDITOR_LIST_CLICK';
-    await items.first().click();
-    selectionDiagnostic.listClick='COMPLETED';
-    selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);
+    try{
+      await exactMatches.first().click({timeout:8000});
+      selectionDiagnostic.listClick='COMPLETED';
+    }catch(err){
+      selectionDiagnostic.listClick=err?.name==='TimeoutError'?'TIMEOUT':'ERROR';
+      throw err;
+    }finally{
+      selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);
+    }
   }
   if(selectionDiagnostic.selectionAfterList==='UNAVAILABLE')
     selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);
