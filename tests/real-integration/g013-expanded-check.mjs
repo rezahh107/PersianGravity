@@ -145,7 +145,19 @@ function safeSelectionDiagnostic(value){
     cat(value.framePointer,['UNKNOWN','BLOCKED','ENABLED'])+
     ',owner='+cat(value.pageErrorOwner,['NONE','GRAVITYVIEW','PERSIANGRAVITY','WP_CORE','WP_ADMIN','OTHER_PLUGIN','UNKNOWN'])+
     ',dismiss='+cat(value.dialogDismiss,['NOT_ATTEMPTED','ESC_SENT','BLOCKED','CLEARED'])+'/'+
-    cat(value.dialogAfter,['UNKNOWN','DIALOG','FRAME','OTHER','NONE'])+']';
+    cat(value.dialogAfter,['UNKNOWN','DIALOG','FRAME','OTHER','NONE'])+
+    ',select='+cat(value.selectScope,['MAIN','FRAME','UNKNOWN'])+'/'+
+    cat(value.selectInspector,['YES','NO','UNKNOWN'])+'/'+
+    cat(value.selectExpandedFocus,['TRUE','FALSE','MISSING','OTHER','UNKNOWN'])+'/'+
+    cat(value.selectExpandedClick,['TRUE','FALSE','MISSING','OTHER','UNKNOWN'])+'/'+
+    cat(value.selectExpandedTimeout,['TRUE','FALSE','MISSING','OTHER','UNKNOWN'])+
+    ',menuFocus='+count(value.selectMenusAtFocusPage)+'/'+count(value.selectMenusAtFocusFrame)+'/'+
+    count(value.selectVisibleAtFocusPage)+'/'+count(value.selectVisibleAtFocusFrame)+
+    ',menuClick='+count(value.selectMenusAfterPage)+'/'+count(value.selectMenusAfterFrame)+'/'+
+    count(value.selectVisibleAfterPage)+'/'+count(value.selectVisibleAfterFrame)+
+    ',menuEnd='+count(value.selectVisibleTimeoutPage)+'/'+count(value.selectVisibleTimeoutFrame)+'/'+
+    count(value.selectTargetOptionsPage)+'/'+count(value.selectTargetOptionsFrame)+'/'+
+    cat(value.selectFirstVisible,['YES','NO','UNKNOWN'])+']';
 }
 export function safeSummary(dir){
   return profiles.map(key=>{
@@ -162,7 +174,15 @@ export function safeSummary(dir){
     const bounded=failed?'@'+failed.name+'-'+failed.width:'';
     const stage=failed?.name==='gv-block-editor'&&allowedEditorStages.has(failed?.stage)?':'+failed.stage:'';
     const diagnostic=failed?.name==='gv-block-editor'?safeSelectionDiagnostic(failed.selectionDiagnostic):'';
-    return key+'='+kind+bounded+stage+diagnostic;
+    // Fixed order: Perks 1280/390, then GravityView 1280/390.
+    // These are observed case statuses, never a replacement for the strict gate.
+    const caseCode=(name,width)=>{
+      const c=d?.cases?.find?.(x=>x?.name===name&&x?.width===width);
+      return c?.status==='PASS'?'P':c?.status==='FAIL'?'F':
+        c?.status==='NOT_PROVEN'?'N':'U';
+    };
+    const cases=names.map(name=>widths.map(width=>caseCode(name,width)).join('')).join('');
+    return key+'='+kind+bounded+stage+diagnostic+',cases='+cases;
   }).join(' ');
 }
 if(import.meta.url===new URL('file://'+process.argv[1]).href){

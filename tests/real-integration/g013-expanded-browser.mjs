@@ -191,6 +191,15 @@ async function editor(page,entry){
     frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN',frameParentHit:'UNKNOWN',
     frameParentBox:'UNKNOWN',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
     dialogDismiss:'NOT_ATTEMPTED',dialogAfter:'UNKNOWN',
+    selectScope:'UNKNOWN',selectInspector:'UNKNOWN',
+    selectExpandedFocus:'UNKNOWN',selectExpandedClick:'UNKNOWN',selectExpandedTimeout:'UNKNOWN',
+    selectMenusAtFocusPage:-1,selectMenusAtFocusFrame:-1,
+    selectVisibleAtFocusPage:-1,selectVisibleAtFocusFrame:-1,
+    selectMenusAfterPage:-1,selectMenusAfterFrame:-1,
+    selectVisibleAfterPage:-1,selectVisibleAfterFrame:-1,
+    selectVisibleTimeoutPage:-1,selectVisibleTimeoutFrame:-1,
+    selectTargetOptionsPage:-1,selectTargetOptionsFrame:-1,
+    selectFirstVisible:'UNKNOWN',
     pageErrorSubtype:'NONE',pageErrorOwner:'NONE',frameBlocker:'UNKNOWN',framePointer:'UNKNOWN'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
@@ -435,10 +444,56 @@ async function editor(page,entry){
   entry.stage='EDITOR_SELECT_FOCUS';
   await chosen.input.focus();
   guard(await chosen.input.evaluate(el=>el===document.activeElement),'GravityView React Select focus failed');
+  // Read only fixed booleans/counts. A portal may live outside the input's
+  // DOM scope; do not assume the selected scope owns the menu.
+  const expanded=async()=>{
+    const v=await chosen.input.getAttribute('aria-expanded');
+    return v==='true'?'TRUE':v==='false'?'FALSE':v===null?'MISSING':'OTHER';
+  };
+  const menus=async scope=>{
+    try{return await scope.evaluate(()=>{
+      const visible=el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+        return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden';};
+      const popup=[...document.querySelectorAll('[role="listbox"],[class$="-menu"]')];
+      const target=[...document.querySelectorAll('[role="option"]')]
+        .filter(el=>el.textContent?.includes('WU008 G008 GravityView System Dates'));
+      return {all:popup.length,shown:popup.filter(visible).length,target:target.length};
+    });}catch{return {all:-1,shown:-1,target:-1};}
+  };
+  const scopeCounts=async()=>{
+    const main=await menus(page),inFrames={all:0,shown:0,target:0};
+    for(const f of frames){const x=await menus(f);
+      if(x.all<0){inFrames.all=-1;inFrames.shown=-1;inFrames.target=-1;break;}
+      inFrames.all+=x.all;inFrames.shown+=x.shown;inFrames.target+=x.target;
+    }
+    return {main,frames:inFrames};
+  };
+  selectionDiagnostic.selectScope=chosen.scope===page?'MAIN':'FRAME';
+  selectionDiagnostic.selectInspector=await chosen.input.evaluate(el=>
+    el.closest('.interface-interface-skeleton__sidebar,.block-editor-block-inspector,.edit-post-sidebar')?'YES':'NO');
+  selectionDiagnostic.selectExpandedFocus=await expanded();
+  const focused=await scopeCounts();
+  Object.assign(selectionDiagnostic,{selectMenusAtFocusPage:focused.main.all,
+    selectMenusAtFocusFrame:focused.frames.all,selectVisibleAtFocusPage:focused.main.shown,
+    selectVisibleAtFocusFrame:focused.frames.shown});
   entry.stage='EDITOR_DROPDOWN_WAIT';
   await chosen.input.click();
+  selectionDiagnostic.selectExpandedClick=await expanded();
+  const clicked=await scopeCounts();
+  Object.assign(selectionDiagnostic,{selectMenusAfterPage:clicked.main.all,
+    selectMenusAfterFrame:clicked.frames.all,selectVisibleAfterPage:clicked.main.shown,
+    selectVisibleAfterFrame:clicked.frames.shown});
   const dropdown=chosen.scope.locator('[role="listbox"],[class$="-menu"]').first();
-  await dropdown.waitFor({state:'visible',timeout:15000});
+  try{await dropdown.waitFor({state:'visible',timeout:15000});}
+  finally{
+    selectionDiagnostic.selectExpandedTimeout=await expanded();
+    const last=await scopeCounts();
+    selectionDiagnostic.selectVisibleTimeoutPage=last.main.shown;
+    selectionDiagnostic.selectVisibleTimeoutFrame=last.frames.shown;
+    selectionDiagnostic.selectTargetOptionsPage=last.main.target;
+    selectionDiagnostic.selectTargetOptionsFrame=last.frames.target;
+    selectionDiagnostic.selectFirstVisible=await dropdown.count()&&await dropdown.isVisible()?'YES':'NO';
+  }
   const cg=await chosen.input.evaluate(el=>{const r=el.getBoundingClientRect();
     return {left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),
       height:Math.round(r.height),viewport:innerWidth,overflowX:getComputedStyle(el).overflowX,

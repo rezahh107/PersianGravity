@@ -59,6 +59,15 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
       frameParentHit:'OTHER',frameParentBox:'PARTIAL',frameBlocker:'POPOVER',
       framePointer:'ENABLED',pageErrorOwner:'GRAVITYVIEW',
       dialogDismiss:'CLEARED',dialogAfter:'FRAME',
+      selectScope:'MAIN',selectInspector:'YES',selectExpandedFocus:'TRUE',
+      selectExpandedClick:'FALSE',selectExpandedTimeout:'FALSE',
+      selectMenusAtFocusPage:1,selectMenusAtFocusFrame:0,
+      selectVisibleAtFocusPage:1,selectVisibleAtFocusFrame:0,
+      selectMenusAfterPage:0,selectMenusAfterFrame:0,
+      selectVisibleAfterPage:0,selectVisibleAfterFrame:0,
+      selectVisibleTimeoutPage:0,selectVisibleTimeoutFrame:0,
+      selectTargetOptionsPage:0,selectTargetOptionsFrame:0,
+      selectFirstVisible:'NO',
       privateElement:'SECRET_CANARY',clientId:'SECRET_CANARY'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const safe=safeSummary(tmp);
@@ -66,7 +75,9 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     assert.match(safe,/selection=NONE\/NONE\/TARGET/);
     assert.match(safe,/probe=NO\/ZERO\/NONE\/YES\/NONE,ui=0\/0\/1/);
     assert.match(safe,/frame=OWN_BLOB\/OK\/2\/1\/1,hiddenWhy=ARIA,error=TypeError\/UNDEFINED_READ,action=INTERCEPTED\/UNSTABLE,parent=OTHER\/PARTIAL,blocker=POPOVER\/ENABLED,owner=GRAVITYVIEW/);
-    assert.match(safe,/dismiss=CLEARED\/FRAME/);
+    assert.match(safe,/dismiss=CLEARED\/FRAME,select=MAIN\/YES\/TRUE\/FALSE\/FALSE/);
+    assert.match(safe,/menuFocus=1\/0\/1\/0,menuClick=0\/0\/0\/0,menuEnd=0\/0\/0\/0\/NO/);
+    assert.match(safe,/cases=PPNP/);
     assert.ok(!safe.includes('SECRET_CANARY'));
     d.cases[2].selectionDiagnostic.listItems='private DOM';
     d.cases[2].selectionDiagnostic.selectionAfterCanvas='SECRET_CANARY';
@@ -78,13 +89,14 @@ test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',
     d.cases[2].selectionDiagnostic.frameBlocker='PRIVATE_ELEMENT';
     d.cases[2].selectionDiagnostic.pageErrorOwner='PRIVATE_URL';
     d.cases[2].selectionDiagnostic.dialogDismiss='PRIVATE_EVENT';
+    d.cases[2].selectionDiagnostic.selectExpandedClick='PRIVATE_INPUT';
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const negative=safeSummary(tmp);
     assert.match(negative,/items=\?/);
     assert.match(negative,/selection=NONE\/\?\/TARGET/);
     assert.match(negative,/probe=NO\/ZERO\/NONE\/YES\/\?/);
     assert.match(negative,/frame=\?\/OK\/2\/1\/1,hiddenWhy=ARIA,error=\?\/UNDEFINED_READ,action=\?\/UNSTABLE,parent=\?\/PARTIAL,blocker=\?\/ENABLED,owner=\?/);
-    assert.match(negative,/dismiss=\?\/FRAME/);
+    assert.match(negative,/dismiss=\?\/FRAME,select=MAIN\/YES\/TRUE\/\?\/FALSE/);
     assert.ok(!negative.includes('private DOM'));
     assert.ok(!negative.includes('SECRET_CANARY'));
   }finally{fs.rmSync(tmp,{recursive:true,force:true});}
@@ -109,7 +121,16 @@ test('WU008 log gate admits fixed closed-schema Gutenberg diagnosis and rejects 
       pageErrorSubtype:'NONE',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
       frameParentHit:'UNKNOWN',frameParentBox:'UNKNOWN',
       frameBlocker:'UNKNOWN',framePointer:'UNKNOWN',pageErrorOwner:'NONE',
-      dialogDismiss:'CLEARED',dialogAfter:'FRAME'};
+      dialogDismiss:'CLEARED',dialogAfter:'FRAME',
+      selectScope:'FRAME',selectInspector:'YES',
+      selectExpandedFocus:'FALSE',selectExpandedClick:'TRUE',selectExpandedTimeout:'TRUE',
+      selectMenusAtFocusPage:0,selectMenusAtFocusFrame:0,
+      selectVisibleAtFocusPage:0,selectVisibleAtFocusFrame:0,
+      selectMenusAfterPage:0,selectMenusAfterFrame:1,
+      selectVisibleAfterPage:0,selectVisibleAfterFrame:1,
+      selectVisibleTimeoutPage:0,selectVisibleTimeoutFrame:1,
+      selectTargetOptionsPage:0,selectTargetOptionsFrame:1,
+      selectFirstVisible:'YES'};
     fs.writeFileSync(path.join(tmp,'baseline-fa_IR.json'),JSON.stringify(d));
     const summary='G013 expanded '+safeSummary(tmp);
     const source=fs.readFileSync(new URL('../../.github/workflows/wu008-real-integration.yml',import.meta.url),'utf8');
