@@ -61,7 +61,14 @@ async function runCase(name,width,body){
     deviceScaleFactor:1});
   const page=await context.newPage();
   const errors=[];
-  page.on('pageerror',err=>errors.push(['TypeError','ReferenceError','SyntaxError','RangeError'].includes(err?.name)?err.name:'OtherError'));
+  page.on('pageerror',err=>{
+    const name=['TypeError','ReferenceError','SyntaxError','RangeError'].includes(err?.name)?err.name:'OtherError';
+    const msg=String(err?.message||'');
+    const subtype=/Cannot read properties of undefined/i.test(msg)?'UNDEFINED_READ':
+      /Cannot read properties of null/i.test(msg)?'NULL_READ':
+      /is not a function/i.test(msg)?'NOT_FUNCTION':'OTHER';
+    errors.push({name,subtype}); // No raw JS exception text leaves this handler.
+  });
   const entry={name,width,status:'INCONCLUSIVE',font:null,geometry:[],observed:[],screenshot:null};
   try{
     await login(page);
@@ -84,7 +91,8 @@ async function runCase(name,width,body){
   }finally{
     if(entry.selectionDiagnostic){
       entry.selectionDiagnostic.pageErrors=errors.length;
-      entry.selectionDiagnostic.pageErrorKind=errors.length===0?'NONE':errors[0];
+      entry.selectionDiagnostic.pageErrorKind=errors.length===0?'NONE':errors[0].name;
+      entry.selectionDiagnostic.pageErrorSubtype=errors.length===0?'NONE':errors[0].subtype;
     }
     report.cases.push(entry);
     await context.close();
@@ -113,6 +121,18 @@ async function perks(page,entry){
   guard(await manage.evaluate(el=>el.classList.contains('nav-tab-active')),'Perks manage tab did not restore');
   entry.geometry.push({id:'manage_tab',...mg},{id:'install_tab',...ig});
   entry.observed.push('REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED');
+}
+// Classify known Playwright actionability reasons. Never expose the raw
+// message: Playwright errors can include selectors and private DOM excerpts.
+function playwrightActionCategory(err){
+  if(err?.name!=='TimeoutError')return 'OTHER';
+  const s=String(err?.message||'');
+  return /intercepts pointer events/i.test(s)?'INTERCEPTED':
+    /element is not stable/i.test(s)?'UNSTABLE':
+    /element is not visible|not visible/i.test(s)?'NOT_VISIBLE':
+    /outside of the viewport/i.test(s)?'OFFSCREEN':
+    /element is detached|detached from the DOM/i.test(s)?'DETACHED':
+    /scrolling into view/i.test(s)?'SCROLL':'UNCLASSIFIED';
 }
 // Only bounded categories/counts enter diagnostics. The actual clientId is
 // used for same-runtime identity comparisons, never written to diagnostics.
@@ -161,7 +181,9 @@ async function editor(page,entry){
     targetHidden:'UNKNOWN',targetInteractive:'UNKNOWN',canvasLayouts:-1,
     allFrames:-1,pageErrors:0,pageErrorKind:'NONE',listClick:'NOT_ATTEMPTED',
     frameKind:'NONE',frameLayouts:0,frameTargets:0,frameVisibleTargets:0,
-    frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN'};
+    frameEvaluation:'NONE',targetHiddenReason:'UNKNOWN',frameParentHit:'UNKNOWN',
+    frameParentBox:'UNKNOWN',canvasAction:'UNKNOWN',listAction:'UNKNOWN',
+    pageErrorSubtype:'NONE'};
   entry.selectionDiagnostic=selectionDiagnostic;
   // The editor can render its canvas in an isolated iframe. Do not assume
   // the first about:blank frame is the actual Gutenberg canvas.
@@ -224,7 +246,31 @@ async function editor(page,entry){
         });
         if(hit)selectionDiagnostic.canvasPointerHit++;
       }catch{/* Diagnostic-only; no inferred hit. */}
-      if(!realBlock)realBlock=candidate;
+      if(!realBlock){
+        realBlock=candidate;
+        // An inner-frame hit alone cannot prove that the parent document
+        // permits a pointer to reach its iframe. Diagnose the actual parent.
+        if(scope!==page){
+          try{
+            const parent=await scope.evaluate(id=>{
+              const iframe=window.frameElement;
+              if(!iframe)return {hit:'UNKNOWN',box:'UNKNOWN'};
+              const child=document.querySelector('[data-block="'+id+'"]');
+              if(!child)return {hit:'UNKNOWN',box:'UNKNOWN'};
+              const a=iframe.getBoundingClientRect(),b=child.getBoundingClientRect();
+              const x=a.left+b.left+b.width/2,y=a.top+b.top+b.height/2;
+              const top=iframe.ownerDocument.elementFromPoint(x,y);
+              const hit=!top?'NONE':top===iframe||iframe.contains(top)?'FRAME':'OTHER';
+              const box=a.width<=0||a.height<=0?'ZERO':
+                a.right<=0||a.bottom<=0||a.left>=innerWidth||a.top>=innerHeight?'OFFSCREEN':
+                a.left<0||a.top<0||a.right>innerWidth||a.bottom>innerHeight?'PARTIAL':'IN_VIEW';
+              return {hit,box};
+            },clientId);
+            selectionDiagnostic.frameParentHit=parent.hit;
+            selectionDiagnostic.frameParentBox=parent.box;
+          }catch{/* Bounded unknown if frame introspection is unavailable. */}
+        }
+      }
     }
   }
   if(realBlock){
@@ -232,7 +278,10 @@ async function editor(page,entry){
     // An inaccessible canvas element is not a success; try the native List
     // View route below and require its own real selection if click fails.
     try{await realBlock.click({timeout:5000});selectionDiagnostic.canvasClick='COMPLETED';}
-    catch(err){selectionDiagnostic.canvasClick=err?.name==='TimeoutError'?'TIMEOUT':'ERROR';}
+    catch(err){
+      selectionDiagnostic.canvasClick=err?.name==='TimeoutError'?'TIMEOUT':'ERROR';
+      selectionDiagnostic.canvasAction=playwrightActionCategory(err);
+    }
   }
   selectionDiagnostic.selectionAfterCanvas=await selectedCategory(page,clientId);
   if(!(await selectedNow())){
@@ -297,6 +346,7 @@ async function editor(page,entry){
       selectionDiagnostic.listClick='COMPLETED';
     }catch(err){
       selectionDiagnostic.listClick=err?.name==='TimeoutError'?'TIMEOUT':'ERROR';
+      selectionDiagnostic.listAction=playwrightActionCategory(err);
       throw err;
     }finally{
       selectionDiagnostic.selectionAfterList=await selectedCategory(page,clientId);

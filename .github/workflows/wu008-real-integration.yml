@@ -1770,7 +1770,8 @@ jobs:
             probe='(YES|NO|UNKNOWN|\?)/(ZERO|OFFSCREEN|PARTIAL|IN_VIEW|UNKNOWN|\?)/(SELF|CHILD|OTHER|NONE|UNKNOWN|\?)/(YES|NO|UNKNOWN|\?)/(SELF|PARENT|CHILD|NONE|UNKNOWN|\?)'
             frame='(NONE|ABOUT|OWN_BLOB|OWN_HTTP|FOREIGN_BLOB|FOREIGN|\?)/(NONE|OK|ERROR|\?)/'
             frame="${frame}${num}/${num}/${num}"
-            diagnostic="(\[blocks=${num}/${num},ready=(YES|NO|UNKNOWN),editor=(PAGE|OTHER|UNKNOWN),id=(VALID|UNKNOWN),frames=${num},canvas=${num}/${num}/${num},canvasClick=${click},list=(VISIBLE|NOT_VISIBLE),items=${num},roles=${num}/${num}/${num},classItems=${num},identity=${num}/${num},selection=${sel}/${sel}/${sel},listClick=${click},probe=${probe},ui=${num}/${num}/${num},frame=${frame},hiddenWhy=(NONE|HTML|ARIA|CSS|UNKNOWN|\?),error=(NONE|TypeError|ReferenceError|SyntaxError|RangeError|OtherError|\?)\])?"
+            action='(UNKNOWN|INTERCEPTED|UNSTABLE|NOT_VISIBLE|OFFSCREEN|DETACHED|SCROLL|UNCLASSIFIED|OTHER|\?)'
+            diagnostic="(\[blocks=${num}/${num},ready=(YES|NO|UNKNOWN),editor=(PAGE|OTHER|UNKNOWN),id=(VALID|UNKNOWN),frames=${num},canvas=${num}/${num}/${num},canvasClick=${click},list=(VISIBLE|NOT_VISIBLE),items=${num},roles=${num}/${num}/${num},classItems=${num},identity=${num}/${num},selection=${sel}/${sel}/${sel},listClick=${click},probe=${probe},ui=${num}/${num}/${num},frame=${frame},hiddenWhy=(NONE|HTML|ARIA|CSS|UNKNOWN|\?),error=(NONE|TypeError|ReferenceError|SyntaxError|RangeError|OtherError|\?)/(NONE|UNDEFINED_READ|NULL_READ|NOT_FUNCTION|OTHER|\?),action=${action}/${action},parent=(UNKNOWN|NONE|FRAME|OTHER|\?)/(UNKNOWN|ZERO|OFFSCREEN|PARTIAL|IN_VIEW|\?)\])?"
             permitted="(PASS|FAIL|NOT_PROVEN|NOT_CAPTURED)(@(perks-admin|gv-block-editor)-(1280|390)(:${stages})?${diagnostic})?"
             if node tests/real-integration/g013-expanded-check.mjs safe "$expanded_dir" >"$safe_expanded" 2>>"$private_dir/diagnostics.log" &&
               [[ "$(wc -l < "$safe_expanded")" -eq 1 ]] &&

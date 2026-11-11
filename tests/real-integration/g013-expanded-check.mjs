@@ -135,7 +135,12 @@ function safeSelectionDiagnostic(value){
       cat(value.frameEvaluation,['NONE','OK','ERROR'])+'/'+
       count(value.frameLayouts)+'/'+count(value.frameTargets)+'/'+count(value.frameVisibleTargets)+
     ',hiddenWhy='+cat(value.targetHiddenReason,['NONE','HTML','ARIA','CSS','UNKNOWN'])+
-    ',error='+cat(value.pageErrorKind,['NONE','TypeError','ReferenceError','SyntaxError','RangeError','OtherError'])+']';
+    ',error='+cat(value.pageErrorKind,['NONE','TypeError','ReferenceError','SyntaxError','RangeError','OtherError'])+'/'+
+    cat(value.pageErrorSubtype,['NONE','UNDEFINED_READ','NULL_READ','NOT_FUNCTION','OTHER'])+
+    ',action='+cat(value.canvasAction,['UNKNOWN','INTERCEPTED','UNSTABLE','NOT_VISIBLE','OFFSCREEN','DETACHED','SCROLL','UNCLASSIFIED','OTHER'])+'/'+
+    cat(value.listAction,['UNKNOWN','INTERCEPTED','UNSTABLE','NOT_VISIBLE','OFFSCREEN','DETACHED','SCROLL','UNCLASSIFIED','OTHER'])+
+    ',parent='+cat(value.frameParentHit,['UNKNOWN','NONE','FRAME','OTHER'])+'/'+
+    cat(value.frameParentBox,['UNKNOWN','ZERO','OFFSCREEN','PARTIAL','IN_VIEW'])+']';
 }
 export function safeSummary(dir){
   return profiles.map(key=>{
