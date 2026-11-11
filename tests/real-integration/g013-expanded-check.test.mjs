@@ -40,7 +40,9 @@ test('editor activation uses a real block click and checks selected state',()=>{
   assert.match(source,/isEditorSidebarOpened/);
   assert.match(source,/getAttribute\('aria-controls'\)/);
   assert.match(source,/selectLinkCount===1/);
-  assert.match(source,/selectLinkRole==='LISTBOX'/);
+  assert.doesNotMatch(source,/guard\(selectionDiagnostic\.selectLinkRole==='LISTBOX'/);
+  assert.match(source,/selectExpandedClick==='TRUE'/);
+  assert.match(source,/matchingOptions\.count\(\)===1/);
   assert.doesNotMatch(source,/chosen\.scope\.locator\('\[role="listbox"\],\[class\$="-menu"\]'\)\.first\(\)/);
 });
 test('safe Gutenberg selection diagnostic is bounded and strips arbitrary data',()=>{

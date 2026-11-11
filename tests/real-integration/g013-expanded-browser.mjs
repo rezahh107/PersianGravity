@@ -479,6 +479,7 @@ async function editor(page,entry){
   entry.stage='EDITOR_DROPDOWN_WAIT';
   await chosen.input.click();
   selectionDiagnostic.selectExpandedClick=await expanded();
+  guard(selectionDiagnostic.selectExpandedClick==='TRUE','Real React Select did not expand');
   const clicked=await scopeCounts();
   Object.assign(selectionDiagnostic,{selectMenusAfterPage:clicked.main.all,
     selectMenusAfterFrame:clicked.frames.all,selectVisibleAfterPage:clicked.main.shown,
@@ -499,7 +500,9 @@ async function editor(page,entry){
   const dropdown=linked.first();
   const role=await dropdown.getAttribute('role');
   selectionDiagnostic.selectLinkRole=role==='listbox'?'LISTBOX':role?'OTHER':'MISSING';
-  guard(selectionDiagnostic.selectLinkRole==='LISTBOX','React Select ARIA target is not a listbox');
+  // The real combobox controls exactly one wrapper, but that wrapper has no
+  // role attribute. Do not confuse its role with the descendant options.
+  // Actual selectable options, visibility and persisted viewId remain required.
   try{await dropdown.waitFor({state:'visible',timeout:15000});}
   finally{
     selectionDiagnostic.selectExpandedTimeout=await expanded();
@@ -525,8 +528,11 @@ async function editor(page,entry){
   guard(isOnscreen(cg)&&isOnscreen(dg),'GV detached menu clipped outside owning viewport');
   entry.geometry.push({id:'react_select',...cg},{id:'react_portal',...dg});
   entry.stage='EDITOR_OPTION_WAIT';
-  const option=dropdown.locator('[role="option"]').filter({hasText:'WU008 G008 GravityView System Dates'}).first();
-  await option.waitFor({state:'visible',timeout:10000});
+  const matchingOptions=dropdown.locator('[role="option"]')
+    .filter({hasText:'WU008 G008 GravityView System Dates'});
+  await matchingOptions.first().waitFor({state:'visible',timeout:10000});
+  guard(await matchingOptions.count()===1,'The ARIA-linked React Select menu lacks a unique real target View option');
+  const option=matchingOptions.first();
   entry.stage='EDITOR_VIEW_COMMIT';
   await option.click();
   await page.waitForFunction(id=>{
