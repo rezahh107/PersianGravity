@@ -1290,7 +1290,7 @@ jobs:
           const pubTagNames=new Set(['BODY','HTML','INPUT','BUTTON','SELECT','TEXTAREA','A','DIV',
             'IFRAME','OPTION','SUMMARY','SPAN','LABEL','H1','H2','H3','P','LI','IMG','FORM','TD','TH']);
           const pubPinnedGravity=Object.freeze({gravityforms:'3.1.1.1',gravityflow:'3.1.0',
-            gravityview:'3.3.4',gravityperks:'2.3.16',gpfileuploadpro:'1.5.13',gpadvancedselect:'1.1.21'});
+            gravityview:'3.3.4',gravityperks:'2.3.16',gpadvancedselect:'1.1.21'});
           const pubFamilies=new Set(['vazirmatn','tahoma','arial','sans-serif','serif','monospace',
             'times new roman','-apple-system','blinkmacsystemfont','segoe ui',
             'roboto','oxygen-sans','ubuntu','cantarell','helvetica neue','inter',
@@ -1415,14 +1415,14 @@ jobs:
               if(Object.hasOwn(p,'rtl_diagnostic'))pubDiagnostic(p.rtl_diagnostic,label+'.rtl',locale,p.width);
               if(Object.hasOwn(p,'active_control')&&p.active_control!==null)ok(pubTagNames.has(p.active_control),'unapproved DOM tag');
               if(Object.hasOwn(p,'interaction')&&p.interaction!==null){
-                pubClosed(p.interaction,['type','tokens_seen','file_preview','selected_value','focus_verified'],'interaction',['type']);
+                pubClosed(p.interaction,['type','tokens_seen','selected_value','focus_verified'],'interaction',['type']);
                 if(p.interaction.type==='authentic-gravityview'){
                   pubClosed(p.interaction,['type','tokens_seen'],'gravityview interaction',['type','tokens_seen']);
                   pubNumber(p.interaction.tokens_seen,'gravityview tokens',1,100);
-                }else if(p.interaction.type==='authentic-file-upload-and-tom-select'){
-                  pubClosed(p.interaction,['type','file_preview','selected_value','focus_verified'],'perks interaction',
-                    ['type','file_preview','selected_value','focus_verified']);
-                  ok(p.interaction.file_preview===true&&p.interaction.focus_verified===true,'perks flags');
+                }else if(p.interaction.type==='authentic-tom-select'){
+                  pubClosed(p.interaction,['type','selected_value','focus_verified'],'perks interaction',
+                    ['type','selected_value','focus_verified']);
+                  ok(p.interaction.focus_verified===true,'perks real keyboard focus');
                   pubChoice(p.interaction.selected_value,['NONEMPTY','EMPTY'],'perks selection');
                 }else fail('unapproved interaction');
               }

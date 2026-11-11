@@ -534,8 +534,8 @@ test('G013 keyboard focus oracle checks actual activeElement, not a surviving To
 expectReject('forged Advanced Select focus result cannot pass both evidence boundaries',f=>{
   const key='with-vazir-fa_IR',d=read(f,key+'.json');
   const p=d.pages.find(p=>p.name==='gravityperks'&&p.width===390);
-  p.interaction={type:'authentic-file-upload-and-tom-select',
-    file_preview:true,selected_value:'NONEMPTY',focus_verified:false};
+  p.interaction={type:'authentic-tom-select',
+    selected_value:'NONEMPTY',focus_verified:false};
   write(f,key+'.json',d);
 });
 expectReject('unapproved activeElement tag',f=>{

@@ -44,8 +44,7 @@ const fontWeight = (v,where,{range=false,relative=false}={}) => {
 const tagNames=new Set(['BODY','HTML','INPUT','BUTTON','SELECT','TEXTAREA','A','DIV',
   'IFRAME','OPTION','SUMMARY','SPAN','LABEL','H1','H2','H3','P','LI','IMG','FORM','TD','TH']);
 const expectedPinnedGravity=Object.freeze({gravityforms:'3.1.1.1',gravityflow:'3.1.0',
-  gravityview:'3.3.4',gravityperks:'2.3.16',gpfileuploadpro:'1.5.13',
-  gpadvancedselect:'1.1.21'});
+  gravityview:'3.3.4',gravityperks:'2.3.16',gpadvancedselect:'1.1.21'});
 // Computed font-family is a comma-separated CSS stack, not arbitrary free text.
 // These tokens were observed in the pinned Gravity baseline or are the pinned
 // Vazirmatn/generic/icon families. Unexpected new fonts stop public admission.
@@ -151,14 +150,14 @@ function page(v,where,locale,key) {
     if(v.active_control!==null)ensure(tagNames.has(v.active_control),where+'.active_control unsafe DOM tag');
   }
   if(Object.hasOwn(v,'interaction') && v.interaction!==null){
-    fields(v.interaction,where+'.interaction',['type','tokens_seen','file_preview','selected_value','focus_verified'],['type']);
+    fields(v.interaction,where+'.interaction',['type','tokens_seen','selected_value','focus_verified'],['type']);
     if(v.interaction.type==='authentic-gravityview'){
       fields(v.interaction,where+'.interaction',['type','tokens_seen'],['type','tokens_seen']);
       numeric(v.interaction.tokens_seen,where+'.tokens_seen',1,100);
-    } else if(v.interaction.type==='authentic-file-upload-and-tom-select'){
-      fields(v.interaction,where+'.interaction',['type','file_preview','selected_value','focus_verified'],
-        ['type','file_preview','selected_value','focus_verified']);
-      ensure(v.interaction.file_preview===true&&v.interaction.focus_verified===true,where+'.interaction flags');
+    } else if(v.interaction.type==='authentic-tom-select'){
+      fields(v.interaction,where+'.interaction',['type','selected_value','focus_verified'],
+        ['type','selected_value','focus_verified']);
+      ensure(v.interaction.focus_verified===true,where+'.interaction flags');
       choice(v.interaction.selected_value,['NONEMPTY','EMPTY'],where+'.selected_value');
     } else fail(where+'.interaction.type');
   }

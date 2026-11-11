@@ -1,5 +1,7 @@
 # G-013 — Real Vazir v1.5.0 comparison inside WU008
 
+> **Current controlling scope:** See the 2026-11-11 Owner decision at the end of this document. The older Crop/FUP narrative is preserved as history, not a live acceptance requirement.
+
 ## Scope and status
 
 This is a **test-laboratory change only**. The existing licensed WU008 checks run before any Vazir artifact is downloaded or activated. The preexisting four-manifest, 67-file administration baseline publisher gate is unchanged. No Vazir code/font is a PersianGravity runtime dependency or part of its installable ZIP. Release/merge are separately Owner-controlled.
@@ -79,3 +81,12 @@ The successful limited pair at WU008 42623634425 reports `PAIR_PASS_NATIVE_RTL_F
 ## 2026-11-09 — Font-induced document overflow cannot be accepted silently
 
 The original 36-pair classification separated preexisting overflow from newly observed WITH_VAZIR-only overflow, but did not make the latter block an overall paired PASS. For G-013's non-regression destination, a newly induced document-level horizontal overflow is now a review-required FAIL in the producer and both independently implemented publisher paths. A preexisting overflow visible in BASELINE (including historical System Status) remains a separate, non-Vazir finding. A fixture reproducing a numerically consistent 390px BASELINE/402px WITH_VAZIR case must be rejected by both boundaries; legitimate zero-new-overflow cases continue to pass. This new check still cannot prove the absence of nested clipping, wrapping or visual alignment differences without independent screenshot review.
+
+
+### 2026-11-11 — Current G-013 scope (PGR-SCOPE-FUP-EXIT-2026-11-11)
+
+The Owner excludes GP File Upload Pro from all NEW PersianGravity G-013 implementation, qualification, fixtures, evidence and acceptance. The historical 2026-11-10 temporary deferral, the superseded Crop isolation patch, and prior Crop/Save failures are **not current G-013 blockers**; earlier findings F-01..F-05 and existing shipped G-007 translations remain preserved without claiming a vendor fix.
+
+Current G-013 extended browser evidence requires 16 genuinely executed scenarios: GravityView block-editor React Select/Datepicker and Gravity Perks standalone Settings keyboard tabs at two viewports (1280/390) across four restored BASELINE/WITH_VAZIR profiles (fa_IR/en_US). It does not create a FUP fixture or measure Crop/Save. The nine-surface core remains 72 observations/36 comparisons, with genuine GF server validation, native Flow Grid observation, GravityView/Perks frontends and GP Advanced Select/Tom Select keyboard focus/selection **without performing an FUP upload**.
+
+The independent original licensed WU008 six-package baseline, its four-manifest/67-file public publisher, existing security/privacy boundaries and historical records are unchanged. Merely having FUP installed by that earlier baseline does not make it a new G-013 acceptance dependency. The G-014 default-OFF Grid fa_IR ag-ltr historical finding is independent from a Vazir-caused regression. Final exact-Head licensed WU008, actual official release bytes/font use, and paired visual comparison must be inspected; static CI alone does not establish browser PASS.

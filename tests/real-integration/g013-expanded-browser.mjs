@@ -10,17 +10,17 @@ for(const key of ['WU008_ARTIFACT_DIR','WU008_MANIFEST_PATH','WU008_ADMIN_PASSWO
 const manifest=JSON.parse(fs.readFileSync(process.env.WU008_MANIFEST_PATH,'utf8'));
 const fixture=JSON.parse(fs.readFileSync(path.join(process.env.WU008_ARTIFACT_DIR,'g013-extended-fixture.json'),'utf8'));
 const expectedHead=process.env.WU008_PGR_SHA;
-if(fixture.schema!=='g013-real-extended-fixture-v1'||fixture.head!==expectedHead||
+if(fixture.schema!=='g013-real-extended-fixture-v2'||fixture.head!==expectedHead||
   manifest.persiangravity_source_commit!==expectedHead)
   throw Error('Expanded fixture/head mismatch');
 const origin=new URL(manifest.admin_url).origin;
-for(const url of [fixture.crop_url,fixture.editor_url,fixture.perks_admin_url,manifest.login_url])
+for(const url of [fixture.editor_url,fixture.perks_admin_url,manifest.login_url])
   if(new URL(url).origin!==origin)throw Error('Expanded browser disallowed origin');
 const dir=path.join(process.env.WU008_ARTIFACT_DIR,'g013-acceptance-private');
 fs.mkdirSync(dir,{recursive:true});
 const key=profile.toLowerCase().replace('_','-')+'-'+locale;
 const browser=await chromium.launch({headless:true});
-const report={schema:'g013-extended-browser-v1',head:expectedHead,profile,locale,
+const report={schema:'g013-extended-browser-v2',head:expectedHead,profile,locale,
   environment:{wordpress:'6.8.3',php:manifest.php_version,gravity:manifest.versions,
     chromium:browser.version(),playwright:'1.55.0',snapshot:process.env.WU008_G013_DB_SNAPSHOT_SHA},
   cases:[],status:'INCOMPLETE'};
@@ -110,84 +110,6 @@ async function perks(page,entry){
   entry.geometry.push({id:'manage_tab',...mg},{id:'install_tab',...ig});
   entry.observed.push('REAL_PERKS_STANDALONE_SETTINGS','KEYBOARD_TAB_TOGGLE','MANAGE_RESTORED');
 }
-async function crop(page,entry){
-  await goto(page,fixture.crop_url);
-  const id=fixture.crop_form_id;
-  const root='#field_'+id+'_1';
-  const text=page.locator('#input_'+id+'_2');
-  await page.locator(root+' .gpfup__droparea').waitFor({state:'visible',timeout:15000});
-  await text.waitFor({state:'visible'});
-  entry.stage='CROP_PAGE_READY';
-  const input=page.locator(root+' input[type=file]').first();
-  const portal='#gpfup-cropper-portal-'+id+'-1';
-  entry.stage='PORTAL_LOOKUP';
-  guard(await page.locator(portal).count()===1,'Authentic FUP crop portal absent');
-  const image=await page.evaluate(()=>{
-    const canvas=document.createElement('canvas');
-    canvas.width=240;canvas.height=180;
-    const context=canvas.getContext('2d');
-    context.fillStyle='#f0f0f0';context.fillRect(0,0,240,180);
-    context.fillStyle='#333';context.fillRect(30,30,180,120);
-    return canvas.toDataURL('image/png').split(',')[1];
-  });
-  const source={name:'g013-disposable.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')};
-  entry.stage='IMAGE_PREPARED';
-  async function open(){
-    entry.stage='MODAL_OPENING';
-    await input.setInputFiles(source);
-    const modal=page.locator(portal+' .cropper__lightbox');
-    await modal.waitFor({state:'visible',timeout:20000});
-    entry.stage='CROP_MODAL_SHOWN';
-    await page.locator(portal+' .vue-advanced-cropper').first().waitFor({state:'visible',timeout:15000});
-    entry.stage='CROPPER_RENDERED';
-    const cancel=page.locator(portal+' button.gpfup__cancel');
-    const save=page.locator(portal+' button.gpfup__crop');
-    await cancel.waitFor({state:'visible'});
-    await save.waitFor({state:'visible'});
-    entry.stage='ACTIONS_VISIBLE';
-    const cg=await measure(page,portal+' button.gpfup__cancel');
-    const sg=await measure(page,portal+' button.gpfup__crop');
-    guard(isOnscreen(cg)&&isOnscreen(sg),'Cropper action clipped at viewport');
-    entry.stage='ACTIONS_REACHABLE';
-    entry.geometry.push({id:'crop_cancel',...cg},{id:'crop_save',...sg});
-    return {modal,cancel,save};
-  }
-  let controls=await open();
-  entry.stage='ESCAPE_DISMISS';
-  await page.keyboard.press('Escape');
-  await controls.modal.waitFor({state:'hidden',timeout:12000});
-  entry.stage='ESCAPE_CLOSED';
-  await page.locator(root+' .gpfup__filename').first().waitFor({state:'detached',timeout:20000}).catch(async()=>{
-    guard(await page.locator(root+' .gpfup__filename').count()===0,'Canceled crop was not discarded');
-  });
-  entry.observed.push('REAL_CROP_MODAL','ESCAPE_CANCEL_DISCARDS');
-  entry.stage='CROP_RETRY';
-  controls=await open();
-  entry.stage='CROP_SAVE';
-  await controls.save.click();
-  await controls.modal.waitFor({state:'hidden',timeout:15000});
-  await page.locator(root+' .gpfup__progress-container').first().waitFor({state:'hidden',timeout:40000});
-  entry.stage='UPLOAD_COMPLETE';
-  await page.locator(root+' .gpfup__filename').first().waitFor({state:'visible',timeout:20000});
-  entry.stage='FILE_VISIBLE';
-  guard((await page.locator(root+' .gpfup__filename').first().innerText()).includes('g013-disposable.png'),
-    'Genuine cropped upload filename missing');
-  entry.stage='REEDIT_OPENING';
-  await page.locator(root+' .gpfup__edit').first().click();
-  await page.locator(portal+' .cropper__lightbox').waitFor({state:'visible',timeout:12000});
-  await page.locator(portal+' button.gpfup__cancel').click();
-  await page.locator(portal+' .cropper__lightbox').waitFor({state:'hidden',timeout:12000});
-  entry.observed.push('REAL_CROP_SAVED_AND_UPLOADED','RERENDERED_PREVIEW_REEDIT');
-  entry.stage='VALIDATION_SUBMIT';
-  guard((await text.inputValue())==='','G013 real invalid-control text already nonempty');
-  await page.locator('#gform_submit_button_'+id).click();
-  const validation=page.locator('#field_'+id+'_2.gfield_error,#gform_wrapper_'+id+' .gform_validation_errors');
-  await validation.first().waitFor({state:'visible',timeout:20000});
-  guard(await page.locator(root+' .gpfup__filename').count()>0,
-    'Cropped image did not survive real validation rerender');
-  entry.observed.push('AUTHENTIC_GF_SERVER_VALIDATION','POST_VALIDATION_FILE_REHYDRATED');
-  entry.stage='VALIDATION_RERENDERED';
-}
 async function editor(page,entry){
   await goto(page,fixture.editor_url);
   await page.waitForFunction(()=>{
@@ -254,7 +176,6 @@ async function editor(page,entry){
 try{
   for(const width of widths){
     await runCase('perks-admin',width,perks);
-    await runCase('fup-crop',width,crop);
     await runCase('gv-block-editor',width,editor);
   }
   report.status=report.cases.every(c=>c.status==='PASS')?'PASS':'NOT_PROVEN';
@@ -263,4 +184,4 @@ try{
   await browser.close();
 }
 if(report.status!=='PASS')throw Error('G013 expanded authentic browser coverage incomplete: '+profile+' '+locale);
-console.log('G013_EXPANDED_BROWSER_PASS '+profile+' '+locale+' six authentic scenarios');
+console.log('G013_EXPANDED_BROWSER_PASS '+profile+' '+locale+' four authentic scenarios');

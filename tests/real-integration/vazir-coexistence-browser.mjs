@@ -103,22 +103,10 @@ try {
       }
       if(spec.name==='gravityperks'){
         const formId=Number(manifest.gravityperks_form_id);
-        const fileId=Number(manifest.gravityperks_file_upload_field_id);
         const selectId=Number(manifest.gravityperks_advanced_select_field_id);
-        if(![formId,fileId,selectId].every(Number.isInteger))throw Error('Missing genuine GP add-on fixture');
-        const fileRoot='#field_'+formId+'_'+fileId;
+        if(![formId,selectId].every(Number.isInteger))throw Error('Missing genuine GP Advanced Select fixture');
         const selectRoot='#field_'+formId+'_'+selectId;
-        await page.locator(fileRoot+' .gpfup__droparea').waitFor({timeout:15000});
-        await page.locator(selectRoot+' .ts-wrapper').waitFor({timeout:15000});
-        const input=page.locator(fileRoot+' input[type=file]').first();
-        await input.setInputFiles({name:'vazir-probe.txt',mimeType:'text/plain',
-          buffer:Buffer.from('G013 disposable WU008 coexistence fixture')});
-        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({state:'visible',timeout:30000});
-        // File Upload Pro 1.5.13 renders the filename before Plupload DONE.
-        await page.locator(fileRoot+' .gpfup__progress-container').first()
-          .waitFor({state:'hidden',timeout:30000});
-        await page.waitForTimeout(100);
-        await page.locator(fileRoot+' .gpfup__filename').first().waitFor({state:'visible',timeout:15000});
+        await page.locator(selectRoot+' .ts-wrapper').waitFor({state:'visible',timeout:15000});
         const search=page.locator(selectRoot+' .ts-control input').first();
         await search.focus();
         // The previous .ts-control count() checked existence, not focus.
@@ -139,8 +127,8 @@ try {
             getComputedStyle(document.activeElement).visibility!=='hidden');
         },selectRoot+' .ts-wrapper');
         if(!focusedAfter)throw Error('Advanced Select lost focus after keyboard selection');
-        interaction={type:'authentic-file-upload-and-tom-select',
-          file_preview:true,selected_value: selected ? 'NONEMPTY' : 'EMPTY',
+        interaction={type:'authentic-tom-select',
+          selected_value: selected ? 'NONEMPTY' : 'EMPTY',
           focus_verified:focusedBefore&&focusedAfter};
       }
       if(['gravity-flow','flow-frontend'].includes(spec.name)) {
