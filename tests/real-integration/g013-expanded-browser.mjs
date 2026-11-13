@@ -101,6 +101,30 @@ async function runCase(name,width,body){
       entry.selectionDiagnostic.pageErrorSubtype=errors.length===0?'NONE':errors[0].subtype;
       entry.selectionDiagnostic.pageErrorOwner=errors.length===0?'NONE':errors[0].owner;
     }
+    if(name==='gv-block-editor'){
+      const diag=entry.selectionDiagnostic||{};
+      const observed=diag.localizedAfterWait||diag.localizedAfterOpen||
+        diag.localizedAtClick||diag.localizedBeforeOpen||{};
+      const admissible=new Set(['PRESENT','ABSENT','UNKNOWN','INVALID_SHAPE','UNAVAILABLE','NOT_REACHED']);
+      const state=value=>admissible.has(value)?value:'NOT_REACHED';
+      const count=value=>Number.isInteger(value)&&value>=0&&value<=100000?value:'UNKNOWN';
+      // Public CI log: closed enums and bounded counts only. Never log View IDs,
+      // labels, localized objects, raw errors, secrets, or private URLs.
+      console.log('G013_LOCALIZED_OPTION '+[
+        'profile='+key,'width='+width,
+        'source='+state(observed.sourceState),
+        'shape='+state(observed.shapeState),
+        'views='+count(observed.viewCount),
+        'malformed='+count(observed.malformedCount),
+        'target='+state(observed.targetState),
+        'menu='+state(observed.menuState),
+        'options='+count(observed.optionCount),
+        'visible='+count(observed.visibleOptionCount),
+        'ui_target='+state(observed.optionTargetState),
+        'enabled='+state(observed.optionEnabledState),
+        'page_errors='+count(errors.length)
+      ].join(' '));
+    }
     report.cases.push(entry);
     await context.close();
   }
@@ -441,6 +465,58 @@ async function editor(page,entry){
     }catch{/* Missing control remains a failing real-browser oracle below. */}
   }
   guard(chosen,'Actual detached GravityView React Select not rendered');
+  // GravityView 3.3.4 populates this object through wp_localize_script at
+  // editor load. The genuine ViewSelector passes these entries to react-select.
+  // Observe the actual selector document; never inject or mutate options.
+  const probeLocalized=async(menuId=null)=>{
+    try{return await chosen.scope.evaluate(({targetId,menuId})=>{
+      const unavailable={sourceState:'UNAVAILABLE',shapeState:'UNAVAILABLE',
+        viewCount:-1,malformedCount:-1,targetState:'UNKNOWN',
+        menuState:menuId?'UNAVAILABLE':'NOT_REACHED',optionCount:-1,
+        visibleOptionCount:-1,optionTargetState:menuId?'UNKNOWN':'NOT_REACHED',
+        optionEnabledState:menuId?'UNKNOWN':'NOT_REACHED'};
+      if(!Object.prototype.hasOwnProperty.call(window,'gkGravityViewBlocks')||
+          !window.gkGravityViewBlocks||typeof window.gkGravityViewBlocks!=='object')
+        return unavailable;
+      const source=window.gkGravityViewBlocks;
+      if(!Object.prototype.hasOwnProperty.call(source,'views'))
+        return {...unavailable,sourceState:'PRESENT'};
+      if(!Array.isArray(source.views))
+        return {...unavailable,sourceState:'PRESENT',shapeState:'INVALID_SHAPE'};
+      const views=source.views;
+      const malformed=views.filter(x=>!x||typeof x!=='object'||
+        typeof x.value!=='string'||typeof x.label!=='string').length;
+      const target=views.find(x=>x&&typeof x==='object'&&x.value===targetId);
+      const result={...unavailable,sourceState:'PRESENT',
+        shapeState:malformed?'INVALID_SHAPE':'PRESENT',
+        viewCount:views.length,malformedCount:malformed,
+        targetState:target?'PRESENT':malformed?'UNKNOWN':'ABSENT'};
+      if(!menuId)return result;
+      const menu=document.getElementById(menuId);
+      if(!menu)return result;
+      const options=[...menu.querySelectorAll('[role="option"]')];
+      const visible=el=>{
+        const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
+        return rect.width>0&&rect.height>0&&style.display!=='none'&&
+          style.visibility!=='hidden';
+      };
+      const norm=value=>String(value||'').replace(/\s+/g,' ').trim();
+      const active=options.filter(visible);
+      const matches=target&&typeof target.label==='string'?
+        active.filter(el=>norm(el.textContent).includes(norm(target.label))):[];
+      return {...result,menuState:'PRESENT',optionCount:options.length,
+        visibleOptionCount:active.length,
+        optionTargetState:!target?'UNKNOWN':matches.length?'PRESENT':'ABSENT',
+        optionEnabledState:!matches.length?'UNKNOWN':
+          matches.some(el=>el.getAttribute('aria-disabled')!=='true'&&
+            !el.hasAttribute('disabled'))?'PRESENT':'ABSENT'};
+    },{targetId:String(fixture.view_id),menuId});}
+    catch{return {sourceState:'UNAVAILABLE',shapeState:'UNKNOWN',
+      viewCount:-1,malformedCount:-1,targetState:'UNKNOWN',
+      menuState:menuId?'UNAVAILABLE':'NOT_REACHED',optionCount:-1,
+      visibleOptionCount:-1,optionTargetState:'UNKNOWN',optionEnabledState:'UNKNOWN'};}
+  };
+  selectionDiagnostic.localizedBeforeOpen=await probeLocalized();
   entry.stage='EDITOR_SELECT_FOCUS';
   await chosen.input.focus();
   guard(await chosen.input.evaluate(el=>el===document.activeElement),'GravityView React Select focus failed');
@@ -480,6 +556,7 @@ async function editor(page,entry){
   await chosen.input.click();
   selectionDiagnostic.selectExpandedClick=await expanded();
   guard(selectionDiagnostic.selectExpandedClick==='TRUE','Real React Select did not expand');
+  selectionDiagnostic.localizedAtClick=await probeLocalized();
   const clicked=await scopeCounts();
   Object.assign(selectionDiagnostic,{selectMenusAfterPage:clicked.main.all,
     selectMenusAfterFrame:clicked.frames.all,selectVisibleAfterPage:clicked.main.shown,
@@ -500,6 +577,7 @@ async function editor(page,entry){
   const dropdown=linked.first();
   const role=await dropdown.getAttribute('role');
   selectionDiagnostic.selectLinkRole=role==='listbox'?'LISTBOX':role?'OTHER':'MISSING';
+  selectionDiagnostic.localizedAfterOpen=await probeLocalized(linkedId);
   // The real combobox controls exactly one wrapper, but that wrapper has no
   // role attribute. Do not confuse its role with the descendant options.
   // Actual selectable options, visibility and persisted viewId remain required.
@@ -530,7 +608,8 @@ async function editor(page,entry){
   entry.stage='EDITOR_OPTION_WAIT';
   const matchingOptions=dropdown.locator('[role="option"]')
     .filter({hasText:'WU008 G008 GravityView System Dates'});
-  await matchingOptions.first().waitFor({state:'visible',timeout:10000});
+  try{await matchingOptions.first().waitFor({state:'visible',timeout:10000});}
+  finally{selectionDiagnostic.localizedAfterWait=await probeLocalized(linkedId);}
   guard(await matchingOptions.count()===1,'The ARIA-linked React Select menu lacks a unique real target View option');
   const option=matchingOptions.first();
   entry.stage='EDITOR_VIEW_COMMIT';
