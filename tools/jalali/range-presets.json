@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "description": "Named relative bounds for the Jalali Date field earliest/latest settings.",
+  "presets": {
+    "today": "today",
+    "tomorrow": "today+1d",
+    "adult_birthdate": "today-18y",
+    "one_month_ahead": "today+1m",
+    "one_year_ahead": "today+1y"
+  }
+}

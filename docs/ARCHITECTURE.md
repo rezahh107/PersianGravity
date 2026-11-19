@@ -38,6 +38,10 @@ This remains one canonical `PGR_*` runtime. There is no service container, gener
 
 The source owner is PersianGravity only for the missing Grid initialization bit; GPP owns presentation axis, and the authentic browser owns observable mode. See [G-014](G014_OPTIONAL_GRAVITY_FLOW_INBOX_RTL.md) and [validation](VALIDATION.md).
 
+## G-015 — Jalali Date range constraints
+
+`PGR_Jalali_Range` is a small pure helper loaded with the `jalali_date` module. It resolves bound expressions (absolute Jalali, `today±N{d,m,y}`, `preset:<name>` from `tools/jalali/range-presets.json`) to canonical Jalali storage and performs the inclusive comparison. `PGR_GF_Field_Jalali_Date::validate()` remains the single authoritative check; `assets/js/pgr-jalali-range.js` mirrors it for early feedback through `data-pgr-jalali-*` attributes. Resolved bounds are cached per form for one day. No storage format, hook ownership or shared helper changes.
+
 ## Module Registry
 
 `PGR_Module_Registry` is a bounded code-owned catalog for exactly:
