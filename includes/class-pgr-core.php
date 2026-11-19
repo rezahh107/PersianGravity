@@ -163,8 +163,10 @@ final class PGR_Core {
 			return;
 		}
 
+		$jalali_enabled         = PGR_Module_Registry::is_enabled( 'jalali_date' );
 		$needs_digit_normalizer = false;
 		$needs_scanner          = false;
+		$needs_jalali_range     = false;
 
 		foreach ( (array) rgar( $form, 'fields' ) as $field ) {
 			if ( ! is_object( $field ) ) {
@@ -179,6 +181,15 @@ final class PGR_Core {
 			if ( $scanner_enabled && 'pgr_structured_scanner' === $field->type ) {
 				$needs_scanner = true;
 			}
+
+			// Range hints are cheap; load them for every Jalali Date field so the sanity floor applies everywhere.
+			if ( $jalali_enabled && 'pgr_jalali_date' === $field->type ) {
+				$needs_jalali_range = true;
+			}
+		}
+
+		if ( $needs_jalali_range ) {
+			wp_enqueue_script( 'pgr-jalali-range', PGR_URL . 'assets/js/pgr-jalali-range.js', array(), PGR_VERSION, true );
 		}
 
 		if ( $needs_digit_normalizer ) {
