@@ -12,6 +12,10 @@ final class PGR_Utils {
 	/**
 	 * Convert Persian and Arabic-Indic digits to ASCII digits.
 	 *
+	 * Invisible joiners and directional marks are dropped as well: values pasted
+	 * from Persian word processors or messaging apps often carry them between
+	 * digits, which otherwise breaks numeric and date parsing.
+	 *
 	 * @param mixed $value Input value.
 	 * @return mixed
 	 */
@@ -19,6 +23,8 @@ final class PGR_Utils {
 		if ( ! is_string( $value ) ) {
 			return $value;
 		}
+
+		$value = str_replace( array( "\u{200C}", "\u{200D}", "\u{200E}", "\u{200F}", "\u{061C}" ), '', $value );
 
 		return strtr(
 			$value,
