@@ -110,6 +110,7 @@ function pgr_initialize() {
 	}
 	if ( $jalali_enabled ) {
 		require_once PGR_PATH . 'includes/class-pgr-persian-date.php';
+		require_once PGR_PATH . 'includes/class-pgr-jalali-range.php';
 		require_once PGR_PATH . 'includes/fields/class-gf-field-jalali-date.php';
 	}
 	if ( $presentation_enabled ) {

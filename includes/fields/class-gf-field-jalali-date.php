@@ -15,6 +15,12 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 	/** @var string */
 	public $jalali_format = PGR_Persian_Date::DEFAULT_FORMAT;
 
+	/** @var string Earliest accepted Jalali date expression. */
+	public $jalali_min = '';
+
+	/** @var string Latest accepted Jalali date expression. */
+	public $jalali_max = '';
+
 	/**
 	 * Register field-owned editor settings.
 	 *
@@ -22,6 +28,7 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 	 */
 	public static function register_editor_hooks() {
 		add_action( 'gform_field_advanced_settings', array( __CLASS__, 'render_format_setting' ), 10, 2 );
+		add_action( 'gform_field_advanced_settings', array( __CLASS__, 'render_range_setting' ), 10, 2 );
 	}
 
 	/**
@@ -64,6 +71,7 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 			'admin_label_setting',
 			'visibility_setting',
 			'pgr_jalali_format_setting',
+			'pgr_jalali_range_setting',
 		);
 	}
 
@@ -108,6 +116,29 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 	}
 
 	/**
+	 * Render the optional earliest/latest date constraints.
+	 *
+	 * @param int $position Settings position.
+	 * @param int $form_id  Current form ID.
+	 * @return void
+	 */
+	public static function render_range_setting( $position, $form_id ) {
+		unset( $form_id );
+
+		if ( 50 !== $position ) {
+			return;
+		}
+		?>
+		<li class="pgr_jalali_range_setting field_setting">
+			<label for="pgr_jalali_min" class="section_label">Earliest date</label>
+			<input type="text" id="pgr_jalali_min" dir="ltr" placeholder="1400/01/01, today-18y, preset:adult_birthdate" onchange="SetFieldProperty('jalaliMin', this.value);" />
+			<label for="pgr_jalali_max" class="section_label">Latest date</label>
+			<input type="text" id="pgr_jalali_max" dir="ltr" placeholder="today, today+30d" onchange="SetFieldProperty('jalaliMax', this.value);" />
+		</li>
+		<?php
+	}
+
+	/**
 	 * Initialize the custom field format setting in the editor.
 	 *
 	 * @return string
@@ -123,6 +154,8 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 			jQuery(document).on('gform_load_field_settings', function(event, field) {
 				if (field.type === 'pgr_jalali_date') {
 					jQuery('#pgr_jalali_format').val(field.jalali_format || {$default_format});
+					jQuery('#pgr_jalali_min').val(field.jalaliMin || '');
+					jQuery('#pgr_jalali_max').val(field.jalaliMax || '');
 				}
 			});
 		";
@@ -149,9 +182,20 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 		$required    = $this->isRequired ? ' aria-required="true"' : '';
 		$invalid     = $this->failed_validation ? ' aria-invalid="true"' : ' aria-invalid="false"';
 		$placeholder = $this->get_field_placeholder_attribute();
+		$range       = '';
+
+		if ( ! $is_admin ) {
+			$bounds = PGR_Jalali_Range::bounds_for_field( $form_id, $this );
+			$range  = sprintf(
+				' data-pgr-jalali-format="%1$s" data-pgr-jalali-min="%2$s" data-pgr-jalali-max="%3$s"',
+				esc_attr( $this->get_jalali_format() ),
+				esc_attr( $bounds['min'] ),
+				esc_attr( $bounds['max'] )
+			);
+		}
 
 		return sprintf(
-			'<div class="ginput_container ginput_container_pgr_jalali_date"><input name="input_%1$d" id="%2$s" type="text" value="%3$s" class="%4$s" inputmode="numeric" autocomplete="off"%5$s%6$s%7$s %8$s /></div>',
+			'<div class="ginput_container ginput_container_pgr_jalali_date"><input name="input_%1$d" id="%2$s" type="text" value="%3$s" class="%4$s" inputmode="numeric" autocomplete="off"%5$s%6$s%7$s%9$s %8$s /></div>',
 			absint( $this->id ),
 			esc_attr( $field_id ),
 			esc_attr( $value ),
@@ -159,7 +203,8 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 			$required,
 			$invalid,
 			$disabled,
-			$placeholder
+			$placeholder,
+			$range
 		);
 	}
 
@@ -177,7 +222,14 @@ final class PGR_GF_Field_Jalali_Date extends GF_Field {
 			return;
 		}
 
-		if ( null === PGR_Persian_Date::canonicalize( $value, $this->get_jalali_format() ) ) {
+		$canonical = PGR_Persian_Date::canonicalize( $value, $this->get_jalali_format() );
+		$in_range  = is_string( $canonical ) && PGR_Jalali_Range::is_within(
+			$canonical,
+			PGR_Jalali_Range::resolve_bound( $this->jalali_min ),
+			PGR_Jalali_Range::resolve_bound( $this->jalali_max )
+		);
+
+		if ( null === $canonical || ! $in_range ) {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Gravity Forms GF_Field API property; external framework identifier cannot be renamed.
 			$error_message = $this->errorMessage;
 
