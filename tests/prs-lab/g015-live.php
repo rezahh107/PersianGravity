@@ -34,6 +34,12 @@ $snake_control = new PGR_GF_Field_Jalali_Date(array(
 ));
 $snake_control->validate('1406/01/01', array('id'=>991));
 $check('snake_control_outside_rejected', (bool) $snake_control->failed_validation);
+$check('converter_class_present', class_exists('PGR_Gregorian_Jalali_Converter', false));
+try {
+    $check('relative_today_value', PGR_Jalali_Range::resolve_bound('today'));
+} catch (Throwable $e) {
+    $check('relative_today_error_class', get_class($e));
+}
 $check('upper_equality_accepted', PGR_Jalali_Range::is_within('1404-05-10','','1404-05-10'));
 $check('interior_control_accepted', PGR_Jalali_Range::is_within('1404-05-09','','1404-05-10'));
 $check('above_max_control_rejected', !PGR_Jalali_Range::is_within('1404-05-11','','1404-05-10'));
