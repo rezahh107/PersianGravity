@@ -345,6 +345,14 @@ jobs:
           test "$(php "$WU008_WP_CLI" plugin get gp-advanced-select --field=version --path="$WU008_WP_PATH")" = "$WU008_ADVS_VERSION"
           test "$(php "$WU008_WP_CLI" plugin get persian-gravityforms --field=version --path="$WU008_WP_PATH")" = "$WU008_PGR_VERSION"
 
+      - name: PRS-LAB G015 licensed-field contract probe (isolated, no promotion)
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l tests/prs-lab/g015-live.php
+          php "$WU008_WP_CLI" --path="$WU008_WP_PATH" eval-file tests/prs-lab/g015-live.php
+          echo 'G015_PRS_PROBE_EXECUTED=true' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Discover exact vendor source seams without mutating vendors
         shell: bash
         run: |
