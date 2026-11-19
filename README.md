@@ -24,6 +24,12 @@ The Module Manager is not decorative. Disabled modules do not register their own
 
 `jalali_date` and `jalali_presentation` are intentionally separate. The first owns true Jalali-domain user data; the second only presents known Gregorian/system dates and cannot be activated by the presence of a `pgr_jalali_date` field.
 
+## G-015 — Jalali Date earliest/latest range (candidate)
+
+The dedicated Jalali Date field gains two optional editor settings, **Earliest date** and **Latest date**. Each accepts an absolute Jalali date (`1400/01/01` or `1400-01-01`, Persian or ASCII digits), a relative expression (`today`, `today+7d`, `today-1m`, `today-18y`) or a named preset such as `preset:adult_birthdate` from the shipped preset list. Bounds are **inclusive** and are enforced **server-side** in the field's authoritative validation; the browser script only gives earlier feedback. Relative expressions are resolved against the current Jalali date in the site's timezone.
+
+Fields without bounds keep their previous behavior, stored values remain canonical ASCII `YYYY-MM-DD` with Jalali semantics, and no shared helpers or other modules change. More details: [architecture](docs/ARCHITECTURE.md), [validation](docs/VALIDATION.md).
+
 ## G-014 — optional native Gravity Flow Inbox RTL (PR #114 candidate)
 
 **G-014 (PR #114 candidate, not merged/released):** An independent, optional `pgr_settings[gravity_flow_inbox_rtl]` setting defaults **OFF**; it is not a Module Registry switch. With strict integer ON and the canonical Gravity Flow 3.1.0 host, the `gform_loaded` adapter registers `gravityflow_js_config_shared` at priority 11 after the native priority-10 producer and adds `enableRtl` **only if missing** on genuine producer-verified Inbox grids, based on `is_rtl()`. It never overwrites a host/integration value. Gravity Flow owns Inbox 1 task membership, permissions, data, operations, sorting, pagination, AG Grid construction and persisted column state. GPP independently owns its four-selector physical-LTR-axis preference; neither plugin writes the other's option.

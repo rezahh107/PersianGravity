@@ -124,6 +124,8 @@ Source/unit tests are not equivalent to a real licensed WordPress + Gravity Form
 
 = Unreleased =
 
+* Jalali Date field: optional inclusive Earliest/Latest date constraints with absolute, relative (`today±N d/m/y`) and preset bounds, enforced server-side. Unbounded fields are unchanged.
+
 = 4.10.0 =
 * Added seven practical Persian/English worked examples to in-plugin Help & Documentation, covering module setup, copy-ready sample inputs, expected results, verification steps, and limitations.
 * Improved G-011 Jalali Merge Tag discoverability from Overview to the relevant Help section, with copy-ready tags, keyboard-operable copy controls and accessible status feedback, plus responsive RTL/LTR Help layouts. These merged changes are not in the published 4.9.0 package.

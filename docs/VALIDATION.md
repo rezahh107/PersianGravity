@@ -1,3 +1,10 @@
+## G-015 Jalali Date range — candidate validation (2026-11-19)
+
+- PHPUnit `tests/JalaliRangeTest.php`: absolute, relative and preset bound resolution, inclusive range comparison, field-level server rejection outside the configured range, rendered `data-pgr-jalali-*` attributes, and unchanged behavior for unbounded fields — PASS.
+- Node `tests/js/jalali-range.test.js`: browser canonicalization for all seven formats and calendar-order comparison — PASS in CI.
+- Manual browser check on WordPress 6.7.2 + Gravity Forms 3.0 with a two-field form: earliest/latest feedback shown before submit, out-of-range submission rejected server-side, multi-page navigation unaffected — PASS.
+- WPCS, PHPCompatibility and the runtime-integrity guard — PASS.
+
 ## G-014 PR #114 — exact-Head reciprocal Settings verification and guidance scope (2026-11-09)
 
 The latest **executed reciprocal Settings** evidence is [licensed WU008 #42597965918](https://github.com/rezahh107/PersianGravity/actions/runs/42597965918), run attempt 1, on exact PersianGravity `53379268ca554b0dd81e40a3ee9d3cb74884c5e1` with GPP #174 `c8cf9fd7bb615075402b78eaa1f01dd33d855d28`. Both the licensed WordPress/Chromium job and evidence-publication job completed **SUCCESS**. The actual job log records `PGR_G014_RECIPROCAL_BROWSER_PASS cases=35` and `PGR_G014_RECIPROCAL_LICENSED_EVIDENCE_PASS controls=35`. Artifact `wu008-real-integration-42597965918-1` (ID `13665675245`) includes `g014-reciprocal-warning-evidence/report.json` with **35/35 PASS** and exact source identities, WordPress 6.8.3, Gravity Forms 3.1.1.1, licensed Gravity Flow 3.1.0 and Chromium 140.0.7339.16.
